@@ -24,6 +24,14 @@ const moodReplies = {
   "그럭저럭": "그럭저럭도 충분히 잘하고 있는 거예요. 오늘도 잘 흘러가고 있어요.",
   "괜찮아요": "괜찮다니 다행이에요. 이 가벼움을 오늘 잘 누려봐요 ☺️",
 };
+const plainReplies = {
+  "지쳤어요": "지쳤네요. 오늘은 회복을 우선하세요.",
+  "우울해요": "기분이 가라앉았네요. 무리하지 마세요.",
+  "불안해요": "불안하군요. 호흡부터 한 번 정리해보세요.",
+  "무기력해요": "에너지가 낮네요. 아주 작은 것 하나만 하세요.",
+  "그럭저럭": "그럭저럭이면 괜찮습니다.",
+  "괜찮아요": "괜찮은 날이네요. 이 컨디션을 잘 활용해보세요.",
+};
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
 
@@ -81,8 +89,6 @@ function escapeHtml(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<
   else if (h < 18) msg = "오후도 무리하지 말고요";
   else msg = "하루 마무리, 정말 수고 많았어요";
   document.getElementById("greeting").textContent = msg;
-  const d = new Date(), days = ["일", "월", "화", "수", "목", "금", "토"];
-  document.getElementById("todayDate").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
 })();
 
 /* ===================== 온보딩 ===================== */
@@ -133,7 +139,12 @@ const energyFace = document.getElementById("energyFace");
 const journalInput = document.getElementById("journalInput");
 const praiseInput = document.getElementById("praiseInput");
 const saveMsg = document.getElementById("saveMsg");
+const entryDate = document.getElementById("entryDate");
+const checkinTitle = document.getElementById("checkinTitle");
 let selectedMood = null;
+let currentDate = todayKey();
+
+function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
 
 function selectMood(mood) {
   selectedMood = mood;
@@ -142,7 +153,7 @@ function selectMood(mood) {
     m.classList.toggle("selected", on);
     m.setAttribute("aria-pressed", on ? "true" : "false");
   });
-  moodResponse.textContent = moodReplies[mood];
+  moodResponse.textContent = curReplies()[mood];
   moodResponse.hidden = false;
   todayMore.hidden = false; // 점진적 노출
 }
@@ -153,16 +164,34 @@ moodGrid.addEventListener("click", (e) => {
 });
 energyRange.addEventListener("input", () => { energyFace.textContent = energyFaces[energyRange.value]; });
 
-function loadToday() {
-  const t = loadEntries()[todayKey()];
-  energyFace.textContent = energyFaces[3];
-  if (!t) return;
+function resetForm() {
+  selectedMood = null;
+  document.querySelectorAll(".mood").forEach((m) => { m.classList.remove("selected"); m.setAttribute("aria-pressed", "false"); });
+  moodResponse.hidden = true;
+  energyRange.value = 3; energyFace.textContent = energyFaces[3];
+  journalInput.value = ""; praiseInput.value = ""; saveMsg.hidden = true;
+}
+function updateCheckinTitle() {
+  const p = currentDate.split("-");
+  checkinTitle.textContent = currentDate === todayKey() ? "📔 오늘의 기록" : `📔 ${+p[1]}월 ${+p[2]}일 기록`;
+}
+function loadEntryForm(key) {
+  currentDate = key;
+  resetForm(); updateCheckinTitle();
+  const t = loadEntries()[key];
+  if (!t) { todayMore.hidden = (key === todayKey()); return; } // 과거 날짜는 바로 입력 가능
   if (t.mood) selectMood(t.mood);
   if (t.energy) { energyRange.value = t.energy; energyFace.textContent = energyFaces[t.energy]; }
   if (t.note) journalInput.value = t.note;
   if (t.praise) praiseInput.value = t.praise;
   todayMore.hidden = false;
 }
+function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); }
+entryDate.addEventListener("change", () => {
+  let key = entryDate.value || todayKey();
+  if (key > todayKey()) { key = todayKey(); entryDate.value = key; }
+  Sound.tap(); loadEntryForm(key);
+});
 
 function detectCrisis(text) {
   if (!text) return false;
@@ -177,15 +206,20 @@ function showSafety() {
 document.getElementById("safetyClose").addEventListener("click", () => { document.getElementById("safetyCard").hidden = true; });
 
 document.getElementById("saveBtn").addEventListener("click", () => {
-  const entries = loadEntries(), k = todayKey();
+  const entries = loadEntries(), k = currentDate;
   const note = journalInput.value.trim();
   entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), updatedAt: new Date().toISOString() };
   saveEntries(entries);
   Sound.success();
   const card = document.getElementById("checkin-card");
   card.classList.remove("saved"); void card.offsetWidth; card.classList.add("saved");
-  const streak = calcStreak(entries);
-  saveMsg.textContent = streak > 1 ? `기록 완료! 🌟 ${streak}일째 스스로를 돌보고 있어요.` : "오늘의 마음, 잘 담아뒀어요. 고마워요 💛";
+  if (k === todayKey()) {
+    const streak = calcStreak(entries);
+    saveMsg.textContent = streak > 1 ? `기록 완료! 🌟 ${streak}일째 스스로를 돌보고 있어요.` : "오늘의 마음, 잘 담아뒀어요. 고마워요 💛";
+  } else {
+    const p = k.split("-");
+    saveMsg.textContent = `${+p[1]}월 ${+p[2]}일 기록을 채웠어요. 지난 날도 소중해요 🌿`;
+  }
   saveMsg.hidden = false;
   setTimeout(() => { saveMsg.hidden = true; }, 4000);
   if (detectCrisis(note)) showSafety();
@@ -214,15 +248,42 @@ const quotes = [
   "당신이 오늘 한 작은 선택들, 그게 모여 당신을 돌보는 일이 돼요.",
   "슬픔이 찾아왔다면, 막지 말고 잠깐 곁에 두어도 괜찮아요. 지나갈 거예요.",
   "지금 이 순간, 앱을 열어 자신을 돌보려 한 것 — 그것부터가 이미 잘한 일이에요.",
+  "비교는 마음만 갉아먹어요. 어제의 나와만 견주면 충분해요.",
+  "오늘 못한 일은 오늘의 당신이 그만큼 지쳤다는 뜻일 뿐이에요.",
+  "감정엔 옳고 그름이 없어요. 그냥 지금의 날씨 같은 거예요.",
+  "버티는 것도 엄청난 일을 해내는 중이라는 증거예요.",
+  "쉼표는 문장을 멈추는 게 아니라, 더 잘 읽히게 하는 거예요. 당신의 쉼도 그래요.",
+  "작은 친절을 남에게 베풀듯, 오늘은 자신에게 베풀어봐요.",
+  "괜찮지 않아도 괜찮아요. 그 말, 진심이에요.",
+  "지금 할 수 있는 가장 다정한 일은, 자신을 다그치지 않는 거예요.",
+];
+const plainQuotes = [
+  "오늘 할 수 있는 만큼만 했으면 그걸로 충분합니다.",
+  "회복엔 시간이 걸립니다. 조급해하지 않아도 됩니다.",
+  "기분은 정보입니다. 좋고 나쁨이 아니라 데이터로 보세요.",
+  "안 되는 날도 있습니다. 내일 다시 하면 됩니다.",
+  "작은 행동 하나가 큰 의지보다 낫습니다.",
+  "쉬는 것도 일정의 일부입니다.",
+  "완벽하게 하려다 멈추는 것보다, 대충이라도 계속이 낫습니다.",
+  "지금 한 가지만 정하고, 나머지는 미뤄도 됩니다.",
+  "감정은 지나갑니다. 지금 상태가 영원하지 않습니다.",
+  "비교는 도움이 안 됩니다. 어제의 나와만 비교하세요.",
+  "할 일을 줄이는 것도 능력입니다.",
+  "몸이 보내는 신호를 무시하지 마세요.",
+  "충분히 자고 충분히 먹는 것부터 시작하세요.",
+  "오늘의 목표는 '버티기'여도 괜찮습니다.",
+  "도움을 청하는 건 합리적인 선택입니다.",
 ];
 const quoteEl = document.getElementById("quote");
 let lastQuote = -1;
+function curQuotes() { return settings.tone === "plain" ? plainQuotes : quotes; }
 document.getElementById("quoteBtn").addEventListener("click", () => {
   Sound.chime();
-  let i; do { i = Math.floor(Math.random() * quotes.length); } while (i === lastQuote && quotes.length > 1);
+  const pool = curQuotes();
+  let i; do { i = Math.floor(Math.random() * pool.length); } while (i === lastQuote && pool.length > 1);
   lastQuote = i;
   quoteEl.classList.add("swap");
-  setTimeout(() => { quoteEl.textContent = "“" + quotes[i] + "”"; quoteEl.classList.remove("swap"); }, 230);
+  setTimeout(() => { quoteEl.textContent = "“" + pool[i] + "”"; quoteEl.classList.remove("swap"); }, 230);
 });
 
 const circle = document.getElementById("breathCircle");
@@ -277,6 +338,29 @@ soundGrid.addEventListener("click", (e) => {
   if (type === "off") Sound.stopAmbient(); else Sound.startAmbient(type);
 });
 document.getElementById("ambientVol").addEventListener("input", (e) => Sound.setAmbientVolume(e.target.value / 100));
+
+// 배경음 꺼짐 타이머 (sleep timer)
+let sleepTimer = null;
+const timerBtns = document.getElementById("timerBtns");
+const timerStatus = document.getElementById("timerStatus");
+timerBtns.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  Sound.tap();
+  timerBtns.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b));
+  const min = Number(b.dataset.min);
+  if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null; }
+  if (min > 0) {
+    sleepTimer = setTimeout(() => {
+      Sound.stopAmbient();
+      document.querySelectorAll(".sound-btn").forEach((x) => { x.classList.remove("active"); x.setAttribute("aria-pressed", "false"); });
+      timerStatus.textContent = "타이머 종료 — 배경음을 껐어요. 잘 자요 🌙";
+      timerBtns.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.min === "0"));
+      sleepTimer = null;
+    }, min * 60000);
+    timerStatus.textContent = `${min}분 뒤에 배경음이 자동으로 꺼져요.`;
+    timerStatus.hidden = false;
+  } else { timerStatus.hidden = true; }
+});
 
 /* ===================== 90일 챌린지 (복수 습관) ===================== */
 const MILESTONES = {
@@ -525,11 +609,86 @@ function renderStats() {
     const avg = recent.reduce((s, e) => s + moodMeta[e.mood].score, 0) / recent.length;
     document.getElementById("avgMood").textContent = avg >= 3.5 ? "🙂 좋아요" : avg >= 2.6 ? "😐 보통" : "😮‍💨 지쳐요";
   } else document.getElementById("avgMood").textContent = "–";
+  renderWeekly(entries);
   renderInsight(entries, list);
   drawChart(entries);
   renderDist(list);
   renderHistory(list);
 }
+
+/* 주간 리포트 (베타 피드백 #1) */
+let weekData = null;
+function renderWeekly(entries) {
+  const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  const days = keys.map((k) => entries[k]).filter(Boolean);
+  const moods = days.filter((e) => e.mood);
+  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const energies = days.filter((e) => e.energy);
+  const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
+  const chs = loadChs(); let habTotal = 0, habDone = 0;
+  chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate) { habTotal++; if (h.done[k]) habDone++; } }));
+  const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
+  const topMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const range = `${+keys[0].split("-")[1]}/${+keys[0].split("-")[2]} ~ ${+keys[6].split("-")[1]}/${+keys[6].split("-")[2]}`;
+  document.getElementById("weekRange").textContent = range;
+  const el = document.getElementById("weeklySummary");
+  if (days.length === 0) { el.textContent = "이번 주 기록이 아직 없어요. 한 번만 남겨도 다음 주 리포트가 시작돼요 🌱"; weekData = null; return; }
+  const plain = settings.tone === "plain", parts = [];
+  parts.push(plain ? `이번 주 ${days.length}일 기록.` : `이번 주 ${days.length}일이나 마음을 남겼어요.`);
+  if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
+  if (avgEnergy != null) parts.push(`평균 에너지 ${avgEnergy.toFixed(1)}/5.`);
+  if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
+  if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요 💛" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
+  el.textContent = parts.join(" ");
+  weekData = { range, daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+}
+
+function drawWeekCanvas() {
+  const c = document.getElementById("weekCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
+  const css = getComputedStyle(document.documentElement);
+  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--ink").trim();
+  const accent = css.getPropertyValue("--accent").trim(), soft = css.getPropertyValue("--soft").trim(), line = css.getPropertyValue("--line").trim();
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = accent; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText("오늘의 쉼 · 주간 리포트", 32, 52);
+  ctx.fillStyle = soft; ctx.font = "16px sans-serif"; ctx.fillText(weekData ? weekData.range : "", 32, 80);
+  const lines = [];
+  if (weekData) {
+    lines.push(`기록 ${weekData.daysLogged}일`);
+    if (weekData.avgMood != null) lines.push(`평균 기분 ${weekData.avgMood.toFixed(1)} / 5`);
+    if (weekData.avgEnergy != null) lines.push(`평균 에너지 ${weekData.avgEnergy.toFixed(1)} / 5`);
+    if (weekData.habTotal > 0) lines.push(`습관 ${weekData.habDone} / ${weekData.habTotal}`);
+  }
+  ctx.fillStyle = ink; ctx.font = "bold 20px sans-serif";
+  lines.forEach((t, i) => ctx.fillText(t, 32, 132 + i * 38));
+  if (weekData) {
+    const x0 = 320, y0 = 110, w = 248, h = 158;
+    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
+    const pts = weekData.moodSeries;
+    ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.beginPath(); let started = false;
+    pts.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / 6, y = y0 + h - (h * (v - 1) / 4); if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); });
+    ctx.stroke(); ctx.fillStyle = accent;
+    pts.forEach((v, i) => { if (v == null) return; const x = x0 + w * i / 6, y = y0 + h - (h * (v - 1) / 4); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); });
+  }
+  ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("나를 돌본 한 주 🌿", 32, 318);
+  return c.toDataURL("image/png");
+}
+function dataURLtoBlob(d) { const [h, b] = d.split(","); const m = h.match(/:(.*?);/)[1]; const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: m }); }
+document.getElementById("weekImageBtn").addEventListener("click", () => {
+  Sound.tap(); const url = drawWeekCanvas();
+  const a = document.createElement("a"); a.href = url; a.download = `주간리포트_${todayKey()}.png`; a.click();
+});
+document.getElementById("weekShareBtn").addEventListener("click", async () => {
+  Sound.tap();
+  const url = drawWeekCanvas();
+  const text = weekData ? `오늘의 쉼 · 주간 리포트 (${weekData.range}) — 기록 ${weekData.daysLogged}일${weekData.avgMood != null ? `, 평균 기분 ${weekData.avgMood.toFixed(1)}/5` : ""} 🌿` : "오늘의 쉼 주간 리포트";
+  try {
+    const file = new File([dataURLtoBlob(url)], "weekly.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
+    if (navigator.share) { await navigator.share({ text }); return; }
+    await navigator.clipboard.writeText(text); alert("주간 리포트 요약을 복사했어요!\n\n" + text);
+  } catch (e) {}
+});
 
 function drawChart(entries) {
   const canvas = document.getElementById("chart");
@@ -648,13 +807,18 @@ function renderHistory(list) {
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55 },
+  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm" },
   loadSettings()
 );
+const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+function resolveTheme() { return settings.theme === "auto" ? (darkMq && darkMq.matches ? "dark" : "warm") : settings.theme; }
 function applySettings() {
-  document.documentElement.setAttribute("data-theme", settings.theme);
+  document.documentElement.setAttribute("data-theme", resolveTheme());
+  document.documentElement.setAttribute("data-textsize", settings.textSize);
   document.querySelector('meta[name="theme-color"]').setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
   document.querySelectorAll(".theme-btn").forEach((b) => b.classList.toggle("active", b.dataset.theme === settings.theme));
+  document.querySelectorAll("#textSizeSeg button").forEach((b) => b.classList.toggle("active", b.dataset.size === settings.textSize));
+  document.querySelectorAll("#toneSeg button").forEach((b) => b.classList.toggle("active", b.dataset.tone === settings.tone));
   document.getElementById("sfxToggle").checked = settings.sfx;
   document.getElementById("breathSoundToggle").checked = settings.breathSound;
   document.getElementById("reminderToggle").checked = settings.reminderOn;
@@ -662,10 +826,21 @@ function applySettings() {
   document.getElementById("ambientVol").value = settings.ambientVol;
   Sound.setSfx(settings.sfx); Sound.setBreath(settings.breathSound); Sound.state.ambientVol = settings.ambientVol / 100;
 }
+if (darkMq) darkMq.addEventListener("change", () => { if (settings.theme === "auto") { applySettings(); if (!document.getElementById("tab-stats").hidden) drawChart(loadEntries()); } });
 document.getElementById("themeGrid").addEventListener("click", (e) => {
   const btn = e.target.closest(".theme-btn"); if (!btn) return;
   settings.theme = btn.dataset.theme; saveSettingsObj(settings); applySettings(); Sound.tap();
   if (!document.getElementById("tab-stats").hidden) drawChart(loadEntries());
+});
+document.getElementById("textSizeSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  settings.textSize = b.dataset.size; saveSettingsObj(settings); applySettings(); Sound.tap();
+});
+document.getElementById("toneSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  settings.tone = b.dataset.tone; saveSettingsObj(settings); applySettings(); Sound.tap();
+  // 현재 선택된 기분이 있으면 답변 톤 즉시 갱신
+  if (selectedMood) { moodResponse.textContent = curReplies()[selectedMood]; }
 });
 document.getElementById("sfxToggle").addEventListener("change", (e) => { settings.sfx = e.target.checked; saveSettingsObj(settings); Sound.setSfx(settings.sfx); });
 document.getElementById("breathSoundToggle").addEventListener("change", (e) => { settings.breathSound = e.target.checked; saveSettingsObj(settings); Sound.setBreath(settings.breathSound); });
@@ -713,6 +888,27 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   expandedIds.clear(); renderChallenge();
   alert("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
 });
+
+/* 빠른 호흡 — 어디서든 (베타 피드백: 불안형 요구) */
+const breathOverlay = document.getElementById("breathOverlay");
+const qbCircle = document.getElementById("qbCircle"), qbText = document.getElementById("qbText");
+let qbRunning = false, qbTimers = [];
+function qbClear() { qbTimers.forEach(clearTimeout); qbTimers = []; }
+function qbCycle() {
+  if (!qbRunning) return;
+  qbCircle.className = "breath-circle big inhale"; qbText.textContent = "들이쉬기"; Sound.breathCue("inhale");
+  qbTimers.push(setTimeout(() => {
+    if (!qbRunning) return;
+    qbCircle.className = "breath-circle big hold"; qbText.textContent = "잠깐 멈춰요"; Sound.breathCue("hold");
+    qbTimers.push(setTimeout(() => {
+      if (!qbRunning) return;
+      qbCircle.className = "breath-circle big exhale"; qbText.textContent = "내쉬기"; Sound.breathCue("exhale");
+      qbTimers.push(setTimeout(() => { if (qbRunning) qbCycle(); }, 8000));
+    }, 7000));
+  }, 4000));
+}
+document.getElementById("quickBreathFab").addEventListener("click", () => { Sound.unlock(); breathOverlay.hidden = false; qbRunning = true; qbCycle(); });
+document.getElementById("qbClose").addEventListener("click", () => { qbRunning = false; qbClear(); qbCircle.className = "breath-circle big"; qbText.textContent = "잘했어요"; breathOverlay.hidden = true; });
 
 /* 첫 제스처에 오디오 unlock */
 window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });

@@ -52,8 +52,8 @@
     <section class="tab" id="tab-today">
       <div class="card" id="checkin-card">
         <div class="card-head">
-          <h2>📔 오늘의 기록</h2>
-          <span class="today-date" id="todayDate"></span>
+          <h2 id="checkinTitle">📔 오늘의 기록</h2>
+          <input type="date" id="entryDate" class="entry-date" aria-label="기록할 날짜" />
         </div>
 
         <p class="field-label">지금 마음은 어때요?</p>
@@ -126,6 +126,16 @@
           <input type="range" id="ambientVol" min="0" max="100" value="55" aria-label="배경음 음량" />
           <span>🔊</span>
         </div>
+        <div class="timer-row">
+          <span class="timer-label">⏲️ 꺼짐 타이머</span>
+          <div class="seg" id="timerBtns">
+            <button data-min="15">15분</button>
+            <button data-min="30">30분</button>
+            <button data-min="60">60분</button>
+            <button data-min="0" class="active">끄기</button>
+          </div>
+        </div>
+        <p class="timer-status" id="timerStatus" hidden></p>
       </div>
     </section>
 
@@ -190,6 +200,16 @@
         </div>
       </div>
 
+      <div class="card" id="weeklyCard">
+        <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
+        <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
+        <div class="data-btns" style="margin-top:14px">
+          <button class="btn" id="weekImageBtn">🖼️ 카드 이미지로 저장</button>
+          <button class="btn" id="weekShareBtn">📤 공유하기</button>
+        </div>
+        <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
+      </div>
+
       <div class="card">
         <h2>🧭 오늘의 인사이트</h2>
         <p class="insight" id="insight">기록이 쌓이면 패턴을 알려드릴게요.</p>
@@ -224,6 +244,26 @@
           <button class="theme-btn" data-theme="warm">🌅<span>따뜻</span></button>
           <button class="theme-btn" data-theme="calm">🌿<span>차분</span></button>
           <button class="theme-btn" data-theme="dark">🌙<span>다크</span></button>
+          <button class="theme-btn" data-theme="auto">🔄<span>자동</span></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔠 글자 크기</h2>
+        <p class="hint">눈이 편한 크기로 맞춰보세요.</p>
+        <div class="seg" id="textSizeSeg">
+          <button data-size="m">보통</button>
+          <button data-size="l">크게</button>
+          <button data-size="xl">아주 크게</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💬 위로 톤</h2>
+        <p class="hint">달달한 위로가 부담스러우면 담백하게 바꿀 수 있어요.</p>
+        <div class="seg" id="toneSeg">
+          <button data-tone="warm">다정하게</button>
+          <button data-tone="plain">담백하게</button>
         </div>
       </div>
 
@@ -257,6 +297,14 @@
       <p class="hotline">자살예방 상담 <strong>109</strong> · 정신건강 <strong>1577-0199</strong> (24시간)</p>
     </footer>
   </main>
+
+  <button class="fab" id="quickBreathFab" aria-label="어디서든 빠른 호흡">🌬️</button>
+  <div class="breath-overlay" id="breathOverlay" hidden>
+    <p class="qb-title">잠깐, 같이 숨 쉬어요</p>
+    <div class="breath-circle big" id="qbCircle"><span id="qbText">시작</span></div>
+    <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
+    <button class="btn primary" id="qbClose">그만하기</button>
+  </div>
 
   <nav class="tabbar" id="tabbar">
     <button class="tabbtn active" data-tab="today">📔<span>오늘</span></button>

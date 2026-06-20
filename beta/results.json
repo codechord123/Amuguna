@@ -1,0 +1,97 @@
+{
+  "retention": {
+    "d1": 179,
+    "d7": 122,
+    "d30": 55,
+    "d90": 12
+  },
+  "featureUse": {
+    "mood": 153,
+    "journal": 85,
+    "breathing": 108,
+    "sounds": 111,
+    "challenge": 165,
+    "insights": 81
+  },
+  "satAvg": 2.98,
+  "nps": {
+    "promoter": 11,
+    "passive": 56,
+    "detractor": 133
+  },
+  "npsScore": -61,
+  "habit90": 1,
+  "onboard": 162,
+  "rankedFb": [
+    {
+      "id": "weekly_report",
+      "count": 126,
+      "build": "구현가능"
+    },
+    {
+      "id": "backfill",
+      "count": 88,
+      "build": "구현가능"
+    },
+    {
+      "id": "auto_theme",
+      "count": 80,
+      "build": "구현가능"
+    },
+    {
+      "id": "per_habit_reminder",
+      "count": 78,
+      "build": "구현가능"
+    },
+    {
+      "id": "quick_breath",
+      "count": 72,
+      "build": "구현가능"
+    },
+    {
+      "id": "tone_plain",
+      "count": 64,
+      "build": "구현가능"
+    },
+    {
+      "id": "widget",
+      "count": 64,
+      "build": "플랫폼한계"
+    },
+    {
+      "id": "emotion_tags",
+      "count": 63,
+      "build": "구현가능"
+    },
+    {
+      "id": "cloud_sync",
+      "count": 55,
+      "build": "백엔드필요"
+    },
+    {
+      "id": "sleep_timer",
+      "count": 54,
+      "build": "구현가능"
+    },
+    {
+      "id": "push_notif",
+      "count": 52,
+      "build": "백엔드필요"
+    },
+    {
+      "id": "community",
+      "count": 44,
+      "build": "백엔드필요"
+    },
+    {
+      "id": "text_size",
+      "count": 41,
+      "build": "구현가능"
+    },
+    {
+      "id": "more_quotes",
+      "count": 32,
+      "build": "구현가능"
+    }
+  ]
+}

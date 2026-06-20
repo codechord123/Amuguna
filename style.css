@@ -277,6 +277,35 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .onboard-dots i.on { background: var(--accent); width: 22px; border-radius: 999px; }
 .onboard-skip { margin-top: 14px; background: none; border: none; color: var(--soft); cursor: pointer; font-family: inherit; font-size: 0.9rem; }
 
+/* 글자 크기 (접근성) */
+html[data-textsize="l"] { font-size: 18px; }
+html[data-textsize="xl"] { font-size: 20.5px; }
+
+/* 날짜 입력 (backfill) */
+.entry-date { width: auto; padding: 6px 10px; font-size: 0.85rem; border-radius: 10px; font-weight: 600; color: var(--ink-2); }
+
+/* 세그먼트 버튼 (타이머/글자크기/톤) */
+.seg { display: flex; gap: 6px; }
+.seg button { flex: 1; border: 2px solid var(--line); background: var(--bg-sunken); color: var(--ink); border-radius: 12px; padding: 10px 6px; font-family: inherit; font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: border-color 0.2s; }
+.seg button.active { border-color: var(--accent); background: var(--card); color: var(--accent-deep); }
+.timer-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.timer-label { font-size: 0.85rem; color: var(--soft); font-weight: 600; white-space: nowrap; }
+.timer-row .seg { flex: 1; }
+.timer-status { margin: 10px 0 0; font-size: 0.85rem; color: var(--accent-deep); font-weight: 600; text-align: center; }
+
+/* 빠른 호흡 FAB + 오버레이 */
+.fab { position: fixed; right: 18px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 40; width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 8px 22px var(--ring); transition: transform 0.15s var(--ease-soft); }
+.fab:hover { transform: scale(1.08); }
+.fab:active { transform: scale(0.92); }
+[data-theme="dark"] .fab { color: #1a1920; }
+.breath-overlay { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px; animation: fade 0.35s ease both; }
+.qb-title { font-size: 1.3rem; font-weight: 700; margin: 0; }
+.qb-hint { color: var(--soft); margin: 0; }
+.breath-circle.big { width: 180px; height: 180px; font-size: 1.2rem; }
+
+/* 주간 리포트 */
+#weekRange { font-weight: 600; }
+
 @media (max-width: 420px) {
   .hero h1 { font-size: 1.8rem; }
   .mood { font-size: 1.45rem; }

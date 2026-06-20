@@ -1,0 +1,3002 @@
+[
+ {
+  "id": 1,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 2,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 3,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 4,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.6,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 5,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 6,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 7,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.6,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 8,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 9,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 10,
+  "age": "30대",
+  "gender": "논바이너리",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 11,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 12,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.15,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 13,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.65,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 14,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.4,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 15,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 16,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 17,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 18,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.2,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 19,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 20,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 1,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 21,
+  "age": "10대",
+  "gender": "논바이너리",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 22,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 23,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 24,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 25,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 26,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.25000000000000006,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 27,
+  "age": "50대",
+  "gender": "논바이너리",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.35,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 28,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 29,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 30,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.7,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 31,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.35,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 32,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 33,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.25000000000000006,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 34,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 35,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.9500000000000001,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 36,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.2,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 37,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 38,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 39,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 40,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 41,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.5499999999999999,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 42,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.6,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 43,
+  "age": "10대",
+  "gender": "여성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 44,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 1,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 45,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 46,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 47,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 48,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 49,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.35,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 50,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 51,
+  "age": "10대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.85,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 52,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 53,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.3,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 54,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.9500000000000001,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 55,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 56,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 57,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 58,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.35000000000000003,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 59,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 60,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 61,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 62,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.65,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 63,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 64,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.05,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 65,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 66,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 67,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 68,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 69,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 70,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 71,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 72,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 73,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 74,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.3,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 75,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 76,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 77,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.65,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 78,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 79,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 80,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 81,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 82,
+  "age": "40대",
+  "gender": "논바이너리",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 83,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 84,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.7,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 85,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 86,
+  "age": "40대",
+  "gender": "논바이너리",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 87,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.1,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 88,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.1,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 89,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 90,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 91,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 92,
+  "age": "30대",
+  "gender": "논바이너리",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 93,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 94,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.3,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 95,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 96,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 97,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.65,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 98,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.65,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 99,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 100,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.75,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 101,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 102,
+  "age": "40대",
+  "gender": "논바이너리",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 103,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 104,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 105,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.7,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 106,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 107,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 108,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 109,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 110,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 111,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 112,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 113,
+  "age": "40대",
+  "gender": "논바이너리",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 114,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.85,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 115,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 116,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 117,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 118,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 119,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 120,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 121,
+  "age": "20대",
+  "gender": "논바이너리",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 1,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 122,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 123,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 124,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 125,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 126,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.9500000000000001,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 127,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.6,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 128,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 129,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.5499999999999999,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 130,
+  "age": "10대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 131,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 132,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 133,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.3,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 134,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.1,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 135,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 136,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 137,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 138,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 139,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 140,
+  "age": "40대",
+  "gender": "논바이너리",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 141,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 142,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 143,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.85,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 144,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 145,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 146,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.2,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 147,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 148,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.9500000000000001,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 149,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 150,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 151,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 152,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 153,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 154,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 155,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.55,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 156,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 157,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.44999999999999996,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 158,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 159,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.3,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 160,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.2,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 161,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.75,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 162,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 163,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 164,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.25000000000000006,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 165,
+  "age": "10대",
+  "gender": "남성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 166,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.05,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 167,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.75,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 168,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.6,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 169,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.5,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 170,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 171,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.8,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 172,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.5,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 173,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.3,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 174,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "불안형",
+  "traits": {
+   "engage": 0.7,
+   "anxiety": 0.95,
+   "goal": 0.55,
+   "reflect": 0.65,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.6
+  }
+ },
+ {
+  "id": 175,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 176,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.85,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 177,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.35000000000000003,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 178,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 179,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 180,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.7000000000000001,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 181,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.75,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 182,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "디지털 서툰 어르신",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.4,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.15,
+   "skeptic": 0.3,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 183,
+  "age": "60대+",
+  "gender": "여성",
+  "disposition": "성실한 노력가",
+  "traits": {
+   "engage": 0.85,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.3,
+   "skeptic": 0.2,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 184,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 185,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.8,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 186,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.35000000000000003,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 187,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "회의적·냉소적",
+  "traits": {
+   "engage": 0.35,
+   "anxiety": 0.35,
+   "goal": 0.4,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.9,
+   "burnout": 0.5
+  }
+ },
+ {
+  "id": 188,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 189,
+  "age": "20대",
+  "gender": "남성",
+  "disposition": "심각한 번아웃",
+  "traits": {
+   "engage": 0.45,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.5,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.95
+  }
+ },
+ {
+  "id": 190,
+  "age": "20대",
+  "gender": "여성",
+  "disposition": "완벽주의자",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.7,
+   "goal": 0.95,
+   "reflect": 0.55,
+   "tech": 0.75,
+   "skeptic": 0.35,
+   "burnout": 0.65
+  }
+ },
+ {
+  "id": 191,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 192,
+  "age": "50대",
+  "gender": "남성",
+  "disposition": "자기계발 매니아",
+  "traits": {
+   "engage": 0.8,
+   "anxiety": 0.4,
+   "goal": 0.9,
+   "reflect": 0.6,
+   "tech": 0.65,
+   "skeptic": 0.25,
+   "burnout": 0.4
+  }
+ },
+ {
+  "id": 193,
+  "age": "50대",
+  "gender": "여성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.4,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 194,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 195,
+  "age": "40대",
+  "gender": "남성",
+  "disposition": "외향적 활동가",
+  "traits": {
+   "engage": 0.75,
+   "anxiety": 0.3,
+   "goal": 0.7,
+   "reflect": 0.35,
+   "tech": 0.7,
+   "skeptic": 0.3,
+   "burnout": 0.35
+  }
+ },
+ {
+  "id": 196,
+  "age": "30대",
+  "gender": "남성",
+  "disposition": "육아 중 부모",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.55,
+   "reflect": 0.4,
+   "tech": 0.55,
+   "skeptic": 0.3,
+   "burnout": 0.8
+  }
+ },
+ {
+  "id": 197,
+  "age": "30대",
+  "gender": "여성",
+  "disposition": "만성피로 학생",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.6,
+   "goal": 0.5,
+   "reflect": 0.5,
+   "tech": 0.85,
+   "skeptic": 0.4,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 198,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "내향적 사색가",
+  "traits": {
+   "engage": 0.65,
+   "anxiety": 0.45,
+   "goal": 0.5,
+   "reflect": 0.95,
+   "tech": 0.55,
+   "skeptic": 0.35,
+   "burnout": 0.45
+  }
+ },
+ {
+  "id": 199,
+  "age": "40대",
+  "gender": "여성",
+  "disposition": "바쁜 직장인",
+  "traits": {
+   "engage": 0.55,
+   "anxiety": 0.55,
+   "goal": 0.65,
+   "reflect": 0.4,
+   "tech": 0.65,
+   "skeptic": 0.35,
+   "burnout": 0.7
+  }
+ },
+ {
+  "id": 200,
+  "age": "60대+",
+  "gender": "남성",
+  "disposition": "우울 경향",
+  "traits": {
+   "engage": 0.5,
+   "anxiety": 0.6,
+   "goal": 0.35,
+   "reflect": 0.7,
+   "tech": 0.2,
+   "skeptic": 0.4,
+   "burnout": 0.8
+  }
+ }
+]
