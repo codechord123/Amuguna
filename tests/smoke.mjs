@@ -89,6 +89,9 @@ try {
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
   check("주간 리포트 텍스트 있음", q("#weeklySummary").textContent.length > 0);
+  check("월간 리포트 텍스트 있음", q("#monthlySummary").textContent.length > 0);
+  check("배지 렌더됨", d.querySelectorAll("#badgeGrid .badge").length === 10);
+  check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
   // 6) 검색

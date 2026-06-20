@@ -263,6 +263,7 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   saveMsg.hidden = false;
   setTimeout(() => { saveMsg.hidden = true; }, 4000);
   if (detectCrisis(note)) showSafety();
+  checkBadges();
 });
 
 /* ===================== 쉼: 위로 / 호흡 / 미션 / 사운드 ===================== */
@@ -631,6 +632,7 @@ document.getElementById("challengeList").addEventListener("click", (e) => {
       const idx = daysSince(h.startDate);
       if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done");
     }
+    checkBadges();
   } else if (act === "edit") {
     const f = card.querySelector("[data-edit]"); f.hidden = !f.hidden; Sound.tap();
   } else if (act === "savehabit") {
@@ -710,6 +712,8 @@ function renderStats() {
     document.getElementById("avgMood").textContent = avg >= 3.5 ? "🙂 좋아요" : avg >= 2.6 ? "😐 보통" : "😮‍💨 지쳐요";
   } else document.getElementById("avgMood").textContent = "–";
   renderWeekly(entries);
+  renderMonthly(entries);
+  renderBadges();
   renderInsight(entries, list);
   drawChart(entries);
   renderMoodCalendar(entries);
@@ -814,6 +818,110 @@ document.getElementById("weekShareBtn").addEventListener("click", async () => {
     await navigator.clipboard.writeText(text); alert("주간 리포트 요약을 복사했어요!\n\n" + text);
   } catch (e) {}
 });
+
+/* 월간 리포트 */
+let monthData = null;
+function renderMonthly(entries) {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const days = new Date(y, m + 1, 0).getDate();
+  const keys = []; for (let dd = 1; dd <= days; dd++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`);
+  const recs = keys.map((k) => entries[k]).filter(Boolean);
+  const moods = recs.filter((e) => e.mood);
+  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const energies = recs.filter((e) => e.energy);
+  const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
+  const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
+  const topMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const reflections = recs.filter((e) => e.reflection && (e.reflection.good || e.reflection.hard)).length;
+  const chs = loadChs(); let habTotal = 0, habDone = 0;
+  chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate && k <= todayKey()) { habTotal++; if (h.done[k]) habDone++; } }));
+  document.getElementById("monthRange").textContent = `${y}년 ${m + 1}월`;
+  const el = document.getElementById("monthlySummary");
+  if (recs.length === 0) { el.textContent = "이번 달 기록이 아직 없어요. 한 번만 남겨도 시작돼요 🌱"; monthData = null; return; }
+  const plain = settings.tone === "plain", parts = [];
+  parts.push(plain ? `이번 달 ${recs.length}일 기록.` : `이번 달 ${recs.length}일 마음을 남겼어요.`);
+  if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
+  if (avgEnergy != null) parts.push(`평균 에너지 ${avgEnergy.toFixed(1)}/5.`);
+  if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
+  if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
+  if (!plain) parts.push("한 달을 차곡차곡 살아냈어요 💛");
+  el.textContent = parts.join(" ");
+  monthData = { label: `${y}년 ${m + 1}월`, daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+}
+function drawMonthCanvas() {
+  const c = document.getElementById("monthCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
+  const css = getComputedStyle(document.documentElement);
+  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--ink").trim();
+  const accent = css.getPropertyValue("--accent").trim(), soft = css.getPropertyValue("--soft").trim(), line = css.getPropertyValue("--line").trim();
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = accent; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText("오늘의 쉼 · 월간 리포트", 32, 52);
+  ctx.fillStyle = soft; ctx.font = "16px sans-serif"; ctx.fillText(monthData ? monthData.label : "", 32, 80);
+  const lines = [];
+  if (monthData) {
+    lines.push(`기록 ${monthData.daysLogged}일`);
+    if (monthData.avgMood != null) lines.push(`평균 기분 ${monthData.avgMood.toFixed(1)} / 5`);
+    if (monthData.avgEnergy != null) lines.push(`평균 에너지 ${monthData.avgEnergy.toFixed(1)} / 5`);
+    if (monthData.habTotal > 0) lines.push(`습관 ${monthData.habDone} / ${monthData.habTotal}`);
+  }
+  ctx.fillStyle = ink; ctx.font = "bold 20px sans-serif";
+  lines.forEach((t, i) => ctx.fillText(t, 32, 132 + i * 38));
+  if (monthData) {
+    const x0 = 300, y0 = 110, w = 268, h = 158, n = monthData.series.length;
+    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
+    ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.beginPath(); let started = false;
+    monthData.series.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / (n - 1), yy = y0 + h - (h * (v - 1) / 4); if (!started) { ctx.moveTo(x, yy); started = true; } else ctx.lineTo(x, yy); });
+    ctx.stroke();
+  }
+  ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("한 달의 마음 흐름 🌙", 32, 318);
+  return c.toDataURL("image/png");
+}
+document.getElementById("monthImageBtn").addEventListener("click", () => {
+  Sound.tap(); const url = drawMonthCanvas();
+  const a = document.createElement("a"); a.href = url; a.download = `월간리포트_${todayKey()}.png`; a.click();
+});
+document.getElementById("monthShareBtn").addEventListener("click", async () => {
+  Sound.tap();
+  const url = drawMonthCanvas();
+  const text = monthData ? `오늘의 쉼 · 월간 리포트 (${monthData.label}) — 기록 ${monthData.daysLogged}일${monthData.avgMood != null ? `, 평균 기분 ${monthData.avgMood.toFixed(1)}/5` : ""} 🌙` : "오늘의 쉼 월간 리포트";
+  try {
+    const file = new File([dataURLtoBlob(url)], "monthly.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
+    if (navigator.share) { await navigator.share({ text }); return; }
+    await navigator.clipboard.writeText(text); alert("월간 리포트 요약을 복사했어요!\n\n" + text);
+  } catch (e) {}
+});
+
+/* 성취 배지 */
+const BADGES = [
+  { id: "first", e: "🌱", t: "첫 발걸음", d: "첫 기록을 남겼어요", ok: (D) => D.total >= 1 },
+  { id: "week", e: "🗓️", t: "일주일 연속", d: "7일 연속 기록", ok: (D) => D.streak >= 7 },
+  { id: "d30", e: "📚", t: "30일의 기록", d: "누적 30일 기록", ok: (D) => D.total >= 30 },
+  { id: "habit", e: "🎯", t: "습관 시작", d: "습관을 만들었어요", ok: (D) => D.chs.length >= 1 },
+  { id: "habit1", e: "✅", t: "첫 완료", d: "습관을 한 번 완료", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 1) },
+  { id: "habit21", e: "🔥", t: "21일의 힘", d: "한 습관 21일 달성", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 21) },
+  { id: "grat10", e: "🙏", t: "감사의 습관", d: "잘한 일 10번 기록", ok: (D) => D.list.filter((e) => e.praise && e.praise.trim()).length >= 10 },
+  { id: "reflect", e: "🌙", t: "돌아보는 밤", d: "저녁 회고를 남겼어요", ok: (D) => D.list.some((e) => e.reflection && (e.reflection.good || e.reflection.hard)) },
+  { id: "energized", e: "😄", t: "활기찬 날", d: "'활기차요'를 기록", ok: (D) => D.list.some((e) => e.mood === "활기차요") },
+  { id: "fav", e: "💛", t: "나의 위로", d: "위로 문구를 즐겨찾기", ok: () => (settings.favQuotes || []).length >= 1 },
+];
+function badgeData() { const entries = loadEntries(), list = sortedEntries(entries); return { total: list.length, list, streak: calcStreak(entries), chs: loadChs() }; }
+function earnedBadgeIds() { const D = badgeData(); return BADGES.filter((b) => b.ok(D)).map((b) => b.id); }
+function renderBadges() {
+  const earned = new Set(earnedBadgeIds());
+  document.getElementById("badgeGrid").innerHTML = BADGES.map((b) =>
+    `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`).join("");
+}
+function checkBadges() {
+  const earned = earnedBadgeIds(), prev = settings.badges || [];
+  const fresh = earned.filter((id) => !prev.includes(id));
+  if (fresh.length) {
+    settings.badges = earned; saveSettingsObj(settings);
+    const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
+    if (typeof toast === "function") toast("🏅 새 배지 획득: " + titles);
+    if (Sound.celebrate) Sound.celebrate(); confetti();
+  } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
+}
 
 function drawChart(entries) {
   const canvas = document.getElementById("chart");
@@ -1114,5 +1222,6 @@ window.__applyData = (data) => {
 applySettings();
 loadToday();
 scheduleReminder();
+if (!settings.badges) { settings.badges = earnedBadgeIds(); saveSettingsObj(settings); } // 첫 실행은 조용히 시드(스팸 방지)
 if (!localStorage.getItem(DB.ONBOARD)) showOnboard();
 else comebackCheck();
