@@ -312,7 +312,7 @@ function makeBreather(circleEl, textEl, base) {
           let next = pi + 1;
           if (next >= BREATH_PHASES.length) { next = 0; cycles++; }
           enter(next);
-        } else render();
+        } else { render(); Sound.tick(); }
       }, 1000);
     },
     stop() {
@@ -458,6 +458,7 @@ function challengeStreak(h) {
 }
 
 function renderChallenge() {
+  renderProjLink(); // 습관 변경 시 프로젝트의 습관 연결 선택지도 갱신
   const chs = loadChs();
   const list = document.getElementById("challengeList");
   const addBtn = document.getElementById("addHabitBtn");
@@ -623,7 +624,18 @@ function dueLabel(due) {
   if (diff === 0) return "오늘 마감";
   return `${-diff}일 지남`;
 }
+function renderProjLink() {
+  const chs = loadChs(), wrap = document.getElementById("projLink"), label = document.getElementById("linkLabel");
+  if (!chs.length) { wrap.innerHTML = ""; label.hidden = true; return; }
+  label.hidden = false;
+  wrap.innerHTML = chs.map((h) => `<button type="button" class="link-chip" data-hid="${h.id}">${h.emoji} ${escapeHtml(h.title)}</button>`).join("");
+}
+document.getElementById("projLink").addEventListener("click", (e) => {
+  const b = e.target.closest(".link-chip"); if (!b) return;
+  b.classList.toggle("selected"); Sound.tap();
+});
 function renderProjects() {
+  renderProjLink();
   const projs = loadProjs();
   const list = document.getElementById("projectList");
   const addBtn = document.getElementById("addProjectBtn");
@@ -641,6 +653,10 @@ function projCardHtml(p) {
   const open = projExpanded.has(p.id);
   const due = p.due ? dueLabel(p.due) : "";
   const overdue = p.due && !(total && done === total) && new Date(p.due + "T00:00:00") < new Date(todayKey() + "T00:00:00");
+  const today = todayKey();
+  const chMap = {}; loadChs().forEach((h) => chMap[h.id] = h);
+  const links = (p.linkedHabits || []).map((id) => chMap[id]).filter(Boolean);
+  const linkHtml = links.length ? `<div class="link-row">${links.map((h) => `<span class="link-tag ${h.done[today] ? "done" : ""}">${h.done[today] ? "✓" : "○"} ${h.emoji} ${escapeHtml(h.title)}</span>`).join("")}</div>` : "";
   return `
   <div class="habit-card" data-pid="${p.id}">
     <div class="habit-top">
@@ -652,14 +668,19 @@ function projCardHtml(p) {
     </div>
     <div class="habit-mini-bar"><i style="width:${pctv}%"></i></div>
     <div class="habit-detail ${open ? "open" : ""}">
-      <ul class="task-list">${p.tasks.map((t, i) => `
+      ${linkHtml}
+      <ul class="task-list">${p.tasks.map((t, i) => {
+        const td = t.due ? dueLabel(t.due) : "";
+        const tover = t.due && !t.done && new Date(t.due + "T00:00:00") < new Date(today + "T00:00:00");
+        return `
         <li class="task-row">
           <button class="task-check ${t.done ? "done" : ""}" data-pact="task" data-ti="${i}" aria-label="완료 체크">${t.done ? "✓" : ""}</button>
-          <span class="task-text ${t.done ? "done" : ""}">${escapeHtml(t.text)}</span>
+          <span class="task-text ${t.done ? "done" : ""}">${escapeHtml(t.text)}${td ? ` <span class="task-due ${tover ? "overdue" : ""}">${td}</span>` : ""}</span>
           <button class="task-del" data-pact="taskdel" data-ti="${i}" aria-label="할 일 삭제">×</button>
-        </li>`).join("")}</ul>
+        </li>`; }).join("")}</ul>
       <div class="task-add">
         <input type="text" class="text-input" data-padd="${p.id}" placeholder="할 일 추가" maxlength="60" />
+        <input type="date" class="text-input task-due-in" data-padddue="${p.id}" aria-label="기한(선택)" />
         <button class="btn" data-pact="addtask">추가</button>
       </div>
       <div class="data-btns" style="margin-top:14px">
@@ -688,7 +709,9 @@ document.getElementById("projectList").addEventListener("click", (e) => {
   } else if (act === "addtask") {
     const inp = card.querySelector(`[data-padd="${pid}"]`); const txt = (inp.value || "").trim();
     if (!txt) return;
-    p.tasks.push({ text: txt, done: false }); p.completed = false; saveProjs(projs); projExpanded.add(pid); renderProjects(); Sound.tap();
+    const dueIn = card.querySelector(`[data-padddue="${pid}"]`);
+    const task = { text: txt, done: false }; if (dueIn && dueIn.value) task.due = dueIn.value;
+    p.tasks.push(task); p.completed = false; saveProjs(projs); projExpanded.add(pid); renderProjects(); Sound.tap();
   } else if (act === "delproj") {
     if (!confirm("이 프로젝트를 삭제할까요? 할 일 목록도 사라져요.")) return;
     saveProjs(projs.filter((x) => x.id !== pid)); projExpanded.delete(pid); renderProjects(); Sound.tap();
@@ -703,10 +726,12 @@ document.getElementById("startProject").addEventListener("click", () => {
   if (!title) { alert("프로젝트 이름을 입력해주세요 🙂"); return; }
   const due = document.getElementById("projDue").value || "";
   const tasks = document.getElementById("projTasks").value.split("\n").map((s) => s.trim()).filter(Boolean).map((t) => ({ text: t, done: false }));
+  const linkedHabits = Array.from(document.querySelectorAll("#projLink .link-chip.selected")).map((b) => b.dataset.hid);
   const projs = loadProjs();
-  projs.push({ id: "p" + Date.now(), emoji: "📁", title, due, tasks, completed: false, createdAt: new Date().toISOString() });
+  projs.push({ id: "p" + Date.now(), emoji: "📁", title, due, tasks, linkedHabits, completed: false, createdAt: new Date().toISOString() });
   saveProjs(projs); Sound.success();
   document.getElementById("projTitle").value = ""; document.getElementById("projDue").value = ""; document.getElementById("projTasks").value = "";
+  document.querySelectorAll("#projLink .link-chip.selected").forEach((b) => b.classList.remove("selected"));
   addingProject = false; renderProjects();
 });
 
@@ -732,8 +757,23 @@ function renderStats() {
   renderWeekly(entries);
   renderInsight(entries, list);
   drawChart(entries);
+  renderProjectStats();
   renderDist(list);
   renderHistory(list);
+}
+function renderProjectStats() {
+  const projs = loadProjs();
+  const card = document.getElementById("projStatsCard"), wrap = document.getElementById("projStats");
+  if (!projs.length) { card.hidden = true; return; }
+  card.hidden = false;
+  wrap.innerHTML = projs.map((p) => {
+    const total = p.tasks.length, done = p.tasks.filter((t) => t.done).length, pctv = total ? Math.round(100 * done / total) : 0;
+    const due = p.due ? dueLabel(p.due) : "";
+    return `<div class="pstat-row">
+      <div class="pstat-top"><span>${p.emoji || "📁"} ${escapeHtml(p.title)}</span><span class="pstat-meta">${done}/${total} · ${pctv}%${due ? " · " + due : ""}</span></div>
+      <div class="habit-mini-bar"><i style="width:${pctv}%"></i></div>
+    </div>`;
+  }).join("");
 }
 
 /* 주간 리포트 (베타 피드백 #1) */
@@ -814,7 +854,7 @@ function drawChart(entries) {
   const canvas = document.getElementById("chart");
   const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = 200;
   canvas.width = cssW * dpr; canvas.height = cssH * dpr;
-  const ctx = canvas.getContext("2d"); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, cssW, cssH);
+  const ctx = canvas.getContext("2d"); if (!ctx) return; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, cssW, cssH);
   const css = getComputedStyle(document.documentElement);
   const accent = css.getPropertyValue("--accent").trim(), energyC = css.getPropertyValue("--energy").trim();
   const line = css.getPropertyValue("--line").trim(), soft = css.getPropertyValue("--soft").trim();

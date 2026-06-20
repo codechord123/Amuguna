@@ -210,6 +210,8 @@
   }
   function chime() { if (!state.sfxOn || !ensure()) return; tone(660, 0.55, 0, "sine", 0.13, true); tone(990, 0.6, 0.1, "sine", 0.10, true); }
   function tap() { if (!state.sfxOn || !ensure()) return; tone(540, 0.16, 0, "sine", 0.07); }
+  // 호흡 카운트다운 틱 (호흡 가이드 소리 설정에 연동)
+  function tick() { if (!state.breathOn || !ensure()) return; tone(880, 0.07, 0, "sine", 0.05); }
   function success() {
     if (!state.sfxOn || !ensure()) return;
     tone(523, 0.45, 0, "sine", 0.12, true);
@@ -243,7 +245,7 @@
   window.Sound = {
     state, unlock: ensure,
     startAmbient, stopAmbient, setAmbientVolume,
-    chime, tap, success, celebrate, breathCue,
+    chime, tap, tick, success, celebrate, breathCue,
     setSfx(v) { state.sfxOn = v; },
     setBreath(v) { state.breathOn = v; },
   };
