@@ -35,12 +35,20 @@ const plainReplies = {
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
 
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); return true; }
+  catch (e) {
+    const msg = "저장에 실패했어요. 저장 공간이 부족하거나 사생활 보호 모드일 수 있어요. 설정 → 내보내기로 백업해 주세요.";
+    if (typeof toast === "function") toast(msg); else alert(msg);
+    return false;
+  }
+}
 function loadEntries() { try { return JSON.parse(localStorage.getItem(DB.ENTRIES)) || {}; } catch { return {}; } }
-function saveEntries(o) { localStorage.setItem(DB.ENTRIES, JSON.stringify(o)); }
+function saveEntries(o) { return safeSet(DB.ENTRIES, JSON.stringify(o)); }
 function loadSettings() { try { return JSON.parse(localStorage.getItem(DB.SETTINGS)) || {}; } catch { return {}; } }
-function saveSettingsObj(o) { localStorage.setItem(DB.SETTINGS, JSON.stringify(o)); }
+function saveSettingsObj(o) { return safeSet(DB.SETTINGS, JSON.stringify(o)); }
 function loadChs() { try { return JSON.parse(localStorage.getItem(DB.CH)) || []; } catch { return []; } }
-function saveChs(a) { localStorage.setItem(DB.CH, JSON.stringify(a)); }
+function saveChs(a) { return safeSet(DB.CH, JSON.stringify(a)); }
 
 function todayKey(d) {
   d = d || new Date();
@@ -118,17 +126,24 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
 const tabs = { today: "tab-today", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
-tabbar.addEventListener("click", (e) => {
-  const btn = e.target.closest(".tabbtn");
-  if (!btn) return;
-  Sound.tap();
-  const name = btn.dataset.tab;
-  document.querySelectorAll(".tabbtn").forEach((b) => b.classList.toggle("active", b === btn));
+function activateTab(name, { scroll = true } = {}) {
+  document.querySelectorAll(".tabbtn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
   if (name === "challenge") { renderChallenge(); renderProjects(); }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+tabbar.addEventListener("click", (e) => {
+  const btn = e.target.closest(".tabbtn");
+  if (!btn) return;
+  Sound.tap(); activateTab(btn.dataset.tab);
 });
+// 지난 기록을 탭/달력에서 눌러 바로 그 날짜를 편집
+function openEntryEditor(dateKey) {
+  if (dateKey > todayKey()) return;
+  activateTab("today");
+  entryDate.value = dateKey; loadEntryForm(dateKey);
+}
 
 /* ===================== 오늘 기록 ===================== */
 const moodGrid = document.getElementById("moodGrid");
@@ -641,7 +656,7 @@ function confetti() {
 /* ===================== 프로젝트 (목표를 단계로) ===================== */
 const PROJ_KEY = "projects_v1";
 function loadProjs() { try { return JSON.parse(localStorage.getItem(PROJ_KEY)) || []; } catch { return []; } }
-function saveProjs(a) { localStorage.setItem(PROJ_KEY, JSON.stringify(a)); }
+function saveProjs(a) { return safeSet(PROJ_KEY, JSON.stringify(a)); }
 const projExpanded = new Set();
 let addingProject = false;
 
@@ -800,9 +815,29 @@ function renderStats() {
   renderWeekly(entries);
   renderInsight(entries, list);
   drawChart(entries);
+  renderMoodCalendar(entries);
   renderProjectStats();
   renderDist(list);
   renderHistory(list);
+}
+
+function renderMoodCalendar(entries) {
+  const wrap = document.getElementById("moodCal");
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  document.getElementById("calMonth").textContent = `${y}년 ${m + 1}월`;
+  const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+  let html = "";
+  for (let i = 0; i < first; i++) html += `<span class="cal-cell blank"></span>`;
+  for (let d = 1; d <= days; d++) {
+    const key = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const e = entries[key];
+    const score = e && e.mood ? moodMeta[e.mood].score : 0;
+    const isToday = key === todayKey();
+    const future = key > todayKey();
+    html += `<button class="cal-cell m${score} ${isToday ? "today" : ""}" ${future ? "disabled" : ""} data-cal="${key}" title="${e && e.mood ? e.mood : ""}">${d}</button>`;
+  }
+  wrap.innerHTML = html;
+  wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => { Sound.tap(); openEntryEditor(b.dataset.cal); }));
 }
 function renderProjectStats() {
   const projs = loadProjs();
@@ -997,7 +1032,7 @@ function renderHistory(list) {
     (e.mood || "").toLowerCase().includes(q) || (e.tags || []).some((t) => t.toLowerCase().includes(q)));
   if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; return; }
   rev.slice(0, 50).forEach((e) => {
-    const li = document.createElement("li"); const p = e.date.split("-");
+    const li = document.createElement("li"); li.className = "editable"; li.dataset.date = e.date; const p = e.date.split("-");
     const dateStr = `${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(e.date)})`;
     const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
     const energyStr = e.energy ? ` · 에너지 ${e.energy}/5` : "";
@@ -1009,7 +1044,12 @@ function renderHistory(list) {
       ${tagsHtml}`;
     ul.appendChild(li);
   });
-  ul.querySelectorAll(".h-del").forEach((b) => b.addEventListener("click", () => {
+  ul.querySelectorAll("li.editable").forEach((li) => li.addEventListener("click", (ev) => {
+    if (ev.target.closest(".h-del")) return;
+    Sound.tap(); openEntryEditor(li.dataset.date);
+  }));
+  ul.querySelectorAll(".h-del").forEach((b) => b.addEventListener("click", (ev) => {
+    ev.stopPropagation();
     const entries = loadEntries(); delete entries[b.dataset.date]; saveEntries(entries); Sound.tap(); renderStats();
   }));
 }
@@ -1126,8 +1166,16 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 /* 빠른 호흡 — 어디서든 (베타 피드백: 불안형 요구) */
 const breathOverlay = document.getElementById("breathOverlay");
 const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big");
-document.getElementById("quickBreathFab").addEventListener("click", () => { breathOverlay.hidden = false; qbBreather.start(); });
+document.getElementById("quickBreathFab").addEventListener("click", () => { breathOverlay.hidden = false; qbBreather.start(); document.getElementById("qbClose").focus(); });
 document.getElementById("qbClose").addEventListener("click", () => { qbBreather.stop(); breathOverlay.hidden = true; });
+
+// Esc로 오버레이/카드 닫기 (접근성)
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!breathOverlay.hidden) { qbBreather.stop(); breathOverlay.hidden = true; }
+  else if (!onboard.hidden) { finishOnboard(); }
+  else { const sc = document.getElementById("safetyCard"); if (!sc.hidden) sc.hidden = true; }
+});
 
 /* 첫 제스처에 오디오 unlock */
 window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
@@ -1138,7 +1186,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
 /* 토스트 + 복귀 격려 (리텐션) */
 function toast(msg) {
   const t = document.createElement("div");
-  t.className = "toast"; t.textContent = msg;
+  t.className = "toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.textContent = msg;
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add("show"));
   setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 400); }, 5000);

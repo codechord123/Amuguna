@@ -95,7 +95,7 @@
           <input type="text" id="tagInput" class="text-input" placeholder="태그를 쉼표로 구분해 입력 (예: 피곤, 야근)" maxlength="100" style="margin-top:8px" />
 
           <button class="btn primary block" id="saveBtn">오늘 기록 저장하기</button>
-          <p class="save-msg" id="saveMsg" hidden></p>
+          <p class="save-msg" id="saveMsg" role="status" aria-live="polite" hidden></p>
         </div>
       </div>
     </section>
@@ -269,6 +269,14 @@
       </div>
 
       <div class="card">
+        <div class="card-head"><h2>🗓️ 기분 달력</h2><span class="today-date" id="calMonth"></span></div>
+        <p class="hint">날짜를 누르면 그날 기록을 바로 고칠 수 있어요.</p>
+        <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div class="mood-cal" id="moodCal"></div>
+        <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
+      </div>
+
+      <div class="card">
         <h2>🌙 기분 분포 (최근 30일)</h2>
         <div class="dist" id="dist"></div>
       </div>
@@ -322,7 +330,7 @@
         <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
         <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" /></label>
         <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" /></label>
-        <p class="save-msg" id="reminderMsg" hidden></p>
+        <p class="save-msg" id="reminderMsg" role="status" aria-live="polite" hidden></p>
       </div>
 
       <div class="card">

@@ -1,0 +1,14 @@
+{
+  "name": "oneul-shim",
+  "version": "1.0.0",
+  "description": "오늘의 쉼 — 나를 위한 에너지 충전소 (셀프케어 웹앱)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/smoke.mjs",
+    "beta": "node beta/simulate.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}

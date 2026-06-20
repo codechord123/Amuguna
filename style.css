@@ -212,6 +212,28 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .pstat-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
 .pstat-meta { color: var(--soft); font-weight: 500; white-space: nowrap; }
 
+/* 기분 달력 (히트맵) */
+.cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+.cal-week span { text-align: center; font-size: 0.72rem; color: var(--soft); font-weight: 600; }
+.mood-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-cell { aspect-ratio: 1; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: var(--ink); background: var(--bg-sunken); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; transition: transform 0.12s var(--ease-soft); }
+.cal-cell:hover:not(:disabled) { transform: scale(1.1); }
+.cal-cell:disabled { opacity: 0.35; cursor: default; }
+.cal-cell.blank { background: transparent; pointer-events: none; }
+.cal-cell.today { box-shadow: 0 0 0 2px var(--accent-deep); }
+.cal-cell.m1 { background: #e8896f; color: #fff; }
+.cal-cell.m2 { background: #f0b07a; color: #5c3a23; }
+.cal-cell.m3 { background: #e9d8a6; color: #5c4d2a; }
+.cal-cell.m4 { background: #9ed8b0; color: #1f4736; }
+.cal-cell.m5 { background: #5ec8b0; color: #0f3a31; }
+.cal-legend { display: flex; align-items: center; gap: 4px; justify-content: center; margin-top: 12px; font-size: 0.72rem; color: var(--soft); }
+.cal-legend i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+.cal-legend .m1 { background: #e8896f; } .cal-legend .m2 { background: #f0b07a; } .cal-legend .m3 { background: #e9d8a6; } .cal-legend .m4 { background: #9ed8b0; } .cal-legend .m5 { background: #5ec8b0; }
+
+/* 탭하여 편집 가능한 기록 */
+.history li.editable { cursor: pointer; }
+.history li.editable:hover { background: var(--line); }
+
 /* ===== 챌린지 (복수 습관) ===== */
 .ch-summary { text-align: center; color: var(--ink-2); font-weight: 600; margin: 0 0 16px; font-size: 0.95rem; }
 .habit-card { background: var(--card); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow); }

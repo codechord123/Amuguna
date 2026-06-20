@@ -100,6 +100,14 @@ python3 -m http.server 8000
 
 휴대폰 브라우저에서 "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있어요.
 
+## 개발 / 테스트
+
+```bash
+npm install      # jsdom (테스트용)
+npm test         # 핵심 사용자 흐름 회귀 스모크 테스트 (tests/smoke.mjs)
+npm run beta     # 시뮬레이션 베타테스트 리포트 생성 (beta/)
+```
+
 ## 개인정보
 
 모든 기록(일기·기분·에너지·칭찬)은 **사용자 기기(localStorage)에만** 저장됩니다.
