@@ -37,6 +37,9 @@
 
 * { box-sizing: border-box; }
 
+/* hidden 속성이 클래스의 display(flex/grid 등)에 묻히지 않도록 강제 (온보딩/오버레이 닫힘 보장) */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0; padding: 0;
   background: var(--bg); color: var(--ink);
