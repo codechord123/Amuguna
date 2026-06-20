@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffb88c" />
+  <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-blobs" aria-hidden="true">
+    <span class="blob blob1"></span>
+    <span class="blob blob2"></span>
+    <span class="blob blob3"></span>
+  </div>
+
+  <main class="app">
+    <header class="hero">
+      <p class="greeting" id="greeting">안녕, 오늘도 와줘서 고마워요</p>
+      <h1>오늘의 쉼 ☕</h1>
+      <p class="subtitle">지치고 힘 빠진 날, 여기서 잠깐 숨 고르고 가요.</p>
+    </header>
+
+    <!-- 기분 체크인 -->
+    <section class="card" id="mood-card">
+      <h2>🌤️ 지금 마음은 어때요?</h2>
+      <p class="hint">솔직하게 골라줘요. 어떤 마음이든 괜찮아요.</p>
+      <div class="mood-grid" id="moodGrid">
+        <button class="mood" data-mood="지쳤어요">😮‍💨<span>지쳤어요</span></button>
+        <button class="mood" data-mood="우울해요">🥺<span>우울해요</span></button>
+        <button class="mood" data-mood="불안해요">😣<span>불안해요</span></button>
+        <button class="mood" data-mood="무기력해요">😶‍🌫️<span>무기력해요</span></button>
+        <button class="mood" data-mood="그럭저럭">🙂<span>그럭저럭</span></button>
+        <button class="mood" data-mood="괜찮아요">☺️<span>괜찮아요</span></button>
+      </div>
+      <p class="mood-response" id="moodResponse" hidden></p>
+    </section>
+
+    <!-- 위로 한마디 -->
+    <section class="card center" id="comfort-card">
+      <h2>💌 나를 위한 한마디</h2>
+      <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
+      <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
+    </section>
+
+    <!-- 호흡 쉼표 -->
+    <section class="card center" id="breathe-card">
+      <h2>🌬️ 호흡 쉼표</h2>
+      <p class="hint">동그라미를 따라 천천히 숨을 쉬어봐요 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기)</p>
+      <div class="breather">
+        <div class="breath-circle" id="breathCircle"><span id="breathText">시작</span></div>
+      </div>
+      <button class="btn" id="breathBtn">호흡 시작</button>
+    </section>
+
+    <!-- 아주 작은 한 걸음 -->
+    <section class="card" id="step-card">
+      <h2>✨ 아주 작은 한 걸음</h2>
+      <p class="hint">큰 거 말고, 지금 할 수 있는 딱 한 가지만.</p>
+      <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
+      <button class="btn" id="missionBtn">미션 받기</button>
+    </section>
+
+    <!-- 셀프 칭찬 기록 -->
+    <section class="card" id="praise-card">
+      <h2>🌱 오늘 잘한 일</h2>
+      <p class="hint">아주 사소해도 좋아요. 일어난 것만으로도 충분해요.</p>
+      <form id="praiseForm" class="praise-form">
+        <input type="text" id="praiseInput" placeholder="예: 그래도 밥은 챙겨 먹었어" maxlength="120" />
+        <button class="btn primary" type="submit">기록하기</button>
+      </form>
+      <ul class="praise-list" id="praiseList"></ul>
+    </section>
+
+    <footer class="foot">
+      <p>마음이 너무 무거운 날엔 혼자 견디지 말아요. 도움을 청하는 건 용기예요.</p>
+      <p class="hotline">정신건강 상담전화 <strong>1577-0199</strong> · 자살예방상담 <strong>109</strong> (24시간)</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

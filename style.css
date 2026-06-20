@@ -1,0 +1,213 @@
+:root {
+  --bg: #fff7f0;
+  --card: #ffffff;
+  --ink: #3a2e2a;
+  --soft: #8a7b73;
+  --accent: #ff9a76;
+  --accent-2: #ffd6a5;
+  --accent-deep: #f97a54;
+  --ring: rgba(249, 122, 84, 0.25);
+  --shadow: 0 10px 30px rgba(180, 120, 90, 0.12);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* floating background blobs */
+.bg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: -1; }
+.blob { position: absolute; border-radius: 50%; filter: blur(50px); opacity: 0.5; }
+.blob1 { width: 340px; height: 340px; background: #ffd6a5; top: -80px; left: -60px; animation: float 14s ease-in-out infinite; }
+.blob2 { width: 300px; height: 300px; background: #ffb3a7; bottom: -70px; right: -50px; animation: float 18s ease-in-out infinite reverse; }
+.blob3 { width: 260px; height: 260px; background: #c9e4de; top: 40%; right: 20%; animation: float 22s ease-in-out infinite; }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, -30px) scale(1.08); }
+}
+
+.app {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.hero { text-align: center; margin-bottom: 28px; }
+.greeting { color: var(--accent-deep); font-weight: 600; margin: 0 0 6px; font-size: 0.95rem; }
+.hero h1 { font-size: 2.1rem; margin: 0 0 8px; letter-spacing: -0.5px; }
+.subtitle { color: var(--soft); margin: 0; }
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  animation: rise 0.6s ease both;
+}
+.card.center { text-align: center; }
+.card h2 { margin: 0 0 6px; font-size: 1.2rem; }
+.hint { color: var(--soft); font-size: 0.9rem; margin: 0 0 16px; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* buttons */
+.btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 13px 26px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-deep);
+  background: var(--accent-2);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-family: inherit;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  box-shadow: 0 8px 20px var(--ring);
+}
+
+/* mood */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.mood {
+  border: 2px solid transparent;
+  background: #fff6ee;
+  border-radius: 16px;
+  padding: 14px 6px;
+  cursor: pointer;
+  font-size: 1.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  font-family: inherit;
+}
+.mood span { font-size: 0.8rem; color: var(--soft); font-weight: 600; }
+.mood:hover { transform: translateY(-3px); }
+.mood.selected { border-color: var(--accent); background: #fff0e4; }
+.mood-response {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  background: #fff3e9;
+  border-radius: 14px;
+  color: var(--ink);
+  font-weight: 500;
+  animation: rise 0.4s ease both;
+}
+
+/* quote */
+.quote {
+  margin: 0 0 18px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.7;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0 6px;
+  transition: opacity 0.3s ease;
+}
+
+/* breathing */
+.breather { display: flex; justify-content: center; align-items: center; height: 220px; }
+.breath-circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 0 0 0 var(--ring);
+  transition: transform 4s ease-in-out, box-shadow 4s ease-in-out;
+}
+.breath-circle.inhale { transform: scale(1.55); box-shadow: 0 0 0 30px var(--ring); }
+.breath-circle.hold { transform: scale(1.55); }
+.breath-circle.exhale { transform: scale(1); box-shadow: 0 0 0 0 var(--ring); }
+#breathBtn { margin-top: 6px; }
+
+/* mission */
+.mission {
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: #fff3e9;
+  padding: 16px;
+  border-radius: 14px;
+  margin: 0 0 16px;
+  min-height: 1.6em;
+}
+
+/* praise */
+.praise-form { display: flex; gap: 10px; margin-bottom: 14px; }
+.praise-form input {
+  flex: 1;
+  border: 2px solid #f1e2d6;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fffdfb;
+  color: var(--ink);
+}
+.praise-form input:focus { outline: none; border-color: var(--accent); }
+.praise-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.praise-list li {
+  background: #fff6ee;
+  padding: 12px 14px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  animation: rise 0.4s ease both;
+}
+.praise-list .when { color: var(--soft); font-size: 0.78rem; white-space: nowrap; }
+.praise-list .del {
+  border: none;
+  background: transparent;
+  color: var(--soft);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.praise-list .del:hover { background: #ffe3d3; color: var(--accent-deep); }
+.praise-empty { color: var(--soft); font-size: 0.9rem; text-align: center; padding: 6px 0; }
+
+/* footer */
+.foot { text-align: center; color: var(--soft); font-size: 0.85rem; margin-top: 30px; }
+.foot .hotline { margin-top: 6px; }
+.foot strong { color: var(--accent-deep); }
+
+@media (max-width: 420px) {
+  .hero h1 { font-size: 1.8rem; }
+  .mood { font-size: 1.5rem; }
+}
