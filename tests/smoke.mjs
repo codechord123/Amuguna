@@ -89,6 +89,10 @@ try {
   // 6) 검색
   q("#historySearch").value = "야근"; q("#historySearch").dispatchEvent(new window.Event("input"));
   check("검색 필터 동작", d.querySelectorAll("#history li.editable").length === 1);
+  check("기록 개수 표시", /\d+개/.test(q("#histCount").textContent));
+  q("#historySearch").value = ""; q("#historySearch").dispatchEvent(new window.Event("input"));
+  const calBefore = q("#calMonth").textContent; q("#calPrev").click();
+  check("달력 이전 달로 이동", q("#calMonth").textContent !== calBefore);
 
   // 7) 설정: 테마/글자크기/톤
   q("[data-tab=settings]").click();

@@ -821,10 +821,13 @@ function renderStats() {
   renderHistory(list);
 }
 
+let calOffset = 0; // 0 = 이번 달, -1 = 지난 달 …
 function renderMoodCalendar(entries) {
   const wrap = document.getElementById("moodCal");
-  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const base = new Date(); base.setDate(1); base.setMonth(base.getMonth() + calOffset);
+  const y = base.getFullYear(), m = base.getMonth();
   document.getElementById("calMonth").textContent = `${y}년 ${m + 1}월`;
+  document.getElementById("calNext").disabled = calOffset >= 0;
   const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
   let html = "";
   for (let i = 0; i < first; i++) html += `<span class="cal-cell blank"></span>`;
@@ -839,6 +842,8 @@ function renderMoodCalendar(entries) {
   wrap.innerHTML = html;
   wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => { Sound.tap(); openEntryEditor(b.dataset.cal); }));
 }
+document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
+document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
 function renderProjectStats() {
   const projs = loadProjs();
   const card = document.getElementById("projStatsCard"), wrap = document.getElementById("projStats");
@@ -1023,6 +1028,7 @@ function renderDist(list) {
   });
 }
 
+let histShown = 60; // '더 보기'로 늘어남
 function renderHistory(list) {
   const ul = document.getElementById("history"); ul.innerHTML = "";
   const q = (document.getElementById("historySearch").value || "").trim().toLowerCase();
@@ -1030,8 +1036,10 @@ function renderHistory(list) {
   if (q) rev = rev.filter((e) =>
     (e.note || "").toLowerCase().includes(q) || (e.praise || "").toLowerCase().includes(q) ||
     (e.mood || "").toLowerCase().includes(q) || (e.tags || []).some((t) => t.toLowerCase().includes(q)));
-  if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; return; }
-  rev.slice(0, 50).forEach((e) => {
+  document.getElementById("histCount").textContent = q ? `검색 ${rev.length}개` : `총 ${rev.length}개`;
+  if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; document.getElementById("histMore").hidden = true; return; }
+  const shown = rev.slice(0, histShown);
+  shown.forEach((e) => {
     const li = document.createElement("li"); li.className = "editable"; li.dataset.date = e.date; const p = e.date.split("-");
     const dateStr = `${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(e.date)})`;
     const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
@@ -1044,6 +1052,9 @@ function renderHistory(list) {
       ${tagsHtml}`;
     ul.appendChild(li);
   });
+  const more = document.getElementById("histMore");
+  more.hidden = rev.length <= histShown;
+  more.textContent = `더 보기 (${rev.length - shown.length}개 남음)`;
   ul.querySelectorAll("li.editable").forEach((li) => li.addEventListener("click", (ev) => {
     if (ev.target.closest(".h-del")) return;
     Sound.tap(); openEntryEditor(li.dataset.date);
@@ -1053,7 +1064,8 @@ function renderHistory(list) {
     const entries = loadEntries(); delete entries[b.dataset.date]; saveEntries(entries); Sound.tap(); renderStats();
   }));
 }
-document.getElementById("historySearch").addEventListener("input", () => renderHistory(sortedEntries(loadEntries())));
+document.getElementById("historySearch").addEventListener("input", () => { histShown = 60; renderHistory(sortedEntries(loadEntries())); });
+document.getElementById("histMore").addEventListener("click", () => { histShown += 60; Sound.tap(); renderHistory(sortedEntries(loadEntries())); });
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(

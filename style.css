@@ -213,6 +213,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .pstat-meta { color: var(--soft); font-weight: 500; white-space: nowrap; }
 
 /* 기분 달력 (히트맵) */
+.cal-nav { display: flex; align-items: center; gap: 8px; }
+.cal-nav button { border: none; background: var(--bg-sunken); color: var(--ink); width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: background 0.2s; }
+.cal-nav button:hover:not(:disabled) { background: var(--line); }
+.cal-nav button:disabled { opacity: 0.3; cursor: default; }
+.cal-nav .today-date { min-width: 84px; text-align: center; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
 .cal-week span { text-align: center; font-size: 0.72rem; color: var(--soft); font-weight: 600; }
 .mood-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }

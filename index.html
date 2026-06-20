@@ -269,7 +269,10 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><h2>🗓️ 기분 달력</h2><span class="today-date" id="calMonth"></span></div>
+        <div class="card-head">
+          <h2>🗓️ 기분 달력</h2>
+          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+        </div>
         <p class="hint">날짜를 누르면 그날 기록을 바로 고칠 수 있어요.</p>
         <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
         <div class="mood-cal" id="moodCal"></div>
@@ -282,9 +285,10 @@
       </div>
 
       <div class="card">
-        <h2>🗓️ 지난 기록</h2>
+        <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
         <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />
         <ul class="history" id="history"></ul>
+        <button class="btn" id="histMore" hidden style="width:100%;margin-top:12px">더 보기</button>
       </div>
     </section>
 
