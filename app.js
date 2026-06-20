@@ -348,6 +348,26 @@ document.getElementById("myQuoteAdd").addEventListener("click", () => {
   if (!settings.myQuotes.includes(t)) settings.myQuotes.push(t);
   saveSettingsObj(settings); inp.value = ""; Sound.success();
   currentQuote = t; quoteEl.textContent = "“" + t + "”"; updateFavBtn();
+  if (!quoteManage.hidden) renderQuoteManage();
+});
+
+const manageToggle = document.getElementById("manageToggle");
+const quoteManage = document.getElementById("quoteManage");
+function renderQuoteManage() {
+  const fav = settings.favQuotes || [], mine = settings.myQuotes || [];
+  const section = (title, arr, kind) => arr.length
+    ? `<p class="manage-h">${title}</p>` + arr.map((q, i) =>
+        `<div class="manage-row"><span>${escapeHtml(q)}</span><button class="task-del" data-mk="${kind}" data-mi="${i}" aria-label="삭제">×</button></div>`).join("")
+    : "";
+  const html = section("♥ 즐겨찾기", fav, "fav") + section("✍️ 내 문구", mine, "my");
+  quoteManage.innerHTML = html || '<p class="empty">아직 즐겨찾기나 내 문구가 없어요.</p>';
+}
+manageToggle.addEventListener("click", () => { Sound.tap(); quoteManage.hidden = !quoteManage.hidden; if (!quoteManage.hidden) renderQuoteManage(); });
+quoteManage.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-mk]"); if (!b) return;
+  const arr = b.dataset.mk === "fav" ? (settings.favQuotes || []) : (settings.myQuotes || []);
+  arr.splice(Number(b.dataset.mi), 1);
+  saveSettingsObj(settings); Sound.tap(); renderQuoteManage(); updateFavBtn();
 });
 
 // 호흡 컨트롤러 — 매 초 카운트다운 + 반복 횟수 표시 (4-7-8)
@@ -715,6 +735,7 @@ function renderStats() {
   renderMonthly(entries);
   renderBadges();
   renderInsight(entries, list);
+  renderCorrelation(entries);
   drawChart(entries);
   renderMoodCalendar(entries);
   renderDist(list);
@@ -912,6 +933,41 @@ function renderBadges() {
   document.getElementById("badgeGrid").innerHTML = BADGES.map((b) =>
     `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`).join("");
 }
+/* 습관 ↔ 기분 상관관계 */
+function renderCorrelation(entries) {
+  const body = document.getElementById("corrBody");
+  const moodByDate = {};
+  Object.values(entries).forEach((e) => { if (e.date && e.mood) moodByDate[e.date] = moodMeta[e.mood].score; });
+  const chs = loadChs();
+  if (!chs.length) { body.innerHTML = '<p class="empty">습관을 만들면 기분과의 관계를 분석해드려요.</p>'; return; }
+  const today = todayKey(), rows = [];
+  chs.forEach((h) => {
+    const done = [], not = [];
+    Object.keys(moodByDate).forEach((d) => {
+      if (d < h.startDate || d > today) return;
+      (h.done[d] ? done : not).push(moodByDate[d]);
+    });
+    if (done.length >= 3 && not.length >= 3) {
+      const ad = done.reduce((s, v) => s + v, 0) / done.length;
+      const an = not.reduce((s, v) => s + v, 0) / not.length;
+      rows.push({ h, ad, an, diff: ad - an });
+    }
+  });
+  if (!rows.length) { body.innerHTML = '<p class="empty">조금 더 기록되면 보여드릴게요. (습관을 한 날·안 한 날 각각 3일 이상 기분 기록이 필요해요)</p>'; return; }
+  rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+  body.innerHTML = rows.map(({ h, ad, an, diff }) => {
+    const up = diff >= 0.3, down = diff <= -0.3;
+    const sign = diff >= 0 ? "▲" : "▼";
+    const msg = up ? `한 날 기분이 평균 <b>${diff.toFixed(1)}점 더 높아요</b> 🌿`
+      : down ? `한 날이 오히려 조금 낮았어요. 부담이 됐다면 가볍게 조절해도 좋아요.`
+      : `기분 차이는 크지 않아요.`;
+    return `<div class="corr-row">
+      <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.abs(diff).toFixed(1)}</span></div>
+      <div class="corr-detail">한 날 ⌀${ad.toFixed(1)} · 안 한 날 ⌀${an.toFixed(1)} — ${msg}</div>
+    </div>`;
+  }).join("");
+}
+
 function checkBadges() {
   const earned = earnedBadgeIds(), prev = settings.badges || [];
   const fresh = earned.filter((id) => !prev.includes(id));
@@ -1217,6 +1273,9 @@ window.__applyData = (data) => {
   } catch (e) {}
   refreshAll();
 };
+
+/* 영구 저장 요청 — 저장공간 부족 시 브라우저가 데이터를 지우지 않도록 */
+if (navigator.storage && navigator.storage.persist) { try { navigator.storage.persist(); } catch (e) {} }
 
 /* 초기화 */
 applySettings();

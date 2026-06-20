@@ -123,6 +123,8 @@
           <input type="text" id="myQuoteInput" class="text-input" placeholder="나만의 위로 문구 추가하기" maxlength="100" />
           <button class="btn" id="myQuoteAdd">추가</button>
         </div>
+        <button type="button" class="reflect-toggle" id="manageToggle">📋 내 문구 · 즐겨찾기 관리</button>
+        <div id="quoteManage" hidden></div>
       </div>
 
       <div class="card center">
@@ -259,6 +261,12 @@
       <div class="card">
         <h2>🧭 오늘의 인사이트</h2>
         <p class="insight" id="insight">기록이 쌓이면 패턴을 알려드릴게요.</p>
+      </div>
+
+      <div class="card" id="corrCard">
+        <h2>🔗 습관과 기분</h2>
+        <p class="hint">습관을 한 날과 안 한 날, 기분이 어떻게 달랐는지 비교해요.</p>
+        <div id="corrBody"></div>
       </div>
 
       <div class="card">

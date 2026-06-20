@@ -248,6 +248,22 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cal-legend i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
 .cal-legend .m1 { background: #e8896f; } .cal-legend .m2 { background: #f0b07a; } .cal-legend .m3 { background: #e9d8a6; } .cal-legend .m4 { background: #9ed8b0; } .cal-legend .m5 { background: #5ec8b0; }
 
+/* 습관-기분 상관관계 */
+.corr-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.corr-row:last-child { border-bottom: none; }
+.corr-top { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.95rem; }
+.corr-diff { font-size: 0.9rem; color: var(--soft); font-weight: 800; }
+.corr-diff.up { color: var(--success); }
+.corr-diff.down { color: #d96a6a; }
+.corr-detail { font-size: 0.85rem; color: var(--ink-2); margin-top: 4px; }
+.corr-detail b { color: var(--accent-deep); }
+
+/* 문구 관리 */
+#quoteManage { margin-top: 12px; text-align: left; }
+.manage-h { font-weight: 700; font-size: 0.85rem; margin: 10px 0 6px; color: var(--ink-2); }
+.manage-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; background: var(--bg-sunken); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.88rem; }
+.manage-row span { flex: 1; }
+
 /* 성취 배지 */
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 10px; }
 .badge { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 14px; background: var(--bg-sunken); text-align: center; transition: transform 0.15s var(--ease-soft); }

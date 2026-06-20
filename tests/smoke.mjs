@@ -124,6 +124,10 @@ try {
   check("문구 즐겨찾기 저장", (ls("settings_v2").favQuotes || []).length === 1);
   q("#myQuoteInput").value = "내 문구"; q("#myQuoteAdd").click();
   check("내 문구 추가 저장", (ls("settings_v2").myQuotes || []).includes("내 문구"));
+  q("#manageToggle").click();
+  check("문구 관리 목록 표시", d.querySelectorAll("#quoteManage .manage-row").length >= 1);
+  d.querySelector('#quoteManage [data-mk="my"]').click();
+  check("내 문구 삭제됨", !(ls("settings_v2").myQuotes || []).includes("내 문구"));
 
   // 9) 사운드 함수 무결성
   ["startAmbient", "stopAmbient", "setAmbientVolume", "chime", "celebrate", "breathCue"].forEach((fn) =>
@@ -140,6 +144,16 @@ try {
   check("병합: 원격 전용 일기 보존", !!merged.entries.b);
   check("병합: 습관 완료 합집합", merged.challenges[0].done.d1 && merged.challenges[0].done.d2);
   check("병합: 설정은 로컬 우선+원격 보완", merged.settings.tone === "plain" && merged.settings.theme === "dark");
+
+  // 11) 습관↔기분 상관관계 (데이터 주입 후 검증)
+  const corr = {};
+  ["2026-06-02", "2026-06-03", "2026-06-04"].forEach((dt) => corr[dt] = { date: dt, mood: "활기차요" });
+  ["2026-06-05", "2026-06-06", "2026-06-07"].forEach((dt) => corr[dt] = { date: dt, mood: "지쳤어요" });
+  window.localStorage.setItem("entries_v2", JSON.stringify(corr));
+  window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { "2026-06-02": true, "2026-06-03": true, "2026-06-04": true }, celebrated: [] }]));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  check("상관관계 분석 표시", d.querySelectorAll("#corrBody .corr-row").length === 1);
+  check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }
