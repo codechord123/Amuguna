@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="warm">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ffb88c" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff9a76" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -18,58 +20,174 @@
     <header class="hero">
       <p class="greeting" id="greeting">안녕, 오늘도 와줘서 고마워요</p>
       <h1>오늘의 쉼 ☕</h1>
-      <p class="subtitle">지치고 힘 빠진 날, 여기서 잠깐 숨 고르고 가요.</p>
+      <p class="subtitle">매일 마음을 기록하고, 나를 조금씩 이해해가요.</p>
     </header>
 
-    <!-- 기분 체크인 -->
-    <section class="card" id="mood-card">
-      <h2>🌤️ 지금 마음은 어때요?</h2>
-      <p class="hint">솔직하게 골라줘요. 어떤 마음이든 괜찮아요.</p>
-      <div class="mood-grid" id="moodGrid">
-        <button class="mood" data-mood="지쳤어요">😮‍💨<span>지쳤어요</span></button>
-        <button class="mood" data-mood="우울해요">🥺<span>우울해요</span></button>
-        <button class="mood" data-mood="불안해요">😣<span>불안해요</span></button>
-        <button class="mood" data-mood="무기력해요">😶‍🌫️<span>무기력해요</span></button>
-        <button class="mood" data-mood="그럭저럭">🙂<span>그럭저럭</span></button>
-        <button class="mood" data-mood="괜찮아요">☺️<span>괜찮아요</span></button>
+    <!-- ========== 탭: 오늘 ========== -->
+    <section class="tab" id="tab-today">
+      <div class="card" id="checkin-card">
+        <div class="card-head">
+          <h2>📔 오늘의 기록</h2>
+          <span class="today-date" id="todayDate"></span>
+        </div>
+
+        <p class="field-label">지금 마음은 어때요?</p>
+        <div class="mood-grid" id="moodGrid">
+          <button class="mood" data-mood="지쳤어요">😮‍💨<span>지쳤어요</span></button>
+          <button class="mood" data-mood="우울해요">🥺<span>우울해요</span></button>
+          <button class="mood" data-mood="불안해요">😣<span>불안해요</span></button>
+          <button class="mood" data-mood="무기력해요">😶‍🌫️<span>무기력해요</span></button>
+          <button class="mood" data-mood="그럭저럭">🙂<span>그럭저럭</span></button>
+          <button class="mood" data-mood="괜찮아요">☺️<span>괜찮아요</span></button>
+        </div>
+        <p class="mood-response" id="moodResponse" hidden></p>
+
+        <p class="field-label">오늘 에너지는 몇 칸쯤?</p>
+        <div class="energy">
+          <input type="range" id="energyRange" min="1" max="5" step="1" value="3" />
+          <div class="energy-face" id="energyFace">😐 보통</div>
+        </div>
+
+        <p class="field-label">오늘 하루, 한 줄이라도 적어볼까요?</p>
+        <textarea id="journalInput" rows="4" placeholder="무슨 일이 있었는지, 어떤 기분이었는지 편하게 적어요. 비워둬도 괜찮아요."></textarea>
+
+        <p class="field-label">🌱 오늘 잘한 일 (아주 사소해도 좋아요)</p>
+        <input type="text" id="praiseInput" class="text-input" placeholder="예: 그래도 밥은 챙겨 먹었어" maxlength="120" />
+
+        <button class="btn primary block" id="saveBtn">오늘 기록 저장하기</button>
+        <p class="save-msg" id="saveMsg" hidden></p>
       </div>
-      <p class="mood-response" id="moodResponse" hidden></p>
     </section>
 
-    <!-- 위로 한마디 -->
-    <section class="card center" id="comfort-card">
-      <h2>💌 나를 위한 한마디</h2>
-      <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
-      <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
-    </section>
-
-    <!-- 호흡 쉼표 -->
-    <section class="card center" id="breathe-card">
-      <h2>🌬️ 호흡 쉼표</h2>
-      <p class="hint">동그라미를 따라 천천히 숨을 쉬어봐요 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기)</p>
-      <div class="breather">
-        <div class="breath-circle" id="breathCircle"><span id="breathText">시작</span></div>
+    <!-- ========== 탭: 쉼 ========== -->
+    <section class="tab" id="tab-rest" hidden>
+      <div class="card center">
+        <h2>💌 나를 위한 한마디</h2>
+        <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
+        <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
       </div>
-      <button class="btn" id="breathBtn">호흡 시작</button>
+
+      <div class="card center">
+        <h2>🌬️ 호흡 쉼표</h2>
+        <p class="hint">동그라미를 따라 천천히 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기)</p>
+        <div class="breather">
+          <div class="breath-circle" id="breathCircle"><span id="breathText">시작</span></div>
+        </div>
+        <button class="btn" id="breathBtn">호흡 시작</button>
+      </div>
+
+      <div class="card">
+        <h2>✨ 아주 작은 한 걸음</h2>
+        <p class="hint">큰 거 말고, 지금 할 수 있는 딱 한 가지만.</p>
+        <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
+        <button class="btn" id="missionBtn">미션 받기</button>
+      </div>
+
+      <div class="card">
+        <h2>🔊 잔잔한 배경음</h2>
+        <p class="hint">마음을 가라앉히는 소리를 틀어두고 쉬어가요.</p>
+        <div class="sound-grid" id="soundGrid">
+          <button class="sound-btn" data-sound="rain">🌧️<span>빗소리</span></button>
+          <button class="sound-btn" data-sound="wave">🌊<span>파도</span></button>
+          <button class="sound-btn" data-sound="forest">🌲<span>숲 바람</span></button>
+          <button class="sound-btn" data-sound="off">🔇<span>끄기</span></button>
+        </div>
+        <div class="volume-row">
+          <span>🔈</span>
+          <input type="range" id="ambientVol" min="0" max="100" value="55" />
+          <span>🔊</span>
+        </div>
+      </div>
     </section>
 
-    <!-- 아주 작은 한 걸음 -->
-    <section class="card" id="step-card">
-      <h2>✨ 아주 작은 한 걸음</h2>
-      <p class="hint">큰 거 말고, 지금 할 수 있는 딱 한 가지만.</p>
-      <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
-      <button class="btn" id="missionBtn">미션 받기</button>
+    <!-- ========== 탭: 기록 ========== -->
+    <section class="tab" id="tab-stats" hidden>
+      <div class="card stat-row">
+        <div class="stat">
+          <span class="stat-num" id="streakNum">0</span>
+          <span class="stat-label">연속 기록</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="totalNum">0</span>
+          <span class="stat-label">전체 기록</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="avgMood">–</span>
+          <span class="stat-label">최근 기분</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 마음 & 에너지 흐름</h2>
+        <p class="hint">최근 14일의 변화예요. 위로 갈수록 좋은 상태.</p>
+        <canvas id="chart" height="200"></canvas>
+        <div class="legend">
+          <span><i class="dot mood-dot"></i>기분</span>
+          <span><i class="dot energy-dot"></i>에너지</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧭 오늘의 인사이트</h2>
+        <p class="insight" id="insight">기록이 쌓이면 패턴을 알려드릴게요.</p>
+      </div>
+
+      <div class="card">
+        <h2>🌙 기분 분포 (최근 30일)</h2>
+        <div class="dist" id="dist"></div>
+      </div>
+
+      <div class="card">
+        <h2>🗓️ 지난 기록</h2>
+        <ul class="history" id="history"></ul>
+      </div>
     </section>
 
-    <!-- 셀프 칭찬 기록 -->
-    <section class="card" id="praise-card">
-      <h2>🌱 오늘 잘한 일</h2>
-      <p class="hint">아주 사소해도 좋아요. 일어난 것만으로도 충분해요.</p>
-      <form id="praiseForm" class="praise-form">
-        <input type="text" id="praiseInput" placeholder="예: 그래도 밥은 챙겨 먹었어" maxlength="120" />
-        <button class="btn primary" type="submit">기록하기</button>
-      </form>
-      <ul class="praise-list" id="praiseList"></ul>
+    <!-- ========== 탭: 설정 ========== -->
+    <section class="tab" id="tab-settings" hidden>
+      <div class="card">
+        <h2>🎨 테마</h2>
+        <div class="theme-grid" id="themeGrid">
+          <button class="theme-btn" data-theme="warm">🌅<span>따뜻</span></button>
+          <button class="theme-btn" data-theme="calm">🌿<span>차분</span></button>
+          <button class="theme-btn" data-theme="dark">🌙<span>다크</span></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔊 소리</h2>
+        <label class="toggle-row">
+          <span>효과음 (버튼·저장음)</span>
+          <input type="checkbox" id="sfxToggle" checked />
+        </label>
+        <label class="toggle-row">
+          <span>호흡할 때 가이드 소리</span>
+          <input type="checkbox" id="breathSoundToggle" checked />
+        </label>
+      </div>
+
+      <div class="card">
+        <h2>🔔 매일 기록 알림</h2>
+        <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
+        <label class="toggle-row">
+          <span>알림 켜기</span>
+          <input type="checkbox" id="reminderToggle" />
+        </label>
+        <label class="toggle-row">
+          <span>시간</span>
+          <input type="time" id="reminderTime" value="21:00" />
+        </label>
+        <p class="save-msg" id="reminderMsg" hidden></p>
+      </div>
+
+      <div class="card">
+        <h2>💾 내 데이터</h2>
+        <p class="hint">모든 기록은 이 기기에만 저장돼요. 백업하거나 지울 수 있어요.</p>
+        <div class="data-btns">
+          <button class="btn" id="exportBtn">기록 내보내기 (JSON)</button>
+          <button class="btn danger" id="clearBtn">전체 기록 지우기</button>
+        </div>
+      </div>
     </section>
 
     <footer class="foot">
@@ -78,6 +196,15 @@
     </footer>
   </main>
 
+  <!-- 하단 탭바 -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tabbtn active" data-tab="today">📔<span>오늘</span></button>
+    <button class="tabbtn" data-tab="rest">🌿<span>쉼</span></button>
+    <button class="tabbtn" data-tab="stats">📊<span>기록</span></button>
+    <button class="tabbtn" data-tab="settings">⚙️<span>설정</span></button>
+  </nav>
+
+  <script src="sound.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

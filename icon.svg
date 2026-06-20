@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd6a5"/>
+      <stop offset="1" stop-color="#ff9a76"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- 김이 모락모락 -->
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" opacity="0.9">
+    <path d="M212 150 C 196 128, 228 112, 212 90"/>
+    <path d="M256 150 C 240 128, 272 112, 256 90"/>
+    <path d="M300 150 C 284 128, 316 112, 300 90"/>
+  </g>
+  <!-- 컵 -->
+  <path d="M150 196 h212 v52 a106 106 0 0 1 -212 0 z" fill="#fff"/>
+  <path d="M362 210 h22 a40 40 0 0 1 0 80 h-16" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+  <!-- 받침 -->
+  <rect x="138" y="356" width="236" height="22" rx="11" fill="#fff"/>
+  <!-- 미소 -->
+  <g stroke="#ff9a76" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M226 250 q30 28 60 0"/>
+  </g>
+</svg>
