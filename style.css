@@ -150,6 +150,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .breath-circle.inhale { transform: scale(1.55); box-shadow: 0 0 0 30px var(--ring); }
 .breath-circle.hold { transform: scale(1.55); }
 .breath-circle.exhale { transform: scale(1); box-shadow: 0 0 0 0 var(--ring); }
+.breath-circle span { line-height: 1.25; }
+.breath-circle b { display: block; font-size: 1.7rem; font-weight: 800; }
+.breath-circle.big b { font-size: 2.1rem; }
 [data-theme="dark"] .breath-circle { color: #1a1920; }
 .mission { font-size: 1.08rem; font-weight: 600; background: var(--bg-sunken); padding: 16px; border-radius: 14px; margin: 0 0 16px; min-height: 1.6em; }
 

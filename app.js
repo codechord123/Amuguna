@@ -286,28 +286,48 @@ document.getElementById("quoteBtn").addEventListener("click", () => {
   setTimeout(() => { quoteEl.textContent = "“" + pool[i] + "”"; quoteEl.classList.remove("swap"); }, 230);
 });
 
-const circle = document.getElementById("breathCircle");
-const breathText = document.getElementById("breathText");
-const breathBtn = document.getElementById("breathBtn");
-let breathing = false, breathTimers = [];
-function clearBreath() { breathTimers.forEach(clearTimeout); breathTimers = []; }
-function runCycle() {
-  if (!breathing) return;
-  circle.className = "breath-circle inhale"; breathText.textContent = "들이쉬기"; Sound.breathCue("inhale");
-  breathTimers.push(setTimeout(() => {
-    if (!breathing) return;
-    circle.className = "breath-circle hold"; breathText.textContent = "잠깐 멈춰요"; Sound.breathCue("hold");
-    breathTimers.push(setTimeout(() => {
-      if (!breathing) return;
-      circle.className = "breath-circle exhale"; breathText.textContent = "내쉬기"; Sound.breathCue("exhale");
-      breathTimers.push(setTimeout(() => { if (breathing) runCycle(); }, 8000));
-    }, 7000));
-  }, 4000));
+// 호흡 컨트롤러 — 매 초 카운트다운 + 반복 횟수 표시 (4-7-8)
+const BREATH_PHASES = [
+  { name: "들이쉬기", dur: 4, cls: "inhale", cue: "inhale" },
+  { name: "잠깐 멈춰요", dur: 7, cls: "hold", cue: "hold" },
+  { name: "내쉬기", dur: 8, cls: "exhale", cue: "exhale" },
+];
+function makeBreather(circleEl, textEl, base) {
+  let running = false, tick = null, pi = 0, remain = 0, cycles = 0;
+  function render() { textEl.innerHTML = `${BREATH_PHASES[pi].name}<br><b>${remain}</b>`; }
+  function enter(i) {
+    pi = i; const ph = BREATH_PHASES[i]; remain = ph.dur;
+    circleEl.className = base + " " + ph.cls;
+    circleEl.style.transitionDuration = (ph.cls === "hold" ? 0.4 : ph.dur) + "s";
+    Sound.breathCue(ph.cue); render();
+  }
+  return {
+    isRunning: () => running,
+    start() {
+      if (running) return;
+      Sound.unlock(); running = true; cycles = 0; enter(0);
+      tick = setInterval(() => {
+        remain--;
+        if (remain <= 0) {
+          let next = pi + 1;
+          if (next >= BREATH_PHASES.length) { next = 0; cycles++; }
+          enter(next);
+        } else render();
+      }, 1000);
+    },
+    stop() {
+      running = false; if (tick) { clearInterval(tick); tick = null; }
+      circleEl.className = base; circleEl.style.transitionDuration = "";
+      textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
+    },
+  };
 }
+
+const restBreather = makeBreather(document.getElementById("breathCircle"), document.getElementById("breathText"), "breath-circle");
+const breathBtn = document.getElementById("breathBtn");
 breathBtn.addEventListener("click", () => {
-  Sound.unlock(); breathing = !breathing;
-  if (breathing) { breathBtn.textContent = "그만하기"; runCycle(); }
-  else { clearBreath(); circle.className = "breath-circle"; breathText.textContent = "잘했어요"; breathBtn.textContent = "호흡 시작"; }
+  if (restBreather.isRunning()) { restBreather.stop(); breathBtn.textContent = "호흡 시작"; }
+  else { restBreather.start(); breathBtn.textContent = "그만하기"; }
 });
 
 const missions = [
@@ -891,24 +911,9 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 
 /* 빠른 호흡 — 어디서든 (베타 피드백: 불안형 요구) */
 const breathOverlay = document.getElementById("breathOverlay");
-const qbCircle = document.getElementById("qbCircle"), qbText = document.getElementById("qbText");
-let qbRunning = false, qbTimers = [];
-function qbClear() { qbTimers.forEach(clearTimeout); qbTimers = []; }
-function qbCycle() {
-  if (!qbRunning) return;
-  qbCircle.className = "breath-circle big inhale"; qbText.textContent = "들이쉬기"; Sound.breathCue("inhale");
-  qbTimers.push(setTimeout(() => {
-    if (!qbRunning) return;
-    qbCircle.className = "breath-circle big hold"; qbText.textContent = "잠깐 멈춰요"; Sound.breathCue("hold");
-    qbTimers.push(setTimeout(() => {
-      if (!qbRunning) return;
-      qbCircle.className = "breath-circle big exhale"; qbText.textContent = "내쉬기"; Sound.breathCue("exhale");
-      qbTimers.push(setTimeout(() => { if (qbRunning) qbCycle(); }, 8000));
-    }, 7000));
-  }, 4000));
-}
-document.getElementById("quickBreathFab").addEventListener("click", () => { Sound.unlock(); breathOverlay.hidden = false; qbRunning = true; qbCycle(); });
-document.getElementById("qbClose").addEventListener("click", () => { qbRunning = false; qbClear(); qbCircle.className = "breath-circle big"; qbText.textContent = "잘했어요"; breathOverlay.hidden = true; });
+const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big");
+document.getElementById("quickBreathFab").addEventListener("click", () => { breathOverlay.hidden = false; qbBreather.start(); });
+document.getElementById("qbClose").addEventListener("click", () => { qbBreather.stop(); breathOverlay.hidden = true; });
 
 /* 첫 제스처에 오디오 unlock */
 window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
