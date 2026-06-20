@@ -194,6 +194,18 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .link-tag { font-size: 0.78rem; color: var(--soft); background: var(--bg-sunken); border-radius: 999px; padding: 4px 10px; }
 .link-tag.done { color: var(--accent-deep); font-weight: 600; }
 
+/* 인라인 편집 (습관/프로젝트) */
+.inline-edit { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding: 14px; background: var(--bg-sunken); border-radius: 14px; }
+.edit-actions { display: flex; gap: 8px; }
+.edit-actions .btn { flex: 1; }
+
+/* 기록 태그 */
+.hist-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+/* 토스트 (복귀 격려 등) */
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 70; max-width: 90%; width: max-content; background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 16px; padding: 14px 18px; font-size: 0.9rem; font-weight: 500; opacity: 0; transition: opacity 0.4s var(--ease-soft), transform 0.4s var(--ease-soft); text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
 /* 기록 탭 프로젝트 진행 */
 .pstat-row { margin-bottom: 14px; }
 .pstat-row:last-child { margin-bottom: 0; }

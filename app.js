@@ -164,12 +164,21 @@ moodGrid.addEventListener("click", (e) => {
 });
 energyRange.addEventListener("input", () => { energyFace.textContent = energyFaces[energyRange.value]; });
 
+const tagInput = document.getElementById("tagInput");
+function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
+document.getElementById("tagSuggest").addEventListener("click", (e) => {
+  const b = e.target.closest(".link-chip"); if (!b) return;
+  Sound.tap();
+  const cur = parseTags(tagInput.value); const t = b.dataset.tag;
+  if (!cur.includes(t)) { cur.push(t); tagInput.value = cur.join(", "); }
+});
+
 function resetForm() {
   selectedMood = null;
   document.querySelectorAll(".mood").forEach((m) => { m.classList.remove("selected"); m.setAttribute("aria-pressed", "false"); });
   moodResponse.hidden = true;
   energyRange.value = 3; energyFace.textContent = energyFaces[3];
-  journalInput.value = ""; praiseInput.value = ""; saveMsg.hidden = true;
+  journalInput.value = ""; praiseInput.value = ""; tagInput.value = ""; saveMsg.hidden = true;
 }
 function updateCheckinTitle() {
   const p = currentDate.split("-");
@@ -184,6 +193,7 @@ function loadEntryForm(key) {
   if (t.energy) { energyRange.value = t.energy; energyFace.textContent = energyFaces[t.energy]; }
   if (t.note) journalInput.value = t.note;
   if (t.praise) praiseInput.value = t.praise;
+  if (t.tags) tagInput.value = t.tags.join(", ");
   todayMore.hidden = false;
 }
 function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); }
@@ -208,7 +218,7 @@ document.getElementById("safetyClose").addEventListener("click", () => { documen
 document.getElementById("saveBtn").addEventListener("click", () => {
   const entries = loadEntries(), k = currentDate;
   const note = journalInput.value.trim();
-  entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), updatedAt: new Date().toISOString() };
+  entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), tags: parseTags(tagInput.value), updatedAt: new Date().toISOString() };
   saveEntries(entries);
   Sound.success();
   const card = document.getElementById("checkin-card");
@@ -509,7 +519,14 @@ function habitCardHtml(h) {
       ${h.minVersion ? `<p class="habit-min">💡 힘든 날엔 최소만: ${escapeHtml(h.minVersion)}</p>` : ""}
       ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
       <div class="ch-grid" data-grid="${h.id}"></div>
+      <div class="inline-edit" data-edit hidden>
+        <input class="text-input" data-ef="title" value="${escapeHtml(h.title)}" maxlength="40" />
+        <input class="text-input" data-ef="cue" value="${escapeHtml(h.cue || "")}" placeholder="언제 할까요 (트리거)" maxlength="20" />
+        <input class="text-input" data-ef="min" value="${escapeHtml(h.minVersion || "")}" placeholder="최소 버전 (선택)" maxlength="40" />
+        <div class="edit-actions"><button class="btn primary" data-act="savehabit">저장</button><button class="btn" data-act="canceledit">취소</button></div>
+      </div>
       <div class="data-btns" style="margin-top:16px">
+        <button class="btn" data-act="edit">✏️ 편집</button>
         <button class="btn" data-act="calendar">📅 캘린더에 매일 알림</button>
         <button class="btn" data-act="share">📤 진행 공유</button>
         <button class="btn danger" data-act="giveup">이 습관 그만두기</button>
@@ -562,6 +579,16 @@ document.getElementById("challengeList").addEventListener("click", (e) => {
       const idx = daysSince(h.startDate);
       if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done");
     }
+  } else if (act === "edit") {
+    const f = card.querySelector("[data-edit]"); f.hidden = !f.hidden; Sound.tap();
+  } else if (act === "savehabit") {
+    const f = card.querySelector("[data-edit]");
+    const title = f.querySelector('[data-ef="title"]').value.trim();
+    if (!title) { alert("습관 이름을 비울 수 없어요 🙂"); return; }
+    h.title = title; h.cue = f.querySelector('[data-ef="cue"]').value.trim(); h.minVersion = f.querySelector('[data-ef="min"]').value.trim();
+    saveChs(chs); Sound.success(); expandedIds.add(id); renderChallenge();
+  } else if (act === "canceledit") {
+    renderChallenge();
   } else if (act === "calendar") {
     Sound.tap(); exportHabitIcs(h);
   } else if (act === "share") {
@@ -683,7 +710,13 @@ function projCardHtml(p) {
         <input type="date" class="text-input task-due-in" data-padddue="${p.id}" aria-label="기한(선택)" />
         <button class="btn" data-pact="addtask">추가</button>
       </div>
+      <div class="inline-edit" data-pedit hidden>
+        <input class="text-input" data-pf="title" value="${escapeHtml(p.title)}" maxlength="40" />
+        <input type="date" class="text-input" data-pf="due" value="${p.due || ""}" />
+        <div class="edit-actions"><button class="btn primary" data-pact="psave">저장</button><button class="btn" data-pact="pcancel">취소</button></div>
+      </div>
       <div class="data-btns" style="margin-top:14px">
+        <button class="btn" data-pact="pedit">✏️ 편집</button>
         <button class="btn danger" data-pact="delproj">프로젝트 삭제</button>
       </div>
     </div>
@@ -712,6 +745,16 @@ document.getElementById("projectList").addEventListener("click", (e) => {
     const dueIn = card.querySelector(`[data-padddue="${pid}"]`);
     const task = { text: txt, done: false }; if (dueIn && dueIn.value) task.due = dueIn.value;
     p.tasks.push(task); p.completed = false; saveProjs(projs); projExpanded.add(pid); renderProjects(); Sound.tap();
+  } else if (act === "pedit") {
+    const f = card.querySelector("[data-pedit]"); f.hidden = !f.hidden; Sound.tap();
+  } else if (act === "psave") {
+    const f = card.querySelector("[data-pedit]");
+    const title = f.querySelector('[data-pf="title"]').value.trim();
+    if (!title) { alert("프로젝트 이름을 비울 수 없어요 🙂"); return; }
+    p.title = title; p.due = f.querySelector('[data-pf="due"]').value || "";
+    saveProjs(projs); Sound.success(); projExpanded.add(pid); renderProjects();
+  } else if (act === "pcancel") {
+    renderProjects();
   } else if (act === "delproj") {
     if (!confirm("이 프로젝트를 삭제할까요? 할 일 목록도 사라져요.")) return;
     saveProjs(projs.filter((x) => x.id !== pid)); projExpanded.delete(pid); renderProjects(); Sound.tap();
@@ -947,23 +990,30 @@ function renderDist(list) {
 
 function renderHistory(list) {
   const ul = document.getElementById("history"); ul.innerHTML = "";
-  const rev = [...list].reverse();
-  if (!rev.length) { ul.innerHTML = '<p class="empty">첫 기록을 기다리고 있어요.</p>'; return; }
-  rev.slice(0, 30).forEach((e) => {
+  const q = (document.getElementById("historySearch").value || "").trim().toLowerCase();
+  let rev = [...list].reverse();
+  if (q) rev = rev.filter((e) =>
+    (e.note || "").toLowerCase().includes(q) || (e.praise || "").toLowerCase().includes(q) ||
+    (e.mood || "").toLowerCase().includes(q) || (e.tags || []).some((t) => t.toLowerCase().includes(q)));
+  if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; return; }
+  rev.slice(0, 50).forEach((e) => {
     const li = document.createElement("li"); const p = e.date.split("-");
     const dateStr = `${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(e.date)})`;
     const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
     const energyStr = e.energy ? ` · 에너지 ${e.energy}/5` : "";
+    const tagsHtml = e.tags && e.tags.length ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
     li.innerHTML = `<button class="h-del" data-date="${e.date}" aria-label="기록 삭제">×</button>
       <div class="h-top"><span class="h-date">${dateStr}</span><span class="h-mood">${moodStr}${energyStr}</span></div>
       ${e.note ? `<p class="h-note">${escapeHtml(e.note)}</p>` : ""}
-      ${e.praise ? `<p class="h-praise">🌱 ${escapeHtml(e.praise)}</p>` : ""}`;
+      ${e.praise ? `<p class="h-praise">🌱 ${escapeHtml(e.praise)}</p>` : ""}
+      ${tagsHtml}`;
     ul.appendChild(li);
   });
   ul.querySelectorAll(".h-del").forEach((b) => b.addEventListener("click", () => {
     const entries = loadEntries(); delete entries[b.dataset.date]; saveEntries(entries); Sound.tap(); renderStats();
   }));
 }
+document.getElementById("historySearch").addEventListener("input", () => renderHistory(sortedEntries(loadEntries())));
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
@@ -1038,6 +1088,30 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
   const a = document.createElement("a"); a.href = url; a.download = `오늘의쉼_백업_${todayKey()}.json`; a.click(); URL.revokeObjectURL(url);
 });
+document.getElementById("importBtn").addEventListener("click", () => { Sound.tap(); document.getElementById("importFile").click(); });
+document.getElementById("importFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || typeof data !== "object") throw 0;
+    if (data.entries && typeof data.entries === "object") {
+      const entries = loadEntries(); Object.entries(data.entries).forEach(([k, v]) => { entries[k] = v; }); saveEntries(entries);
+    }
+    if (Array.isArray(data.challenges)) {
+      const chs = loadChs(); const ids = new Set(chs.map((c) => c.id));
+      data.challenges.forEach((c) => { if (c && c.id && !ids.has(c.id)) chs.push(c); }); saveChs(chs);
+    }
+    if (Array.isArray(data.projects)) {
+      const ps = loadProjs(); const ids = new Set(ps.map((p) => p.id));
+      data.projects.forEach((p) => { if (p && p.id && !ids.has(p.id)) ps.push(p); }); saveProjs(ps);
+    }
+    Sound.success(); loadToday(); renderChallenge(); renderProjects();
+    alert("복원 완료! 기존 기록과 합쳤어요 🌿");
+  } catch (err) {
+    alert("불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.");
+  }
+  e.target.value = "";
+});
 document.getElementById("replayOnboard").addEventListener("click", () => { Sound.tap(); showOnboard(); });
 document.getElementById("clearBtn").addEventListener("click", () => {
   if (!confirm("정말 모든 기록을 지울까요? 되돌릴 수 없어요.")) return;
@@ -1061,8 +1135,26 @@ window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
 /* 서비스워커 */
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
+/* 토스트 + 복귀 격려 (리텐션) */
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("show"));
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 400); }, 5000);
+}
+function comebackCheck() {
+  const list = sortedEntries(loadEntries());
+  if (!list.length) return;
+  const last = list[list.length - 1].date;
+  if (last === todayKey()) return;
+  const gap = daysSince(last);
+  if (gap >= 4) setTimeout(() => toast(`${gap}일 만이네요. 다시 와줘서 반가워요 🌿 쉬어간 날들도 괜찮아요. 오늘은 기분 하나만 눌러도 충분해요.`), 1300);
+}
+
 /* 초기화 */
 applySettings();
 loadToday();
 scheduleReminder();
 if (!localStorage.getItem(DB.ONBOARD)) showOnboard();
+else comebackCheck();

@@ -81,6 +81,19 @@
           <p class="field-label">🌱 오늘 잘한 일 (아주 사소해도 좋아요)</p>
           <input type="text" id="praiseInput" class="text-input" placeholder="예: 그래도 밥은 챙겨 먹었어" maxlength="120" />
 
+          <p class="field-label">🏷️ 감정 태그 <span class="opt">(눌러서 추가 · 직접 입력 가능)</span></p>
+          <div class="link-grid" id="tagSuggest">
+            <button type="button" class="link-chip" data-tag="피곤">피곤</button>
+            <button type="button" class="link-chip" data-tag="불안">불안</button>
+            <button type="button" class="link-chip" data-tag="보람">보람</button>
+            <button type="button" class="link-chip" data-tag="외로움">외로움</button>
+            <button type="button" class="link-chip" data-tag="평온">평온</button>
+            <button type="button" class="link-chip" data-tag="짜증">짜증</button>
+            <button type="button" class="link-chip" data-tag="설렘">설렘</button>
+            <button type="button" class="link-chip" data-tag="뿌듯">뿌듯</button>
+          </div>
+          <input type="text" id="tagInput" class="text-input" placeholder="태그를 쉼표로 구분해 입력 (예: 피곤, 야근)" maxlength="100" style="margin-top:8px" />
+
           <button class="btn primary block" id="saveBtn">오늘 기록 저장하기</button>
           <p class="save-msg" id="saveMsg" hidden></p>
         </div>
@@ -262,6 +275,7 @@
 
       <div class="card">
         <h2>🗓️ 지난 기록</h2>
+        <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />
         <ul class="history" id="history"></ul>
       </div>
     </section>
@@ -313,12 +327,15 @@
 
       <div class="card">
         <h2>💾 내 데이터</h2>
-        <p class="hint">모든 기록은 이 기기에만 저장돼요. 백업하거나 지울 수 있어요.</p>
+        <p class="hint">모든 기록은 이 기기에만 저장돼요. 백업하거나 다른 기기로 옮길 수 있어요.</p>
         <div class="data-btns">
           <button class="btn" id="exportBtn">기록 내보내기 (JSON)</button>
+          <button class="btn" id="importBtn">기록 복원 (JSON 불러오기)</button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden />
           <button class="btn" id="replayOnboard">앱 소개 다시 보기</button>
           <button class="btn danger" id="clearBtn">전체 기록 지우기</button>
         </div>
+        <p class="hint" style="margin-top:12px">☁️ <strong>기기 간 이동:</strong> 기존 기기에서 "내보내기" → 새 기기에서 "복원". 자동 클라우드 동기화는 준비 중이에요.</p>
       </div>
     </section>
 
