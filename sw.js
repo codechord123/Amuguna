@@ -1,5 +1,5 @@
 // 오늘의 쉼 — 서비스워커 (오프라인 캐시)
-const CACHE = "oneul-shim-v6";
+const CACHE = "oneul-shim-v7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -22,17 +22,15 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// 캐시 우선, 없으면 네트워크 (오프라인에서도 동작)
+// 네트워크 우선 (최신 보장), 오프라인이면 캐시 폴백.
+// 앱 코드가 작아 비용이 작고, 배포 즉시 한 번의 새로고침으로 최신이 반영됩니다.
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
-        return res;
-      }).catch(() => cached);
-    })
+    fetch(e.request).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
