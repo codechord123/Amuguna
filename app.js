@@ -15,6 +15,7 @@ const moodMeta = {
   "불안해요":   { emoji: "😣", score: 2, tag: "high_arousal" },
   "그럭저럭":   { emoji: "🙂", score: 3, tag: "neutral" },
   "괜찮아요":   { emoji: "☺️", score: 4, tag: "positive" },
+  "활기차요":   { emoji: "😄", score: 5, tag: "energized" },
 };
 const moodReplies = {
   "지쳤어요": "많이 지쳤구나… 지치는 건 약해서가 아니라 그동안 너무 오래 애써왔기 때문이에요. 오늘은 쉬는 것도 회복이에요.",
@@ -23,6 +24,7 @@ const moodReplies = {
   "무기력해요": "지금의 무기력은 게으름이 아니라 몸과 마음이 보내는 쉼 신호예요. 아주 작은 움직임 하나면 충분해요.",
   "그럭저럭": "그럭저럭도 충분히 잘하고 있는 거예요. 오늘도 잘 흘러가고 있어요.",
   "괜찮아요": "괜찮다니 다행이에요. 이 가벼움을 오늘 잘 누려봐요 ☺️",
+  "활기차요": "활기가 도는 날이네요! 이 좋은 기운, 오늘 마음껏 누려요 ⚡",
 };
 const plainReplies = {
   "지쳤어요": "지쳤네요. 오늘은 회복을 우선하세요.",
@@ -31,6 +33,7 @@ const plainReplies = {
   "무기력해요": "에너지가 낮네요. 아주 작은 것 하나만 하세요.",
   "그럭저럭": "그럭저럭이면 괜찮습니다.",
   "괜찮아요": "괜찮은 날이네요. 이 컨디션을 잘 활용해보세요.",
+  "활기차요": "컨디션이 좋네요. 이 기운을 잘 활용하세요.",
 };
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
@@ -183,6 +186,10 @@ moodGrid.addEventListener("click", (e) => {
 energyRange.addEventListener("input", () => { energyFace.textContent = energyFaces[energyRange.value]; });
 
 const tagInput = document.getElementById("tagInput");
+const reflectGood = document.getElementById("reflectGood");
+const reflectHard = document.getElementById("reflectHard");
+const reflectFields = document.getElementById("reflectFields");
+document.getElementById("reflectToggle").addEventListener("click", () => { Sound.tap(); reflectFields.hidden = !reflectFields.hidden; });
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
 document.getElementById("tagSuggest").addEventListener("click", (e) => {
   const b = e.target.closest(".link-chip"); if (!b) return;
@@ -197,6 +204,7 @@ function resetForm() {
   moodResponse.hidden = true;
   energyRange.value = 3; energyFace.textContent = energyFaces[3];
   journalInput.value = ""; praiseInput.value = ""; tagInput.value = ""; saveMsg.hidden = true;
+  reflectGood.value = ""; reflectHard.value = ""; reflectFields.hidden = true;
 }
 function updateCheckinTitle() {
   const p = currentDate.split("-");
@@ -212,6 +220,9 @@ function loadEntryForm(key) {
   if (t.note) journalInput.value = t.note;
   if (t.praise) praiseInput.value = t.praise;
   if (t.tags) tagInput.value = t.tags.join(", ");
+  if (t.reflection && (t.reflection.good || t.reflection.hard)) {
+    reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; reflectFields.hidden = false;
+  }
   todayMore.hidden = false;
 }
 function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); }
@@ -236,7 +247,8 @@ document.getElementById("safetyClose").addEventListener("click", () => { documen
 document.getElementById("saveBtn").addEventListener("click", () => {
   const entries = loadEntries(), k = currentDate;
   const note = journalInput.value.trim();
-  entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), tags: parseTags(tagInput.value), updatedAt: new Date().toISOString() };
+  const reflection = { good: reflectGood.value.trim(), hard: reflectHard.value.trim() };
+  entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), tags: parseTags(tagInput.value), reflection, updatedAt: new Date().toISOString() };
   saveEntries(entries);
   Sound.success();
   const card = document.getElementById("checkin-card");
@@ -303,15 +315,38 @@ const plainQuotes = [
   "도움을 청하는 건 합리적인 선택입니다.",
 ];
 const quoteEl = document.getElementById("quote");
-let lastQuote = -1;
-function curQuotes() { return settings.tone === "plain" ? plainQuotes : quotes; }
-document.getElementById("quoteBtn").addEventListener("click", () => {
-  Sound.chime();
-  const pool = curQuotes();
-  let i; do { i = Math.floor(Math.random() * pool.length); } while (i === lastQuote && pool.length > 1);
-  lastQuote = i;
+const favBtn = document.getElementById("favBtn");
+const favOnly = document.getElementById("favOnly");
+let currentQuote = "";
+function basePool() { return (settings.tone === "plain" ? plainQuotes : quotes).concat(settings.myQuotes || []); }
+function activePool() { return (favOnly.checked && (settings.favQuotes || []).length) ? settings.favQuotes : basePool(); }
+function updateFavBtn() {
+  const fav = (settings.favQuotes || []).includes(currentQuote);
+  favBtn.textContent = fav ? "♥" : "♡"; favBtn.classList.toggle("on", fav);
+}
+function showRandomQuote() {
+  const pool = activePool(); if (!pool.length) return;
+  let i, tries = 0; do { i = Math.floor(Math.random() * pool.length); tries++; } while (pool[i] === currentQuote && pool.length > 1 && tries < 12);
+  currentQuote = pool[i];
   quoteEl.classList.add("swap");
-  setTimeout(() => { quoteEl.textContent = "“" + pool[i] + "”"; quoteEl.classList.remove("swap"); }, 230);
+  setTimeout(() => { quoteEl.textContent = "“" + currentQuote + "”"; quoteEl.classList.remove("swap"); updateFavBtn(); }, 230);
+}
+document.getElementById("quoteBtn").addEventListener("click", () => { Sound.chime(); showRandomQuote(); });
+favBtn.addEventListener("click", () => {
+  if (!currentQuote) return;
+  Sound.tap();
+  settings.favQuotes = settings.favQuotes || [];
+  const idx = settings.favQuotes.indexOf(currentQuote);
+  if (idx >= 0) settings.favQuotes.splice(idx, 1); else settings.favQuotes.push(currentQuote);
+  saveSettingsObj(settings); updateFavBtn();
+});
+favOnly.addEventListener("change", () => { Sound.tap(); showRandomQuote(); });
+document.getElementById("myQuoteAdd").addEventListener("click", () => {
+  const inp = document.getElementById("myQuoteInput"); const t = inp.value.trim(); if (!t) return;
+  settings.myQuotes = settings.myQuotes || [];
+  if (!settings.myQuotes.includes(t)) settings.myQuotes.push(t);
+  saveSettingsObj(settings); inp.value = ""; Sound.success();
+  currentQuote = t; quoteEl.textContent = "“" + t + "”"; updateFavBtn();
 });
 
 // 호흡 컨트롤러 — 매 초 카운트다운 + 반복 횟수 표시 (4-7-8)
@@ -892,10 +927,13 @@ function renderHistory(list) {
     const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
     const energyStr = e.energy ? ` · 에너지 ${e.energy}/5` : "";
     const tagsHtml = e.tags && e.tags.length ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
+    const r = e.reflection || {};
+    const reflectHtml = (r.good || r.hard) ? `<div class="h-reflect">${r.good ? `<p>🌤️ ${escapeHtml(r.good)}</p>` : ""}${r.hard ? `<p>🌧️ ${escapeHtml(r.hard)}</p>` : ""}</div>` : "";
     li.innerHTML = `<button class="h-del" data-date="${e.date}" aria-label="기록 삭제">×</button>
       <div class="h-top"><span class="h-date">${dateStr}</span><span class="h-mood">${moodStr}${energyStr}</span></div>
       ${e.note ? `<p class="h-note">${escapeHtml(e.note)}</p>` : ""}
       ${e.praise ? `<p class="h-praise">🌱 ${escapeHtml(e.praise)}</p>` : ""}
+      ${reflectHtml}
       ${tagsHtml}`;
     ul.appendChild(li);
   });
@@ -916,7 +954,7 @@ document.getElementById("histMore").addEventListener("click", () => { histShown 
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm" },
+  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [] },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;

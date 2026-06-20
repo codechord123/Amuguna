@@ -62,6 +62,18 @@ try {
   q(".mood").click(); q("#saveBtn").click();
   check("백필(과거 날짜) 저장됨", !!ls("entries_v2")["2026-06-18"]);
 
+  // 2ب) 기분 7단계 + 저녁 회고
+  check("기분 7단계 표시", d.querySelectorAll(".mood").length === 7);
+  const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
+  ed.value = tk; ed.dispatchEvent(new window.Event("change"));
+  [...d.querySelectorAll(".mood")].find((b) => b.dataset.mood === "활기차요").click();
+  q("#reflectToggle").click();
+  q("#reflectGood").value = "좋은 점"; q("#reflectHard").value = "힘든 점";
+  q("#saveBtn").click();
+  const te = ls("entries_v2")[tk];
+  check("활기차요(7단계) 저장", te.mood === "활기차요");
+  check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
+
   // 3) 습관 생성 + 완료 체크 + 편집
   q("[data-tab=challenge]").click();
   q(".preset").click(); q("#startChallenge").click();
@@ -102,6 +114,13 @@ try {
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
   q("#breathBtn").click();
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
+
+  // 8b) 위로 문구 즐겨찾기 / 내 문구
+  q("#quoteBtn").click();
+  q("#favBtn").click();
+  check("문구 즐겨찾기 저장", (ls("settings_v2").favQuotes || []).length === 1);
+  q("#myQuoteInput").value = "내 문구"; q("#myQuoteAdd").click();
+  check("내 문구 추가 저장", (ls("settings_v2").myQuotes || []).includes("내 문구"));
 
   // 9) 사운드 함수 무결성
   ["startAmbient", "stopAmbient", "setAmbientVolume", "chime", "celebrate", "breathCue"].forEach((fn) =>

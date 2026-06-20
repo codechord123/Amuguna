@@ -146,6 +146,18 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* quote / breathing / mission */
 .quote { margin: 0 0 18px; font-size: 1.22rem; font-weight: 600; line-height: 1.7; min-height: 2.6em; display: flex; align-items: center; justify-content: center; border: none; padding: 0 6px; transition: opacity 0.35s ease, transform 0.35s var(--ease-soft); }
 .quote.swap { opacity: 0; transform: translateY(8px); }
+.quote-actions { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.icon-btn { border: 2px solid var(--line); background: var(--card); color: var(--accent-deep); width: 46px; height: 46px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-family: inherit; transition: transform 0.15s var(--ease-soft), border-color 0.2s, background 0.2s; }
+.icon-btn:hover { transform: scale(1.08); }
+.icon-btn.on { border-color: var(--accent); background: var(--accent-2); }
+.fav-only { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 0.85rem; color: var(--soft); cursor: pointer; }
+.fav-only input { width: auto; }
+.quote-add { display: flex; gap: 8px; margin-top: 14px; }
+.quote-add .text-input { flex: 1; }
+.reflect-toggle { width: 100%; margin-top: 14px; background: var(--bg-sunken); border: 1px dashed var(--line); color: var(--ink-2); border-radius: 14px; padding: 12px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.9rem; }
+.reflect-toggle:hover { border-color: var(--accent); }
+.h-reflect { margin-top: 6px; }
+.h-reflect p { margin: 2px 0; font-size: 0.88rem; color: var(--ink-2); }
 .breather { display: flex; justify-content: center; align-items: center; height: 220px; }
 .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.05rem; box-shadow: 0 0 0 0 var(--ring); transition: transform 4s var(--ease-breath), box-shadow 4s var(--ease-breath); }
 .breath-circle.inhale { transform: scale(1.55); box-shadow: 0 0 0 30px var(--ring); }

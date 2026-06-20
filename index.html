@@ -64,6 +64,7 @@
           <button class="mood" data-mood="무기력해요" aria-pressed="false">😶‍🌫️<span>무기력해요</span></button>
           <button class="mood" data-mood="그럭저럭" aria-pressed="false">🙂<span>그럭저럭</span></button>
           <button class="mood" data-mood="괜찮아요" aria-pressed="false">☺️<span>괜찮아요</span></button>
+          <button class="mood" data-mood="활기차요" aria-pressed="false">😄<span>활기차요</span></button>
         </div>
         <p class="mood-response" id="moodResponse" hidden></p>
 
@@ -94,6 +95,14 @@
           </div>
           <input type="text" id="tagInput" class="text-input" placeholder="태그를 쉼표로 구분해 입력 (예: 피곤, 야근)" maxlength="100" style="margin-top:8px" />
 
+          <button type="button" class="reflect-toggle" id="reflectToggle">🌙 저녁 회고 더하기 (선택)</button>
+          <div id="reflectFields" hidden>
+            <p class="field-label">오늘 가장 좋았던 순간</p>
+            <input type="text" id="reflectGood" class="text-input" placeholder="작아도 좋아요. 예: 따뜻한 커피 한 잔" maxlength="120" />
+            <p class="field-label">오늘 힘들었던 순간</p>
+            <input type="text" id="reflectHard" class="text-input" placeholder="털어놓으면 한결 가벼워져요" maxlength="120" />
+          </div>
+
           <button class="btn primary block" id="saveBtn">오늘 기록 저장하기</button>
           <p class="save-msg" id="saveMsg" role="status" aria-live="polite" hidden></p>
         </div>
@@ -105,7 +114,15 @@
       <div class="card center">
         <h2>💌 나를 위한 한마디</h2>
         <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
-        <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
+        <div class="quote-actions">
+          <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
+          <button class="icon-btn" id="favBtn" aria-label="이 문구 즐겨찾기" title="즐겨찾기">♡</button>
+        </div>
+        <label class="fav-only"><input type="checkbox" id="favOnly" /> 즐겨찾기만 보기</label>
+        <div class="quote-add">
+          <input type="text" id="myQuoteInput" class="text-input" placeholder="나만의 위로 문구 추가하기" maxlength="100" />
+          <button class="btn" id="myQuoteAdd">추가</button>
+        </div>
       </div>
 
       <div class="card center">
