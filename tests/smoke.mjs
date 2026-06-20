@@ -36,9 +36,10 @@ window.HTMLElement.prototype.scrollIntoView = () => {};
 window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,iVBORw0KGgo=";
 window.onerror = (m) => errors.push("onerror: " + m);
 
-// --- 앱 로드 ---
-try { window.eval(read("sound.js") + "\n" + read("app.js")); }
+// --- 앱 로드 (config → sound → app → cloud, index.html과 동일 순서) ---
+try { window.eval(read("config.js") + "\n" + read("sound.js") + "\n" + read("app.js") + "\n" + read("cloud.js")); }
 catch (e) { console.error("FATAL: 앱 로드 실패\n", e); process.exit(1); }
+try { window.document.dispatchEvent(new window.Event("DOMContentLoaded")); } catch (e) {}
 
 const q = (s) => d.querySelector(s);
 const ls = (k) => JSON.parse(window.localStorage.getItem(k) || "null");
@@ -113,6 +114,18 @@ try {
   // 9) 사운드 함수 무결성
   ["startAmbient", "stopAmbient", "setAmbientVolume", "chime", "celebrate", "breathCue"].forEach((fn) =>
     check("Sound." + fn + " 함수", typeof window.Sound[fn] === "function"));
+
+  // 10) 클라우드 (미설정 폴백 + 병합 로직)
+  check("클라우드 미설정 안내 표시", !q("#cloudNotConfigured").hasAttribute("hidden"));
+  check("로그인 UI 숨김(미설정)", q("#cloudLoggedOut").hasAttribute("hidden"));
+  const merged = window.Cloud._merge(
+    { entries: { a: { updatedAt: "2020-01-01", x: 1 } }, challenges: [{ id: "h", done: { d1: true }, celebrated: [1] }], projects: [], settings: { tone: "plain" } },
+    { entries: { a: { updatedAt: "2030-01-01", x: 2 }, b: { updatedAt: "2025-01-01" } }, challenges: [{ id: "h", done: { d2: true }, celebrated: [3] }], projects: [], settings: { tone: "warm", theme: "dark" } }
+  );
+  check("병합: 최신 일기 채택", merged.entries.a.x === 2);
+  check("병합: 원격 전용 일기 보존", !!merged.entries.b);
+  check("병합: 습관 완료 합집합", merged.challenges[0].done.d1 && merged.challenges[0].done.d2);
+  check("병합: 설정은 로컬 우선+원격 보완", merged.settings.tone === "plain" && merged.settings.theme === "dark");
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

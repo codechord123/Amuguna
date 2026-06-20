@@ -294,6 +294,32 @@
 
     <!-- ========== 탭: 설정 ========== -->
     <section class="tab" id="tab-settings" hidden>
+      <div class="card" id="accountCard">
+        <h2>☁️ 계정 & 동기화</h2>
+        <div id="cloudNotConfigured" hidden>
+          <p class="hint">기기 간 자동 동기화를 쓰려면 <code>config.js</code>에 Supabase 주소·키를 넣고 안내 SQL을 한 번 실행하세요. (README의 "클라우드 동기화" 참고) 설정 전에는 이 기기에만 저장돼요.</p>
+        </div>
+        <div id="cloudLoggedOut" hidden>
+          <p class="hint">로그인하면 기록이 기기 간에 자동으로 동기화돼요.</p>
+          <input id="authEmail" class="text-input" type="email" placeholder="이메일" autocomplete="email" />
+          <input id="authPw" class="text-input" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="margin-top:8px" />
+          <div class="data-btns" style="margin-top:10px">
+            <button class="btn primary" id="authLogin">로그인</button>
+            <button class="btn" id="authSignup">회원가입</button>
+            <button class="btn" id="authGoogle">Google로 계속</button>
+          </div>
+          <p class="save-msg" id="authMsg" role="status" aria-live="polite" hidden></p>
+        </div>
+        <div id="cloudLoggedIn" hidden>
+          <p class="hint" id="cloudUser"></p>
+          <p class="hint" id="cloudStatus"></p>
+          <div class="data-btns">
+            <button class="btn" id="cloudSync">지금 동기화</button>
+            <button class="btn danger" id="cloudLogout">로그아웃</button>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>🎨 테마</h2>
         <div class="theme-grid" id="themeGrid">
@@ -373,7 +399,9 @@
     <button class="tabbtn" data-tab="settings">⚙️<span>설정</span></button>
   </nav>
 
+  <script src="config.js"></script>
   <script src="sound.js"></script>
   <script src="app.js"></script>
+  <script src="cloud.js"></script>
 </body>
 </html>

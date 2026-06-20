@@ -36,8 +36,11 @@ const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 �
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
 
 function safeSet(key, value) {
-  try { localStorage.setItem(key, value); return true; }
-  catch (e) {
+  try {
+    localStorage.setItem(key, value);
+    if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty(); // 클라우드 동기화(로그인 시)
+    return true;
+  } catch (e) {
     const msg = "저장에 실패했어요. 저장 공간이 부족하거나 사생활 보호 모드일 수 있어요. 설정 → 내보내기로 백업해 주세요.";
     if (typeof toast === "function") toast(msg); else alert(msg);
     return false;
@@ -1211,6 +1214,24 @@ function comebackCheck() {
   const gap = daysSince(last);
   if (gap >= 4) setTimeout(() => toast(`${gap}일 만이네요. 다시 와줘서 반가워요 🌿 쉬어간 날들도 괜찮아요. 오늘은 기분 하나만 눌러도 충분해요.`), 1300);
 }
+
+/* 클라우드 동기화용 훅 (cloud.js가 사용) */
+window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), projects: loadProjs(), settings: loadSettings() });
+function refreshAll() {
+  loadToday();
+  if (!document.getElementById("tab-challenge").hidden) { renderChallenge(); renderProjects(); }
+  if (!document.getElementById("tab-stats").hidden) renderStats();
+}
+window.__applyData = (data) => {
+  if (!data) return;
+  try {
+    if (data.entries) localStorage.setItem(DB.ENTRIES, JSON.stringify(data.entries));
+    if (data.challenges) localStorage.setItem(DB.CH, JSON.stringify(data.challenges));
+    if (data.projects) localStorage.setItem(PROJ_KEY, JSON.stringify(data.projects));
+    if (data.settings) { Object.assign(settings, data.settings); localStorage.setItem(DB.SETTINGS, JSON.stringify(settings)); applySettings(); }
+  } catch (e) {}
+  refreshAll();
+};
 
 /* 초기화 */
 applySettings();

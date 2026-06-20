@@ -108,10 +108,49 @@ npm test         # 핵심 사용자 흐름 회귀 스모크 테스트 (tests/smo
 npm run beta     # 시뮬레이션 베타테스트 리포트 생성 (beta/)
 ```
 
+## ☁️ 클라우드 동기화 & 로그인 (선택)
+
+설정하면 **여러 기기에서 같은 계정으로 로그인**해 기록이 자동 동기화돼요. 설정 전에는 기존처럼 이 기기에만 저장됩니다(완전 동작).
+
+백엔드는 무료로 시작 가능한 **Supabase**를 사용합니다.
+
+**1) 프로젝트 만들기**
+[supabase.com](https://supabase.com) 가입 → New project 생성.
+
+**2) 키 넣기**
+Project Settings → **API** 에서 `Project URL` 과 `anon public` 키를 복사해 `config.js`에 붙여넣기:
+```js
+window.ONEUL_CONFIG = {
+  SUPABASE_URL: "https://xxxx.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGci...",
+};
+```
+> `anon` 키는 공개돼도 안전한 공개 키예요. 아래 RLS 정책으로 **본인 데이터만** 접근됩니다.
+
+**3) 테이블 + 보안정책 (SQL Editor에 한 번 실행)**
+```sql
+create table if not exists public.app_state (
+  user_id uuid references auth.users on delete cascade primary key,
+  data jsonb not null default '{}',
+  updated_at timestamptz default now()
+);
+alter table public.app_state enable row level security;
+create policy "own state" on public.app_state
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+**4) 로그인 방식**
+- **이메일/비밀번호**: 기본 활성화(Authentication → Providers → Email). 바로 회원가입/로그인 가능.
+- **Google 로그인(선택)**: Authentication → Providers → Google 활성화 + Google Cloud OAuth 클라이언트 설정. 설정 전엔 "Google로 계속" 버튼이 동작하지 않아요.
+
+**5) 사용**
+설정 탭 → ☁️ 계정 & 동기화 에서 로그인. 이후 기록 변경 시 자동 저장되고, 다른 기기에서 로그인하면 **병합**돼요(일기는 최신 우선, 습관 완료는 합집합).
+
+> 동작 방식: 로그인 시 원격↔로컬을 병합 후 업로드, 이후 변경은 디바운스 업로드. 실시간 양방향 푸시는 아니므로, 다른 기기 변경은 그 기기에서 "지금 동기화"나 재로그인 시 반영돼요.
+
 ## 개인정보
 
-모든 기록(일기·기분·에너지·칭찬)은 **사용자 기기(localStorage)에만** 저장됩니다.
-서버 전송이나 외부 공유가 전혀 없어요. 백업이 필요하면 설정에서 직접 내보낼 수 있어요.
+기본적으로 모든 기록은 **사용자 기기(localStorage)에만** 저장돼요. 클라우드 동기화를 **직접 설정해 로그인한 경우에만**, 본인 계정의 Supabase에 암호화 전송되어 저장됩니다(RLS로 본인만 접근). 동기화를 켜지 않으면 외부 전송이 전혀 없어요.
 
 ## 마음이 너무 힘든 날엔
 

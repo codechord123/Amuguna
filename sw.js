@@ -1,11 +1,13 @@
 // 오늘의 쉼 — 서비스워커 (오프라인 캐시)
-const CACHE = "oneul-shim-v13";
+const CACHE = "oneul-shim-v14";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
   "./sound.js",
+  "./config.js",
+  "./cloud.js",
   "./manifest.json",
   "./icon.svg",
 ];
