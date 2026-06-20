@@ -141,6 +141,7 @@
 
     <!-- ========== 탭: 챌린지 ========== -->
     <section class="tab" id="tab-challenge" hidden>
+      <h3 class="section-h">🔥 매일 습관</h3>
       <p class="ch-summary" id="chSummary" hidden></p>
       <div id="challengeList"></div>
 
@@ -180,6 +181,26 @@
 
         <p class="intention-preview" id="intentionPreview"></p>
         <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
+      </div>
+
+      <!-- 프로젝트 (목표를 단계로 쪼개기) -->
+      <h3 class="section-h">📁 프로젝트 <span class="section-sub">목표를 작은 할 일로</span></h3>
+      <div id="projectList"></div>
+      <button class="habit-add" id="addProjectBtn" hidden>＋ 새 프로젝트</button>
+
+      <div class="card" id="projectSetup">
+        <div class="setup-empty">
+          <div class="onboard-emoji">📁</div>
+          <h2>이루고 싶은 목표가 있나요?</h2>
+          <p class="hint">큰 목표도 작은 할 일로 쪼개면 한 걸음씩 나아갈 수 있어요. 습관과 함께 굴려보세요.</p>
+        </div>
+        <p class="field-label">프로젝트 이름</p>
+        <input type="text" id="projTitle" class="text-input" placeholder="예: 포트폴리오 만들기" maxlength="40" />
+        <p class="field-label">마감일 <span class="opt">(선택)</span></p>
+        <input type="date" id="projDue" class="text-input" />
+        <p class="field-label">할 일 목록 <span class="opt">(한 줄에 하나씩 · 나중에 추가해도 돼요)</span></p>
+        <textarea id="projTasks" rows="4" placeholder="자료 조사하기&#10;초안 작성하기&#10;피드백 받기"></textarea>
+        <button class="btn primary block" id="startProject">프로젝트 시작하기</button>
       </div>
     </section>
 

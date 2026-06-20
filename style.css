@@ -165,6 +165,24 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .volume-row { display: flex; align-items: center; gap: 12px; }
 .volume-row input { flex: 1; }
 
+/* 섹션 헤더 (습관 / 프로젝트) */
+.section-h { font-size: 1.08rem; font-weight: 700; margin: 6px 2px 12px; display: flex; align-items: baseline; gap: 8px; }
+.section-h:not(:first-child) { margin-top: 26px; }
+.section-sub { font-size: 0.76rem; color: var(--soft); font-weight: 500; }
+
+/* 프로젝트 할 일 */
+.task-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.task-row { display: flex; align-items: center; gap: 10px; background: var(--bg-sunken); border-radius: 12px; padding: 9px 12px; }
+.task-check { width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; border: 2px solid var(--line); background: var(--card); cursor: pointer; font-size: 0.85rem; color: var(--soft); display: flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s; }
+.task-check.done { background: var(--success); border-color: var(--success); color: #fff; }
+.task-text { flex: 1; font-size: 0.94rem; word-break: break-word; }
+.task-text.done { text-decoration: line-through; color: var(--soft); }
+.task-del { border: none; background: transparent; color: var(--soft); cursor: pointer; font-size: 1.1rem; min-width: 36px; min-height: 36px; border-radius: 8px; }
+.task-del:hover { background: var(--line); }
+.task-add { display: flex; gap: 8px; margin-top: 10px; }
+.task-add .text-input { flex: 1; }
+.habit-check.pct { font-size: 0.95rem; font-weight: 800; }
+
 /* ===== 챌린지 (복수 습관) ===== */
 .ch-summary { text-align: center; color: var(--ink-2); font-weight: 600; margin: 0 0 16px; font-size: 0.95rem; }
 .habit-card { background: var(--card); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
