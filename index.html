@@ -89,13 +89,52 @@
         <div class="sound-grid" id="soundGrid">
           <button class="sound-btn" data-sound="rain">🌧️<span>빗소리</span></button>
           <button class="sound-btn" data-sound="wave">🌊<span>파도</span></button>
-          <button class="sound-btn" data-sound="forest">🌲<span>숲 바람</span></button>
+          <button class="sound-btn" data-sound="forest">🌲<span>숲·새소리</span></button>
+          <button class="sound-btn" data-sound="fire">🔥<span>모닥불</span></button>
           <button class="sound-btn" data-sound="off">🔇<span>끄기</span></button>
         </div>
         <div class="volume-row">
           <span>🔈</span>
           <input type="range" id="ambientVol" min="0" max="100" value="55" />
           <span>🔊</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 탭: 챌린지 ========== -->
+    <section class="tab" id="tab-challenge" hidden>
+      <!-- 시작 전 -->
+      <div class="card" id="challengeSetup">
+        <h2>🎯 90일 습관 챌린지</h2>
+        <p class="hint">3달이면 습관이 돼요. 거창하지 않아도 좋아요. 매일 한 칸씩 채워봐요.</p>
+        <p class="field-label">어떤 습관을 만들고 싶어요?</p>
+        <div class="preset-grid" id="presetGrid">
+          <button class="preset" data-h="하루 10분 산책하기">🚶 하루 10분 산책</button>
+          <button class="preset" data-h="감사한 일 3가지 적기">🙏 감사 3가지</button>
+          <button class="preset" data-h="물 8잔 마시기">💧 물 8잔 마시기</button>
+          <button class="preset" data-h="10분 스트레칭하기">🧘 10분 스트레칭</button>
+          <button class="preset" data-h="자기 전 휴대폰 멀리 두기">📵 자기 전 폰 멀리</button>
+          <button class="preset" data-h="하루 한 줄 일기 쓰기">📔 한 줄 일기</button>
+        </div>
+        <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요" maxlength="40" />
+        <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
+      </div>
+
+      <!-- 진행 중 -->
+      <div class="card" id="challengeActive" hidden>
+        <div class="card-head">
+          <h2 id="chTitle">습관</h2>
+          <span class="today-date" id="chDay"></span>
+        </div>
+        <div class="ch-progress"><div class="ch-bar" id="chBar"></div></div>
+        <p class="ch-stat" id="chStat"></p>
+        <button class="btn primary block" id="chDoneBtn">오늘 완료 체크 ✓</button>
+        <p class="ch-milestone" id="chMilestone" hidden></p>
+        <div class="ch-grid" id="chGrid"></div>
+        <div class="data-btns" style="margin-top:18px">
+          <button class="btn" id="chCalendar">📅 캘린더에 매일 알림 추가</button>
+          <button class="btn" id="chShare">📤 진행 상황 공유하기</button>
+          <button class="btn danger" id="chGiveUp">챌린지 그만두기</button>
         </div>
       </div>
     </section>
@@ -200,6 +239,7 @@
   <nav class="tabbar" id="tabbar">
     <button class="tabbtn active" data-tab="today">📔<span>오늘</span></button>
     <button class="tabbtn" data-tab="rest">🌿<span>쉼</span></button>
+    <button class="tabbtn" data-tab="challenge">🎯<span>챌린지</span></button>
     <button class="tabbtn" data-tab="stats">📊<span>기록</span></button>
     <button class="tabbtn" data-tab="settings">⚙️<span>설정</span></button>
   </nav>

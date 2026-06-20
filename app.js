@@ -69,7 +69,7 @@ function todayKey(d) {
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", rest: "tab-rest", stats: "tab-stats", settings: "tab-settings" };
+const tabs = { today: "tab-today", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
 tabbar.addEventListener("click", (e) => {
   const btn = e.target.closest(".tabbtn");
   if (!btn) return;
@@ -80,6 +80,7 @@ tabbar.addEventListener("click", (e) => {
     document.getElementById(id).hidden = k !== name;
   });
   if (name === "stats") renderStats();
+  if (name === "challenge") renderChallenge();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
@@ -443,6 +444,196 @@ function renderHistory(list) {
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ===================== 90일 챌린지 ===================== */
+const CH_KEY = "challenge_v1";
+const CH_TARGET = 90;
+const MILESTONES = {
+  1: "첫 걸음을 뗐어요! 시작이 가장 어려운 건데, 해냈어요 🌱",
+  3: "3일째! 작심삼일의 벽을 넘었어요 💪",
+  7: "일주일 완성! 일상에 자리를 잡아가고 있어요 ☀️",
+  14: "2주 돌파! 이제 제법 익숙해졌죠? 🌿",
+  21: "21일! 흔히 말하는 습관의 씨앗이 텄어요 🌷",
+  30: "한 달 달성! 정말 대단해요. 스스로가 자랑스러울 거예요 🎉",
+  50: "50일! 절반을 훌쩍 넘었어요. 멈추지 않는 당신이 멋져요 🔥",
+  66: "66일! 과학이 말하는 '습관이 자리잡는 날'에 도달했어요 🧠✨",
+  90: "90일 완주!! 3달을 해낸 당신은 이미 다른 사람이에요. 진심으로 축하해요 🏆",
+};
+
+function loadCh() { try { return JSON.parse(localStorage.getItem(CH_KEY)); } catch { return null; } }
+function saveCh(c) { localStorage.setItem(CH_KEY, JSON.stringify(c)); }
+function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return todayKey(d); }
+function daysSince(startKey) {
+  const a = new Date(startKey + "T00:00:00"); const b = new Date(todayKey() + "T00:00:00");
+  return Math.round((b - a) / 86400000);
+}
+
+const presetGrid = document.getElementById("presetGrid");
+const challengeTitle = document.getElementById("challengeTitle");
+let presetChoice = "";
+presetGrid.addEventListener("click", (e) => {
+  const btn = e.target.closest(".preset");
+  if (!btn) return;
+  Sound.tap();
+  presetChoice = btn.dataset.h;
+  challengeTitle.value = presetChoice;
+  document.querySelectorAll(".preset").forEach((p) => p.classList.toggle("selected", p === btn));
+});
+challengeTitle.addEventListener("input", () => {
+  document.querySelectorAll(".preset").forEach((p) => p.classList.remove("selected"));
+});
+
+document.getElementById("startChallenge").addEventListener("click", () => {
+  const title = challengeTitle.value.trim() || presetChoice;
+  if (!title) { alert("어떤 습관을 만들지 골라주세요 🙂"); return; }
+  saveCh({ title, startDate: todayKey(), done: {}, celebrated: [], completedAt: null });
+  Sound.success();
+  renderChallenge();
+});
+
+function renderChallenge() {
+  const ch = loadCh();
+  const setup = document.getElementById("challengeSetup");
+  const active = document.getElementById("challengeActive");
+  if (!ch) { setup.hidden = false; active.hidden = true; return; }
+  setup.hidden = true; active.hidden = false;
+
+  const dayNum = Math.min(daysSince(ch.startDate) + 1, CH_TARGET);
+  const doneCount = Object.values(ch.done).filter(Boolean).length;
+
+  document.getElementById("chTitle").textContent = ch.title;
+  document.getElementById("chDay").textContent = `Day ${dayNum} / ${CH_TARGET}`;
+  document.getElementById("chBar").style.width = (doneCount / CH_TARGET) * 100 + "%";
+
+  const chStreak = challengeStreak(ch);
+  document.getElementById("chStat").textContent =
+    `완료 ${doneCount}일 · 지금 연속 ${chStreak}일 · 남은 ${Math.max(CH_TARGET - doneCount, 0)}일`;
+
+  const todayDone = !!ch.done[todayKey()];
+  const btn = document.getElementById("chDoneBtn");
+  btn.textContent = todayDone ? "오늘 완료했어요! ✓ (취소하려면 누르기)" : "오늘 완료 체크 ✓";
+  btn.classList.toggle("primary", !todayDone);
+
+  // 마일스톤 안내
+  const ms = document.getElementById("chMilestone");
+  const reached = Object.keys(MILESTONES).map(Number).filter((m) => doneCount >= m);
+  if (reached.length) { ms.textContent = MILESTONES[Math.max(...reached)]; ms.hidden = false; }
+  else { ms.hidden = true; }
+
+  renderChGrid(ch);
+}
+
+function challengeStreak(ch) {
+  let streak = 0;
+  let d = new Date();
+  if (!ch.done[todayKey(d)]) d.setDate(d.getDate() - 1);
+  while (ch.done[todayKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+
+function renderChGrid(ch) {
+  const grid = document.getElementById("chGrid");
+  grid.innerHTML = "";
+  const today = todayKey();
+  for (let i = 0; i < CH_TARGET; i++) {
+    const key = addDays(ch.startDate, i);
+    const cell = document.createElement("div");
+    cell.className = "ch-cell";
+    cell.title = `${i + 1}일째 (${key})`;
+    if (ch.done[key]) cell.classList.add("done");
+    if (key === today) cell.classList.add("today");
+    else if (key > today) cell.classList.add("future");
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById("chDoneBtn").addEventListener("click", () => {
+  const ch = loadCh();
+  if (!ch) return;
+  const k = todayKey();
+  const before = Object.values(ch.done).filter(Boolean).length;
+  ch.done[k] = !ch.done[k];
+  const after = Object.values(ch.done).filter(Boolean).length;
+  saveCh(ch);
+  if (ch.done[k]) {
+    // 새 마일스톤 도달 시 축하
+    if (MILESTONES[after] && !ch.celebrated.includes(after)) {
+      ch.celebrated.push(after);
+      if (after >= 90) { ch.completedAt = new Date().toISOString(); }
+      saveCh(ch);
+      Sound.celebrate(); confetti();
+    } else {
+      Sound.success();
+    }
+  } else {
+    Sound.tap();
+  }
+  renderChallenge();
+});
+
+document.getElementById("chGiveUp").addEventListener("click", () => {
+  if (!confirm("챌린지를 그만둘까요? 지금까지의 기록은 사라져요.\n그만둬도 괜찮아요 — 쉬어가는 것도 용기예요.")) return;
+  localStorage.removeItem(CH_KEY);
+  Sound.tap();
+  presetChoice = ""; challengeTitle.value = "";
+  document.querySelectorAll(".preset").forEach((p) => p.classList.remove("selected"));
+  renderChallenge();
+});
+
+/* 🔌 캘린더(.ics) 연동 — 챌린지를 캘린더 앱에 매일 알림으로 */
+document.getElementById("chCalendar").addEventListener("click", () => {
+  const ch = loadCh();
+  if (!ch) return;
+  Sound.tap();
+  const start = ch.startDate.replace(/-/g, "");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const [hh, mm] = (settings.reminderTime || "09:00").split(":");
+  const ics = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//오늘의 쉼//90일 챌린지//KR", "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    "UID:" + Date.now() + "@oneul-shim",
+    "DTSTAMP:" + stamp,
+    "DTSTART;VALUE=DATE:" + start,
+    "RRULE:FREQ=DAILY;COUNT=" + CH_TARGET,
+    "SUMMARY:🎯 " + ch.title,
+    "DESCRIPTION:오늘의 쉼 90일 챌린지 — 오늘도 한 칸 채워봐요!",
+    "BEGIN:VALARM", "TRIGGER:PT" + (Number(hh) * 60 + Number(mm)) + "M",
+    "ACTION:DISPLAY", "DESCRIPTION:" + ch.title, "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([ics], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `90일챌린지_${ch.title}.ics`;
+  a.click(); URL.revokeObjectURL(url);
+});
+
+/* 🔌 공유 — Web Share API (없으면 클립보드 복사) */
+document.getElementById("chShare").addEventListener("click", async () => {
+  const ch = loadCh();
+  if (!ch) return;
+  Sound.tap();
+  const doneCount = Object.values(ch.done).filter(Boolean).length;
+  const text = `오늘의 쉼 🎯 '${ch.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요 💪`;
+  try {
+    if (navigator.share) { await navigator.share({ title: "오늘의 쉼 챌린지", text }); }
+    else { await navigator.clipboard.writeText(text); alert("진행 상황을 클립보드에 복사했어요!\n\n" + text); }
+  } catch (e) {}
+});
+
+function confetti() {
+  const emojis = ["🎉", "✨", "💛", "🌟", "🎊", "🌸"];
+  for (let i = 0; i < 28; i++) {
+    const s = document.createElement("span");
+    s.className = "confetti";
+    s.textContent = emojis[i % emojis.length];
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.animationDelay = (Math.random() * 0.4) + "s";
+    s.style.fontSize = (16 + Math.random() * 18) + "px";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 2700);
+  }
 }
 
 /* ===================== 설정 ===================== */
