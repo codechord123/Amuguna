@@ -133,7 +133,7 @@ function activateTab(name, { scroll = true } = {}) {
   document.querySelectorAll(".tabbtn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
-  if (name === "challenge") { renderChallenge(); renderProjects(); }
+  if (name === "challenge") renderChallenge();
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -486,7 +486,6 @@ function challengeStreak(h) {
 }
 
 function renderChallenge() {
-  renderProjLink(); // 습관 변경 시 프로젝트의 습관 연결 선택지도 갱신
   const chs = loadChs();
   const list = document.getElementById("challengeList");
   const addBtn = document.getElementById("addHabitBtn");
@@ -656,146 +655,6 @@ function confetti() {
   }
 }
 
-/* ===================== 프로젝트 (목표를 단계로) ===================== */
-const PROJ_KEY = "projects_v1";
-function loadProjs() { try { return JSON.parse(localStorage.getItem(PROJ_KEY)) || []; } catch { return []; } }
-function saveProjs(a) { return safeSet(PROJ_KEY, JSON.stringify(a)); }
-const projExpanded = new Set();
-let addingProject = false;
-
-function dueLabel(due) {
-  const diff = Math.round((new Date(due + "T00:00:00") - new Date(todayKey() + "T00:00:00")) / 86400000);
-  if (diff > 0) return `D-${diff}`;
-  if (diff === 0) return "오늘 마감";
-  return `${-diff}일 지남`;
-}
-function renderProjLink() {
-  const chs = loadChs(), wrap = document.getElementById("projLink"), label = document.getElementById("linkLabel");
-  if (!chs.length) { wrap.innerHTML = ""; label.hidden = true; return; }
-  label.hidden = false;
-  wrap.innerHTML = chs.map((h) => `<button type="button" class="link-chip" data-hid="${h.id}">${h.emoji} ${escapeHtml(h.title)}</button>`).join("");
-}
-document.getElementById("projLink").addEventListener("click", (e) => {
-  const b = e.target.closest(".link-chip"); if (!b) return;
-  b.classList.toggle("selected"); Sound.tap();
-});
-function renderProjects() {
-  renderProjLink();
-  const projs = loadProjs();
-  const list = document.getElementById("projectList");
-  const addBtn = document.getElementById("addProjectBtn");
-  const setupEl = document.getElementById("projectSetup");
-  const emptyEl = setupEl.querySelector(".setup-empty");
-  if (projs.length === 0) {
-    list.innerHTML = ""; addBtn.hidden = true; setupEl.hidden = false; emptyEl.hidden = false; addingProject = false; return;
-  }
-  list.innerHTML = projs.map(projCardHtml).join("");
-  addBtn.hidden = false; setupEl.hidden = !addingProject; emptyEl.hidden = true;
-}
-function projCardHtml(p) {
-  const total = p.tasks.length, done = p.tasks.filter((t) => t.done).length;
-  const pctv = total ? Math.round(100 * done / total) : 0;
-  const open = projExpanded.has(p.id);
-  const due = p.due ? dueLabel(p.due) : "";
-  const overdue = p.due && !(total && done === total) && new Date(p.due + "T00:00:00") < new Date(todayKey() + "T00:00:00");
-  const today = todayKey();
-  const chMap = {}; loadChs().forEach((h) => chMap[h.id] = h);
-  const links = (p.linkedHabits || []).map((id) => chMap[id]).filter(Boolean);
-  const linkHtml = links.length ? `<div class="link-row">${links.map((h) => `<span class="link-tag ${h.done[today] ? "done" : ""}">${h.done[today] ? "✓" : "○"} ${h.emoji} ${escapeHtml(h.title)}</span>`).join("")}</div>` : "";
-  return `
-  <div class="habit-card" data-pid="${p.id}">
-    <div class="habit-top">
-      <div class="habit-info" data-pact="expand">
-        <div class="habit-title">${p.emoji || "📁"} ${escapeHtml(p.title)}</div>
-        <div class="habit-meta">${done}/${total} 완료${due ? ` · <span class="${overdue ? "proj-due overdue" : "proj-due"}">${due}</span>` : ""}</div>
-      </div>
-      <button class="habit-check pct ${total && done === total ? "done" : ""}" data-pact="expand" aria-label="펼치기">${pctv}%</button>
-    </div>
-    <div class="habit-mini-bar"><i style="width:${pctv}%"></i></div>
-    <div class="habit-detail ${open ? "open" : ""}">
-      ${linkHtml}
-      <ul class="task-list">${p.tasks.map((t, i) => {
-        const td = t.due ? dueLabel(t.due) : "";
-        const tover = t.due && !t.done && new Date(t.due + "T00:00:00") < new Date(today + "T00:00:00");
-        return `
-        <li class="task-row">
-          <button class="task-check ${t.done ? "done" : ""}" data-pact="task" data-ti="${i}" aria-label="완료 체크">${t.done ? "✓" : ""}</button>
-          <span class="task-text ${t.done ? "done" : ""}">${escapeHtml(t.text)}${td ? ` <span class="task-due ${tover ? "overdue" : ""}">${td}</span>` : ""}</span>
-          <button class="task-del" data-pact="taskdel" data-ti="${i}" aria-label="할 일 삭제">×</button>
-        </li>`; }).join("")}</ul>
-      <div class="task-add">
-        <input type="text" class="text-input" data-padd="${p.id}" placeholder="할 일 추가" maxlength="60" />
-        <input type="date" class="text-input task-due-in" data-padddue="${p.id}" aria-label="기한(선택)" />
-        <button class="btn" data-pact="addtask">추가</button>
-      </div>
-      <div class="inline-edit" data-pedit hidden>
-        <input class="text-input" data-pf="title" value="${escapeHtml(p.title)}" maxlength="40" />
-        <input type="date" class="text-input" data-pf="due" value="${p.due || ""}" />
-        <div class="edit-actions"><button class="btn primary" data-pact="psave">저장</button><button class="btn" data-pact="pcancel">취소</button></div>
-      </div>
-      <div class="data-btns" style="margin-top:14px">
-        <button class="btn" data-pact="pedit">✏️ 편집</button>
-        <button class="btn danger" data-pact="delproj">프로젝트 삭제</button>
-      </div>
-    </div>
-  </div>`;
-}
-document.getElementById("projectList").addEventListener("click", (e) => {
-  const card = e.target.closest(".habit-card"); if (!card) return;
-  const pid = card.dataset.pid;
-  const el = e.target.closest("[data-pact]"); if (!el) return;
-  const act = el.dataset.pact;
-  const projs = loadProjs(); const p = projs.find((x) => x.id === pid); if (!p) return;
-  if (act === "expand") {
-    if (projExpanded.has(pid)) projExpanded.delete(pid); else projExpanded.add(pid);
-    card.querySelector(".habit-detail").classList.toggle("open");
-  } else if (act === "task") {
-    const i = +el.dataset.ti; p.tasks[i].done = !p.tasks[i].done;
-    const allDone = p.tasks.length && p.tasks.every((t) => t.done);
-    if (p.tasks[i].done && allDone && !p.completed) { p.completed = true; saveProjs(projs); Sound.celebrate(); confetti(); }
-    else { if (!allDone) p.completed = false; saveProjs(projs); Sound[p.tasks[i].done ? "success" : "tap"](); }
-    projExpanded.add(pid); renderProjects();
-  } else if (act === "taskdel") {
-    p.tasks.splice(+el.dataset.ti, 1); saveProjs(projs); projExpanded.add(pid); renderProjects(); Sound.tap();
-  } else if (act === "addtask") {
-    const inp = card.querySelector(`[data-padd="${pid}"]`); const txt = (inp.value || "").trim();
-    if (!txt) return;
-    const dueIn = card.querySelector(`[data-padddue="${pid}"]`);
-    const task = { text: txt, done: false }; if (dueIn && dueIn.value) task.due = dueIn.value;
-    p.tasks.push(task); p.completed = false; saveProjs(projs); projExpanded.add(pid); renderProjects(); Sound.tap();
-  } else if (act === "pedit") {
-    const f = card.querySelector("[data-pedit]"); f.hidden = !f.hidden; Sound.tap();
-  } else if (act === "psave") {
-    const f = card.querySelector("[data-pedit]");
-    const title = f.querySelector('[data-pf="title"]').value.trim();
-    if (!title) { alert("프로젝트 이름을 비울 수 없어요 🙂"); return; }
-    p.title = title; p.due = f.querySelector('[data-pf="due"]').value || "";
-    saveProjs(projs); Sound.success(); projExpanded.add(pid); renderProjects();
-  } else if (act === "pcancel") {
-    renderProjects();
-  } else if (act === "delproj") {
-    if (!confirm("이 프로젝트를 삭제할까요? 할 일 목록도 사라져요.")) return;
-    saveProjs(projs.filter((x) => x.id !== pid)); projExpanded.delete(pid); renderProjects(); Sound.tap();
-  }
-});
-document.getElementById("addProjectBtn").addEventListener("click", () => {
-  addingProject = true; Sound.tap(); renderProjects();
-  document.getElementById("projectSetup").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-document.getElementById("startProject").addEventListener("click", () => {
-  const title = document.getElementById("projTitle").value.trim();
-  if (!title) { alert("프로젝트 이름을 입력해주세요 🙂"); return; }
-  const due = document.getElementById("projDue").value || "";
-  const tasks = document.getElementById("projTasks").value.split("\n").map((s) => s.trim()).filter(Boolean).map((t) => ({ text: t, done: false }));
-  const linkedHabits = Array.from(document.querySelectorAll("#projLink .link-chip.selected")).map((b) => b.dataset.hid);
-  const projs = loadProjs();
-  projs.push({ id: "p" + Date.now(), emoji: "📁", title, due, tasks, linkedHabits, completed: false, createdAt: new Date().toISOString() });
-  saveProjs(projs); Sound.success();
-  document.getElementById("projTitle").value = ""; document.getElementById("projDue").value = ""; document.getElementById("projTasks").value = "";
-  document.querySelectorAll("#projLink .link-chip.selected").forEach((b) => b.classList.remove("selected"));
-  addingProject = false; renderProjects();
-});
-
 /* ===================== 기록 / 데이터 ===================== */
 function sortedEntries(entries) { return Object.values(entries).filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date)); }
 function calcStreak(entries) {
@@ -819,7 +678,6 @@ function renderStats() {
   renderInsight(entries, list);
   drawChart(entries);
   renderMoodCalendar(entries);
-  renderProjectStats();
   renderDist(list);
   renderHistory(list);
 }
@@ -847,20 +705,6 @@ function renderMoodCalendar(entries) {
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
-function renderProjectStats() {
-  const projs = loadProjs();
-  const card = document.getElementById("projStatsCard"), wrap = document.getElementById("projStats");
-  if (!projs.length) { card.hidden = true; return; }
-  card.hidden = false;
-  wrap.innerHTML = projs.map((p) => {
-    const total = p.tasks.length, done = p.tasks.filter((t) => t.done).length, pctv = total ? Math.round(100 * done / total) : 0;
-    const due = p.due ? dueLabel(p.due) : "";
-    return `<div class="pstat-row">
-      <div class="pstat-top"><span>${p.emoji || "📁"} ${escapeHtml(p.title)}</span><span class="pstat-meta">${done}/${total} · ${pctv}%${due ? " · " + due : ""}</span></div>
-      <div class="habit-mini-bar"><i style="width:${pctv}%"></i></div>
-    </div>`;
-  }).join("");
-}
 
 /* 주간 리포트 (베타 피드백 #1) */
 let weekData = null;
@@ -1139,7 +983,7 @@ document.getElementById("reminderTime").addEventListener("change", (e) => { sett
 
 document.getElementById("exportBtn").addEventListener("click", () => {
   Sound.tap();
-  const data = JSON.stringify({ entries: loadEntries(), challenges: loadChs(), projects: loadProjs() }, null, 2);
+  const data = JSON.stringify({ entries: loadEntries(), challenges: loadChs() }, null, 2);
   const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
   const a = document.createElement("a"); a.href = url; a.download = `오늘의쉼_백업_${todayKey()}.json`; a.click(); URL.revokeObjectURL(url);
 });
@@ -1156,11 +1000,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
       const chs = loadChs(); const ids = new Set(chs.map((c) => c.id));
       data.challenges.forEach((c) => { if (c && c.id && !ids.has(c.id)) chs.push(c); }); saveChs(chs);
     }
-    if (Array.isArray(data.projects)) {
-      const ps = loadProjs(); const ids = new Set(ps.map((p) => p.id));
-      data.projects.forEach((p) => { if (p && p.id && !ids.has(p.id)) ps.push(p); }); saveProjs(ps);
-    }
-    Sound.success(); loadToday(); renderChallenge(); renderProjects();
+    Sound.success(); loadToday(); renderChallenge();
     alert("복원 완료! 기존 기록과 합쳤어요 🌿");
   } catch (err) {
     alert("불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.");
@@ -1170,11 +1010,11 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
 document.getElementById("replayOnboard").addEventListener("click", () => { Sound.tap(); showOnboard(); });
 document.getElementById("clearBtn").addEventListener("click", () => {
   if (!confirm("정말 모든 기록을 지울까요? 되돌릴 수 없어요.")) return;
-  localStorage.removeItem(DB.ENTRIES); localStorage.removeItem(DB.CH); localStorage.removeItem(PROJ_KEY);
+  localStorage.removeItem(DB.ENTRIES); localStorage.removeItem(DB.CH); localStorage.removeItem("projects_v1");
   Sound.tap(); selectedMood = null;
   document.querySelectorAll(".mood").forEach((m) => { m.classList.remove("selected"); m.setAttribute("aria-pressed", "false"); });
   moodResponse.hidden = true; todayMore.hidden = true; journalInput.value = ""; praiseInput.value = "";
-  expandedIds.clear(); projExpanded.clear(); renderChallenge(); renderProjects();
+  expandedIds.clear(); renderChallenge();
   alert("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
 });
 
@@ -1216,10 +1056,10 @@ function comebackCheck() {
 }
 
 /* 클라우드 동기화용 훅 (cloud.js가 사용) */
-window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), projects: loadProjs(), settings: loadSettings() });
+window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), settings: loadSettings() });
 function refreshAll() {
   loadToday();
-  if (!document.getElementById("tab-challenge").hidden) { renderChallenge(); renderProjects(); }
+  if (!document.getElementById("tab-challenge").hidden) renderChallenge();
   if (!document.getElementById("tab-stats").hidden) renderStats();
 }
 window.__applyData = (data) => {
@@ -1227,7 +1067,6 @@ window.__applyData = (data) => {
   try {
     if (data.entries) localStorage.setItem(DB.ENTRIES, JSON.stringify(data.entries));
     if (data.challenges) localStorage.setItem(DB.CH, JSON.stringify(data.challenges));
-    if (data.projects) localStorage.setItem(PROJ_KEY, JSON.stringify(data.projects));
     if (data.settings) { Object.assign(settings, data.settings); localStorage.setItem(DB.SETTINGS, JSON.stringify(settings)); applySettings(); }
   } catch (e) {}
   refreshAll();

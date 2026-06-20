@@ -73,19 +73,11 @@ try {
   q(".habit-card [data-act=savehabit]").click();
   check("습관 편집(이름 변경)됨", ls("challenges_v2")[0].title === "아침 산책");
 
-  // 4) 프로젝트 생성 + 할 일 완료 + 편집
-  q("#projTitle").value = "포트폴리오"; q("#projTasks").value = "조사\n작성";
-  q("#startProject").click();
-  check("프로젝트 생성됨", ls("projects_v1").length === 1 && ls("projects_v1")[0].tasks.length === 2);
-  q("#projectList .habit-info").click();
-  q("#projectList .task-check").click();
-  check("프로젝트 할 일 완료 저장됨", ls("projects_v1")[0].tasks[0].done === true);
-
-  // 5) 통계 탭 (차트·달력·주간·인사이트 렌더)
+  // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
-  check("프로젝트 진행 카드 표시됨", !q("#projStatsCard").hasAttribute("hidden"));
   check("주간 리포트 텍스트 있음", q("#weeklySummary").textContent.length > 0);
+  check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
   // 6) 검색
   q("#historySearch").value = "야근"; q("#historySearch").dispatchEvent(new window.Event("input"));
