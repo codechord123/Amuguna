@@ -185,7 +185,8 @@ function activateTab(name, { scroll = true } = {}) {
     const cc = document.getElementById("checkin-card");
     cc.hidden = true; cc.classList.add("collapsed");
     document.getElementById("journeyStartCard").hidden = false;
-    updateJourneyHero();
+    document.getElementById("todayStats").hidden = false;
+    updateJourneyHero(); updateTodayStats();
   }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -221,6 +222,7 @@ function openEntryEditor(dateKey) {
   // 수정할 때만 기록 폼을 펼쳐 보이고, 여정 히어로는 잠시 감춤
   const cc = document.getElementById("checkin-card");
   document.getElementById("journeyStartCard").hidden = true;
+  document.getElementById("todayStats").hidden = true;
   cc.hidden = false; cc.classList.remove("collapsed");
   entryDate.value = dateKey; loadEntryForm(dateKey);
   cc.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -297,7 +299,30 @@ function loadEntryForm(key) {
   if (t.reflection) { reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; }
   todayMore.hidden = false;
 }
-function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); updateJourneyHero(); }
+function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); updateJourneyHero(); updateTodayStats(); }
+
+// 첫 화면 통계 + 응원 — 동기 부여
+function updateTodayStats() {
+  const card = document.getElementById("todayStats");
+  if (!card) return;
+  const entries = loadEntries(), tk = todayKey();
+  const list = sortedEntries(entries);
+  const streak = calcStreak(entries);
+  const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  const week = keys.filter((k) => entries[k] && entries[k].mood).length;
+  const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  set("tsStreak", streak);
+  set("tsWeek", `${week}<i>/7</i>`);
+  set("tsTotal", list.length);
+  const doneToday = !!(entries[tk] && entries[tk].mood);
+  let cheer;
+  if (list.length === 0) cheer = "환영해요! 오늘 첫 마음을 남겨볼까요? 🌱";
+  else if (!doneToday) cheer = streak >= 1 ? `${streak}일 연속 기록 중! 오늘도 이어가 봐요 🔥` : "오늘 마음을 남기고 다시 시작해 봐요 💛";
+  else if (streak >= 7) cheer = `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요 👑`;
+  else if (week >= 5) cheer = "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
+  else cheer = "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛";
+  set("tsCheer", cheer);
+}
 
 // 첫 화면(오늘의 여정) — 날짜·상태에 맞춰 주제 중심으로 안내
 function updateJourneyHero() {
@@ -1207,21 +1232,49 @@ const BADGES = [
   { id: "allmoods", e: "🌈", t: "마음의 무지개", d: "7가지 기분 모두 경험", ok: (D) => new Set(D.list.filter((e) => e.mood).map((e) => e.mood)).size >= 7 },
   { id: "earlybird", e: "🐦", t: "이른 새", d: "아침 8시 전에 기록", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 8) },
   { id: "nightowl", e: "🦉", t: "밤의 위로", d: "새벽(0~5시)에 기록", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 5) },
+  { id: "d200", e: "🗻", t: "이백 일", d: "누적 200일 기록", ok: (D) => D.total >= 200 },
+  { id: "streak60", e: "💫", t: "두 달 연속", d: "60일 연속 기록", ok: (D) => D.streak >= 60 },
+  { id: "breath30", e: "🧘", t: "호흡 마스터", d: "호흡 30번 하기", ok: () => (settings.breathCount || 0) >= 30 },
+  { id: "journey20", e: "🧭", t: "여정 베테랑", d: "오늘의 여정 20번 완주", ok: () => (settings.journeyCount || 0) >= 20 },
+  { id: "praise30", e: "💝", t: "감사 부자", d: "잘한 일 30번 기록", ok: (D) => D.list.filter((e) => e.praise && e.praise.trim()).length >= 30 },
+  { id: "note50", e: "✍️", t: "기록가", d: "일기 50번 작성", ok: (D) => D.list.filter((e) => e.note && e.note.trim()).length >= 50 },
+  { id: "tags20", e: "🎨", t: "감정의 화가", d: "감정 태그 20일 기록", ok: (D) => D.list.filter((e) => e.tags && e.tags.length).length >= 20 },
+  { id: "weekend", e: "🌅", t: "주말에도", d: "토·일 모두 기록한 적 있어요", ok: (D) => { const s = new Set(D.list.filter((e) => e.mood).map((e) => new Date(e.date + "T00:00:00").getDay())); return s.has(0) && s.has(6); } },
 ];
+// 레벨 — 획득한 배지 수가 목표에 도달하면 레벨업
+const LEVELS = [
+  { min: 0,  name: "씨앗",     emoji: "🌰" },
+  { min: 3,  name: "새싹",     emoji: "🌱" },
+  { min: 6,  name: "잎새",     emoji: "🍃" },
+  { min: 9,  name: "꽃봉오리", emoji: "🌷" },
+  { min: 13, name: "꽃",       emoji: "🌸" },
+  { min: 17, name: "나무",     emoji: "🌳" },
+  { min: 22, name: "숲",       emoji: "🌲" },
+  { min: 27, name: "별빛",     emoji: "🌟" },
+];
+function levelInfo(n) {
+  let idx = 0; LEVELS.forEach((l, i) => { if (n >= l.min) idx = i; });
+  const cur = LEVELS[idx], next = LEVELS[idx + 1];
+  const prog = next ? Math.min(100, Math.round(((n - cur.min) / (next.min - cur.min)) * 100)) : 100;
+  return { idx, level: idx + 1, cur, next, prog };
+}
 function badgeData() { const entries = loadEntries(), list = sortedEntries(entries); return { total: list.length, list, streak: calcStreak(entries), chs: loadChs() }; }
 function earnedBadgeIds() { const D = badgeData(); return BADGES.filter((b) => b.ok(D)).map((b) => b.id); }
 function renderBadges() {
   const earned = new Set(earnedBadgeIds());
   const n = earned.size, total = BADGES.length, pct = Math.round((n / total) * 100);
-  const rateEl = document.getElementById("badgeRate");
-  if (rateEl) rateEl.textContent = `${n} / ${total}`;
+  const lv = levelInfo(n);
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set("badgeRate", `배지 ${n}/${total}`);
+  set("levelEmoji", lv.cur.emoji);
+  set("levelName", `Lv.${lv.level} ${lv.cur.name}`);
+  set("levelNext", lv.next ? `다음 '${lv.next.name}'까지 배지 ${lv.next.min - n}개` : "최고 레벨 달성! 🎉");
   const fill = document.getElementById("badgeBarFill");
-  if (fill) fill.style.width = pct + "%";
-  const status = document.getElementById("badgeStatus");
-  if (status) status.textContent = n === total
+  if (fill) fill.style.width = lv.prog + "%"; // 다음 레벨까지의 진행도
+  set("badgeStatus", n === total
     ? "🎉 모든 배지를 모았어요! 정말 대단해요."
     : n === 0 ? "첫 배지를 향해 한 걸음씩 🌱"
-    : `획득률 ${pct}% · ${total - n}개 남았어요`;
+    : `획득률 ${pct}% · ${total - n}개 남았어요`);
   // 획득한 배지를 앞으로 정렬해 성취감을 강조
   const sorted = [...BADGES].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
   document.getElementById("badgeGrid").innerHTML = sorted.map((b) =>
@@ -1276,10 +1329,15 @@ function checkBadges() {
   const earned = earnedBadgeIds(), prev = settings.badges || [];
   const fresh = earned.filter((id) => !prev.includes(id));
   if (fresh.length) {
+    const prevLevel = levelInfo(prev.length).level, newLevel = levelInfo(earned.length).level;
     settings.badges = earned; saveSettingsObj(settings);
     const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
     if (typeof toast === "function") toast("🏅 새 배지 획득: " + titles);
     if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
+    if (newLevel > prevLevel) { // 목표 도달로 레벨업
+      const lv = levelInfo(earned.length);
+      setTimeout(() => { if (typeof toast === "function") toast(`${lv.cur.emoji} 레벨 업! Lv.${lv.level} '${lv.cur.name}' 달성 🎉`); confetti(); }, 1500);
+    }
   } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
 }
 

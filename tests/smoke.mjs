@@ -140,8 +140,11 @@ try {
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
-  check("배지 다양화(22종)", d.querySelectorAll("#badgeGrid .badge").length === 22);
+  check("배지 다양화(30종)", d.querySelectorAll("#badgeGrid .badge").length === 30);
   check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
+  check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
+  q("[data-tab=today]").click();
+  check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
   // 6) 검색

@@ -237,7 +237,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ============================================================
    문구 · 호흡 · 미션
    ============================================================ */
-.quote { margin: 0 0 var(--s5); font-size: var(--t-lg); font-weight: var(--w-semi); line-height: 1.65; min-height: 2.6em; display: flex; align-items: center; justify-content: center; border: none; padding: 0 var(--s2); transition: opacity 0.35s ease, transform 0.35s var(--ease-soft); }
+.quote { margin: 0 0 var(--s5); font-size: var(--t-lg); font-weight: var(--w-semi); line-height: 1.85; min-height: 3.2em; display: flex; align-items: center; justify-content: center; text-align: center; border: none; padding: var(--s3) var(--s3); word-break: keep-all; overflow-wrap: break-word; transition: opacity 0.35s ease, transform 0.35s var(--ease-soft); }
 .quote.swap { opacity: 0; transform: translateY(8px); }
 .quote-actions { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
 .icon-btn { border: 1.5px solid var(--line); background: var(--card); color: var(--accent-deep); width: 46px; height: 46px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-family: inherit; transition: transform 0.15s var(--ease-soft), border-color 0.2s, background 0.2s; }
@@ -389,9 +389,15 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .manage-row { display: flex; align-items: center; gap: var(--s2); justify-content: space-between; background: var(--bg-sunken); border-radius: var(--r-xs); padding: var(--s2) var(--s3); margin-bottom: var(--s1); font-size: var(--t-sm); }
 .manage-row span { flex: 1; }
 
-/* ----- 성취 배지 ----- */
-.badge-rate { font-size: var(--t-md); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.01em; }
-.badge-bar { height: 8px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; margin-top: calc(var(--s2) * -1); }
+/* ----- 성취 배지 & 레벨 ----- */
+.badge-rate { font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--soft); letter-spacing: -0.01em; }
+.level-row { display: flex; align-items: center; gap: var(--s3); margin: var(--s2) 0 var(--s3); }
+.level-emoji { font-size: 2.2rem; line-height: 1; flex-shrink: 0; }
+.level-info { flex: 1; min-width: 0; }
+.level-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); margin-bottom: var(--s2); }
+.level-top b { font-size: var(--t-md); font-weight: var(--w-bold); color: var(--accent-deep); }
+.level-top span { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); text-align: right; }
+.badge-bar { height: 10px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; }
 .badge-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 0.7s var(--ease-soft); }
 .badge-status { margin: var(--s2) 0 var(--s4); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-med); }
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: var(--s2); }
@@ -464,10 +470,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .card.collapsible.collapsed > :not(h2) { display: none !important; }
 
 /* ----- 여정 시작 카드 (오늘 탭의 단일 주제) ----- */
+/* ----- 첫 화면 통계 + 응원 ----- */
+.today-stats { padding: var(--s4) var(--s5); }
+.ts-row { display: flex; justify-content: space-around; text-align: center; }
+.ts-item { display: flex; flex-direction: column; gap: 2px; }
+.ts-num { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
+.ts-num i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
+.ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
+.ts-cheer { margin: var(--s4) 0 0; padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
+
 .journey-hero {
   text-align: center;
   display: flex; align-items: center; justify-content: center;
-  min-height: calc(100dvh - 290px);
+  min-height: 42dvh;
   padding: var(--s7) var(--s5);
   background:
     radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 60%),

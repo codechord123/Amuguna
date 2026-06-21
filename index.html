@@ -50,6 +50,15 @@
 
     <!-- ========== 탭: 오늘 ========== -->
     <section class="tab" id="tab-today">
+      <div class="card today-stats" id="todayStats">
+        <div class="ts-row">
+          <div class="ts-item"><span class="ts-num" id="tsStreak">0</span><span class="ts-label">🔥 연속</span></div>
+          <div class="ts-item"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label">📅 이번 주</span></div>
+          <div class="ts-item"><span class="ts-num" id="tsTotal">0</span><span class="ts-label">🌿 전체</span></div>
+        </div>
+        <p class="ts-cheer" id="tsCheer">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
+      </div>
+
       <div class="card journey-hero" id="journeyStartCard">
         <div class="jh-inner">
           <div class="js-emoji" id="journeyEmoji">✨</div>
@@ -276,8 +285,14 @@
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">
-          <div class="card-head"><h2>🏅 배지</h2><span class="badge-rate" id="badgeRate"></span></div>
-          <div class="badge-bar"><i id="badgeBarFill"></i></div>
+          <div class="card-head"><h2>🏅 배지 & 레벨</h2><span class="badge-rate" id="badgeRate"></span></div>
+          <div class="level-row">
+            <span class="level-emoji" id="levelEmoji">🌰</span>
+            <div class="level-info">
+              <div class="level-top"><b id="levelName">Lv.1</b><span id="levelNext"></span></div>
+              <div class="badge-bar"><i id="badgeBarFill"></i></div>
+            </div>
+          </div>
           <p class="badge-status" id="badgeStatus"></p>
           <div class="badge-grid" id="badgeGrid"></div>
         </div>
