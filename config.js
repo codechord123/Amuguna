@@ -7,4 +7,15 @@
 window.ONEUL_CONFIG = {
   SUPABASE_URL: "",       // 예: "https://abcdxyz.supabase.co"
   SUPABASE_ANON_KEY: "",  // 예: "eyJhbGciOi..."
+
+  // (선택) 외부 앰비언트 오디오 파일. 지정하면 합성음 대신 실제 녹음을 재생해요.
+  // 무료(CC0) 소스: Pixabay(pixabay.com/sound-effects), Freesound(CC0 필터), mixkit 등.
+  // 받은 파일을 ./sounds/ 에 넣고 아래 경로를 채우세요. 비워두면 내장 합성음을 사용합니다.
+  // 로컬 파일을 쓰면 서비스워커가 오프라인 캐시도 해줘요(런타임 캐시).
+  AMBIENT_URLS: {
+    // rain: "./sounds/rain.mp3",
+    // wave: "./sounds/wave.mp3",
+    // forest: "./sounds/forest.mp3",
+    // fire: "./sounds/fire.mp3",
+  },
 };

@@ -898,6 +898,14 @@ document.getElementById("statsSeg").addEventListener("click", (e) => {
   Sound.tap(); showStatsSeg(b.dataset.seg);
 });
 
+/* 쉼 탭 서브탭 (위로 / 명상) */
+document.getElementById("restSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  Sound.tap();
+  document.querySelectorAll("#restSeg button").forEach((x) => x.classList.toggle("active", x === b));
+  document.querySelectorAll(".rest-panel").forEach((p) => { p.hidden = p.dataset.rpanel !== b.dataset.rseg; });
+});
+
 /* 주간 리포트 (베타 피드백 #1) */
 let weekData = null;
 function renderWeekly(entries) {

@@ -171,6 +171,26 @@
     state.ambientType = "off";
   }
 
+  // 외부 오디오 파일(있으면) — config.js의 ONEUL_CONFIG.AMBIENT_URLS, 실패 시 합성으로 폴백
+  const bufCache = {};
+  function buildSynth(type) {
+    ambient = builders[type]();
+    nextEventT = ctx.currentTime + 0.1;
+    if (ambient.gen) schedulerId = setInterval(scheduler, 120);
+  }
+  function startUrlAmbient(type, url) {
+    const begin = (buf) => {
+      if (state.ambientType !== type) return; // 그새 바뀌면 중단
+      const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      src.connect(ambGain); src.start();
+      ambient = { stops: [src], gen: null };
+    };
+    if (bufCache[url]) { begin(bufCache[url]); return; }
+    fetch(url).then((r) => r.arrayBuffer()).then((a) => ctx.decodeAudioData(a))
+      .then((buf) => { bufCache[url] = buf; begin(buf); })
+      .catch(() => { if (state.ambientType === type && builders[type]) buildSynth(type); }); // 폴백
+  }
+
   function startAmbient(type) {
     if (!ensure()) return;
     if (type === "off" || !builders[type]) { stopAmbient(); return; }
@@ -184,9 +204,9 @@
     ambGain.gain.cancelScheduledValues(ctx.currentTime);
     ambGain.gain.setValueAtTime(0.0001, ctx.currentTime);
     ambGain.gain.setTargetAtTime(state.ambientVol, ctx.currentTime, 0.7);
-    ambient = builders[type]();
-    nextEventT = ctx.currentTime + 0.1;
-    if (ambient.gen) schedulerId = setInterval(scheduler, 120);
+    const urls = (window.ONEUL_CONFIG && window.ONEUL_CONFIG.AMBIENT_URLS) || {};
+    if (urls[type]) startUrlAmbient(type, urls[type]); // 외부 파일 우선
+    else buildSynth(type);                              // 없으면 합성
   }
 
   function setAmbientVolume(v) {
@@ -261,7 +281,7 @@
     const oscs = freqs.map((f, i) => { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f; const og = ctx.createGain(); og.gain.value = amps[i]; o.connect(og).connect(lp); o.start(); return o; });
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07; const lfoG = ctx.createGain(); lfoG.gain.value = 5;
     lfo.connect(lfoG).connect(oscs[1].detune); lfo.start();
-    g.gain.setTargetAtTime(0.17, ctx.currentTime, 1.2);
+    g.gain.setTargetAtTime(0.11, ctx.currentTime, 1.4); // 드론은 은은하게 — 싱잉볼이 주인공
     // 숨소리 노이즈 (밴드패스가 들숨에 열리고 날숨에 닫힘)
     const src = ctx.createBufferSource(); src.buffer = noiseBuffer(3, "white"); src.loop = true;
     const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 600; bp.Q.value = 0.6;
@@ -276,16 +296,24 @@
     try { b.g.gain.setTargetAtTime(0, t, 0.7); b.ng.gain.setTargetAtTime(0, t, 0.7); } catch (e) {}
     setTimeout(() => { try { b.oscs.forEach((o) => o.stop()); b.lfo.stop(); b.src.stop(); } catch (e) {} }, 1600);
   }
-  // 싱잉볼 한 번 (비배음 부분음 + 긴 잔향)
+  // 싱잉볼 한 번 — 말렛 타격음 + 비배음 부분음 + 비팅 + 미세 피치글라이드 (더 유기적)
   function bowl(freq, dur, peak) {
     const t = ctx.currentTime;
-    [[1, 1], [2.76, 0.5], [5.4, 0.25], [8.9, 0.12]].forEach(([mult, amp]) => {
+    // 말렛 타격(짧은 밴드패스 노이즈) — 손으로 친 듯한 어택
+    const ns = ctx.createBufferSource(); ns.buffer = noiseBuffer(0.2, "white");
+    const nf = ctx.createBiquadFilter(); nf.type = "bandpass"; nf.frequency.value = freq * 3.5; nf.Q.value = 1.8;
+    const ng = ctx.createGain(); ng.gain.setValueAtTime(peak * 0.45, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+    ns.connect(nf).connect(ng).connect(master); ng.connect(reverbGain); ns.start(t); ns.stop(t + 0.2);
+    // 비배음 부분음 (실제 싱잉볼의 분음 비율 근사) + 약간의 디튠으로 맥놀이
+    const partials = [[1, 1, 0], [2.0, 0.5, 4], [2.74, 0.34, -5], [4.97, 0.2, 7], [7.6, 0.12, -4]];
+    partials.forEach(([mult, amp, det]) => {
       const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = "sine"; o.frequency.value = freq * mult;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak * amp, t + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.type = "sine"; o.frequency.value = freq * mult; o.detune.value = det;
+      o.frequency.setValueAtTime(freq * mult * 1.004, t); o.frequency.exponentialRampToValueAtTime(freq * mult, t + 0.5); // 타격 직후 미세 하강
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak * amp, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * (0.55 + amp * 0.45));
       o.connect(g).connect(master); g.connect(reverbGain);
-      o.start(t); o.stop(t + dur + 0.1);
+      o.start(t); o.stop(t + dur + 0.2);
     });
   }
   function breathCue(phase, dur) {

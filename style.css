@@ -305,7 +305,12 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .habit-info[role="button"] { cursor: pointer; }
 .habit-title .go { color: var(--soft); font-weight: 400; margin-left: 2px; }
 
-/* 기록 탭 서브탭 */
+/* 과학적 근거 목록 */
+.sci-list { margin: 6px 0 0; padding-left: 18px; font-size: 0.86rem; line-height: 1.7; color: var(--ink-2); }
+.sci-list li { margin-bottom: 6px; }
+.sci-list b { color: var(--ink); }
+
+/* 기록 탭 / 쉼 탭 서브탭 */
 .stats-seg { margin-bottom: 16px; }
 .stats-panel > .card:last-child { margin-bottom: 0; }
 

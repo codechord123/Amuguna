@@ -26,7 +26,7 @@ window.AudioContext = class {
   createConvolver() { return { buffer: null, connect: () => chain() }; }
   createBuffer() { return { getChannelData: () => new Float32Array(8) }; }
   createBufferSource() { return { buffer: null, loop: false, connect: () => chain(), start() {}, stop() {} }; }
-  createOscillator() { return { type: "", frequency: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, detune: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, connect: () => chain(), start() {}, stop() {} }; }
+  createOscillator() { const p = () => ({ value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, cancelScheduledValues() {} }); return { type: "", frequency: p(), detune: p(), connect: () => chain(), start() {}, stop() {} }; }
 };
 window.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
 window.scrollTo = () => {}; window.confirm = () => true; window.alert = () => {};
@@ -150,8 +150,11 @@ try {
   themeCard.querySelector("h2").click();
   check("설정 카드 접기 토글", themeCard.classList.contains("collapsed") !== before2);
 
-  // 8) 호흡 카운터 + 빠른 호흡
+  // 8) 호흡 카운터 + 빠른 호흡 + 명상 분리
   q("[data-tab=rest]").click();
+  check("쉼 탭 위로 패널 기본 표시", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden"));
+  q("#restSeg button[data-rseg=meditate]").click();
+  check("명상 패널로 분리 전환", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden"));
   q("#breathBtn").click();
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
   q("#breathBtn").click();

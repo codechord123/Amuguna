@@ -115,6 +115,10 @@ python3 -m http.server 8000
 
 휴대폰 브라우저에서 "홈 화면에 추가"를 누르면 앱처럼 쓸 수 있어요.
 
+## 문서
+- 📚 **[docs/SCIENCE.md](docs/SCIENCE.md)** — 각 기능의 과학적 근거(논문·이유) 데이터베이스
+- 🍏 **[docs/iOS-RELEASE.md](docs/iOS-RELEASE.md)** — 아이폰(App Store) 출시 가이드(Capacitor)
+
 ## 개발 / 테스트
 
 ```bash

@@ -123,6 +123,12 @@
 
     <!-- ========== 탭: 쉼 ========== -->
     <section class="tab" id="tab-rest" hidden>
+      <div class="seg stats-seg" id="restSeg">
+        <button data-rseg="comfort" class="active">💌 위로</button>
+        <button data-rseg="meditate">🧘 명상</button>
+      </div>
+
+      <div class="rest-panel" data-rpanel="comfort">
       <div class="card center">
         <h2>💌 나를 위한 한마디</h2>
         <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
@@ -138,20 +144,22 @@
         <button type="button" class="reflect-toggle" id="manageToggle">📋 내 문구 · 즐겨찾기 관리 ›</button>
       </div>
 
-      <div class="card center">
-        <h2>🌬️ 호흡 쉼표</h2>
-        <p class="hint">동그라미를 따라 천천히 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기)</p>
-        <div class="breather">
-          <div class="breath-circle" id="breathCircle"><span id="breathText">시작</span></div>
-        </div>
-        <button class="btn" id="breathBtn">호흡 시작</button>
-      </div>
-
       <div class="card">
         <h2>✨ 아주 작은 한 걸음</h2>
         <p class="hint">기분이 나아지길 기다리기보다, 작은 움직임이 먼저 와도 괜찮아요.</p>
         <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
         <button class="btn" id="missionBtn">미션 받기</button>
+      </div>
+      </div>
+
+      <div class="rest-panel" data-rpanel="meditate" hidden>
+      <div class="card center">
+        <h2>🧘 호흡 명상</h2>
+        <p class="hint">동그라미를 따라 천천히 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기). 싱잉볼 소리가 단계를 안내해요.</p>
+        <div class="breather">
+          <div class="breath-circle" id="breathCircle"><span id="breathText">시작</span></div>
+        </div>
+        <button class="btn primary" id="breathBtn">호흡 시작</button>
       </div>
 
       <div class="card">
@@ -179,6 +187,7 @@
           </div>
         </div>
         <p class="timer-status" id="timerStatus" hidden></p>
+      </div>
       </div>
     </section>
 
@@ -393,6 +402,21 @@
         <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" /></label>
         <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" /></label>
         <p class="save-msg" id="reminderMsg" role="status" aria-live="polite" hidden></p>
+      </div>
+
+      <div class="card collapsible collapsed">
+        <h2>📚 과학적 근거</h2>
+        <p class="hint">이 앱의 기능은 검증된 심리학·행동과학 연구에 기반해요. 왜 그렇게 만들었는지 정리했어요.</p>
+        <ul class="sci-list">
+          <li><b>기분 기록·일기</b> — 감정에 이름 붙이기가 편도체 활동을 낮춰요 (정서명명; Lieberman 2007).</li>
+          <li><b>호흡 명상</b> — 느린 호흡·긴 날숨이 부교감을 활성화해요 (Zaccaro 2018).</li>
+          <li><b>90일 습관</b> — 자동화 평균 66일, 한두 번 빠져도 괜찮아요 → 비처벌 설계 (Lally 2010). "[언제]에 [행동]" 실행의도 (Gollwitzer 1999).</li>
+          <li><b>위로 톤</b> — 평가 대신 타당화·자기자비 (Neff 2003).</li>
+          <li><b>작은 미션</b> — 기분보다 행동이 먼저 (행동활성화; Mazzucchelli 2010).</li>
+          <li><b>감사 기록</b> — 구체적 감사가 안녕감을 높여요 (Emmons 2003).</li>
+          <li><b>패턴 분석</b> — 표본 수·효과크기(Cohen's d)를 함께, 상관≠인과로 표기 (Cohen 1988).</li>
+        </ul>
+        <p class="hint">전체 분석: 저장소의 <code>docs/SCIENCE.md</code></p>
       </div>
 
       <div class="card collapsible collapsed">
