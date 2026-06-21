@@ -1492,7 +1492,13 @@ function renderWeekGlance(entries) {
   const avg = moods.reduce((s, e) => s + entryScore(e), 0) / moods.length;
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  el.innerHTML = `<div class="wg-row"><div class="wg-stat"><b>${recs.length}</b><span>기록</span></div><div class="wg-stat"><b>${scoreEmoji(avg)} ${Math.round(avg)}</b><span>평균</span></div><div class="wg-stat"><b>${moodMeta[top].emoji}</b><span>${top}</span></div></div><p class="wg-more">주간 리포트 자세히 ›</p>`;
+  const en = recs.filter((e) => e.energy);
+  const avgEn = en.length ? (en.reduce((s, e) => s + e.energy, 0) / en.length).toFixed(1) : "—";
+  const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
+  el.innerHTML = `<div class="rpt-hero" style="margin:0">
+    <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(moodMeta[top].emoji, "대표")}${hs(avgEn, "활력")}</div></div>
+  </div><p class="wg-more">주간 리포트 자세히 ›</p>`;
 }
 // 요일별 평균 기분(0-100) 막대
 function renderDow(entries) {
@@ -1613,8 +1619,23 @@ function drawChart(entries) {
     ctx.setLineDash([]);
     pts.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = card; ctx.stroke(); } });
   }
+  // 평균선 (보이는 구간의 기분 평균)
+  const moodVals = days.map((k) => entries[k] ? entryScore(entries[k]) : null).filter((v) => v != null);
+  if (moodVals.length >= 2) {
+    const m = moodVals.reduce((a, b) => a + b, 0) / moodVals.length, yy = y(m);
+    ctx.save(); ctx.strokeStyle = accent; ctx.globalAlpha = 0.45; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(cssW - padR, yy); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = accent; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(`평균 ${Math.round(m)}`, padL + 2, Math.max(padT + 8, yy - 3)); ctx.restore();
+  }
   plot((e) => e.energy ? e.energy * 20 : null, energyC, [3, 3]);
   plot((e) => entryScore(e), accent);
+  // 오늘 마커 (보이면 강조 링)
+  const ti = days.indexOf(todayKey());
+  if (ti >= 0 && entries[days[ti]] && entryScore(entries[days[ti]]) != null) {
+    const px = x(ti), py = y(entryScore(entries[days[ti]]));
+    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
+  }
   // x축 날짜 라벨 (양끝 + 가운데)
   ctx.fillStyle = soft; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
   const lab = (k) => { const p = k.split("-"); return `${+p[1]}/${+p[2]}`; };
@@ -1712,16 +1733,14 @@ function renderDist(list) {
   const wrap = document.getElementById("dist");
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
   const recent = list.filter((e) => e.mood && new Date(e.date + "T00:00:00") >= cutoff);
-  wrap.innerHTML = "";
   if (!recent.length) { wrap.innerHTML = '<p class="empty">아직 기분 기록이 없어요.</p>'; return; }
   const counts = {}; recent.forEach((e) => { counts[e.mood] = (counts[e.mood] || 0) + 1; });
-  const max = Math.max(...Object.values(counts));
-  Object.keys(moodMeta).forEach((mood) => {
-    const c = counts[mood] || 0; if (!c) return;
-    const row = document.createElement("div"); row.className = "dist-row";
-    row.innerHTML = `<span class="dist-emoji">${moodMeta[mood].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(c / max) * 100}%"></div></div><span class="dist-count">${c}</span>`;
-    wrap.appendChild(row);
-  });
+  const total = recent.length;
+  const order = Object.keys(moodMeta).filter((m) => counts[m]);
+  const col = (m) => scoreColor((moodMeta[m].score - 1) / 4 * 100);
+  const seg = order.map((m) => `<div class="db-seg" style="width:${(counts[m] / total) * 100}%;background:${col(m)}" title="${m} ${Math.round(counts[m] / total * 100)}%"></div>`).join("");
+  const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${moodMeta[m].emoji} ${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
+  wrap.innerHTML = `<div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
 }
 
 let histShown = 60; // '더 보기'로 늘어남

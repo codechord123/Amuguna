@@ -31,7 +31,7 @@ window.AudioContext = class {
 window.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
 window.scrollTo = () => {}; window.confirm = () => true; window.alert = () => {};
 window.requestAnimationFrame = (fn) => setTimeout(fn, 0);
-window.HTMLCanvasElement.prototype.getContext = () => ({ scale() {}, clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, bezierCurveTo() {}, closePath() {}, stroke() {}, arc() {}, fill() {}, fillText() {}, setLineDash() {}, createLinearGradient() { return { addColorStop() {} }; }, set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {}, set font(v) {}, set textAlign(v) {} });
+window.HTMLCanvasElement.prototype.getContext = () => ({ scale() {}, clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, bezierCurveTo() {}, closePath() {}, stroke() {}, arc() {}, fill() {}, fillText() {}, setLineDash() {}, save() {}, restore() {}, createLinearGradient() { return { addColorStop() {} }; }, set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {}, set font(v) {}, set textAlign(v) {}, set globalAlpha(v) {} });
 window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,";
 window.HTMLElement.prototype.scrollIntoView = () => {};
 window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,iVBORw0KGgo=";
