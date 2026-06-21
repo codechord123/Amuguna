@@ -1230,28 +1230,20 @@ function reportDetailHtml(kind) {
   const arrow = (d, unitTxt) => d == null ? "" : ` <small class="kpi-delta ${d >= 1 ? "up" : d <= -1 ? "down" : "flat"}">${d > 0 ? "▲" : d < 0 ? "▼" : "–"}${Math.abs(Math.round(d))}${unitTxt || ""}</small>`;
   const dMood = delta(cur.avgMood, prev.avgMood);
 
-  // 혁신적 히어로 — 평균 기분 게이지 링 + 옆에 핵심 지표 3개(컴팩트)
-  const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
+  // 히어로 — 평균 기분 게이지 + 핵심 지표(지난 기간 대비 델타 포함)
+  const sdlt = (dd, u) => dd == null ? "" : `<i class="hs-delta ${dd >= 1 ? "up" : dd <= -1 ? "down" : "flat"}">${dd > 0 ? "▲" : dd < 0 ? "▼" : "–"}${Math.abs(Math.round(dd))}${u || ""}</i>`;
+  const hs = (b, s, dd, u) => `<div class="hs"><b>${b}</b><span>${s}</span>${sdlt(dd, u)}</div>`;
+  const hasPrev = prev.days > 0;
   const heroStats = [
-    hs(`${cur.days}`, kind === "month" ? "기록일" : "기록일"),
-    hs(cur.avgEnergy != null ? cur.avgEnergy.toFixed(1) : "—", "활력/5"),
-    cur.habPct != null ? hs(`${cur.habPct}%`, "습관") : hs(`${cur.gratCount}`, "잘한 일"),
+    hs(`${cur.days}`, "기록일", hasPrev ? cur.days - prev.days : null, "일"),
+    hs(cur.avgEnergy != null ? cur.avgEnergy.toFixed(1) : "—", "활력/5", (cur.avgEnergy != null && prev.avgEnergy != null) ? cur.avgEnergy - prev.avgEnergy : null),
+    cur.habPct != null ? hs(`${cur.habPct}%`, "습관", (prev.habPct != null) ? cur.habPct - prev.habPct : null, "%") : hs(`${cur.gratCount}`, "잘한 일"),
   ].join("");
   const deltaChip = dMood != null ? `<span class="kpi-delta ${dMood >= 1 ? "up" : dMood <= -1 ? "down" : "flat"}">${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(Math.round(dMood))} 지난 ${unit}</span>` : "";
   const heroCard = `<div class="card rpt-hero">
     <div class="gauge-wrap">${cur.avgMood != null ? moodGaugeSvg(cur.avgMood) : '<div class="gauge-empty">기록<br>없음</div>'}</div>
     <div class="rpt-hero-side"><p class="rpt-hero-cap">평균 기분 ${deltaChip}</p><div class="hero-stats">${heroStats}</div></div>
   </div>`;
-
-  // 지난 기간 대비 비교
-  let compareCard = "";
-  if (prev.days > 0) {
-    const items = [];
-    if (dMood != null) items.push(`<span class="cmp ${dMood >= 1 ? "up" : dMood <= -1 ? "down" : ""}">기분 ${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(Math.round(dMood))}</span>`);
-    items.push(`<span class="cmp ${cur.days - prev.days >= 0 ? "up" : "down"}">기록 ${cur.days - prev.days >= 0 ? "▲" : "▼"}${Math.abs(cur.days - prev.days)}일</span>`);
-    if (cur.habPct != null && prev.habPct != null) { const dh = cur.habPct - prev.habPct; items.push(`<span class="cmp ${dh >= 0 ? "up" : "down"}">습관 ${dh >= 0 ? "▲" : "▼"}${Math.abs(dh)}%</span>`); }
-    compareCard = `<div class="card"><h2>↔️ 지난 ${unit} 대비</h2><div class="cmp-row">${items.join("")}</div></div>`;
-  }
 
   const chart = reportChartSvg(keys, entries);
   const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>활력</span></div><p class="hint" style="margin:10px 0 0">⚡ <b>활력</b>은 그날 고른 감정의 활기 정도예요(신남·설렘 높음 · 무기력·지침 낮음).</p></div>` : "";
@@ -1260,35 +1252,27 @@ function reportDetailHtml(kind) {
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
   const hlCard = (cur.best && cur.worst && cur.best.e.date !== cur.worst.e.date) ? `<div class="card"><h2>✨ 이 기간 하이라이트</h2>${dayLine(cur.best, "🌟", "가장 좋았던 날")}${dayLine(cur.worst, "🌧️", "가장 힘들었던 날")}</div>` : "";
 
-  // 자주 느낀 감정 (태그)
-  const topTags = Object.entries(cur.tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const tagCard = topTags.length ? `<div class="card"><h2>🏷️ 자주 느낀 감정</h2><div class="tag-chips">${topTags.map(([t, n]) => `<span class="tag-chip">${escapeHtml(t)} <i>${n}</i></span>`).join("")}</div></div>` : "";
-
-  // 기분 안정성(변동성)
-  let stabCard = "";
-  if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabCard = `<div class="card"><h2>📐 기분 안정성</h2><p class="insight">이 기간 기분의 변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
-
-  // 월간: 주차별 평균 기분
-  let weekBreakCard = "";
-  if (kind === "month") {
-    const wk = [[], [], [], [], []];
-    keys.forEach((k) => { const day = +k.split("-")[2]; const wi = Math.min(4, Math.floor((day - 1) / 7)); if (entries[k] && entries[k].mood) wk[wi].push(entryScore(entries[k])); });
-    const rows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
-    if (rows.length >= 2) weekBreakCard = `<div class="card"><h2>📅 주차별 평균 기분</h2><div class="dist">${rows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
-  }
-  // 습관별 달성
-  const habCard = cur.perHab.length ? `<div class="card"><h2>🎯 습관별 달성</h2><div class="dist">${cur.perHab.map(({ h, t, d }) => `<div class="dist-row"><span class="cap-name">${h.emoji} ${escapeHtml(h.title)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(d / t * 100)}%"></div></div><span class="dist-count">${d}/${t}</span></div>`).join("")}</div></div>` : "";
-
-  const distCard = Object.keys(cur.dist).length ? `<div class="card"><h2>🌈 기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => cur.dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(cur.dist[m] / Math.max(...Object.values(cur.dist))) * 100}%"></div></div><span class="dist-count">${Math.round((cur.dist[m] / cur.moods.length) * 100)}%</span></div>`).join("")}</div></div>` : "";
-
   // 추세 → 솔루션
   let trend = "flat";
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
   const sols = reportSolutions({ avgMood: cur.avgMood, avgEnergy: cur.avgEnergy, habPct: cur.habPct, trend, gratCount: cur.gratCount, days: cur.days });
   const solCard = `<div class="card sol-card"><h2>🧪 오늘의 쉼 솔루션</h2><p class="hint">이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
 
-  const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
-  const daysCard = `<details class="card rpt-days"${kind === "week" ? " open" : ""}><summary>🗓️ 날짜별 기록 (${cur.days}일)</summary><div class="rpt-list">${rows}</div></details>`;
+  // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
+  let stabSec = "";
+  if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabSec = `<div class="rpt-sec"><h3>📐 기분 안정성</h3><p class="insight">변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
+  let weekBreakSec = "";
+  if (kind === "month") {
+    const wk = [[], [], [], [], []];
+    keys.forEach((k) => { const day = +k.split("-")[2]; const wi = Math.min(4, Math.floor((day - 1) / 7)); if (entries[k] && entries[k].mood) wk[wi].push(entryScore(entries[k])); });
+    const wrows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
+    if (wrows.length >= 2) weekBreakSec = `<div class="rpt-sec"><h3>📅 주차별 평균 기분</h3><div class="dist">${wrows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
+  }
+  const habSec = cur.perHab.length ? `<div class="rpt-sec"><h3>🎯 습관별 달성</h3><div class="dist">${cur.perHab.map(({ h, t, d }) => `<div class="dist-row"><span class="cap-name">${h.emoji} ${escapeHtml(h.title)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(d / t * 100)}%"></div></div><span class="dist-count">${d}/${t}</span></div>`).join("")}</div></div>` : "";
+  const drows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
+  const daysSec = `<div class="rpt-sec"><h3>🗓️ 날짜별 기록 (${cur.days}일)</h3><div class="rpt-list">${drows}</div></div>`;
+  const moreInner = stabSec + weekBreakSec + habSec + daysSec;
+  const moreCard = moreInner ? `<details class="card rpt-more"><summary>📂 자세히 보기</summary>${moreInner}</details>` : "";
 
   // 핵심 한 줄 — 추세 + 가장 영향 준 습관 (결론 먼저)
   const hbits = [];
@@ -1302,18 +1286,11 @@ function reportDetailHtml(kind) {
   return `
     <p class="detail-stat">${period}</p>
     ${headlineCard}
-    ${summary && summary.summary ? `<div class="card rpt-summary"><p class="insight">${summary.summary}</p></div>` : ""}
     ${heroCard}
-    ${compareCard}
     ${chartCard}
-    ${weekBreakCard}
     ${hlCard}
-    ${stabCard}
-    ${tagCard}
-    ${distCard}
-    ${habCard}
     ${solCard}
-    ${daysCard}
+    ${moreCard}
     <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
 }
 async function shareReport(kind) {

@@ -433,6 +433,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-list { display: flex; flex-direction: column; }
 .rpt-row { display: grid; grid-template-columns: 1.2fr 1.4fr 0.6fr; gap: var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); font-size: var(--t-sm); }
 .rpt-row:last-child { border-bottom: none; }
+/* 히어로 지표 델타 */
+.hs-delta { font-size: 0.6rem; font-weight: 800; line-height: 1; margin-top: 1px; }
+.hs-delta.up { color: var(--success); } .hs-delta.down { color: var(--danger); } .hs-delta.flat { color: var(--soft); }
+/* 리포트 '자세히' 접기 */
+.rpt-more summary { list-style: none; cursor: pointer; font-weight: var(--w-bold); font-size: var(--t-md); }
+.rpt-more summary::-webkit-details-marker { display: none; }
+.rpt-more summary::after { content: "›"; float: right; color: var(--soft); font-size: 1.3rem; line-height: 1; transition: transform 0.25s var(--ease-soft); }
+.rpt-more[open] summary::after { transform: rotate(90deg); }
+.rpt-more[open] summary { margin-bottom: var(--s3); }
+.rpt-sec { padding: var(--s4) 0; border-top: 1px solid var(--line); }
+.rpt-sec:first-of-type { border-top: none; padding-top: 0; }
+.rpt-sec h3 { margin: 0 0 var(--s3); font-size: var(--t-base); font-weight: var(--w-bold); color: var(--ink); }
+.rpt-sec .insight { margin: 0; }
 
 /* ----- 문구 관리 ----- */
 #quoteManage { margin-top: var(--s3); text-align: left; }
