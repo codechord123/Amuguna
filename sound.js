@@ -13,6 +13,7 @@
   let schedulerId = null;
   let nextEventT = 0;
 
+  let primed = false;
   function ensure() {
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -25,6 +26,14 @@
       ambGain = ctx.createGain(); ambGain.gain.value = state.ambientVol; ambGain.connect(master);
     }
     if (ctx.state === "suspended") ctx.resume();
+    // iOS 오디오 잠금 해제: 제스처 안에서 무음 버퍼를 한 번 재생해야 이후 소리가 난다
+    if (!primed) {
+      try {
+        const b = ctx.createBuffer(1, 1, 22050);
+        const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0);
+        primed = true;
+      } catch (e) {}
+    }
     return true;
   }
 

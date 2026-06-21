@@ -76,15 +76,16 @@ try {
 
   // 2c) 오늘의 여정 (적응형 경로)
   q("#journeyStart").click();
-  check("여정 시작(감정 통합 도구)", !q("#journey").hasAttribute("hidden") && !!q("#jBody .emo-grid"));
-  q('#jBody .emo[data-emo="괜찮아요"]').click();
+  check("여정 시작(기분 다이얼)", !q("#journey").hasAttribute("hidden") && !!q("#jBody #jScore"));
+  const sc1 = q("#jBody #jScore"); sc1.value = "70"; sc1.dispatchEvent(new window.Event("input"));
+  q('#jBody .emo-tag[data-tag="평온해요"]').click();
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 8) q("#jNext").click();
   check("여정 마지막 단계 도달", q("#jNext").textContent.indexOf("저장") >= 0);
   q("#jNext").click();
   check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
-  check("여정으로 오늘 기분 저장", ls("entries_v2")[tk].mood === "괜찮아요");
-  check("감정→태그 통합 저장", (ls("entries_v2")[tk].tags || []).includes("괜찮아요"));
+  check("여정 100점 기분 저장(매핑)", ls("entries_v2")[tk].mood === "괜찮아요" && ls("entries_v2")[tk].score === 70);
+  check("감정 태그 저장", (ls("entries_v2")[tk].tags || []).includes("평온해요"));
 
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
   q("[data-tab=challenge]").click();
@@ -110,8 +111,8 @@ try {
 
   // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  check("여정 감정 통합 도구 표시", !!q("#jBody .emo-grid"));
-  q('#jBody .emo[data-emo="괜찮아요"]').click();
+  check("여정 기분 다이얼 표시", !!q("#jBody #jScore"));
+  { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
   let g2 = 0, foundHabit = false, foundCare = false;
   while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; if (q("#jBody #jMission")) foundCare = true; q("#jNext").click(); }
   if (q("#jBody .j-habit")) foundHabit = true;
@@ -122,17 +123,17 @@ try {
 
   // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  q('#jBody .emo[data-emo="지쳤어요"]').click();
-  q("#jNext").click(); // 감정(통합)→호흡
+  { const s = q("#jBody #jScore"); s.value = "25"; s.dispatchEvent(new window.Event("input")); } // 낮은 점수 → 저기분
+  q("#jNext").click(); // 기분→호흡
   check("저기분 여정 호흡 단계 버튼", !!q("#jBody #jBreatheBtn"));
   q("#jClose").click();
 
   // 3d) 여정 진행 임시저장(중간에 닫아도 이어서)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  q('#jBody .emo[data-emo="평온해요"]').click();
+  q('#jBody .emo-tag[data-tag="복잡해요"]').click();
   q("#jClose").click();
   q("#journeyStart").click();
-  check("여정 진행 임시저장 복원", q('#jBody .emo[data-emo="평온해요"]').getAttribute("aria-pressed") === "true");
+  check("여정 진행 임시저장 복원", q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
   q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)

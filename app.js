@@ -1661,16 +1661,17 @@ const journey = document.getElementById("journey");
 const jBody = document.getElementById("jBody"), jBar = document.getElementById("jBar");
 const jPrev = document.getElementById("jPrev"), jNext = document.getElementById("jNext");
 let jData = {}, curId = "feel";
-// 감정 선택 → 마음(점수)·에너지·태그를 한 번에 채움
-function jApplyEmotions() {
-  const sel = jData.emotions || [];
-  if (!sel.length) { jData.mood = null; jData.tags = []; return; }
-  const primary = emoByKey(sel[0]);
-  jData.mood = primary.base;
-  const ens = sel.map((k) => emoByKey(k).en);
-  jData.energy = Math.round(ens.reduce((a, b) => a + b, 0) / ens.length);
-  jData.tags = sel.slice(); // 고른 감정이 곧 태그
-}
+// 100점 기분 점수 ↔ 기존 분류/에너지 매핑 (통계 호환)
+function scoreToMood(s) { return s < 20 ? "우울해요" : s < 40 ? "지쳤어요" : s < 60 ? "그럭저럭" : s < 80 ? "괜찮아요" : "활기차요"; }
+function scoreLabel(s) { return s < 20 ? "많이 힘들어요" : s < 40 ? "지쳐 있어요" : s < 60 ? "그럭저럭이에요" : s < 80 ? "괜찮아요" : "좋아요"; }
+function scoreEmoji(s) { return s < 20 ? "😢" : s < 40 ? "😮‍💨" : s < 60 ? "😐" : s < 80 ? "🙂" : "😄"; }
+function scoreToEnergy(s) { return Math.max(1, Math.min(5, Math.round(s / 20))); }
+function moodToScore(m) { return m && moodMeta[m] ? Math.round((moodMeta[m].score - 1) / 4 * 100) : 50; }
+const SCORE_COLORS = ["#e8896f", "#f0b07a", "#e9d8a6", "#9ed8b0", "#5ec8b0"];
+function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
+// 270° 게이지 좌표/호
+function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 80 * Math.cos(a)).toFixed(1), (100 + 80 * Math.sin(a)).toFixed(1)]; }
+function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
   const low = jData.mood && moodMeta[jData.mood].score <= 2;
   const s = ["feel"]; // 마음+에너지+태그 통합 단계
@@ -1701,17 +1702,21 @@ function notePrompt(m) {
 }
 function stepHtml(id) {
   if (id === "feel") {
-    const sel = jData.emotions || [];
-    const bands = EMO_BANDS.map((b) => `
-      <p class="emo-band">${b.label}</p>
-      <div class="emo-grid">${EMOTIONS.filter((e) => e.band === b.id).map((e) => {
-        const idx = sel.indexOf(e.k);
-        return `<button class="emo ${idx >= 0 ? "selected" : ""}" data-emo="${e.k}" aria-pressed="${idx >= 0}">${e.e}<span>${e.k}</span>${idx === 0 ? '<i class="emo-star" aria-hidden="true">대표</i>' : ""}</button>`;
-      }).join("")}</div>`).join("");
-    return `<p class="j-q">지금 마음, 어떤가요?</p>
-      <p class="hint" style="text-align:center;margin:-10px 0 4px">느껴지는 감정을 골라요. 여러 개도 좋아요 — 첫 감정이 '대표'가 돼요.</p>
-      ${bands}
-      <p class="mood-response" id="jMoodReply" ${jData.mood ? "" : "hidden"}>${jData.mood ? curReplies()[jData.mood] : ""}</p>`;
+    const sc = jData.score != null ? jData.score : 50;
+    const tagsSel = jData.tags || [];
+    return `<p class="j-q">지금 마음, 몇 점인가요?</p>
+      <p class="hint" style="text-align:center;margin:-10px 0 6px">동그라미를 돌리거나 아래 막대로 0~100점을 표현해요.</p>
+      <div class="dial-wrap">
+        <svg class="dial" viewBox="0 0 200 200" id="jDial" aria-hidden="true">
+          <path class="dial-track" id="jDialTrack" d="${dialArc(100)}"></path>
+          <path class="dial-fill" id="jDialFill"></path>
+          <circle class="dial-thumb" id="jDialThumb" r="11"></circle>
+        </svg>
+        <div class="dial-center"><span class="dial-emoji" id="jDialEmoji">😐</span><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
+      </div>
+      <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
+      <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능)</span></p>
+      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
@@ -1764,27 +1769,46 @@ function renderStep() {
   jNext.textContent = curId === "finish" ? "기록 저장하기 💾" : "다음";
   jBody.innerHTML = stepHtml(curId);
   if (curId === "feel") {
-    const reply = jBody.querySelector("#jMoodReply");
-    const refresh = () => {
-      const sel = jData.emotions || [];
-      jBody.querySelectorAll(".emo").forEach((btn) => {
-        const idx = sel.indexOf(btn.dataset.emo);
-        btn.classList.toggle("selected", idx >= 0);
-        btn.setAttribute("aria-pressed", idx >= 0);
-        let star = btn.querySelector(".emo-star");
-        if (idx === 0) { if (!star) { star = document.createElement("i"); star.className = "emo-star"; star.setAttribute("aria-hidden", "true"); star.textContent = "대표"; btn.appendChild(star); } }
-        else if (star) star.remove();
-      });
-      if (jData.mood) { reply.textContent = curReplies()[jData.mood]; reply.hidden = false; } else { reply.hidden = true; }
-    };
-    jBody.querySelectorAll(".emo").forEach((b) => b.addEventListener("click", () => {
-      Sound.tap();
-      jData.emotions = jData.emotions || [];
-      const k = b.dataset.emo, i = jData.emotions.indexOf(k);
-      if (i >= 0) jData.emotions.splice(i, 1); else jData.emotions.push(k);
-      jApplyEmotions(); refresh(); saveJDraft();
-    }));
-    refresh();
+    const range = jBody.querySelector("#jScore");
+    const dial = jBody.querySelector("#jDial");
+    const fill = jBody.querySelector("#jDialFill"), thumb = jBody.querySelector("#jDialThumb");
+    function setScore(v, silent) {
+      v = Math.max(0, Math.min(100, Math.round(v)));
+      jData.score = v; jData.mood = scoreToMood(v); jData.energy = scoreToEnergy(v);
+      range.value = v;
+      fill.setAttribute("d", dialArc(v));
+      const [tx, ty] = dialPt(v); thumb.setAttribute("cx", tx); thumb.setAttribute("cy", ty);
+      const col = scoreColor(v); fill.style.stroke = col; thumb.style.fill = col;
+      jBody.querySelector("#jDialNum").textContent = v;
+      jBody.querySelector("#jDialEmoji").textContent = scoreEmoji(v);
+      jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
+    }
+    function fromPointer(ev) {
+      const r = dial.getBoundingClientRect();
+      const cx = ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] && ev.touches[0].clientX);
+      const cy = ev.clientY != null ? ev.clientY : (ev.touches && ev.touches[0] && ev.touches[0].clientY);
+      if (cx == null) return;
+      const x = (cx - r.left) / r.width * 200 - 100, y = (cy - r.top) / r.height * 200 - 100;
+      let a = (Math.atan2(y, x) * 180 / Math.PI - 135 + 360) % 360; // 0 = 시작점
+      if (a > 270) a = (a - 270 < 360 - a) ? 270 : 0; // 하단 빈 구간은 가까운 끝으로
+      setScore(a / 2.7); saveJDraft();
+    }
+    let dragging = false;
+    dial.addEventListener("pointerdown", (e) => { dragging = true; try { dial.setPointerCapture(e.pointerId); } catch (x) {} fromPointer(e); });
+    dial.addEventListener("pointermove", (e) => { if (dragging) fromPointer(e); });
+    dial.addEventListener("pointerup", () => { dragging = false; Sound.tap(); });
+    dial.addEventListener("pointercancel", () => { dragging = false; });
+    range.addEventListener("input", () => { setScore(Number(range.value)); saveJDraft(); });
+    jBody.querySelector("#jEmoTags").addEventListener("click", (e) => {
+      const b = e.target.closest(".emo-tag"); if (!b) return; Sound.tap();
+      jData.tags = jData.tags || [];
+      const k = b.dataset.tag, i = jData.tags.indexOf(k);
+      if (i >= 0) jData.tags.splice(i, 1); else jData.tags.push(k);
+      const on = jData.tags.includes(k);
+      b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
+      saveJDraft();
+    });
+    setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
     if (qm) qm.addEventListener("click", () => { Sound.tap(); jData.quote = pickQuote(jData.quote); jBody.querySelector("#jQuote").textContent = "“" + jData.quote + "”"; saveJDraft(); });
@@ -1815,9 +1839,14 @@ function loadJDraft() { try { return JSON.parse(localStorage.getItem(DB.JDRAFT))
 function clearJDraft() { try { localStorage.removeItem(DB.JDRAFT); } catch (e) {} }
 function openJourney() {
   Sound.unlock();
-  jData = { date: todayKey(), emotions: [] };
+  jData = { date: todayKey(), tags: [] };
   const t = loadEntries()[todayKey()];
-  if (t) { jData.mood = t.mood; jData.energy = t.energy; jData.note = t.note; jData.praise = t.praise; if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; } }
+  if (t) {
+    jData.score = (t.score != null) ? t.score : moodToScore(t.mood);
+    jData.mood = t.mood || scoreToMood(jData.score); jData.energy = t.energy;
+    jData.note = t.note; jData.praise = t.praise; jData.tags = t.tags || [];
+    if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; }
+  }
   // 중간에 닫았던 진행분이 있으면 이어서
   const draft = loadJDraft();
   let resumed = false;
@@ -1832,6 +1861,7 @@ function saveJourney() {
   const prev = entries[k] || {};
   entries[k] = {
     date: k, mood: jData.mood, energy: Number(jData.energy || 3),
+    score: jData.score != null ? jData.score : moodToScore(jData.mood),
     note: (jData.note || "").trim(), praise: (jData.praise || "").trim(),
     tags: jData.tags || prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
     updatedAt: new Date().toISOString(),
