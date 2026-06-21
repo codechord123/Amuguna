@@ -134,3 +134,23 @@
 - Deci & Ryan — Self-Determination Theory.
 - Maslach & Leiter — Burnout.
 - Cohen (1988) *Statistical Power Analysis* (effect sizes).
+
+---
+
+## 주간·월간 리포트 솔루션 근거 (Report Solutions DB)
+
+리포트 상세에 표시되는 "오늘의 쉼 솔루션"은 그 기간의 데이터(평균 기분·에너지, 습관 달성률,
+추세, 감사 기록 수)에 따라 아래 규칙으로 선택됩니다. 각 추천은 검증된 연구에 근거합니다.
+
+| 트리거 조건 | 추천 | 근거 |
+|---|---|---|
+| 평균 기분 < 2.6/5 | 작은 행동부터 시작 (행동활성화) | Mazzucchelli, Kane & Rees (2010), *Clinical Psychology Review* 30(4); Martell et al. (2010) |
+| 평균 에너지 < 2.6/5 | 느린 호흡(4-7-8) | Zaccaro et al. (2018), *Frontiers in Human Neuroscience* 12:353 |
+| 습관 달성률 < 50% | 실행의도·습관 쌓기 | Gollwitzer (1999), *American Psychologist* 54(7); Lally et al. (2010), *EJSP* 40(6) |
+| 감사 기록 0 (3일+) | 하루 한 줄 감사 | Emmons & McCullough (2003), *JPSP* 84(2) |
+| 기분 추세 하락 | 자기자비 | Neff (2003), *Self and Identity* 2(2) |
+| 평균 기분 ≥ 3.6/5 | 좋은 순간 음미(savoring) | Bryant (2003), *Journal of Mental Health* 12(2); Bryant & Veroff (2007) |
+| 기본 | 기록·정서명명 격려 | Lieberman et al. (2007), *Psychological Science* 18(5) |
+
+**설계 원칙:** 추천은 관찰 데이터에 기반한 일반적 셀프케어 제안이며, 진단·치료가 아닙니다.
+상관은 인과가 아님을 전제로 하고, 위기 신호 감지 시에는 솔루션 대신 전문 자원으로 안내합니다.

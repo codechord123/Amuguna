@@ -373,6 +373,13 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-legend .rl-mood { background: var(--accent); }
 .rpt-legend .rl-energy { background: var(--energy); }
 
+/* ----- 리포트 솔루션 (과학 근거) ----- */
+.sol-card .sol { padding: var(--s3) 0; border-bottom: 1px solid var(--line); }
+.sol-card .sol:last-child { border-bottom: none; padding-bottom: 0; }
+.sol-t { margin: 0 0 var(--s1); font-weight: var(--w-bold); font-size: var(--t-base); color: var(--ink); }
+.sol-b { margin: 0 0 var(--s2); font-size: var(--t-sm); line-height: 1.7; color: var(--ink-2); word-break: keep-all; }
+.sol-c { margin: 0; font-size: var(--t-xs); color: var(--soft); line-height: 1.5; }
+
 /* ----- 리포트 상세 날짜별 ----- */
 .rpt-days summary { list-style: none; cursor: pointer; font-weight: var(--w-bold); font-size: var(--t-md); }
 .rpt-days summary::-webkit-details-marker { display: none; }
@@ -400,6 +407,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge-bar { height: 10px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; }
 .badge-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 0.7s var(--ease-soft); }
 .badge-status { margin: var(--s2) 0 var(--s4); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-med); }
+.badge-cat { margin-bottom: var(--s4); }
+.badge-cat:last-child { margin-bottom: 0; }
+.badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }
+.badge-cat-h span { color: var(--soft); font-weight: var(--w-semi); font-size: var(--t-xs); }
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: var(--s2); }
 .badge { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s2) var(--s1); border-radius: var(--r-sm); background: var(--bg-sunken); text-align: center; transition: transform 0.15s var(--ease-soft); }
 .badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm); }
@@ -519,7 +530,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey-foot { display: flex; gap: var(--s3); max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s4) var(--s6) calc(var(--s5) + env(safe-area-inset-bottom)); }
 .journey-foot .btn { flex: 1; }
 .journey-foot .btn.primary { flex: 2; }
-.j-q { font-size: var(--t-xl); font-weight: var(--w-bold); text-align: center; margin: 0 0 var(--s5); line-height: 1.45; }
+.j-q { font-size: var(--t-xl); font-weight: var(--w-bold); text-align: center; margin: 0 0 var(--s5); line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; }
 .journey .js-emoji { font-size: 3rem; text-align: center; margin-bottom: var(--s2); }
 .journey .mood-grid { gap: var(--s3); }
 .journey .energy { margin-top: var(--s3); }

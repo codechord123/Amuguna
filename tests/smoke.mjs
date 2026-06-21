@@ -143,7 +143,8 @@ try {
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
-  check("배지 다양화(30종)", d.querySelectorAll("#badgeGrid .badge").length === 30);
+  check("배지 다양화(40종)", d.querySelectorAll("#badgeGrid .badge").length === 40);
+  check("배지 카테고리 표시", d.querySelectorAll("#badgeGrid .badge-cat").length >= 5);
   check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
   check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
   q("[data-tab=today]").click();
