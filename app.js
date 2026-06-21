@@ -148,7 +148,9 @@ tabbar.addEventListener("click", (e) => {
 function openEntryEditor(dateKey) {
   if (dateKey > todayKey()) return;
   activateTab("today");
+  document.getElementById("checkin-card").classList.remove("collapsed"); // 펼쳐서 보이게
   entryDate.value = dateKey; loadEntryForm(dateKey);
+  document.getElementById("checkin-card").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ===================== 오늘 기록 ===================== */
@@ -297,6 +299,30 @@ const quotes = [
   "작은 친절을 남에게 베풀듯, 오늘은 자신에게 베풀어봐요.",
   "괜찮지 않아도 괜찮아요. 그 말, 진심이에요.",
   "지금 할 수 있는 가장 다정한 일은, 자신을 다그치지 않는 거예요.",
+  "오늘 흘린 눈물도 당신을 약하게 만들지 않아요. 오히려 솔직한 거예요.",
+  "남들의 속도에 맞추지 않아도 돼요. 당신만의 계절이 있어요.",
+  "작은 숨 하나도 살아내는 일이에요. 지금 잘 쉬고 있어요.",
+  "어떤 마음이 들든, 그 마음을 느낀 당신이 잘못한 건 아니에요.",
+  "오늘의 실수는 내일의 당신을 정의하지 않아요.",
+  "지치면 멈춰도 돼요. 멈춤은 포기가 아니라 정비예요.",
+  "당신은 '더 나은 사람'이 될 필요 없어요. 이미 충분한 사람이에요.",
+  "마음이 흐린 날엔, 해가 사라진 게 아니라 잠시 구름 뒤에 있는 거예요.",
+  "오늘 한 걸음도 못 걸었다면, 서 있어 준 것만으로 고마워요.",
+  "당신의 속도가 느린 게 아니라, 길이 가팔랐을 뿐이에요.",
+  "스스로를 미워하는 마음이 들 땐, 잠깐 그 마음과 거리를 둬요. 당신이 아니에요.",
+  "잘 쉬는 것도 책임감 있는 일이에요.",
+  "지금 느끼는 무게, 혼자 다 들지 않아도 돼요.",
+  "하루를 끝까지 살아낸 당신에게 박수를 보내요.",
+  "마음은 날씨 같아서, 이 기분도 반드시 바뀌어요.",
+  "당신이 당신에게 가장 든든한 사람이 되어줄 수 있어요.",
+  "완벽한 하루가 아니어도, 의미 있는 하루였어요.",
+  "버티는 중이라면, 그건 이미 용기를 내고 있다는 뜻이에요.",
+  "오늘은 '해야 할 일'보다 '쉬어야 할 마음'을 먼저 살펴요.",
+  "당신의 존재는 성취와 상관없이 소중해요.",
+  "작은 친절을 자신에게도 나눠줘요. 그럴 자격이 충분해요.",
+  "지금 이 순간만큼은, 아무것도 증명하지 않아도 돼요.",
+  "넘어진 자리에서 잠깐 앉아 있어도 괜찮아요. 일어날 힘은 다시 와요.",
+  "오늘도 마음을 들여다본 당신, 그 다정함이 참 귀해요.",
 ];
 const plainQuotes = [
   "오늘 할 수 있는 만큼만 했으면 그걸로 충분합니다.",
@@ -314,6 +340,21 @@ const plainQuotes = [
   "충분히 자고 충분히 먹는 것부터 시작하세요.",
   "오늘의 목표는 '버티기'여도 괜찮습니다.",
   "도움을 청하는 건 합리적인 선택입니다.",
+  "통제할 수 있는 것에만 에너지를 쓰세요.",
+  "감정을 없애려 하지 말고, 그냥 지나가게 두세요.",
+  "잠과 식사가 무너지면 멘탈도 무너집니다. 기본부터 챙기세요.",
+  "오늘 못 한 일은 목록에 남겨두고 내일 처리하세요.",
+  "완료가 완벽보다 낫습니다.",
+  "30분 일하고 5분 쉬세요. 지속이 핵심입니다.",
+  "지금 기분은 사실이 아니라 상태일 뿐입니다.",
+  "할 일을 3개 이하로 줄이세요.",
+  "산책 10분이 생각 정리에 도움이 됩니다.",
+  "남과 비교할 데이터는 충분하지 않습니다. 본인 추세만 보세요.",
+  "거절도 하나의 선택지입니다.",
+  "휴식을 일정에 미리 넣어두세요.",
+  "기록은 판단이 아니라 관찰입니다.",
+  "작게 시작하고, 작게 유지하세요.",
+  "오늘의 성과가 없어도 내일은 옵니다.",
 ];
 const quoteEl = document.getElementById("quote");
 const favBtn = document.getElementById("favBtn");
@@ -392,6 +433,7 @@ function makeBreather(circleEl, textEl, base, opts) {
     cycles: () => cycles,
     start() {
       if (running) return;
+      try { settings.breathCount = (settings.breathCount || 0) + 1; saveSettingsObj(settings); } catch (e) {}
       Sound.unlock(); Sound.breathStart(); running = true; cycles = 0; enter(0);
       tick = setInterval(() => {
         remain--;
@@ -402,7 +444,7 @@ function makeBreather(circleEl, textEl, base, opts) {
             if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
           }
           enter(next);
-        } else { render(); }   // 카운트는 숫자로, 소리는 몰입형 사운드 세션이 담당
+        } else { render(); if (!isSleep()) Sound.tick(); }   // 숫자 + 부드러운 카운트 틱 (수면 모드 제외)
       }, 1000);
     },
     stop() {
@@ -428,6 +470,14 @@ const missions = [
   "따뜻한 차나 커피 한 잔 내리기 ☕", "방 안에서 다섯 걸음만 걷기 🚶", "고마운 사람 한 명 떠올리기 💛",
   "햇빛 드는 곳에 잠깐 앉아 있기 ☀️", "지금 어지러운 것 딱 하나만 정리하기 🧺", "거울 보고 '수고했어' 한마디 건네기 🪞",
   "심호흡 세 번 천천히 하기 🌬️", "세수하고 개운하게 만들기 💦",
+  "지금 손에 닿는 것 5가지 만져보기 ✋", "좋아하는 향 한 번 맡기 🕯️", "발가락을 쥐었다 펴기 10번 🦶",
+  "오늘 하늘 색깔 한 번 올려다보기 🌤️", "물 마시고 기지개 켜기 💧", "어깨에 힘 빼고 한숨 길게 내쉬기 😮‍💨",
+  "좋아하는 사진 한 장 다시 보기 🖼️", "방 불을 조금 어둡게 해보기 💡", "포근한 담요나 옷 걸치기 🧣",
+  "오늘 먹고 싶은 것 하나 정하기 🍫", "창밖 소리 30초 가만히 듣기 👂", "손 따뜻하게 비비기 🤲",
+  "할 일 목록에서 하나 지우기(미뤄도 OK) ✔️", "좋아하는 사람에게 안부 한 줄 보내기 💬", "스트레칭으로 목 좌우로 돌리기 🙆‍♀️",
+  "지금 기분을 한 단어로 말해보기 🗣️", "따뜻한 물로 손 씻기 🚿", "의자에 기대 1분 멍때리기 🌫️",
+  "좋아하는 음료 천천히 한 모금 🥤", "휴대폰 알림 잠깐 꺼두기 🔕", "가장 편한 자세로 2분 눕기 🛋️",
+  "오늘의 작은 성공 하나 떠올리기 🌟", "식물이나 창밖 초록 바라보기 🪴", "좋아하는 노래 흥얼거리기 🎶",
 ];
 const missionEl = document.getElementById("mission");
 let lastMission = -1;
@@ -980,6 +1030,18 @@ const BADGES = [
   { id: "reflect", e: "🌙", t: "돌아보는 밤", d: "저녁 회고를 남겼어요", ok: (D) => D.list.some((e) => e.reflection && (e.reflection.good || e.reflection.hard)) },
   { id: "energized", e: "😄", t: "활기찬 날", d: "'활기차요'를 기록", ok: (D) => D.list.some((e) => e.mood === "활기차요") },
   { id: "fav", e: "💛", t: "나의 위로", d: "위로 문구를 즐겨찾기", ok: () => (settings.favQuotes || []).length >= 1 },
+  { id: "d7", e: "🌿", t: "일주일의 마음", d: "누적 7일 기록", ok: (D) => D.total >= 7 },
+  { id: "d100", e: "🏔️", t: "백 일의 여정", d: "누적 100일 기록", ok: (D) => D.total >= 100 },
+  { id: "streak14", e: "⚡", t: "2주 연속", d: "14일 연속 기록", ok: (D) => D.streak >= 14 },
+  { id: "streak30", e: "👑", t: "한 달 연속", d: "30일 연속 기록", ok: (D) => D.streak >= 30 },
+  { id: "habit66", e: "🧠", t: "습관 완성", d: "한 습관 66일 달성", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 66) },
+  { id: "habit90", e: "🏆", t: "90일 완주", d: "한 습관 90일 달성", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 90) },
+  { id: "breath10", e: "🌬️", t: "숨 고르기", d: "호흡 10번 하기", ok: () => (settings.breathCount || 0) >= 10 },
+  { id: "journey5", e: "✨", t: "여정의 동반자", d: "오늘의 여정 5번 완주", ok: () => (settings.journeyCount || 0) >= 5 },
+  { id: "tags5", e: "🏷️", t: "감정의 언어", d: "감정 태그 5일 기록", ok: (D) => D.list.filter((e) => e.tags && e.tags.length).length >= 5 },
+  { id: "allmoods", e: "🌈", t: "마음의 무지개", d: "7가지 기분 모두 경험", ok: (D) => new Set(D.list.filter((e) => e.mood).map((e) => e.mood)).size >= 7 },
+  { id: "earlybird", e: "🐦", t: "이른 새", d: "아침 8시 전에 기록", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 8) },
+  { id: "nightowl", e: "🦉", t: "밤의 위로", d: "새벽(0~5시)에 기록", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 5) },
 ];
 function badgeData() { const entries = loadEntries(), list = sortedEntries(entries); return { total: list.length, list, streak: calcStreak(entries), chs: loadChs() }; }
 function earnedBadgeIds() { const D = badgeData(); return BADGES.filter((b) => b.ok(D)).map((b) => b.id); }
@@ -1173,7 +1235,7 @@ document.getElementById("histMore").addEventListener("click", () => { histShown 
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false },
+  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0 },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
@@ -1266,12 +1328,10 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
 });
 document.getElementById("replayOnboard").addEventListener("click", () => { Sound.tap(); showOnboard(); });
 
-/* 설정 카드 접기/펼치기 */
-document.getElementById("tab-settings").addEventListener("click", (e) => {
-  const h2 = e.target.closest("h2"); if (!h2) return;
-  const card = h2.parentElement;
-  if (!card.classList.contains("collapsible")) return;
-  card.classList.toggle("collapsed"); Sound.tap();
+/* 접기/펼치기 카드 (설정·오늘 등 공용) */
+document.addEventListener("click", (e) => {
+  const h2 = e.target.closest(".card.collapsible > h2"); if (!h2) return;
+  h2.parentElement.classList.toggle("collapsed"); Sound.tap();
 });
 document.getElementById("clearBtn").addEventListener("click", () => {
   if (!confirm("정말 모든 기록을 지울까요? 되돌릴 수 없어요.")) return;
@@ -1319,6 +1379,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 
 /* ===================== 오늘의 여정 (적응형 단계 기록) ===================== */
 const MOOD_ORDER = ["지쳤어요", "우울해요", "불안해요", "무기력해요", "그럭저럭", "괜찮아요", "활기차요"];
+const JTAGS = ["피곤", "불안", "보람", "외로움", "평온", "짜증", "설렘", "뿌듯"];
 const journey = document.getElementById("journey");
 const jBody = document.getElementById("jBody"), jBar = document.getElementById("jBar");
 const jPrev = document.getElementById("jPrev"), jNext = document.getElementById("jNext");
@@ -1328,7 +1389,8 @@ function jSteps() {
   const low = jData.mood && moodMeta[jData.mood].score <= 2;
   const s = ["mood", "energy"];
   if (low) s.push("breathe");
-  s.push("note", "praise");
+  s.push("note", "tags", "praise");
+  if (loadChs().length) s.push("habits");
   if (hr >= 18 || hr < 5) s.push("reflect");
   s.push("finish");
   return s;
@@ -1350,8 +1412,18 @@ function stepHtml(id) {
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요. 준비되면 '다음'을 눌러요.<br>(오른쪽 아래 🌬️ 버튼으로 더 길게도 할 수 있어요)</p>`;
   if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
     <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
+  if (id === "tags") return `<p class="j-q">오늘 마음에 태그를 달아볼까요?</p>
+    <p class="hint" style="text-align:center">눌러서 추가하거나 직접 입력해요. (선택)</p>
+    <div class="link-grid" id="jTagSuggest" style="justify-content:center">${JTAGS.map((t) => `<button type="button" class="link-chip" data-tag="${t}">${t}</button>`).join("")}</div>
+    <input type="text" id="jTags" class="text-input" style="margin-top:12px" maxlength="100" value="${escapeHtml((jData.tags || []).join(", "))}" placeholder="쉼표로 구분 (예: 피곤, 야근)">`;
   if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요 🌱</p>
     <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">`;
+  if (id === "habits") {
+    const today = todayKey();
+    const chs = loadChs();
+    return `<p class="j-q">오늘의 습관, 했나요?</p>
+      <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}"><span>${h.emoji} ${escapeHtml(h.title)}</span><b>${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
+  }
   if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
     <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
     <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
@@ -1374,12 +1446,26 @@ function renderStep() {
   } else if (curId === "energy") {
     const r = jBody.querySelector("#jEnergy"), f = jBody.querySelector("#jEnergyFace");
     f.textContent = energyFaces[r.value]; r.addEventListener("input", () => { f.textContent = energyFaces[r.value]; });
+  } else if (curId === "tags") {
+    const inp = jBody.querySelector("#jTags");
+    jBody.querySelector("#jTagSuggest").addEventListener("click", (e) => {
+      const b = e.target.closest(".link-chip"); if (!b) return;
+      Sound.tap(); const cur = parseTags(inp.value); if (!cur.includes(b.dataset.tag)) { cur.push(b.dataset.tag); inp.value = cur.join(", "); }
+    });
+  } else if (curId === "habits") {
+    jBody.querySelectorAll(".j-habit").forEach((btn) => btn.addEventListener("click", () => {
+      const chs = loadChs(); const h = chs.find((x) => x.id === btn.dataset.hid); if (!h) return;
+      const k = todayKey(); h.done[k] = !h.done[k]; saveChs(chs);
+      btn.classList.toggle("done", h.done[k]); btn.querySelector("b").textContent = h.done[k] ? "✓" : "○";
+      h.done[k] ? Sound.success() : Sound.tap();
+    }));
   }
   jBody.scrollTop = 0;
 }
 function collectStep() {
   if (curId === "energy") { const r = jBody.querySelector("#jEnergy"); if (r) jData.energy = Number(r.value); }
   else if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
+  else if (curId === "tags") { const r = jBody.querySelector("#jTags"); if (r) jData.tags = parseTags(r.value); }
   else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); }
   else if (curId === "reflect") { const g = jBody.querySelector("#jGood"), h = jBody.querySelector("#jHard"); if (g) jData.good = g.value.trim(); if (h) jData.hard = h.value.trim(); }
 }
@@ -1397,9 +1483,10 @@ function saveJourney() {
   entries[k] = {
     date: k, mood: jData.mood, energy: Number(jData.energy || 3),
     note: (jData.note || "").trim(), praise: (jData.praise || "").trim(),
-    tags: prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
+    tags: jData.tags || prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
     updatedAt: new Date().toISOString(),
   };
+  settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings);
   saveEntries(entries); Sound.success();
   closeJourney(); loadToday(); checkBadges();
   if (detectCrisis(jData.note)) showSafety();

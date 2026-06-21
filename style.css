@@ -329,6 +329,12 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey .js-emoji { font-size: 3rem; text-align: center; margin-bottom: 6px; }
 .journey .mood-grid { gap: 12px; }
 .journey .energy { margin-top: 10px; }
+.entry-date-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.j-habits { display: flex; flex-direction: column; gap: 10px; }
+.j-habit { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 2px solid var(--line); background: var(--bg-sunken); color: var(--ink); border-radius: 16px; padding: 16px 18px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.j-habit b { font-size: 1.3rem; color: var(--soft); }
+.j-habit.done { border-color: var(--success); background: var(--card); }
+.j-habit.done b { color: var(--success); }
 .j-finish { text-align: center; }
 .j-finish h3 { font-size: 1.4rem; margin: 8px 0 10px; }
 .j-finish p { color: var(--ink-2); }
@@ -468,7 +474,9 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .breath-overlay { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px; animation: fade 0.35s ease both; }
 .qb-title { font-size: 1.3rem; font-weight: 700; margin: 0; }
 .qb-hint { color: var(--soft); margin: 0; }
-.breath-circle.big { width: 180px; height: 180px; font-size: 1.2rem; }
+.breath-circle.big { width: 128px; height: 128px; font-size: 1.05rem; margin: 30px 0; }
+/* 큰 원은 확대 배율을 낮춰 위아래 문구를 가리지 않게 */
+.breath-circle.big.inhale, .breath-circle.big.hold { transform: scale(1.3); box-shadow: 0 0 0 22px var(--ring); }
 .sleep-toggle { background: transparent; border: 1px solid var(--line); color: var(--ink-2); border-radius: 999px; padding: 10px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
 /* 수면 모드: 화면을 어둡게 + 자극 최소화 */
 .breath-overlay.sleep { background: #0c0b10; color: #6f6a82; transition: background 0.8s ease; }

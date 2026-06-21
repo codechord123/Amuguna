@@ -107,6 +107,16 @@ try {
   q("#subBack").click();
   check("상세 페이지 닫기 동작", !d.querySelector("#subpage").classList.contains("show"));
 
+  // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
+  q("[data-tab=today]").click(); q("#journeyStart").click();
+  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "괜찮아요").click();
+  let g2 = 0, foundHabit = false, foundTags = false;
+  while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; if (q("#jBody #jTags")) foundTags = true; q("#jNext").click(); }
+  if (q("#jBody .j-habit")) foundHabit = true;
+  check("여정에 감정 태그 단계 포함", foundTags);
+  check("여정에 습관 단계 포함", foundHabit);
+  q("#jClose").click();
+
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
@@ -115,7 +125,7 @@ try {
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
-  check("배지 렌더됨", d.querySelectorAll("#badgeGrid .badge").length === 10);
+  check("배지 다양화(22종)", d.querySelectorAll("#badgeGrid .badge").length === 22);
   check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
