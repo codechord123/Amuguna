@@ -539,6 +539,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .j-insight { background: var(--bg-sunken); border-radius: var(--r-md); padding: var(--s4); margin: 0 0 var(--s4); font-size: var(--t-base); line-height: 1.6; color: var(--ink-2); text-align: left; }
 .j-insight-h { display: block; font-size: var(--t-xs); font-weight: var(--w-bold); color: var(--accent-deep); margin-bottom: var(--s1); }
 
+/* 여정: 나를 위한 한마디 */
+.j-quote { margin: 0 auto var(--s3); font-size: var(--t-lg); font-weight: var(--w-semi); line-height: 1.85; text-align: center; color: var(--ink); word-break: keep-all; overflow-wrap: break-word; max-width: 22em; }
+#jQuoteMore, #jMissionMore { width: auto; display: block; margin: var(--s2) auto 0; padding: var(--s2) var(--s4); }
+
 /* 감정 통합 도구 (마음+에너지+태그) */
 .emo-band { text-align: center; font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); margin: var(--s4) 0 var(--s2); }
 .emo-band:first-of-type { margin-top: var(--s2); }
@@ -693,7 +697,8 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* ============================================================
    빠른 호흡 FAB + 오버레이
    ============================================================ */
-.fab { position: fixed; right: var(--s4); bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 40; width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 8px 22px var(--ring); transition: transform 0.15s var(--ease-soft); }
+/* 우상단 고정 — 콘텐츠를 가리지 않게 (안전영역 고려) */
+.fab { position: fixed; right: var(--s3); top: calc(var(--s2) + env(safe-area-inset-top)); z-index: 50; width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.3rem; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring); transition: transform 0.15s var(--ease-soft); }
 .fab:hover { transform: scale(1.06); }
 .fab:active { transform: scale(0.92); }
 [data-theme="dark"] .fab { color: #17161d; }

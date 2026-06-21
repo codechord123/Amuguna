@@ -1678,8 +1678,19 @@ function jSteps() {
   s.push("note", "praise");
   if (loadChs().length) s.push("habits");
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
+  s.push("care");    // 나를 위한 한마디 + 오늘의 미션
   s.push("finish");
   return s;
+}
+// 여정용 한마디·미션 선택 (DOM 부작용 없이 문자열만 반환)
+function pickQuote(exclude) {
+  const pool = basePool(); if (!pool.length) return "오늘 하루도 충분히 애썼어요.";
+  let q, t = 0; do { q = pool[Math.floor(Math.random() * pool.length)]; t++; } while (q === exclude && pool.length > 1 && t < 12);
+  return q;
+}
+function pickMission(exclude) {
+  let m, t = 0; do { m = missions[Math.floor(Math.random() * missions.length)]; t++; } while (m === exclude && missions.length > 1 && t < 12);
+  return m;
 }
 function notePrompt(m) {
   if (!m) return "오늘 하루, 한 줄로 남긴다면?";
@@ -1715,6 +1726,16 @@ function stepHtml(id) {
     const chs = loadChs();
     return `<p class="j-q">오늘의 습관, 했나요?</p>
       <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}" aria-pressed="${!!h.done[today]}"><span>${h.emoji} ${escapeHtml(h.title)}</span><b aria-hidden="true">${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
+  }
+  if (id === "care") {
+    if (!jData.quote) jData.quote = pickQuote();
+    if (!jData.mission) jData.mission = pickMission();
+    return `<div class="js-emoji">💌</div><p class="j-q">잠깐, 나를 위한 한마디</p>
+      <blockquote class="j-quote" id="jQuote">“${escapeHtml(jData.quote)}”</blockquote>
+      <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ↻</button>
+      <p class="field-label" style="text-align:center;margin-top:22px">✨ 오늘의 작은 미션</p>
+      <p class="mission" id="jMission">${escapeHtml(jData.mission)}</p>
+      <button type="button" class="reflect-toggle" id="jMissionMore">다른 미션 ↻</button>`;
   }
   if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
     <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
@@ -1764,6 +1785,11 @@ function renderStep() {
       jApplyEmotions(); refresh(); saveJDraft();
     }));
     refresh();
+  } else if (curId === "care") {
+    const qm = jBody.querySelector("#jQuoteMore");
+    if (qm) qm.addEventListener("click", () => { Sound.tap(); jData.quote = pickQuote(jData.quote); jBody.querySelector("#jQuote").textContent = "“" + jData.quote + "”"; saveJDraft(); });
+    const mm = jBody.querySelector("#jMissionMore");
+    if (mm) mm.addEventListener("click", () => { Sound.tap(); jData.mission = pickMission(jData.mission); jBody.querySelector("#jMission").textContent = jData.mission; saveJDraft(); });
   } else if (curId === "breathe") {
     const bb = jBody.querySelector("#jBreatheBtn");
     if (bb) bb.addEventListener("click", () => { Sound.tap(); openBreath(); }); // 여정 위에 호흡 오버레이(더 높은 z-index)
@@ -1812,9 +1838,12 @@ function saveJourney() {
   };
   settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings);
   saveEntries(entries); clearJDraft(); Sound.success(); Haptic.success();
+  // 클라우드 동기화 (로그인 시) — 마친 즉시 반영
+  const loggedIn = !!(window.Cloud && window.Cloud.getUser && window.Cloud.getUser());
+  if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
   closeJourney(); loadToday(); checkBadges();
   if (detectCrisis(jData.note)) showSafety();
-  toast("오늘 기록을 마쳤어요. 고마워요 💛");
+  toast(loggedIn ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "오늘 기록을 마쳤어요. 고마워요 💛");
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)
 function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); }

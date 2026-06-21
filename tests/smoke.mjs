@@ -112,10 +112,12 @@ try {
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
   check("여정 감정 통합 도구 표시", !!q("#jBody .emo-grid"));
   q('#jBody .emo[data-emo="괜찮아요"]').click();
-  let g2 = 0, foundHabit = false;
-  while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; q("#jNext").click(); }
+  let g2 = 0, foundHabit = false, foundCare = false;
+  while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; if (q("#jBody #jMission")) foundCare = true; q("#jNext").click(); }
   if (q("#jBody .j-habit")) foundHabit = true;
+  if (q("#jBody #jMission")) foundCare = true;
   check("여정에 습관 단계 포함", foundHabit);
+  check("여정에 한마디·미션 단계 포함", foundCare);
   q("#jClose").click();
 
   // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
