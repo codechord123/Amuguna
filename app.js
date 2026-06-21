@@ -879,6 +879,7 @@ function renderStats() {
   if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
   renderStatsHeadline(list);
   renderAnalyzeInsight(entries, list);
+  renderAnalyzeKpis(entries, list);
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
@@ -1526,7 +1527,7 @@ function renderHabitHeatmap() {
 function renderAnalyzeInsight(entries, list) {
   const el = document.getElementById("analyzeInsight"); if (!el) return;
   const moods = list.filter((e) => e.mood);
-  if (moods.length < 3) { el.innerHTML = '<span class="ai-ico">🧭</span><span>기록이 더 쌓이면 분석을 한 문장으로 종합해 드릴게요 🌱</span>'; return; }
+  if (moods.length < 3) { el.textContent = "기록이 더 쌓이면 분석을 한 문장으로 종합해 드릴게요 🌱"; return; }
   const tk = todayKey(), bits = [];
   // 1) 추세 (이번 주 vs 지난 주)
   const wk = [], pv = [];
@@ -1560,8 +1561,30 @@ function renderAnalyzeInsight(entries, list) {
   });
   const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 2);
   if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const top = slots[0], [di, bk] = top.k.split("|"); bits.push(`<b>${days[di]}요일 ${bk}</b>에 마음이 가장 평온했어요 (⌀${Math.round(top.avg)})`); }
-  if (!bits.length) { el.innerHTML = '<span class="ai-ico">🧭</span><span>최근 기분은 비교적 안정적이에요. 꾸준히 남겨주셔서 좋아요 🌿</span>'; return; }
-  el.innerHTML = `<span class="ai-ico">🧭</span><span>${bits.slice(0, 2).join(" · ")}</span>`;
+  if (!bits.length) { el.textContent = "최근 기분은 비교적 안정적이에요. 꾸준히 남겨주셔서 좋아요 🌿"; return; }
+  el.innerHTML = bits.slice(0, 2).join(" · ");
+}
+// 분석 탭 핵심 지표 4종 — 한눈에 들어오는 요약 숫자
+function renderAnalyzeKpis(entries, list) {
+  const el = document.getElementById("analyzeKpis"); if (!el) return;
+  const moods = list.filter((e) => e.mood);
+  const wk = [], pv = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
+  for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); pv.push(todayKey(d)); }
+  const avg = (ks) => { const v = ks.map((k) => entries[k] && entries[k].mood ? entryScore(entries[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const a = avg(wk), b = avg(pv);
+  const moodVal = a != null ? `<span style="color:${scoreColor(a)}">${Math.round(a)}</span>` : "—";
+  let deltaHtml = "";
+  if (a != null && b != null) { const d = Math.round(a - b); deltaHtml = `<i class="as-delta ${d > 0 ? "up" : d < 0 ? "down" : "flat"}">${d > 0 ? "▲" : d < 0 ? "▼" : "–"}${Math.abs(d)}</i>`; }
+  const recDays = wk.filter((k) => entries[k] && entries[k].mood).length;
+  const ens = wk.map((k) => entries[k]).filter((e) => e && e.energy);
+  const enVal = ens.length ? (ens.reduce((s, e) => s + e.energy, 0) / ens.length).toFixed(1) : "—";
+  const cut = new Date(); cut.setDate(cut.getDate() - 30);
+  const tagCount = {};
+  moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => tagCount[t] = (tagCount[t] || 0) + 1); });
+  const topTag = Object.entries(tagCount).sort((x, y) => y[1] - x[1])[0];
+  const tile = (val, label) => `<div class="as-kpi"><span class="as-k-val">${val}</span><span class="as-k-lab">${label}</span></div>`;
+  el.innerHTML = tile(moodVal + deltaHtml, "평균 기분") + tile(recDays + "일", "이번 주 기록") + tile(enVal, "평균 활력") + tile(topTag ? escapeHtml(topTag[0]) : "—", "으뜸 감정");
 }
 // 통계를 쉬운 한 문장으로 — 사용자 인식 도움
 function renderStatsHeadline(list) {
