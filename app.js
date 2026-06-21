@@ -38,35 +38,38 @@ const plainReplies = {
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
 
 /* 감정 팔레트 — '마음 + 에너지 + 태그'를 하나로 통합한 도구.
-   정서 원형모형(Russell 1980): 에너지(각성) × 쾌-불쾌(정서가).
-   base = 통계·점수용 기존 7분류, en = 에너지(1-5) */
+   카테고리는 직관적으로 긍정·보통·부정(정서가)으로 묶고,
+   각 감정의 en(에너지 1-5)은 기록에 함께 저장된다(정서 원형모형, Russell 1980).
+   base = 통계·점수용 기존 7분류 */
 const EMOTIONS = [
-  // 에너지 높음
-  { k: "신나요",   e: "🤩", base: "활기차요",   en: 5, band: "high" },
-  { k: "설레요",   e: "😆", base: "활기차요",   en: 5, band: "high" },
-  { k: "뿌듯해요", e: "😏", base: "괜찮아요",   en: 4, band: "high" },
-  { k: "화나요",   e: "😤", base: "불안해요",   en: 5, band: "high" },
-  { k: "불안해요", e: "😰", base: "불안해요",   en: 4, band: "high" },
-  { k: "초조해요", e: "😣", base: "불안해요",   en: 4, band: "high" },
-  { k: "스트레스", e: "😫", base: "불안해요",   en: 4, band: "high" },
-  // 에너지 보통
-  { k: "괜찮아요", e: "🙂", base: "괜찮아요",   en: 3, band: "mid" },
-  { k: "평온해요", e: "😊", base: "괜찮아요",   en: 3, band: "mid" },
-  { k: "그럭저럭", e: "😐", base: "그럭저럭",   en: 3, band: "mid" },
-  { k: "멍해요",   e: "😶", base: "그럭저럭",   en: 3, band: "mid" },
-  { k: "복잡해요", e: "🤔", base: "그럭저럭",   en: 3, band: "mid" },
-  // 에너지 낮음
-  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 2, band: "low" },
-  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "low" },
-  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "low" },
-  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 2, band: "low" },
-  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 2, band: "low" },
-  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 2, band: "low" },
+  // 긍정
+  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos" },
+  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos" },
+  { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos" },
+  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos" },
+  { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos" },
+  { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos" },
+  { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos" },
+  // 보통
+  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu" },
+  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu" },
+  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu" },
+  // 부정
+  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg" },
+  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg" },
+  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg" },
+  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg" },
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 2, band: "neg" },
+  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg" },
+  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg" },
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 2, band: "neg" },
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 2, band: "neg" },
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 2, band: "neg" },
 ];
 const EMO_BANDS = [
-  { id: "high", label: "⚡ 에너지가 높아요" },
-  { id: "mid",  label: "🌤️ 보통이에요" },
-  { id: "low",  label: "🔋 가라앉아 있어요" },
+  { id: "pos", label: "🌟 긍정적인 마음" },
+  { id: "neu", label: "🌤️ 그저 그런 마음" },
+  { id: "neg", label: "🌧️ 힘든 마음" },
 ];
 function emoByKey(k) { return EMOTIONS.find((x) => x.k === k); }
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
@@ -1632,7 +1635,18 @@ function stepHtml(id) {
     <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
   return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>오늘도 잘 기록했어요</h3>
     <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
+    ${journeyFinishStatsHtml()}
     <p class="hint">아래 버튼을 누르면 저장돼요.</p></div>`;
+}
+// 완료 직전, 저장 후의 성취를 미리 보여줘 보상감을 준다(연속·이번 주)
+function journeyFinishStatsHtml() {
+  const tmp = Object.assign({}, loadEntries());
+  const k = jData.date || todayKey();
+  tmp[k] = Object.assign({}, tmp[k], { date: k, mood: jData.mood });
+  const streak = calcStreak(tmp);
+  const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  const wk = keys.filter((kk) => tmp[kk] && tmp[kk].mood).length;
+  return `<div class="j-finish-stats"><span><b>${streak}</b>일 연속</span><span><b>${wk}</b><i>/7</i> 이번 주</span></div>`;
 }
 function renderStep() {
   const arr = jSteps(), i = Math.max(0, arr.indexOf(curId));
