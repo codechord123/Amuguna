@@ -240,6 +240,13 @@ try {
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
   check("분석 탭 종합 인사이트 표시", (d.querySelector("#analyzeInsight").textContent || "").trim().length > 0);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
+  // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
+  const calToday = new Date().toISOString().slice(0, 10);
+  window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));
+  window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2020-01-01", done: { [calToday]: true }, celebrated: [] }]));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
+  q("#calNext").click(); q("#calNext").click();
+  check("마음 달력 통합 글리프 표시", !!d.querySelector("#moodCal .gc-energy") && !!d.querySelector("#moodCal .gc-habits") && !!d.querySelector("#moodCal .gc-note"));
 
   // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
   q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
