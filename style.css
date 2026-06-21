@@ -521,6 +521,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .j-finish-stats span { background: var(--bg-sunken); border-radius: var(--r-md); padding: var(--s3) var(--s5); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); }
 .j-finish-stats b { display: block; font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; }
 .j-finish-stats i { font-size: var(--t-sm); font-style: normal; color: var(--soft); font-weight: var(--w-semi); }
+.j-insight { background: var(--bg-sunken); border-radius: var(--r-md); padding: var(--s4); margin: 0 0 var(--s4); font-size: var(--t-base); line-height: 1.6; color: var(--ink-2); text-align: left; }
+.j-insight-h { display: block; font-size: var(--t-xs); font-weight: var(--w-bold); color: var(--accent-deep); margin-bottom: var(--s1); }
 
 /* 감정 통합 도구 (마음+에너지+태그) */
 .emo-band { text-align: center; font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); margin: var(--s4) 0 var(--s2); }

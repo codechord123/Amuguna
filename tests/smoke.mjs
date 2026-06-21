@@ -109,7 +109,7 @@ try {
   check("상세 페이지 닫기 동작", !d.querySelector("#subpage").classList.contains("show"));
 
   // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
-  q("[data-tab=today]").click(); q("#journeyStart").click();
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
   check("여정 감정 통합 도구 표시", !!q("#jBody .emo-grid"));
   q('#jBody .emo[data-emo="괜찮아요"]').click();
   let g2 = 0, foundHabit = false;
@@ -119,11 +119,19 @@ try {
   q("#jClose").click();
 
   // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
-  q("[data-tab=today]").click(); q("#journeyStart").click();
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
   q('#jBody .emo[data-emo="지쳤어요"]').click();
   q("#jNext").click(); // 감정(통합)→호흡
   check("저기분 여정 호흡 단계 버튼", !!q("#jBody #jBreatheBtn"));
   q("#jClose").click();
+
+  // 3d) 여정 진행 임시저장(중간에 닫아도 이어서)
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q('#jBody .emo[data-emo="평온해요"]').click();
+  q("#jClose").click();
+  q("#journeyStart").click();
+  check("여정 진행 임시저장 복원", q('#jBody .emo[data-emo="평온해요"]').getAttribute("aria-pressed") === "true");
+  q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();

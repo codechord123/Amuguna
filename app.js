@@ -4,7 +4,7 @@
 // 실행의도(Gollwitzer 1999), 정서명명(Lieberman 2007), SDT(Deci & Ryan), 감사(Emmons 2003).
 
 /* ===================== 저장소 ===================== */
-const DB = { ENTRIES: "entries_v2", SETTINGS: "settings_v2", CH: "challenges_v2", ONBOARD: "onboarded_v1" };
+const DB = { ENTRIES: "entries_v2", SETTINGS: "settings_v2", CH: "challenges_v2", ONBOARD: "onboarded_v1", JDRAFT: "journey_draft_v1" };
 const CH_TARGET = 90;
 
 // 기분 → 점수(1~5) + 태그 (Russell 정동 원형 모형 기반, 점수만이 아니라 라벨로 분기)
@@ -313,7 +313,8 @@ function updateJourneyHero() {
     set("journeyEmoji", "🌿");
     set("journeyStartHint", `오늘 ${moodMeta[e.mood].emoji} ${e.mood} 마음을 남겼어요. 잘 해냈어요.`);
     set("journeyStart", "오늘 여정 다시 하기");
-    set("journeySub", "원하면 언제든 다시 돌아볼 수 있어요");
+    const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
+    set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
   } else {
     set("journeyEmoji", "✨");
     set("journeyStartHint", "한 걸음씩 따라가며 오늘 마음을 남겨봐요.");
@@ -1292,6 +1293,14 @@ function drawChart(entries) {
   const line = css.getPropertyValue("--line").trim(), soft = css.getPropertyValue("--soft").trim();
   const days = [];
   for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(todayKey(d)); }
+  // 데이터가 너무 적으면 빈 상태 안내
+  const moodPts = days.filter((k) => entries[k] && entries[k].mood).length;
+  if (moodPts < 2) {
+    ctx.fillStyle = soft; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("최근 14일 중 이틀 이상 기록되면", cssW / 2, cssH / 2 - 8);
+    ctx.fillText("마음·에너지 흐름을 그려드려요 🌿", cssW / 2, cssH / 2 + 12);
+    return;
+  }
   const padL = 26, padR = 10, padT = 14, padB = 24, w = cssW - padL - padR, h = cssH - padT - padB;
   const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * (v - 1)) / 4;
   ctx.strokeStyle = line; ctx.lineWidth = 1;
@@ -1313,16 +1322,20 @@ function drawChart(entries) {
 // 근거기반 if-then 인사이트
 function renderInsight(entries, list) {
   const el = document.getElementById("insight");
-  const withMood = list.filter((e) => e.mood);
   if (list.length < 3) {
     el.textContent = "기록이 3일 이상 쌓이면, 당신만의 마음 패턴을 살며시 알려드릴게요. 지금처럼 조금씩이면 충분해요 🌱";
     return;
   }
-  const msgs = [];
-
-  // R8: 위기 신호 — 최우선
+  // 위기 신호 — 최우선 (이 화면에서만 안전 카드 노출)
   const recentNotes = list.slice(-5).map((e) => e.note || "").join(" ");
-  if (detectCrisis(recentNotes)) { showSafety(); }
+  if (detectCrisis(recentNotes)) showSafety();
+  const msgs = computeInsightMsgs(entries, list);
+  el.textContent = msgs.length ? msgs.slice(0, 2).join(" ") : "꾸준히 기록하고 있어요. 이 자체가 자신을 돌보는 멋진 일이에요. 💛";
+}
+// 데이터 기반 인사이트 메시지 목록 (여러 곳에서 재사용)
+function computeInsightMsgs(entries, list) {
+  const withMood = list.filter((e) => e.mood);
+  const msgs = [];
 
   // R1: 최근 3일 기분 ≤2 → 행동활성화
   const last3 = withMood.slice(-3);
@@ -1358,7 +1371,14 @@ function renderInsight(entries, list) {
   const lowRecent = withMood.slice(-3).some((e) => moodMeta[e.mood].score <= 2);
   if (noPraise && lowRecent) msgs.push("오늘 아주 사소해도 괜찮은, 고마웠던 일 하나만 적어볼까요? 작은 감사가 마음을 데워줘요. (Emmons & McCullough)");
 
-  el.textContent = msgs.length ? msgs.slice(0, 2).join(" ") : "꾸준히 기록하고 있어요. 이 자체가 자신을 돌보는 멋진 일이에요. 💛";
+  return msgs;
+}
+// 첫 화면·완료 화면에 보여줄 한 줄 인사이트 (없으면 null)
+function quickInsight() {
+  const entries = loadEntries(), list = sortedEntries(entries);
+  if (list.length < 3) return null;
+  const msgs = computeInsightMsgs(entries, list);
+  return msgs.length ? msgs[0] : null;
 }
 
 function renderDist(list) {
@@ -1475,8 +1495,16 @@ function scheduleReminder() {
   reminderTimer = setTimeout(fireReminder, next - now);
 }
 function fireReminder() {
-  const done = !!loadEntries()[todayKey()];
-  const body = done ? "오늘도 기록해줘서 고마워요. 푹 쉬어요 🌙" : "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요 💛";
+  const tk = todayKey();
+  const done = !!loadEntries()[tk];
+  // 오늘 아직 안 한 습관을 함께 안내 (맥락 알림)
+  const undone = loadChs().filter((h) => tk >= h.startDate && !h.done[tk]);
+  let body;
+  if (!done) body = "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요 💛";
+  else if (undone.length) {
+    const h = undone[0];
+    body = `오늘 기록 고마워요 🌿 ${h.emoji} ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
+  } else body = "오늘도 다 해냈어요. 푹 쉬어요 🌙";
   if ("Notification" in window && Notification.permission === "granted") new Notification("오늘의 쉼 ☕", { body });
   else { reminderMsg.textContent = body; reminderMsg.hidden = false; setTimeout(() => { reminderMsg.hidden = true; }, 6000); }
   Sound.chime(); scheduleReminder();
@@ -1609,7 +1637,7 @@ function stepHtml(id) {
       <p class="emo-band">${b.label}</p>
       <div class="emo-grid">${EMOTIONS.filter((e) => e.band === b.id).map((e) => {
         const idx = sel.indexOf(e.k);
-        return `<button class="emo ${idx >= 0 ? "selected" : ""}" data-emo="${e.k}">${e.e}<span>${e.k}</span>${idx === 0 ? '<i class="emo-star">대표</i>' : ""}</button>`;
+        return `<button class="emo ${idx >= 0 ? "selected" : ""}" data-emo="${e.k}" aria-pressed="${idx >= 0}">${e.e}<span>${e.k}</span>${idx === 0 ? '<i class="emo-star" aria-hidden="true">대표</i>' : ""}</button>`;
       }).join("")}</div>`).join("");
     return `<p class="j-q">지금 마음, 어떤가요?</p>
       <p class="hint" style="text-align:center;margin:-10px 0 4px">느껴지는 감정을 골라요. 여러 개도 좋아요 — 첫 감정이 '대표'가 돼요.</p>
@@ -1628,14 +1656,16 @@ function stepHtml(id) {
     const today = todayKey();
     const chs = loadChs();
     return `<p class="j-q">오늘의 습관, 했나요?</p>
-      <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}"><span>${h.emoji} ${escapeHtml(h.title)}</span><b>${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
+      <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}" aria-pressed="${!!h.done[today]}"><span>${h.emoji} ${escapeHtml(h.title)}</span><b aria-hidden="true">${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
   }
   if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
     <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
     <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
+  const ins = quickInsight();
   return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>오늘도 잘 기록했어요</h3>
     <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
     ${journeyFinishStatsHtml()}
+    ${ins ? `<div class="j-insight"><span class="j-insight-h">🧭 오늘의 인사이트</span>${ins}</div>` : ""}
     <p class="hint">아래 버튼을 누르면 저장돼요.</p></div>`;
 }
 // 완료 직전, 저장 후의 성취를 미리 보여줘 보상감을 준다(연속·이번 주)
@@ -1661,8 +1691,9 @@ function renderStep() {
       jBody.querySelectorAll(".emo").forEach((btn) => {
         const idx = sel.indexOf(btn.dataset.emo);
         btn.classList.toggle("selected", idx >= 0);
+        btn.setAttribute("aria-pressed", idx >= 0);
         let star = btn.querySelector(".emo-star");
-        if (idx === 0) { if (!star) { star = document.createElement("i"); star.className = "emo-star"; star.textContent = "대표"; btn.appendChild(star); } }
+        if (idx === 0) { if (!star) { star = document.createElement("i"); star.className = "emo-star"; star.setAttribute("aria-hidden", "true"); star.textContent = "대표"; btn.appendChild(star); } }
         else if (star) star.remove();
       });
       if (jData.mood) { reply.textContent = curReplies()[jData.mood]; reply.hidden = false; } else { reply.hidden = true; }
@@ -1672,7 +1703,7 @@ function renderStep() {
       jData.emotions = jData.emotions || [];
       const k = b.dataset.emo, i = jData.emotions.indexOf(k);
       if (i >= 0) jData.emotions.splice(i, 1); else jData.emotions.push(k);
-      jApplyEmotions(); refresh();
+      jApplyEmotions(); refresh(); saveJDraft();
     }));
     refresh();
   } else if (curId === "breathe") {
@@ -1682,23 +1713,34 @@ function renderStep() {
     jBody.querySelectorAll(".j-habit").forEach((btn) => btn.addEventListener("click", () => {
       const chs = loadChs(); const h = chs.find((x) => x.id === btn.dataset.hid); if (!h) return;
       const k = todayKey(); h.done[k] = !h.done[k]; saveChs(chs);
-      btn.classList.toggle("done", h.done[k]); btn.querySelector("b").textContent = h.done[k] ? "✓" : "○";
+      btn.classList.toggle("done", h.done[k]); btn.setAttribute("aria-pressed", !!h.done[k]); btn.querySelector("b").textContent = h.done[k] ? "✓" : "○";
       h.done[k] ? Sound.success() : Sound.tap();
     }));
   }
   jBody.scrollTop = 0;
+  saveJDraft(); // 단계마다 진행상황 임시저장
 }
 function collectStep() {
   if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
   else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); }
   else if (curId === "reflect") { const g = jBody.querySelector("#jGood"), h = jBody.querySelector("#jHard"); if (g) jData.good = g.value.trim(); if (h) jData.hard = h.value.trim(); }
 }
+// 여정 진행 임시저장 (중간에 닫아도 이어서 작성)
+function saveJDraft() { try { localStorage.setItem(DB.JDRAFT, JSON.stringify({ date: jData.date || todayKey(), curId, data: jData })); } catch (e) {} }
+function loadJDraft() { try { return JSON.parse(localStorage.getItem(DB.JDRAFT)); } catch { return null; } }
+function clearJDraft() { try { localStorage.removeItem(DB.JDRAFT); } catch (e) {} }
 function openJourney() {
   Sound.unlock();
   jData = { date: todayKey(), emotions: [] };
   const t = loadEntries()[todayKey()];
   if (t) { jData.mood = t.mood; jData.energy = t.energy; jData.note = t.note; jData.praise = t.praise; if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; } }
-  curId = "feel"; journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
+  // 중간에 닫았던 진행분이 있으면 이어서
+  const draft = loadJDraft();
+  let resumed = false;
+  if (draft && draft.date === todayKey() && draft.data) { jData = draft.data; resumed = true; }
+  curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : "feel";
+  journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
+  if (resumed) toast("이어서 작성해요 ✍️");
 }
 function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; }, 300); }
 function saveJourney() {
@@ -1711,13 +1753,15 @@ function saveJourney() {
     updatedAt: new Date().toISOString(),
   };
   settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings);
-  saveEntries(entries); Sound.success(); Haptic.success();
+  saveEntries(entries); clearJDraft(); Sound.success(); Haptic.success();
   closeJourney(); loadToday(); checkBadges();
   if (detectCrisis(jData.note)) showSafety();
   toast("오늘 기록을 마쳤어요. 고마워요 💛");
 }
+// 완료 없이 닫기 = 일시정지(진행분 보존)
+function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); }
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
-document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); closeJourney(); });
+document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {
   collectStep();
   if (curId === "feel" && !jData.mood) { alert("지금 느껴지는 감정을 하나 골라주세요 🙂"); return; }
@@ -1734,7 +1778,7 @@ jPrev.addEventListener("click", () => {
 // Esc로 오버레이/카드 닫기 (접근성)
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (!journey.hidden) closeJourney();
+  if (!journey.hidden) pauseJourney();
   else if (!breathOverlay.hidden) closeBreath();
   else if (!subpage.hidden) closeSubpage();
   else if (!onboard.hidden) { finishOnboard(); }
