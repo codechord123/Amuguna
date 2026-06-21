@@ -238,6 +238,7 @@ try {
   window.localStorage.setItem("entries_v2", JSON.stringify(rh));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
+  check("분석 탭 종합 인사이트 표시", (d.querySelector("#analyzeInsight").textContent || "").trim().length > 0);
 
   // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
   q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();

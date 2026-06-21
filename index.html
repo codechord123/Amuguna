@@ -249,11 +249,12 @@
       </div>
 
       <div class="stats-panel" data-panel="graph" hidden>
+        <p class="analyze-insight" id="analyzeInsight"></p>
         <div class="card">
           <div class="card-head"><h2>📈 마음 흐름</h2><span class="today-date" id="chartRange"></span></div>
-          <p class="hint">세로=기분(100), 가로=날짜. 좌우로 드래그해 넘기고, 점을 누르면 그날 기록이 열려요.</p>
-          <canvas id="chart" height="220" role="img" aria-label="기분과 활력 추이 그래프"></canvas>
-          <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>활력</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
+          <p class="hint">세로=기분(100), 가로=날짜. 좌우로 드래그해 넘기고, 점을 누르면 그날 기록이 열려요. 아래 칸은 그날 습관 실천이에요.</p>
+          <canvas id="chart" height="220" role="img" aria-label="기분과 활력 추이, 습관 실천 그래프"></canvas>
+          <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>활력</span><span><i class="dot habit-dot"></i>습관</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
         </div>
         <div class="card">
           <div class="card-head"><h2>🧭 감정 지도</h2><span class="today-date">최근 30일</span></div>

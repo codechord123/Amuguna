@@ -878,6 +878,7 @@ function renderStats() {
   const sb = document.getElementById("statBadge");
   if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
   renderStatsHeadline(list);
+  renderAnalyzeInsight(entries, list);
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
@@ -1521,6 +1522,47 @@ function renderHabitHeatmap() {
   }).join("");
   el.innerHTML = `<div class="hm">${head}${rows}</div><p class="hint" style="margin-top:10px">진한 칸 = 실천한 날 · 최근 ${N}일</p>`;
 }
+// 분석 탭 상단 종합 인사이트 — 흩어진 발견을 한 줄로 (추세·습관·시간)
+function renderAnalyzeInsight(entries, list) {
+  const el = document.getElementById("analyzeInsight"); if (!el) return;
+  const moods = list.filter((e) => e.mood);
+  if (moods.length < 3) { el.innerHTML = '<span class="ai-ico">🧭</span><span>기록이 더 쌓이면 분석을 한 문장으로 종합해 드릴게요 🌱</span>'; return; }
+  const tk = todayKey(), bits = [];
+  // 1) 추세 (이번 주 vs 지난 주)
+  const wk = [], pv = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
+  for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); pv.push(todayKey(d)); }
+  const avg = (ks) => { const v = ks.map((k) => entries[k] && entries[k].mood ? entryScore(entries[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const a = avg(wk), b = avg(pv);
+  if (a != null && b != null) { const d = a - b; if (d >= 5) bits.push(`이번 주 기분이 지난주보다 <b>▲${Math.round(d)}점</b> 올랐어요`); else if (d <= -5) bits.push(`이번 주는 지난주보다 <b>▼${Math.round(-d)}점</b> 내려갔어요`); }
+  // 2) 가장 도움된 습관 (한 날 vs 안 한 날, 표본 5+/5+)
+  const moodByDate = {}; moods.forEach((e) => moodByDate[e.date] = entryScore(e));
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  let bestH = null;
+  chs.forEach((hh) => {
+    const done = [], not = [];
+    Object.keys(moodByDate).forEach((dt) => { if (dt < hh.startDate || dt > tk) return; (hh.done && hh.done[dt] ? done : not).push(moodByDate[dt]); });
+    if (done.length >= 5 && not.length >= 5) {
+      const ad = done.reduce((s, v) => s + v, 0) / done.length, an = not.reduce((s, v) => s + v, 0) / not.length;
+      const diff = ad - an; if (diff >= 6 && (!bestH || diff > bestH.diff)) bestH = { h: hh, diff };
+    }
+  });
+  if (bestH) bits.push(`<b>${bestH.h.emoji} ${escapeHtml(bestH.h.title)}</b> 한 날 기분이 평균 ${Math.round(bestH.diff)}점 더 좋았어요`);
+  // 3) 가장 평온했던 요일×시간대 (표본 2+)
+  const buckets = [{ k: "아침", lo: 5, hi: 11 }, { k: "오후", lo: 12, hi: 17 }, { k: "저녁", lo: 18, hi: 21 }, { k: "밤", lo: 22, hi: 4 }];
+  const days = ["일", "월", "화", "수", "목", "금", "토"], slot = {};
+  moods.forEach((e) => {
+    if (!e.updatedAt || !e.date) return;
+    const h = new Date(e.updatedAt).getHours();
+    const bk = buckets.find((x) => x.lo <= x.hi ? (h >= x.lo && h <= x.hi) : (h >= x.lo || h <= x.hi));
+    if (!bk) return; const di = new Date(e.date + "T00:00:00").getDay(), key = di + "|" + bk.k;
+    (slot[key] = slot[key] || { s: 0, n: 0 }); slot[key].s += entryScore(e); slot[key].n++;
+  });
+  const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 2);
+  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const top = slots[0], [di, bk] = top.k.split("|"); bits.push(`<b>${days[di]}요일 ${bk}</b>에 마음이 가장 평온했어요 (⌀${Math.round(top.avg)})`); }
+  if (!bits.length) { el.innerHTML = '<span class="ai-ico">🧭</span><span>최근 기분은 비교적 안정적이에요. 꾸준히 남겨주셔서 좋아요 🌿</span>'; return; }
+  el.innerHTML = `<span class="ai-ico">🧭</span><span>${bits.slice(0, 2).join(" · ")}</span>`;
+}
 // 통계를 쉬운 한 문장으로 — 사용자 인식 도움
 function renderStatsHeadline(list) {
   const el = document.getElementById("statsHeadline"); if (!el) return;
@@ -1666,7 +1708,9 @@ function smoothPath(ctx, pts) { // 카멀롬-롬 부드러운 곡선
 }
 function drawChart(entries) {
   const canvas = document.getElementById("chart");
-  const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = 210;
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  const hasHabits = chs.length > 0;
+  const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = hasHabits ? 236 : 210;
   canvas.width = cssW * dpr; canvas.height = cssH * dpr;
   const ctx = canvas.getContext("2d"); if (!ctx) return; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, cssW, cssH);
   const css = getComputedStyle(document.documentElement);
@@ -1684,7 +1728,7 @@ function drawChart(entries) {
     ctx.fillText("주식 차트처럼 보여드려요 🌿", cssW / 2, cssH / 2 + 12);
     return;
   }
-  const padL = 30, padR = 12, padT = 16, padB = 28, w = cssW - padL - padR, h = cssH - padT - padB;
+  const padL = 30, padR = 12, padT = 16, padB = hasHabits ? 50 : 28, w = cssW - padL - padR, h = cssH - padT - padB;
   const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * v) / 100; // v: 0-100
   const strong = css.getPropertyValue("--line-strong").trim() || line;
   // 가로 그리드 + 좌측 눈금(세로축 값)
@@ -1731,6 +1775,23 @@ function drawChart(entries) {
   if (ti >= 0 && entries[days[ti]] && entryScore(entries[days[ti]]) != null) {
     const px = x(ti), py = y(entryScore(entries[days[ti]]));
     ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
+  }
+  // 습관 실천 레인 — 마음 흐름과 같은 날짜축에 겹쳐 보기 (연결성)
+  if (hasHabits) {
+    const today = todayKey();
+    const laneY = padT + h + 20;
+    const success = css.getPropertyValue("--success").trim();
+    ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText("습관", padL - 26, laneY + 3);
+    const sz = Math.max(8, Math.min(14, w / days.length - 5));
+    days.forEach((k, i) => {
+      const active = chs.filter((hh) => k >= hh.startDate && k <= today);
+      if (!active.length) return;
+      const done = active.filter((hh) => hh.done && hh.done[k]).length;
+      const rx = x(i) - sz / 2, ry = laneY - sz / 2;
+      if (done === 0) { ctx.fillStyle = line; ctx.fillRect(rx, ry, sz, sz); }
+      else { ctx.save(); ctx.globalAlpha = 0.32 + 0.68 * (done / active.length); ctx.fillStyle = success; ctx.fillRect(rx, ry, sz, sz); ctx.restore(); }
+    });
   }
   // x축 날짜 라벨 (양끝 + 가운데)
   ctx.fillStyle = soft; ctx.font = "10px sans-serif"; ctx.textAlign = "center";

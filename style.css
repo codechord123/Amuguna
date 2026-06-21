@@ -457,6 +457,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 @keyframes bd-pulse { 0% { transform: scale(0.98); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
 .stats-headline { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); background: linear-gradient(160deg, var(--accent-2), var(--card) 80%); border: 1px solid var(--line-strong); border-radius: var(--r-md); font-size: var(--t-base); font-weight: var(--w-semi); color: var(--ink); line-height: 1.5; word-break: keep-all; }
 [data-theme="dark"] .stats-headline { background: var(--card); }
+.analyze-insight { display: flex; align-items: flex-start; gap: var(--s2); margin: 0 0 var(--s4); padding: var(--s4); background: linear-gradient(160deg, var(--accent-2), var(--card) 82%); border: 1px solid var(--line-strong); border-radius: var(--r-xl); box-shadow: var(--shadow-sm), inset 0 1px 0 var(--card-hi); font-size: var(--t-base); font-weight: var(--w-semi); color: var(--ink); line-height: 1.55; word-break: keep-all; }
+.analyze-insight .ai-ico { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; }
+.analyze-insight b { color: var(--accent-deep); font-weight: var(--w-bold); }
+[data-theme="dark"] .analyze-insight { background: var(--card); }
 .badge-cat { margin-bottom: var(--s4); }
 .badge-cat:last-child { margin-bottom: 0; }
 .badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }
@@ -773,6 +777,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: var(--s1); vertical-align: middle; }
 .mood-dot { background: var(--accent); }
 .energy-dot { background: var(--energy); }
+.habit-dot { background: var(--success); border-radius: 3px; }
 .insight { margin: 0; font-size: var(--t-base); line-height: 1.75; color: var(--ink-2); }
 .insight-actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
 .chip-btn { border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--accent-deep); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
