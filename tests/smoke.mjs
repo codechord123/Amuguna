@@ -129,7 +129,6 @@ try {
 
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
-  check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
   check("리포트 진입 표시", !!q("#weekGlanceCard") && !!q("#monthDetailBtn"));
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
@@ -146,13 +145,12 @@ try {
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
-  // 6) 검색
-  q("#historySearch").value = "야근"; q("#historySearch").dispatchEvent(new window.Event("input"));
-  check("검색 필터 동작", d.querySelectorAll("#history li.editable").length === 1);
-  check("기록 개수 표시", /\d+개/.test(q("#histCount").textContent));
-  q("#historySearch").value = ""; q("#historySearch").dispatchEvent(new window.Event("input"));
+  // 6) 달력 탭 (통합 마음 달력)
+  q("[data-tab=calendar]").click();
+  check("마음 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
   const calBefore = q("#calMonth").textContent; q("#calPrev").click();
   check("달력 이전 달로 이동", q("#calMonth").textContent !== calBefore);
+  q("#calNext").click();
 
   // 7) 설정: 테마/글자크기/톤
   q("[data-tab=settings]").click();
@@ -244,15 +242,16 @@ try {
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2020-01-01", done: { [calToday]: true }, celebrated: [] }]));
-  q("[data-tab=today]").click(); q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
+  q("[data-tab=today]").click(); q("[data-tab=calendar]").click();
   q("#calNext").click(); q("#calNext").click();
   check("마음 달력 통합 글리프 표시", !!d.querySelector("#moodCal .gc-energy") && !!d.querySelector("#moodCal .gc-habits") && !!d.querySelector("#moodCal .gc-note"));
 
-  // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
-  q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
-  q("#history li.editable").click();
-  check("지난 기록 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
+  // 12) 페이지 전환들 (달력→그날 상세 · 리포트)
+  q("[data-tab=calendar]").click();
+  d.querySelector(`#moodCal [data-cal="${calToday}"]`).click();
+  check("달력에서 그날 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
   q("#subBack").click();
+  q("[data-tab=stats]").click();
   q("#statsSeg button[data-seg=summary]").click(); q("#weekGlanceCard").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   q("#subBack").click();

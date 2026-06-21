@@ -801,6 +801,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .mood-dot { background: var(--accent); }
 .energy-dot { background: var(--energy); }
 .habit-dot { background: var(--success); border-radius: 3px; }
+.leg-thick { display: inline-flex; align-items: center; gap: var(--s1); }
+.leg-thick::before { content: ""; width: 15px; height: 9px; background: var(--energy); clip-path: polygon(0 38%, 100% 0, 100% 100%, 0 62%); display: inline-block; }
 .insight { margin: 0; font-size: var(--t-base); line-height: 1.75; color: var(--ink-2); }
 .insight-actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
 .chip-btn { border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--accent-deep); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s; }

@@ -79,6 +79,21 @@
       </div>
     </section>
 
+    <!-- ========== 탭: 달력 ========== -->
+    <section class="tab" id="tab-calendar" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2>🗓️ 마음 달력</h2>
+          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+        </div>
+        <p class="hint">한 칸에 그날의 기분·습관·활력·일기가 모두 담겨요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
+        <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div class="mood-cal" id="moodCal"></div>
+        <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
+        <div class="cal-legend cal-legend2"><span class="gl-item"><b class="gl-dot">•</b> 습관 실천</span><span class="gl-item"><i class="gl-energy"></i> 활력</span><span class="gl-item"><i class="gl-note"></i> 일기·회고</span></div>
+      </div>
+    </section>
+
     <!-- ========== 탭: 쉼 ========== -->
     <section class="tab" id="tab-rest" hidden>
       <div class="seg stats-seg" id="restSeg">
@@ -220,7 +235,6 @@
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
         <button data-seg="graph">분석</button>
-        <button data-seg="calendar">기록·달력</button>
       </div>
 
       <div class="stats-panel" data-panel="summary">
@@ -255,9 +269,9 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>📈 마음 흐름</h2><span class="today-date" id="chartRange"></span></div>
-          <p class="hint">세로=기분(100), 가로=날짜. 좌우로 드래그해 넘기고, 점을 누르면 그날 기록이 열려요. 아래 칸은 그날 습관 실천이에요.</p>
-          <canvas id="chart" height="220" role="img" aria-label="기분과 활력 추이, 습관 실천 그래프"></canvas>
-          <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>활력</span><span><i class="dot habit-dot"></i>습관</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
+          <p class="hint">리본의 <b>높이·색</b>=기분, <b>두께</b>=활력. 좌우로 드래그해 넘기고, 점을 누르면 그날 기록이 열려요. 아래 칸은 그날 습관 실천이에요.</p>
+          <canvas id="chart" height="220" role="img" aria-label="기분과 활력 무드 리본, 습관 실천 그래프"></canvas>
+          <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>높이·색=기분</span><span class="leg-thick">두께=활력</span><span><i class="dot habit-dot"></i>습관</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
         </div>
         <div class="card">
           <div class="card-head"><h2>🗓️ 마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
@@ -301,31 +315,6 @@
         </div>
       </div>
 
-      <div class="stats-panel" data-panel="calendar" hidden>
-        <div class="card">
-          <div class="card-head">
-            <h2>🗓️ 마음 달력</h2>
-            <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
-          </div>
-          <p class="hint">한 칸에 그날의 기분·습관·활력·일기가 모두 담겨요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
-          <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-          <div class="mood-cal" id="moodCal"></div>
-          <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
-          <div class="cal-legend cal-legend2"><span class="gl-item"><b class="gl-dot">•</b> 습관 실천</span><span class="gl-item"><i class="gl-energy"></i> 활력</span><span class="gl-item"><i class="gl-note"></i> 일기·회고</span></div>
-        </div>
-        <div class="card">
-          <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
-          <div class="seg hist-filter" id="histFilter">
-            <button data-hf="all" class="active">전체</button>
-            <button data-hf="good">🙂 좋음</button>
-            <button data-hf="mid">😐 보통</button>
-            <button data-hf="low">😮‍💨 힘듦</button>
-          </div>
-          <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin:10px 0 12px" />
-          <ul class="history" id="history"></ul>
-          <button class="btn" id="histMore" hidden style="width:100%;margin-top:12px">더 보기</button>
-        </div>
-      </div>
     </section>
 
     <!-- ========== 탭: 설정 ========== -->
@@ -471,6 +460,7 @@
 
   <nav class="tabbar" id="tabbar">
     <button class="tabbtn active" data-tab="today">📔<span>오늘</span></button>
+    <button class="tabbtn" data-tab="calendar">🗓️<span>달력</span></button>
     <button class="tabbtn" data-tab="rest">🌿<span>쉼</span></button>
     <button class="tabbtn" data-tab="challenge">🎯<span>챌린지</span></button>
     <button class="tabbtn" data-tab="stats">📊<span>기록</span></button>

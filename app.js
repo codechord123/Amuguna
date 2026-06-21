@@ -175,11 +175,12 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
+const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
   document.querySelectorAll(".tabbtn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
+  if (name === "calendar") renderMoodCalendar(loadEntries());
   if (name === "challenge") renderChallenge();
   if (name === "today") { updateJourneyHero(); updateTodayStats(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -893,9 +894,7 @@ function renderStats() {
   renderRhythm(entries);
   renderGratitude(list);
   drawChart(entries);
-  renderMoodCalendar(entries);
   renderDist(list);
-  renderHistory(list);
 }
 // 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
 function renderCapture(entries) {
@@ -959,20 +958,13 @@ function renderMoodCalendar(entries) {
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
-document.getElementById("histFilter").addEventListener("click", (e) => {
-  const b = e.target.closest("button[data-hf]"); if (!b) return; Sound.tap();
-  histFilter = b.dataset.hf; histShown = 60;
-  document.querySelectorAll("#histFilter button").forEach((x) => x.classList.toggle("active", x === b));
-  renderHistory(sortedEntries(loadEntries()));
-});
 document.getElementById("weekGlanceCard").addEventListener("click", () => { Sound.tap(); openReport("week"); });
 
-/* 기록 탭 서브탭 (요약/그래프/달력/기록) */
+/* 기록 탭 서브탭 (요약/분석) */
 function showStatsSeg(seg) {
   document.querySelectorAll("#statsSeg button").forEach((b) => b.classList.toggle("active", b.dataset.seg === seg));
   document.querySelectorAll(".stats-panel").forEach((p) => { p.hidden = p.dataset.panel !== seg; });
   if (seg === "graph") drawChart(loadEntries());        // 보일 때 정확한 폭으로 다시 그림
-  if (seg === "calendar") renderMoodCalendar(loadEntries());
 }
 document.getElementById("statsSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1732,13 +1724,16 @@ function chartMaxOffset(entries) {
   const span = Math.round((today - oldest) / 86400000);
   return Math.max(0, span - (CHART_WIN - 1));
 }
-function smoothPath(ctx, pts) { // 카멀롬-롬 부드러운 곡선
-  if (pts.length < 2) return;
-  ctx.moveTo(pts[0].x, pts[0].y);
+function smoothCurve(ctx, pts) { // 카멀롬-롬: 현재 점(pts[0])에서 이어 곡선
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
     ctx.bezierCurveTo(p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6, p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6, p2.x, p2.y);
   }
+}
+function smoothPath(ctx, pts) { // 부드러운 곡선 (moveTo부터)
+  if (pts.length < 2) return;
+  ctx.moveTo(pts[0].x, pts[0].y);
+  smoothCurve(ctx, pts);
 }
 function drawChart(entries) {
   const canvas = document.getElementById("chart");
@@ -1774,36 +1769,41 @@ function drawChart(entries) {
   // 축 제목
   ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
   ctx.fillText("기분", padL - 26, padT + 4);
-  const series = (getter) => days.map((k, i) => { const e = entries[k]; const val = e ? getter(e) : null; return val == null ? null : { x: x(i), y: y(val) }; });
-  // 기분: 영역 채우기 + 부드러운 곡선
-  const moodSeg = series((e) => entryScore(e)).filter(Boolean);
-  if (moodSeg.length) {
-    const grad = ctx.createLinearGradient(0, padT, 0, padT + h);
-    grad.addColorStop(0, accent + "44"); grad.addColorStop(1, accent + "05");
-    ctx.beginPath(); smoothPath(ctx, moodSeg);
-    ctx.lineTo(moodSeg[moodSeg.length - 1].x, y(0)); ctx.lineTo(moodSeg[0].x, y(0)); ctx.closePath();
-    ctx.fillStyle = grad; ctx.fill();
-  }
-  function plot(getter, color, dash) {
-    const pts = series(getter);
-    ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.setLineDash(dash || []);
-    // 연속 구간별로 곡선
-    let seg = []; const flush = () => { if (seg.length) { ctx.beginPath(); smoothPath(ctx, seg); ctx.stroke(); if (seg.length === 1) { ctx.beginPath(); ctx.arc(seg[0].x, seg[0].y, 2.6, 0, 7); ctx.fillStyle = color; ctx.fill(); } } seg = []; };
-    pts.forEach((p) => { if (!p) flush(); else seg.push(p); }); flush();
-    ctx.setLineDash([]);
-    pts.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = card; ctx.stroke(); } });
-  }
+  // 무드 리본 — 높이·색=기분, 두께=활력
+  // 세로 그라데이션(아래 빨강 ~ 위 초록): 리본이 위로 갈수록 초록 = 그날 기분이 색으로 읽힘
+  const ribGrad = ctx.createLinearGradient(0, y(0), 0, y(100));
+  ribGrad.addColorStop(0, SCORE_COLORS[0]); ribGrad.addColorStop(0.25, SCORE_COLORS[1]);
+  ribGrad.addColorStop(0.5, SCORE_COLORS[2]); ribGrad.addColorStop(0.75, SCORE_COLORS[3]); ribGrad.addColorStop(1, SCORE_COLORS[4]);
+  const rib = days.map((k, i) => {
+    const e = entries[k]; if (!e || !e.mood) return null;
+    const en = e.energy || scoreToEnergy(entryScore(e));
+    return { x: x(i), y: y(entryScore(e)), half: 3 + (Math.max(1, Math.min(5, en)) / 5) * 9 };
+  });
+  const drawRibbon = (s) => {
+    if (s.length === 1) { ctx.beginPath(); ctx.arc(s[0].x, s[0].y, s[0].half, 0, Math.PI * 2); ctx.fillStyle = ribGrad; ctx.globalAlpha = 0.92; ctx.fill(); ctx.globalAlpha = 1; return; }
+    const top = s.map((p) => ({ x: p.x, y: p.y - p.half })), bot = s.map((p) => ({ x: p.x, y: p.y + p.half }));
+    ctx.beginPath(); smoothPath(ctx, top);
+    ctx.lineTo(bot[bot.length - 1].x, bot[bot.length - 1].y);
+    smoothCurve(ctx, bot.slice().reverse());
+    ctx.closePath(); ctx.fillStyle = ribGrad; ctx.globalAlpha = 0.92; ctx.fill(); ctx.globalAlpha = 1;
+  };
+  let rseg = [];
+  rib.forEach((p) => { if (!p) { if (rseg.length) drawRibbon(rseg); rseg = []; } else rseg.push(p); });
+  if (rseg.length) drawRibbon(rseg);
   // 평균선 (보이는 구간의 기분 평균)
   const moodVals = days.map((k) => entries[k] ? entryScore(entries[k]) : null).filter((v) => v != null);
   if (moodVals.length >= 2) {
     const m = moodVals.reduce((a, b) => a + b, 0) / moodVals.length, yy = y(m);
-    ctx.save(); ctx.strokeStyle = accent; ctx.globalAlpha = 0.45; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2;
+    ctx.save(); ctx.strokeStyle = soft; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(cssW - padR, yy); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = accent; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
+    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
     ctx.fillText(`평균 ${Math.round(m)}`, padL + 2, Math.max(padT + 8, yy - 3)); ctx.restore();
   }
-  plot((e) => e.energy ? e.energy * 20 : null, energyC, [3, 3]);
-  plot((e) => entryScore(e), accent);
+  // 중심 추세선 + 점 마커 (또렷하게)
+  let sseg = [];
+  const flushSpine = () => { if (sseg.length > 1) { ctx.beginPath(); smoothPath(ctx, sseg); ctx.strokeStyle = card; ctx.globalAlpha = 0.85; ctx.lineWidth = 1.6; ctx.lineJoin = "round"; ctx.stroke(); ctx.globalAlpha = 1; } sseg = []; };
+  rib.forEach((p) => { if (!p) flushSpine(); else sseg.push({ x: p.x, y: p.y }); }); flushSpine();
+  rib.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = accent; ctx.stroke(); } });
   // 오늘 마커 (보이면 강조 링)
   const ti = days.indexOf(todayKey());
   if (ti >= 0 && entries[days[ti]] && entryScore(entries[days[ti]]) != null) {
@@ -1934,52 +1934,6 @@ function renderDist(list) {
   const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${moodMeta[m].emoji} ${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
   wrap.innerHTML = `<div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
 }
-
-let histShown = 60; // '더 보기'로 늘어남
-let histFilter = "all"; // all/good/mid/low
-function renderHistory(list) {
-  const ul = document.getElementById("history"); ul.innerHTML = "";
-  const q = (document.getElementById("historySearch").value || "").trim().toLowerCase();
-  let rev = [...list].reverse();
-  if (q) rev = rev.filter((e) =>
-    (e.note || "").toLowerCase().includes(q) || (e.praise || "").toLowerCase().includes(q) ||
-    (e.mood || "").toLowerCase().includes(q) || (e.tags || []).some((t) => t.toLowerCase().includes(q)));
-  if (histFilter !== "all") rev = rev.filter((e) => { const sc = entryScore(e); if (sc == null) return false; return histFilter === "good" ? sc >= 60 : histFilter === "low" ? sc < 40 : (sc >= 40 && sc < 60); });
-  document.getElementById("histCount").textContent = q ? `검색 ${rev.length}개` : `총 ${rev.length}개`;
-  if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; document.getElementById("histMore").hidden = true; return; }
-  const shown = rev.slice(0, histShown);
-  shown.forEach((e) => {
-    const li = document.createElement("li"); li.className = "editable"; li.dataset.date = e.date; const p = e.date.split("-");
-    const sc = entryScore(e);
-    if (sc != null) li.style.borderLeft = `3px solid ${scoreColor(sc)}`;
-    const dateStr = `${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(e.date)})`;
-    const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
-    const scoreChip = sc != null ? `<span class="h-score">${Math.round(sc)}</span>` : "";
-    const tagsHtml = e.tags && e.tags.length ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
-    const r = e.reflection || {};
-    const reflectHtml = (r.good || r.hard) ? `<div class="h-reflect">${r.good ? `<p>🌤️ ${escapeHtml(r.good)}</p>` : ""}${r.hard ? `<p>🌧️ ${escapeHtml(r.hard)}</p>` : ""}</div>` : "";
-    li.innerHTML = `<button class="h-del" data-date="${e.date}" aria-label="기록 삭제">×</button>
-      <div class="h-top"><span class="h-date">${dateStr}</span><span class="h-mood">${scoreChip}${moodStr}</span></div>
-      ${e.note ? `<p class="h-note">${escapeHtml(e.note)}</p>` : ""}
-      ${e.praise ? `<p class="h-praise">🌱 ${escapeHtml(e.praise)}</p>` : ""}
-      ${reflectHtml}
-      ${tagsHtml}`;
-    ul.appendChild(li);
-  });
-  const more = document.getElementById("histMore");
-  more.hidden = rev.length <= histShown;
-  more.textContent = `더 보기 (${rev.length - shown.length}개 남음)`;
-  ul.querySelectorAll("li.editable").forEach((li) => li.addEventListener("click", (ev) => {
-    if (ev.target.closest(".h-del")) return;
-    Sound.tap(); openEntryDetail(li.dataset.date);
-  }));
-  ul.querySelectorAll(".h-del").forEach((b) => b.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    const entries = loadEntries(); delete entries[b.dataset.date]; saveEntries(entries); Sound.tap(); renderStats();
-  }));
-}
-document.getElementById("historySearch").addEventListener("input", () => { histShown = 60; renderHistory(sortedEntries(loadEntries())); });
-document.getElementById("histMore").addEventListener("click", () => { histShown += 60; Sound.tap(); renderHistory(sortedEntries(loadEntries())); });
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
