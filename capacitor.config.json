@@ -1,0 +1,15 @@
+{
+  "appId": "app.oneulshim.care",
+  "appName": "오늘의 쉼",
+  "webDir": ".",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#f7f1ea"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#e8836a"
+    }
+  }
+}

@@ -9,22 +9,40 @@
 ## B. App Store 정식 출시: Capacitor로 네이티브 래핑
 웹 코드를 그대로 감싸 네이티브 앱으로 빌드합니다. **macOS + Xcode + Apple Developer 계정($99/년)** 필요.
 
+> 이미 저장소에 `capacitor.config.json`(appId `app.oneulshim.care`, appName `오늘의 쉼`, webDir `.`)이 들어 있어요. 아래는 그 설정을 그대로 사용하는 순서입니다.
+
 ```bash
 # 1) Capacitor 추가 (프로젝트 루트에서)
-npm init -y
 npm i @capacitor/core @capacitor/ios
 npm i -D @capacitor/cli
-npx cap init "오늘의 쉼" com.yourname.oneulshim --web-dir=.
+# (init 불필요 — capacitor.config.json 이미 존재)
 
-# 2) iOS 플랫폼 추가
+# 2) 네이티브 기능 플러그인 (권장)
+npm i @capacitor/local-notifications @capacitor/haptics
+
+# 3) iOS 플랫폼 추가
 npx cap add ios
 
-# 3) 웹 자산 동기화 (코드 바뀔 때마다)
-npx cap copy ios
+# 4) 웹 자산 동기화 (코드 바뀔 때마다)
+npx cap copy ios   # 또는: npx cap sync ios
 
-# 4) Xcode 열기 → 서명(Team) 설정 → 실기기/시뮬레이터 빌드
+# 5) Xcode 열기 → 서명(Team) 설정 → 실기기/시뮬레이터 빌드
 npx cap open ios
 ```
+
+### 네이티브 기능 연결 (웹 폴백 → 네이티브로 교체)
+앱은 웹 기능으로 동작하되, 네이티브에서 더 좋아지는 두 가지를 플러그인으로 교체하세요.
+
+- **알림(매일 리마인더)** — 현재는 웹 `Notification`(앱이 열려 있을 때만). 진짜 예약 알림은 `@capacitor/local-notifications`로:
+  ```js
+  import { LocalNotifications } from "@capacitor/local-notifications";
+  await LocalNotifications.requestPermissions();
+  await LocalNotifications.schedule({ notifications: [{
+    id: 1, title: "오늘의 쉼 ☕", body: "오늘 마음은 어땠나요?",
+    schedule: { on: { hour: 21, minute: 0 }, repeats: true }
+  }]});
+  ```
+- **햅틱** — 현재 `navigator.vibrate`(iOS Safari 무시). 네이티브는 `@capacitor/haptics`의 `Haptics.impact()`로 교체(앱 `Haptic` 객체만 바꾸면 됨).
 
 ### 출시 전 체크리스트
 - [ ] **앱 아이콘 PNG 세트** — `tools/icon-export.html` 을 브라우저로 열어 180/192/256/512/1024 PNG를 받아 `AppIcon`에 추가.

@@ -1837,6 +1837,7 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   const data = JSON.stringify({ entries: loadEntries(), challenges: loadChs() }, null, 2);
   const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
   const a = document.createElement("a"); a.href = url; a.download = `오늘의쉼_백업_${todayKey()}.json`; a.click(); URL.revokeObjectURL(url);
+  settings.lastExport = todayKey(); saveSettingsObj(settings);
 });
 document.getElementById("importBtn").addEventListener("click", () => { Sound.tap(); document.getElementById("importFile").click(); });
 document.getElementById("importFile").addEventListener("change", async (e) => {
@@ -2253,7 +2254,16 @@ loadToday();
 scheduleReminder();
 if (!settings.badges) { settings.badges = earnedBadgeIds(); saveSettingsObj(settings); } // 첫 실행은 조용히 시드(스팸 방지)
 if (!localStorage.getItem(DB.ONBOARD)) showOnboard();
-else comebackCheck();
+else { comebackCheck(); backupReminderCheck(); }
+
+/* 백업 권유 — 기록이 쌓였는데 한동안 백업이 없으면 가볍게 안내 (데이터 안전) */
+function backupReminderCheck() {
+  const total = Object.keys(loadEntries()).length;
+  if (total < 14) return;
+  const last = settings.lastExport;
+  const stale = !last || daysSince(last) >= 21;
+  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요 🌿 설정 → '기록 내보내기'로 가끔 백업하면 더 안전해요."), 2600);
+}
 
 /* 자정 넘김 처리 — 앱을 켜둔 채 날짜가 바뀌면 '오늘'을 갱신 */
 let _lastDayKey = todayKey();
