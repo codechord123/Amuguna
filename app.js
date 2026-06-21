@@ -869,15 +869,19 @@ function renderStats() {
   const recent = list.slice(-7).filter((e) => e.mood);
   if (recent.length) {
     const avg = recent.reduce((s, e) => s + entryScore(e), 0) / recent.length;
-    document.getElementById("avgMood").textContent = `${Math.round(avg)}`;
-    const el = document.getElementById("avgMood"); if (el) el.title = avg >= 70 ? "좋아요" : avg >= 45 ? "보통" : "지쳐요";
+    const prev = list.slice(-14, -7).filter((e) => e.mood);
+    let arrow = "";
+    if (prev.length) { const pa = prev.reduce((s, e) => s + entryScore(e), 0) / prev.length; const d = avg - pa; arrow = d >= 5 ? '<span class="trend up">↗</span>' : d <= -5 ? '<span class="trend down">↘</span>' : '<span class="trend flat">→</span>'; }
+    document.getElementById("avgMood").innerHTML = `<span class="am-emoji">${scoreEmoji(avg)}</span>${Math.round(avg)}${arrow}`;
   } else document.getElementById("avgMood").textContent = "–";
   renderWeekly(entries);
   renderMonthly(entries);
+  renderWeekGlance(entries);
   renderBadges();
   renderInsight(entries, list);
   renderCorrelation(entries);
   renderTagInsight(entries);
+  renderDow(entries);
   drawChart(entries);
   renderMoodCalendar(entries);
   renderDist(list);
@@ -911,6 +915,13 @@ function renderMoodCalendar(entries) {
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
+document.getElementById("histFilter").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-hf]"); if (!b) return; Sound.tap();
+  histFilter = b.dataset.hf; histShown = 60;
+  document.querySelectorAll("#histFilter button").forEach((x) => x.classList.toggle("active", x === b));
+  renderHistory(sortedEntries(loadEntries()));
+});
+document.getElementById("weekGlanceCard").addEventListener("click", () => { Sound.tap(); openReport("week"); });
 
 /* 기록 탭 서브탭 (요약/그래프/달력/기록) */
 function showStatsSeg(seg) {
@@ -1372,6 +1383,32 @@ function renderCorrelation(entries) {
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
 }
+// 이번 주 한눈에 — 미니 통계 + 스파크라인
+function renderWeekGlance(entries) {
+  const el = document.getElementById("wgBody"); if (!el) return;
+  const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  const recs = keys.map((k) => entries[k]).filter(Boolean);
+  const moods = recs.filter((e) => e.mood);
+  const rng = document.getElementById("wgRange");
+  if (rng) { const a = keys[0].split("-"), b = keys[6].split("-"); rng.textContent = `${+a[1]}/${+a[2]} ~ ${+b[1]}/${+b[2]}`; }
+  if (!moods.length) { el.innerHTML = '<p class="empty">이번 주 기록이 쌓이면 한눈에 요약해드려요 🌱</p>'; return; }
+  const avg = moods.reduce((s, e) => s + entryScore(e), 0) / moods.length;
+  const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  el.innerHTML = `<div class="wg-row"><div class="wg-stat"><b>${recs.length}</b><span>기록</span></div><div class="wg-stat"><b>${scoreEmoji(avg)} ${Math.round(avg)}</b><span>평균</span></div><div class="wg-stat"><b>${moodMeta[top].emoji}</b><span>${top}</span></div></div>${reportChartSvg(keys, entries)}`;
+}
+// 요일별 평균 기분(0-100) 막대
+function renderDow(entries) {
+  const el = document.getElementById("dowChart"); if (!el) return;
+  const names = ["일", "월", "화", "수", "목", "금", "토"];
+  const sums = Array(7).fill(0), ns = Array(7).fill(0);
+  Object.values(entries).forEach((e) => { if (!e.date || !e.mood) return; const d = new Date(e.date + "T00:00:00").getDay(); sums[d] += entryScore(e); ns[d]++; });
+  if (ns.every((n) => n === 0)) { el.innerHTML = '<p class="empty">기록이 쌓이면 요일별 패턴을 보여드려요.</p>'; return; }
+  el.innerHTML = names.map((nm, i) => {
+    const avg = ns[i] ? sums[i] / ns[i] : null;
+    return `<div class="dow-col"><span class="dow-val">${avg != null ? Math.round(avg) : ""}</span><div class="dow-bar-wrap"><div class="dow-bar" style="height:${avg != null ? Math.max(4, Math.round(avg)) : 0}%;background:${avg != null ? scoreColor(avg) : "var(--bg-sunken)"}"></div></div><span class="dow-name">${nm}</span></div>`;
+  }).join("");
+}
 // 감정 태그별 평균 기분(0-100) — 어떤 감정일 때 점수가 높/낮은지
 function renderTagInsight(entries) {
   const el = document.getElementById("tagInsight"); if (!el) return;
@@ -1565,6 +1602,7 @@ function renderDist(list) {
 }
 
 let histShown = 60; // '더 보기'로 늘어남
+let histFilter = "all"; // all/good/mid/low
 function renderHistory(list) {
   const ul = document.getElementById("history"); ul.innerHTML = "";
   const q = (document.getElementById("historySearch").value || "").trim().toLowerCase();
@@ -1572,19 +1610,22 @@ function renderHistory(list) {
   if (q) rev = rev.filter((e) =>
     (e.note || "").toLowerCase().includes(q) || (e.praise || "").toLowerCase().includes(q) ||
     (e.mood || "").toLowerCase().includes(q) || (e.tags || []).some((t) => t.toLowerCase().includes(q)));
+  if (histFilter !== "all") rev = rev.filter((e) => { const sc = entryScore(e); if (sc == null) return false; return histFilter === "good" ? sc >= 60 : histFilter === "low" ? sc < 40 : (sc >= 40 && sc < 60); });
   document.getElementById("histCount").textContent = q ? `검색 ${rev.length}개` : `총 ${rev.length}개`;
   if (!rev.length) { ul.innerHTML = `<p class="empty">${q ? "검색 결과가 없어요." : "첫 기록을 기다리고 있어요."}</p>`; document.getElementById("histMore").hidden = true; return; }
   const shown = rev.slice(0, histShown);
   shown.forEach((e) => {
     const li = document.createElement("li"); li.className = "editable"; li.dataset.date = e.date; const p = e.date.split("-");
+    const sc = entryScore(e);
+    if (sc != null) li.style.borderLeft = `3px solid ${scoreColor(sc)}`;
     const dateStr = `${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(e.date)})`;
     const moodStr = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "";
-    const energyStr = e.energy ? ` · 에너지 ${e.energy}/5` : "";
+    const scoreChip = sc != null ? `<span class="h-score">${Math.round(sc)}</span>` : "";
     const tagsHtml = e.tags && e.tags.length ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
     const r = e.reflection || {};
     const reflectHtml = (r.good || r.hard) ? `<div class="h-reflect">${r.good ? `<p>🌤️ ${escapeHtml(r.good)}</p>` : ""}${r.hard ? `<p>🌧️ ${escapeHtml(r.hard)}</p>` : ""}</div>` : "";
     li.innerHTML = `<button class="h-del" data-date="${e.date}" aria-label="기록 삭제">×</button>
-      <div class="h-top"><span class="h-date">${dateStr}</span><span class="h-mood">${moodStr}${energyStr}</span></div>
+      <div class="h-top"><span class="h-date">${dateStr}</span><span class="h-mood">${scoreChip}${moodStr}</span></div>
       ${e.note ? `<p class="h-note">${escapeHtml(e.note)}</p>` : ""}
       ${e.praise ? `<p class="h-praise">🌱 ${escapeHtml(e.praise)}</p>` : ""}
       ${reflectHtml}

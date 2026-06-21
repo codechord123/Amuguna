@@ -644,6 +644,28 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .stat-row { display: flex; justify-content: space-around; text-align: center; }
 .stat { display: flex; flex-direction: column; gap: 2px; }
 .stat-num { font-size: var(--t-2xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; }
+.am-emoji { font-size: 1.05rem; margin-right: 1px; }
+.trend { font-size: 0.95rem; margin-left: 1px; vertical-align: middle; }
+.trend.up { color: var(--success); } .trend.down { color: var(--danger); } .trend.flat { color: var(--soft); }
+
+/* 이번 주 한눈에 */
+.wg-card { display: block; width: 100%; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink); }
+.wg-card:active { transform: scale(0.99); }
+.wg-row { display: flex; justify-content: space-around; text-align: center; margin: var(--s1) 0 var(--s3); }
+.wg-stat b { display: block; font-size: var(--t-md); font-weight: 800; color: var(--accent-deep); }
+.wg-stat span { font-size: var(--t-xs); color: var(--soft); }
+
+/* 요일별 평균 기분 */
+.dow { display: flex; align-items: flex-end; gap: var(--s1); }
+.dow-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.dow-bar-wrap { height: 72px; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.dow-bar { width: 64%; min-height: 4px; border-radius: 6px 6px 0 0; transition: height 0.5s var(--ease-soft); }
+.dow-val { font-size: 0.62rem; color: var(--soft); font-weight: 700; }
+.dow-name { font-size: var(--t-xs); color: var(--soft); }
+
+/* 지난 기록 필터 + 점수 칩 */
+.hist-filter button { font-size: var(--t-xs); }
+.h-score { display: inline-block; min-width: 24px; text-align: center; background: var(--bg-sunken); border-radius: var(--r-pill); padding: 1px 7px; font-size: 0.7rem; font-weight: 800; color: var(--ink-2); margin-right: var(--s1); }
 .stat-label { font-size: var(--t-xs); color: var(--soft); }
 #chart { width: 100%; display: block; margin-top: var(--s2); }
 .legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }

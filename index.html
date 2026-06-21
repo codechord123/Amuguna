@@ -219,6 +219,10 @@
       </div>
 
       <div class="stats-panel" data-panel="summary">
+        <button class="card wg-card" id="weekGlanceCard">
+          <div class="card-head"><h2>📅 이번 주 한눈에</h2><span class="today-date" id="wgRange"></span></div>
+          <div id="wgBody"></div>
+        </button>
         <div class="duo-grid">
           <button class="report-tile" id="weekDetailBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
           <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
@@ -250,16 +254,16 @@
             <button class="chip-btn" data-go="comfort">💌 위로 받기</button>
           </div>
         </div>
-        <div class="card" id="corrCard">
-          <h2>🔗 습관과 기분</h2>
-          <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
-          <div id="corrBody"></div>
-        </div>
         <div class="card">
           <div class="card-head"><h2>📈 마음 흐름 (100점)</h2><span class="today-date" id="chartRange"></span></div>
           <p class="hint">좌우로 드래그하면 주식 차트처럼 날짜를 넘겨볼 수 있어요.</p>
           <canvas id="chart" height="210" role="img" aria-label="기분과 에너지 추이 그래프"></canvas>
           <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>에너지</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
+        </div>
+        <div class="card">
+          <h2>📆 요일별 평균 기분</h2>
+          <p class="hint">어떤 요일에 마음이 좋은/힘든 편인지 보여줘요.</p>
+          <div class="dow" id="dowChart"></div>
         </div>
         <div class="card">
           <h2>🏷️ 감정 태그와 기분</h2>
@@ -269,6 +273,11 @@
         <div class="card">
           <h2>🌙 기분 분포 (최근 30일)</h2>
           <div class="dist" id="dist"></div>
+        </div>
+        <div class="card" id="corrCard">
+          <h2>🔗 습관과 기분</h2>
+          <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
+          <div id="corrBody"></div>
         </div>
       </div>
 
@@ -285,7 +294,13 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
-          <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />
+          <div class="seg hist-filter" id="histFilter">
+            <button data-hf="all" class="active">전체</button>
+            <button data-hf="good">🙂 좋음</button>
+            <button data-hf="mid">😐 보통</button>
+            <button data-hf="low">😮‍💨 힘듦</button>
+          </div>
+          <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin:10px 0 12px" />
           <ul class="history" id="history"></ul>
           <button class="btn" id="histMore" hidden style="width:100%;margin-top:12px">더 보기</button>
         </div>
