@@ -1098,7 +1098,19 @@ function badgeData() { const entries = loadEntries(), list = sortedEntries(entri
 function earnedBadgeIds() { const D = badgeData(); return BADGES.filter((b) => b.ok(D)).map((b) => b.id); }
 function renderBadges() {
   const earned = new Set(earnedBadgeIds());
-  document.getElementById("badgeGrid").innerHTML = BADGES.map((b) =>
+  const n = earned.size, total = BADGES.length, pct = Math.round((n / total) * 100);
+  const rateEl = document.getElementById("badgeRate");
+  if (rateEl) rateEl.textContent = `${n} / ${total}`;
+  const fill = document.getElementById("badgeBarFill");
+  if (fill) fill.style.width = pct + "%";
+  const status = document.getElementById("badgeStatus");
+  if (status) status.textContent = n === total
+    ? "🎉 모든 배지를 모았어요! 정말 대단해요."
+    : n === 0 ? "첫 배지를 향해 한 걸음씩 🌱"
+    : `획득률 ${pct}% · ${total - n}개 남았어요`;
+  // 획득한 배지를 앞으로 정렬해 성취감을 강조
+  const sorted = [...BADGES].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
+  document.getElementById("badgeGrid").innerHTML = sorted.map((b) =>
     `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`).join("");
 }
 /* 습관 ↔ 기분 상관관계 */

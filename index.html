@@ -50,13 +50,11 @@
 
     <!-- ========== 탭: 오늘 ========== -->
     <section class="tab" id="tab-today">
-      <div class="card journey-start" id="journeyStartCard">
+      <div class="card journey-hero" id="journeyStartCard">
         <div class="js-emoji">✨</div>
-        <div class="js-text">
-          <h2>오늘의 여정</h2>
-          <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
-        </div>
-        <button class="btn primary" id="journeyStart">시작</button>
+        <h2>오늘의 여정</h2>
+        <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+        <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
       </div>
 
       <div class="card collapsible collapsed" id="checkin-card">
@@ -129,22 +127,27 @@
       </div>
 
       <div class="rest-panel" data-rpanel="comfort">
-      <div class="card center">
+      <div class="card center comfort-card">
         <h2>💌 나를 위한 한마디</h2>
         <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
         <div class="quote-actions">
           <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
           <button class="icon-btn" id="favBtn" aria-label="이 문구 즐겨찾기" title="즐겨찾기">♡</button>
         </div>
-        <label class="fav-only"><input type="checkbox" id="favOnly" /> 즐겨찾기만 보기</label>
-        <div class="quote-add">
-          <input type="text" id="myQuoteInput" class="text-input" placeholder="나만의 위로 문구 추가하기" maxlength="100" />
-          <button class="btn" id="myQuoteAdd">추가</button>
+        <div class="comfort-tools">
+          <label class="fav-only"><input type="checkbox" id="favOnly" /> 즐겨찾기만</label>
+          <button type="button" class="comfort-link" id="manageToggle">📋 내 문구 관리 ›</button>
         </div>
-        <button type="button" class="reflect-toggle" id="manageToggle">📋 내 문구 · 즐겨찾기 관리 ›</button>
+        <details class="comfort-add">
+          <summary>✍️ 나만의 문구 추가</summary>
+          <div class="quote-add">
+            <input type="text" id="myQuoteInput" class="text-input" placeholder="나에게 해주고 싶은 말" maxlength="100" />
+            <button class="btn" id="myQuoteAdd">추가</button>
+          </div>
+        </details>
       </div>
 
-      <div class="card">
+      <div class="card center">
         <h2>✨ 아주 작은 한 걸음</h2>
         <p class="hint">기분이 나아지길 기다리기보다, 작은 움직임이 먼저 와도 괜찮아요.</p>
         <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
@@ -269,7 +272,9 @@
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">
-          <h2>🏅 배지</h2>
+          <div class="card-head"><h2>🏅 배지</h2><span class="badge-rate" id="badgeRate"></span></div>
+          <div class="badge-bar"><i id="badgeBarFill"></i></div>
+          <p class="badge-status" id="badgeStatus"></p>
           <div class="badge-grid" id="badgeGrid"></div>
         </div>
       </div>
