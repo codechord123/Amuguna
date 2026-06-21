@@ -237,12 +237,14 @@
       </div>
 
       <div class="stats-panel" data-panel="summary">
-        <p class="stats-headline" id="statsHeadline"></p>
-        <button class="card wg-card" id="weekGlanceCard">
+        <div class="card wg-card" id="weekGlanceCard">
           <div class="card-head"><h2>📅 이번 주 한눈에</h2><span class="today-date" id="wgRange"></span></div>
           <div id="wgBody"></div>
-        </button>
-        <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
+        </div>
+        <div class="report-tiles">
+          <button class="report-tile" id="weekReportBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
+          <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
+        </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">
@@ -255,6 +257,7 @@
             </div>
           </div>
           <p class="badge-status" id="badgeStatus"></p>
+          <p class="badge-next" id="badgeNext"></p>
           <div class="seg badge-seg" id="badgeSeg"></div>
           <p class="badge-detail" id="badgeDetail">배지를 누르면 설명이 나와요</p>
           <div id="badgeGrid"></div>

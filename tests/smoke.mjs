@@ -129,7 +129,7 @@ try {
 
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
-  check("리포트 진입 표시", !!q("#weekGlanceCard") && !!q("#monthDetailBtn"));
+  check("리포트 진입 표시", !!q("#weekReportBtn") && !!q("#monthDetailBtn"));
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
@@ -141,6 +141,7 @@ try {
   q('#badgeSeg button[data-bcat="record"]').click();
   check("배지 버튼화(설명 표시용)", !!q("#badgeGrid button.badge[data-bid]"));
   check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
+  check("배지 다음 목표 표시", q("#badgeNext").textContent.trim().length > 0);
   q("[data-tab=today]").click();
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
@@ -253,7 +254,7 @@ try {
   check("달력에서 그날 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
   q("#subBack").click();
   q("[data-tab=stats]").click();
-  q("#statsSeg button[data-seg=summary]").click(); q("#weekGlanceCard").click();
+  q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   q("#subBack").click();
 } catch (e) {

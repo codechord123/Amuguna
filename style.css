@@ -352,6 +352,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-summary { background: linear-gradient(160deg, var(--accent-2), var(--card) 78%); border-color: var(--line-strong); }
 [data-theme="dark"] .rpt-summary { background: var(--card); }
 .rpt-summary .insight { color: var(--ink); }
+.rpt-headline { display: flex; align-items: flex-start; gap: var(--s2); background: linear-gradient(160deg, var(--accent-2), var(--card) 80%); border-color: var(--line-strong); }
+[data-theme="dark"] .rpt-headline { background: var(--card); }
+.rpt-headline .rh-ico { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; }
+.rpt-headline p { margin: 0; font-size: var(--t-base); font-weight: var(--w-semi); color: var(--ink); line-height: 1.5; word-break: keep-all; }
+.rpt-headline b { color: var(--accent-deep); font-weight: var(--w-bold); }
 
 /* ----- 리포트 KPI 타일 (2×2) ----- */
 /* 리포트 히어로 — 게이지 링 + 핵심 지표(공간 절약·데이터 밀도) */
@@ -445,7 +450,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .level-top span { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); text-align: right; }
 .badge-bar { height: 10px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; }
 .badge-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 0.7s var(--ease-soft); }
-.badge-status { margin: var(--s2) 0 var(--s4); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-med); }
+.badge-status { margin: var(--s2) 0 var(--s2); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-med); }
+.badge-next { margin: 0 0 var(--s4); padding: var(--s3); background: var(--bg-sunken); border-radius: var(--r-md); font-size: var(--t-sm); color: var(--ink-2); font-weight: var(--w-semi); word-break: keep-all; line-height: 1.45; }
+.badge-next b { color: var(--accent-deep); }
 .badge-seg { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; margin-bottom: var(--s3); scrollbar-width: none; }
 .badge-seg::-webkit-scrollbar { display: none; }
 .badge-seg button { flex: 0 0 auto; white-space: nowrap; font-size: var(--t-xs); padding: var(--s2) var(--s3); }
@@ -736,12 +743,14 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .trend.up { color: var(--success); } .trend.down { color: var(--danger); } .trend.flat { color: var(--soft); }
 
 /* 이번 주 한눈에 */
-.wg-card { display: block; width: 100%; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink); }
-.wg-card:active { transform: scale(0.99); }
+.wg-card { display: block; width: 100%; text-align: left; color: var(--ink); }
 .wg-row { display: flex; justify-content: space-around; text-align: center; margin: var(--s1) 0 var(--s3); }
 .wg-stat b { display: block; font-size: var(--t-md); font-weight: 800; color: var(--accent-deep); }
 .wg-stat span { font-size: var(--t-xs); color: var(--soft); }
-.wg-more { margin: var(--s2) 0 0; text-align: right; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--accent-deep); }
+/* 리포트 진입 타일 — 주간·월간 형제 */
+.report-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s4); }
+.report-tiles .report-tile { margin-bottom: 0; flex-direction: column; align-items: flex-start; gap: var(--s2); }
+.report-tiles .report-tile .rt-go { align-self: flex-end; margin-top: -22px; }
 
 /* 감정 워드클라우드 (Mentimeter식) */
 .wordcloud { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); align-items: baseline; justify-content: center; padding: var(--s2) 0; }

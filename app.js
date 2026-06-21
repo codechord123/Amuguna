@@ -878,7 +878,6 @@ function renderStats() {
   document.getElementById("totalNum").textContent = list.length;
   const sb = document.getElementById("statBadge");
   if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
-  renderStatsHeadline(list);
   renderAnalyzeKpis(entries, list);
   renderDiscoveries(entries, list);
   renderWeekly(entries);
@@ -947,7 +946,7 @@ function renderMoodCalendar(entries) {
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
-document.getElementById("weekGlanceCard").addEventListener("click", () => { Sound.tap(); openReport("week"); });
+document.getElementById("weekReportBtn").addEventListener("click", () => { Sound.tap(); openReport("week"); });
 
 /* 기록 탭 서브탭 (요약/분석) */
 function showStatsSeg(seg) {
@@ -1291,8 +1290,18 @@ function reportDetailHtml(kind) {
   const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
   const daysCard = `<details class="card rpt-days"${kind === "week" ? " open" : ""}><summary>🗓️ 날짜별 기록 (${cur.days}일)</summary><div class="rpt-list">${rows}</div></details>`;
 
+  // 핵심 한 줄 — 추세 + 가장 영향 준 습관 (결론 먼저)
+  const hbits = [];
+  if (dMood != null && Math.abs(dMood) >= 3) hbits.push(dMood > 0 ? `지난 ${unit}보다 기분이 <b>▲${Math.round(dMood)}점</b> 좋아졌어요` : `지난 ${unit}보다 <b>▼${Math.round(-dMood)}점</b> 가라앉았어요`);
+  { const mbd = {}; keys.forEach((k) => { const e = entries[k]; if (e && e.mood) mbd[k] = entryScore(e); });
+    let bH = null;
+    (loadChs() || []).forEach((hh) => { const dn = [], nt = []; keys.forEach((k) => { if (mbd[k] == null || k < hh.startDate) return; (hh.done && hh.done[k] ? dn : nt).push(mbd[k]); }); if (dn.length >= 3 && nt.length >= 3) { const ad = dn.reduce((s, v) => s + v, 0) / dn.length, an = nt.reduce((s, v) => s + v, 0) / nt.length, df = ad - an; if (df >= 5 && (!bH || df > bH.df)) bH = { h: hh, df }; } });
+    if (bH) hbits.push(`${bH.h.emoji} <b>${escapeHtml(bH.h.title)}</b> 한 날 기분이 더 좋았어요`); }
+  const headlineCard = hbits.length ? `<div class="card rpt-headline"><span class="rh-ico">💡</span><p>${hbits.slice(0, 2).join(" · ")}</p></div>` : "";
+
   return `
     <p class="detail-stat">${period}</p>
+    ${headlineCard}
     ${summary && summary.summary ? `<div class="card rpt-summary"><p class="insight">${summary.summary}</p></div>` : ""}
     ${heroCard}
     ${compareCard}
@@ -1424,6 +1433,8 @@ function renderBadges() {
     ? "🎉 모든 배지를 모았어요! 정말 대단해요."
     : n === 0 ? "첫 배지를 향해 한 걸음씩 🌱"
     : `획득률 ${pct}% · ${total - n}개 남았어요`);
+  const nb = document.getElementById("badgeNext");
+  if (nb) { const nextB = BADGES.find((b) => !earned.has(b.id)); nb.innerHTML = nextB ? `🎯 다음 배지 <b>${nextB.e} ${nextB.t}</b> · ${nextB.d}` : "✨ 더 이상 모을 배지가 없어요!"; }
   // 카테고리 탭(세그) — 선택한 카테고리만 표시
   const seg = document.getElementById("badgeSeg");
   if (seg) seg.innerHTML = BADGE_CATS.map((c) => {
@@ -1597,23 +1608,6 @@ function renderAnalyzeKpis(entries, list) {
   const tile = (val, label) => `<div class="as-kpi"><span class="as-k-val">${val}</span><span class="as-k-lab">${label}</span></div>`;
   el.innerHTML = tile(moodVal + deltaHtml, "평균 기분") + tile(recDays + "일", "이번 주 기록") + tile(enVal, "평균 활력") + tile(topTag ? escapeHtml(topTag[0]) : "—", "으뜸 감정");
 }
-// 통계를 쉬운 한 문장으로 — 사용자 인식 도움
-function renderStatsHeadline(list) {
-  const el = document.getElementById("statsHeadline"); if (!el) return;
-  if (list.length < 2) { el.textContent = "기록이 쌓이면 이번 주를 한 문장으로 요약해 드릴게요 🌱"; return; }
-  const tk = todayKey();
-  const wk = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
-  const pv = []; for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); pv.push(todayKey(d)); }
-  const ent = {}; list.forEach((e) => ent[e.date] = e);
-  const avg = (ks) => { const v = ks.map((k) => ent[k] && ent[k].mood ? entryScore(ent[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
-  const a = avg(wk), b = avg(pv);
-  if (a == null) { el.textContent = "이번 주는 아직 기록이 없어요. 오늘 한 줄 남겨볼까요? 🌿"; return; }
-  if (b == null) { el.textContent = `이번 주 평균 기분은 ${Math.round(a)}점이에요.`; return; }
-  const d = a - b;
-  el.textContent = d >= 5 ? `이번 주는 지난주보다 기분이 좋아졌어요 ☀️ (평균 ${Math.round(a)}점, ▲${Math.round(d)})`
-    : d <= -5 ? `이번 주는 조금 가라앉았어요. 스스로를 더 아껴줘요 🫂 (평균 ${Math.round(a)}점, ▼${Math.round(-d)})`
-    : `이번 주 기분은 지난주와 비슷해요 (평균 ${Math.round(a)}점).`;
-}
 // 이번 주 한눈에 — 미니 통계 + 스파크라인
 function renderWeekGlance(entries) {
   const el = document.getElementById("wgBody"); if (!el) return;
@@ -1632,7 +1626,7 @@ function renderWeekGlance(entries) {
   el.innerHTML = `<div class="rpt-hero" style="margin:0">
     <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
     <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(moodMeta[top].emoji, "대표")}${hs(avgEn, "활력")}</div></div>
-  </div><p class="wg-more">주간 리포트 자세히 ›</p>`;
+  </div>`;
 }
 // 감정 지도 — 활력(가로) × 기분(세로) 2D 산점도 (정서 원형모형, Russell 1980)
 function renderMoodMatrix(entries) {
