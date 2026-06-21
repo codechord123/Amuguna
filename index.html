@@ -208,15 +208,14 @@
         </div>
         <div class="stat">
           <span class="stat-num" id="avgMood">–</span>
-          <span class="stat-label">최근 기분</span>
+          <span class="stat-label">최근 기분(100)</span>
         </div>
       </div>
 
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
         <button data-seg="graph">그래프</button>
-        <button data-seg="calendar">달력</button>
-        <button data-seg="log">기록</button>
+        <button data-seg="calendar">기록·달력</button>
       </div>
 
       <div class="stats-panel" data-panel="summary">
@@ -257,13 +256,15 @@
           <div id="corrBody"></div>
         </div>
         <div class="card">
-          <h2>📊 마음 & 에너지 흐름</h2>
-          <p class="hint">최근 14일의 변화예요. 위로 갈수록 좋은 상태.</p>
-          <canvas id="chart" height="200" role="img" aria-label="최근 14일 기분과 에너지 추이 그래프"></canvas>
-          <div class="legend">
-            <span><i class="dot mood-dot"></i>기분</span>
-            <span><i class="dot energy-dot"></i>에너지</span>
-          </div>
+          <div class="card-head"><h2>📈 마음 흐름 (100점)</h2><span class="today-date" id="chartRange"></span></div>
+          <p class="hint">좌우로 드래그하면 주식 차트처럼 날짜를 넘겨볼 수 있어요.</p>
+          <canvas id="chart" height="210" role="img" aria-label="기분과 에너지 추이 그래프"></canvas>
+          <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>에너지</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
+        </div>
+        <div class="card">
+          <h2>🏷️ 감정 태그와 기분</h2>
+          <p class="hint">어떤 감정을 느낀 날의 평균 기분 점수가 높/낮은지 보여줘요(2회 이상).</p>
+          <div class="dist" id="tagInsight"></div>
         </div>
         <div class="card">
           <h2>🌙 기분 분포 (최근 30일)</h2>
@@ -277,14 +278,11 @@
             <h2>🗓️ 기분 달력</h2>
             <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
           </div>
-          <p class="hint">날짜를 누르면 그날 기록을 바로 고칠 수 있어요.</p>
+          <p class="hint">날짜를 누르면 그날 기록을 한눈에 보고, 수정할 수 있어요.</p>
           <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
           <div class="mood-cal" id="moodCal"></div>
           <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
         </div>
-      </div>
-
-      <div class="stats-panel" data-panel="log" hidden>
         <div class="card">
           <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
           <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />

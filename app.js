@@ -860,20 +860,24 @@ function calcStreak(entries) {
 }
 function dayOfWeekKo(key) { return ["일", "월", "화", "수", "목", "금", "토"][new Date(key + "T00:00:00").getDay()]; }
 
+// 기분 점수(0-100) — 여정 다이얼 값 우선, 없으면 분류에서 환산
+function entryScore(e) { return e && e.score != null ? e.score : (e && e.mood ? moodToScore(e.mood) : null); }
 function renderStats() {
   const entries = loadEntries(), list = sortedEntries(entries);
   document.getElementById("streakNum").textContent = calcStreak(entries);
   document.getElementById("totalNum").textContent = list.length;
   const recent = list.slice(-7).filter((e) => e.mood);
   if (recent.length) {
-    const avg = recent.reduce((s, e) => s + moodMeta[e.mood].score, 0) / recent.length;
-    document.getElementById("avgMood").textContent = avg >= 3.5 ? "🙂 좋아요" : avg >= 2.6 ? "😐 보통" : "😮‍💨 지쳐요";
+    const avg = recent.reduce((s, e) => s + entryScore(e), 0) / recent.length;
+    document.getElementById("avgMood").textContent = `${Math.round(avg)}`;
+    const el = document.getElementById("avgMood"); if (el) el.title = avg >= 70 ? "좋아요" : avg >= 45 ? "보통" : "지쳐요";
   } else document.getElementById("avgMood").textContent = "–";
   renderWeekly(entries);
   renderMonthly(entries);
   renderBadges();
   renderInsight(entries, list);
   renderCorrelation(entries);
+  renderTagInsight(entries);
   drawChart(entries);
   renderMoodCalendar(entries);
   renderDist(list);
@@ -899,7 +903,11 @@ function renderMoodCalendar(entries) {
     html += `<button class="cal-cell m${score} ${isToday ? "today" : ""}" ${future ? "disabled" : ""} data-cal="${key}" title="${e && e.mood ? e.mood : ""}">${d}</button>`;
   }
   wrap.innerHTML = html;
-  wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => { Sound.tap(); openEntryEditor(b.dataset.cal); }));
+  wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => {
+    Sound.tap(); const k = b.dataset.cal;
+    if (loadEntries()[k]) openEntryDetail(k);   // 기록 있으면 요약(한눈에) → 거기서 수정
+    else openEntryEditor(k);                     // 빈 날은 바로 기록(여정)
+  }));
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
@@ -950,7 +958,7 @@ function renderWeekly(entries) {
   const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   const days = keys.map((k) => entries[k]).filter(Boolean);
   const moods = days.filter((e) => e.mood);
-  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const avgMood = moods.length ? moods.reduce((s, e) => s + entryScore(e), 0) / moods.length : null; // 0-100
   const energies = days.filter((e) => e.energy);
   const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
   const chs = loadChs(); let habTotal = 0, habDone = 0;
@@ -961,11 +969,11 @@ function renderWeekly(entries) {
   if (days.length === 0) { weekData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 주 ${days.length}일 기록.` : `이번 주 ${days.length}일이나 마음을 남겼어요.`);
-  if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
+  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 에너지 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
   if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요 💛" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
-  weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+  weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
 
 function drawWeekCanvas() {
@@ -980,7 +988,7 @@ function drawWeekCanvas() {
   const lines = [];
   if (weekData) {
     lines.push(`기록 ${weekData.daysLogged}일`);
-    if (weekData.avgMood != null) lines.push(`평균 기분 ${weekData.avgMood.toFixed(1)} / 5`);
+    if (weekData.avgMood != null) lines.push(`평균 기분 ${Math.round(weekData.avgMood)} / 100`);
     if (weekData.avgEnergy != null) lines.push(`평균 에너지 ${weekData.avgEnergy.toFixed(1)} / 5`);
     if (weekData.habTotal > 0) lines.push(`습관 ${weekData.habDone} / ${weekData.habTotal}`);
   }
@@ -991,9 +999,9 @@ function drawWeekCanvas() {
     ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
     const pts = weekData.moodSeries;
     ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.beginPath(); let started = false;
-    pts.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / 6, y = y0 + h - (h * (v - 1) / 4); if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); });
+    pts.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / 6, y = y0 + h - (h * v / 100); if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); });
     ctx.stroke(); ctx.fillStyle = accent;
-    pts.forEach((v, i) => { if (v == null) return; const x = x0 + w * i / 6, y = y0 + h - (h * (v - 1) / 4); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); });
+    pts.forEach((v, i) => { if (v == null) return; const x = x0 + w * i / 6, y = y0 + h - (h * v / 100); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); });
   }
   ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("나를 돌본 한 주 🌿", 32, 318);
   return c.toDataURL("image/png");
@@ -1009,7 +1017,7 @@ function renderMonthly(entries) {
   const keys = []; for (let dd = 1; dd <= days; dd++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`);
   const recs = keys.map((k) => entries[k]).filter(Boolean);
   const moods = recs.filter((e) => e.mood);
-  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const avgMood = moods.length ? moods.reduce((s, e) => s + entryScore(e), 0) / moods.length : null; // 0-100
   const energies = recs.filter((e) => e.energy);
   const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
@@ -1020,12 +1028,12 @@ function renderMonthly(entries) {
   if (recs.length === 0) { monthData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 달 ${recs.length}일 기록.` : `이번 달 ${recs.length}일 마음을 남겼어요.`);
-  if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
+  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 에너지 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
   if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
   if (!plain) parts.push("한 달을 차곡차곡 살아냈어요 💛");
-  monthData = { label: `${y}년 ${m + 1}월`, summary: parts.join(" "), daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+  monthData = { label: `${y}년 ${m + 1}월`, summary: parts.join(" "), daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
 function drawMonthCanvas() {
   const c = document.getElementById("monthCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
@@ -1039,7 +1047,7 @@ function drawMonthCanvas() {
   const lines = [];
   if (monthData) {
     lines.push(`기록 ${monthData.daysLogged}일`);
-    if (monthData.avgMood != null) lines.push(`평균 기분 ${monthData.avgMood.toFixed(1)} / 5`);
+    if (monthData.avgMood != null) lines.push(`평균 기분 ${Math.round(monthData.avgMood)} / 100`);
     if (monthData.avgEnergy != null) lines.push(`평균 에너지 ${monthData.avgEnergy.toFixed(1)} / 5`);
     if (monthData.habTotal > 0) lines.push(`습관 ${monthData.habDone} / ${monthData.habTotal}`);
   }
@@ -1049,7 +1057,7 @@ function drawMonthCanvas() {
     const x0 = 300, y0 = 110, w = 268, h = 158, n = monthData.series.length;
     ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
     ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.beginPath(); let started = false;
-    monthData.series.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / (n - 1), yy = y0 + h - (h * (v - 1) / 4); if (!started) { ctx.moveTo(x, yy); started = true; } else ctx.lineTo(x, yy); });
+    monthData.series.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / (n - 1), yy = y0 + h - (h * v / 100); if (!started) { ctx.moveTo(x, yy); started = true; } else ctx.lineTo(x, yy); });
     ctx.stroke();
   }
   ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("한 달의 마음 흐름 🌙", 32, 318);
@@ -1067,19 +1075,43 @@ function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Ma
 // 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
 function reportChartSvg(keys, entries) {
   const n = keys.length;
-  const mood = keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null);
-  const energy = keys.map((k) => entries[k] && entries[k].energy ? entries[k].energy : null);
+  const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null);       // 0-100
+  const energy = keys.map((k) => entries[k] && entries[k].energy ? entries[k].energy * 20 : null); // 0-100
   if (!mood.some((v) => v != null) && !energy.some((v) => v != null)) return "";
-  const W = 320, H = 132, padX = 8, padTop = 10, padBottom = 22;
+  const W = 320, H = 140, padX = 8, padTop = 10, padBottom = 22;
   const plotW = W - padX * 2, plotH = H - padTop - padBottom;
   const xAt = (i) => padX + (n <= 1 ? plotW / 2 : plotW * i / (n - 1));
-  const yAt = (v) => padTop + plotH - plotH * (v - 1) / 4;
-  const path = (arr) => { let d = "", pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } const x = xAt(i).toFixed(1), y = yAt(v).toFixed(1); d += pen ? ` L${x} ${y}` : ` M${x} ${y}`; pen = true; }); return d.trim(); };
-  const dots = (arr, cls) => arr.map((v, i) => v == null ? "" : `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.6" class="${cls}"/>`).join("");
-  let grid = ""; for (let v = 1; v <= 5; v += 2) { const y = yAt(v).toFixed(1); grid += `<line x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}" class="rc-grid"/>`; }
+  const yAt = (v) => padTop + plotH - plotH * v / 100;
+  // 부드러운 곡선(카멀롬) — 연속 구간을 잇고 결측은 끊는다
+  const smooth = (arr) => {
+    const segs = []; let cur = [];
+    arr.forEach((v, i) => { if (v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([xAt(i), yAt(v)]); });
+    if (cur.length) segs.push(cur);
+    return segs.map((p) => {
+      if (p.length === 1) return `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)} l0.01 0`;
+      let d = `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
+      for (let i = 0; i < p.length - 1; i++) {
+        const p0 = p[i - 1] || p[i], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2] || p2;
+        const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+        const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      return d;
+    }).join(" ");
+  };
+  const moodPath = smooth(mood), energyPath = smooth(energy);
+  // 기분 곡선 아래 영역 채우기(첫 연속 구간 기준)
+  let areaPath = "";
+  const firstSeg = []; for (let i = 0; i < n; i++) { if (mood[i] != null) firstSeg.push(i); else if (firstSeg.length) break; }
+  if (firstSeg.length > 1) {
+    const baseY = (padTop + plotH).toFixed(1);
+    areaPath = `${smooth(mood.map((v, i) => firstSeg.includes(i) ? v : null))} L${xAt(firstSeg[firstSeg.length - 1]).toFixed(1)} ${baseY} L${xAt(firstSeg[0]).toFixed(1)} ${baseY} Z`;
+  }
+  const dots = (arr, cls) => arr.map((v, i) => v == null ? "" : `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.4" class="${cls}"/>`).join("");
+  let grid = ""; [0, 50, 100].forEach((v) => { const y = yAt(v).toFixed(1); grid += `<line x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}" class="rc-grid"/>`; });
   let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 6);
   keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 6}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
-  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분과 에너지 추이">${grid}<path d="${path(energy)}" class="rc-line rc-energy"/><path d="${path(mood)}" class="rc-line rc-mood"/>${dots(energy, "rc-dot rc-edot")}${dots(mood, "rc-dot rc-mdot")}${labels}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분과 에너지 추이"><defs><linearGradient id="rcMoodFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-fill-top"/><stop offset="100%" class="rc-fill-bot"/></linearGradient></defs>${grid}${areaPath ? `<path d="${areaPath}" fill="url(#rcMoodFill)" stroke="none"/>` : ""}<path d="${energyPath}" class="rc-line rc-energy"/><path d="${moodPath}" class="rc-line rc-mood"/>${dots(energy, "rc-dot rc-edot")}${dots(mood, "rc-dot rc-mdot")}${labels}</svg>`;
 }
 // 리포트 솔루션 — 데이터에 맞춘 과학 논문 기반 추천 (근거 DB: docs/SCIENCE.md)
 const REPORT_PAPERS = {
@@ -1091,14 +1123,14 @@ const REPORT_PAPERS = {
   savoring: "음미하기 (Bryant, 2003, Journal of Mental Health)",
   labeling: "정서 명명 (Lieberman et al., 2007, Psychological Science)",
 };
-function reportSolutions(d) {
+function reportSolutions(d) { // avgMood: 0-100
   const out = [];
-  if (d.avgMood != null && d.avgMood < 2.6) out.push({ t: "작은 행동부터 시작해요", b: "기분이 나아지길 기다리기보다 5분짜리 활동(산책·설거지·샤워)을 먼저 해보세요. ‘행동 → 기분’ 순서가 우울감을 줄여줘요.", c: REPORT_PAPERS.ba });
+  if (d.avgMood != null && d.avgMood < 50) out.push({ t: "작은 행동부터 시작해요", b: "기분이 나아지길 기다리기보다 5분짜리 활동(산책·설거지·샤워)을 먼저 해보세요. ‘행동 → 기분’ 순서가 우울감을 줄여줘요.", c: REPORT_PAPERS.ba });
   if (d.avgEnergy != null && d.avgEnergy < 2.6) out.push({ t: "느린 호흡으로 회복", b: "날숨을 들숨보다 길게(4-7-8) 하루 5분. 부교감신경이 활성화돼 피로와 긴장이 풀려요. 쉼 탭의 호흡 명상을 써보세요.", c: REPORT_PAPERS.breath });
   if (d.habPct != null && d.habPct < 50) out.push({ t: "습관에 ‘신호’를 붙여요", b: "‘[기존 행동] 후에 [새 습관]’ 형식으로 시점을 정하면 실천율이 올라가요. 예: 양치 후 스트레칭 1분.", c: REPORT_PAPERS.ii });
   if (d.gratCount === 0 && d.days >= 3) out.push({ t: "하루 한 줄 감사", b: "잘된 일·고마운 일을 구체적으로 한 줄 적어보세요. 2주만 이어가도 안녕감이 높아져요.", c: REPORT_PAPERS.gratitude });
   if (d.trend === "down") out.push({ t: "나에게 친절하게", b: "힘든 시기엔 자신을 다그치기보다 친구에게 하듯 다정하게 말해주세요. 자기자비는 회복탄력성을 높여줘요.", c: REPORT_PAPERS.selfcomp });
-  if (d.avgMood != null && d.avgMood >= 3.6) out.push({ t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring });
+  if (d.avgMood != null && d.avgMood >= 72) out.push({ t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring });
   if (!out.length) out.push({ t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling });
   return out.slice(0, 3);
 }
@@ -1109,7 +1141,7 @@ function reportDetailHtml(kind) {
   else { for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); } }
   const recs = keys.map((k) => entries[k]).filter(Boolean);
   const moods = recs.filter((e) => e.mood);
-  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const avgMood = moods.length ? moods.reduce((s, e) => s + entryScore(e), 0) / moods.length : null; // 0-100
   const energies = recs.filter((e) => e.energy);
   const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
   const dist = {}; moods.forEach((e) => dist[e.mood] = (dist[e.mood] || 0) + 1);
@@ -1129,7 +1161,7 @@ function reportDetailHtml(kind) {
   const kpi = (emoji, val, label, cls) => `<div class="kpi ${cls || ""}"><span class="kpi-emoji">${emoji}</span><span class="kpi-val">${val}</span><span class="kpi-label">${label}</span></div>`;
   const kpis = [
     kpi("📅", `${recs.length}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
-    kpi(avgMood != null ? faceForScore(avgMood) : "—", avgMood != null ? `${avgMood.toFixed(1)}<i>/5</i>` : "—", "평균 기분"),
+    kpi(avgMood != null ? scoreEmoji(avgMood) : "—", avgMood != null ? `${Math.round(avgMood)}<i>/100</i>` : "—", "평균 기분"),
     kpi("⚡", avgEnergy != null ? `${avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 에너지"),
     habPct != null
       ? kpi("🎯", `${habPct}<i>%</i>`, `습관 ${habDone}/${habTotal}`)
@@ -1141,10 +1173,10 @@ function reportDetailHtml(kind) {
 
   const distCard = Object.keys(dist).length ? `<div class="card"><h2>🌈 기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(dist[m] / distMax) * 100}%"></div></div><span class="dist-count">${Math.round((dist[m] / distTotal) * 100)}%</span></div>`).join("")}</div></div>` : "";
 
-  // 추세(전반부 vs 후반부 평균 기분) + 감사 기록 수 → 솔루션 근거
-  const ms = moods.map((e) => moodMeta[e.mood].score);
+  // 추세(전반부 vs 후반부 평균 기분, 0-100) + 감사 기록 수 → 솔루션 근거
+  const ms = moods.map((e) => entryScore(e));
   let trend = "flat";
-  if (ms.length >= 4) { const h = Math.floor(ms.length / 2); const a = ms.slice(0, h).reduce((s, v) => s + v, 0) / h; const b = ms.slice(h).reduce((s, v) => s + v, 0) / (ms.length - h); trend = b - a >= 0.4 ? "up" : a - b >= 0.4 ? "down" : "flat"; }
+  if (ms.length >= 4) { const h = Math.floor(ms.length / 2); const a = ms.slice(0, h).reduce((s, v) => s + v, 0) / h; const b = ms.slice(h).reduce((s, v) => s + v, 0) / (ms.length - h); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
   const gratCount = recs.filter((e) => e.praise && e.praise.trim()).length;
   const sols = reportSolutions({ avgMood, avgEnergy, habPct, trend, gratCount, days: recs.length });
   const solCard = `<div class="card sol-card"><h2>🧪 오늘의 쉼 솔루션</h2><p class="hint">이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
@@ -1300,7 +1332,7 @@ document.getElementById("badgeSeg").addEventListener("click", (e) => {
 function renderCorrelation(entries) {
   const body = document.getElementById("corrBody");
   const moodByDate = {};
-  Object.values(entries).forEach((e) => { if (e.date && e.mood) moodByDate[e.date] = moodMeta[e.mood].score; });
+  Object.values(entries).forEach((e) => { if (e.date && e.mood) moodByDate[e.date] = entryScore(e); }); // 0-100
   const chs = loadChs();
   if (!chs.length) { body.innerHTML = '<p class="empty">습관을 만들면 기분과의 관계를 분석해드려요.</p>'; return; }
   const today = todayKey(), rows = [];
@@ -1327,18 +1359,32 @@ function renderCorrelation(entries) {
   rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
   const effectLabel = (d) => { const a = Math.abs(d); return a >= 0.8 ? "큰 차이" : a >= 0.5 ? "중간 차이" : a >= 0.2 ? "작은 차이" : "미미한 차이"; };
   body.innerHTML = rows.map(({ h, ad, an, diff, d, n }) => {
-    const up = diff >= 0.3, down = diff <= -0.3;
+    const up = diff >= 6, down = diff <= -6;
     const sign = diff >= 0 ? "▲" : "▼";
-    const msg = up ? `한 날 기분이 평균 <b>${diff.toFixed(1)}점 더 높아요</b> 🌿`
+    const msg = up ? `한 날 기분이 평균 <b>${Math.round(diff)}점 더 높아요</b> 🌿`
       : down ? `한 날이 오히려 조금 낮았어요. 부담이 됐다면 가볍게 조절해도 좋아요.`
       : `기분 차이는 크지 않아요.`;
     return `<div class="corr-row">
-      <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.abs(diff).toFixed(1)}</span></div>
-      <div class="corr-detail">한 날 ⌀${ad.toFixed(1)} · 안 한 날 ⌀${an.toFixed(1)} — ${msg}</div>
+      <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
+      <div class="corr-detail">한 날 ⌀${Math.round(ad)} · 안 한 날 ⌀${Math.round(an)} — ${msg}</div>
       <div class="corr-meta">표본 n=${n} · 효과크기(Cohen's d) ${d.toFixed(2)} (${effectLabel(d)})</div>
     </div>`;
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
+}
+// 감정 태그별 평균 기분(0-100) — 어떤 감정일 때 점수가 높/낮은지
+function renderTagInsight(entries) {
+  const el = document.getElementById("tagInsight"); if (!el) return;
+  const map = {};
+  Object.values(entries).forEach((e) => {
+    if (!e.mood || !e.tags || !e.tags.length) return;
+    const sc = entryScore(e);
+    e.tags.forEach((t) => { (map[t] = map[t] || { sum: 0, n: 0 }); map[t].sum += sc; map[t].n++; });
+  });
+  const rows = Object.entries(map).filter(([, v]) => v.n >= 2).map(([t, v]) => ({ t, avg: v.sum / v.n, n: v.n }));
+  if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면, 어떤 감정일 때 기분이 높/낮은지 분석해드려요.</p>'; return; }
+  rows.sort((a, b) => b.avg - a.avg);
+  el.innerHTML = rows.slice(0, 8).map((r) => `<div class="dist-row"><span class="tag-name">#${escapeHtml(r.t)} <i>·${r.n}</i></span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("");
 }
 
 function checkBadges() {
@@ -1357,41 +1403,88 @@ function checkBadges() {
   } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
 }
 
+let chartOffset = 0;     // 0 = 오늘로 끝나는 창. 양수 = 과거로 이동
+const CHART_WIN = 14;    // 한 화면에 보는 일수
+function chartMaxOffset(entries) {
+  const ks = Object.keys(entries).filter((k) => entries[k] && entries[k].mood).sort();
+  if (!ks.length) return 0;
+  const oldest = new Date(ks[0] + "T00:00:00"), today = new Date(todayKey() + "T00:00:00");
+  const span = Math.round((today - oldest) / 86400000);
+  return Math.max(0, span - (CHART_WIN - 1));
+}
+function smoothPath(ctx, pts) { // 카멀롬-롬 부드러운 곡선
+  if (pts.length < 2) return;
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    ctx.bezierCurveTo(p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6, p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6, p2.x, p2.y);
+  }
+}
 function drawChart(entries) {
   const canvas = document.getElementById("chart");
-  const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = 200;
+  const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = 210;
   canvas.width = cssW * dpr; canvas.height = cssH * dpr;
   const ctx = canvas.getContext("2d"); if (!ctx) return; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, cssW, cssH);
   const css = getComputedStyle(document.documentElement);
   const accent = css.getPropertyValue("--accent").trim(), energyC = css.getPropertyValue("--energy").trim();
-  const line = css.getPropertyValue("--line").trim(), soft = css.getPropertyValue("--soft").trim();
+  const line = css.getPropertyValue("--line").trim(), soft = css.getPropertyValue("--soft").trim(), card = css.getPropertyValue("--card").trim();
+  chartOffset = Math.max(0, Math.min(chartOffset, chartMaxOffset(entries)));
   const days = [];
-  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(todayKey(d)); }
-  // 데이터가 너무 적으면 빈 상태 안내
+  for (let i = CHART_WIN - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i - chartOffset); days.push(todayKey(d)); }
+  const rangeEl = document.getElementById("chartRange");
+  if (rangeEl) { const a = days[0].split("-"), b = days[days.length - 1].split("-"); rangeEl.textContent = `${+a[1]}/${+a[2]} ~ ${+b[1]}/${+b[2]}`; }
   const moodPts = days.filter((k) => entries[k] && entries[k].mood).length;
-  if (moodPts < 2) {
+  if (moodPts < 1 && chartOffset === 0) {
     ctx.fillStyle = soft; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
-    ctx.fillText("최근 14일 중 이틀 이상 기록되면", cssW / 2, cssH / 2 - 8);
-    ctx.fillText("마음·에너지 흐름을 그려드려요 🌿", cssW / 2, cssH / 2 + 12);
+    ctx.fillText("기록이 쌓이면 마음·에너지 흐름을", cssW / 2, cssH / 2 - 8);
+    ctx.fillText("주식 차트처럼 보여드려요 🌿", cssW / 2, cssH / 2 + 12);
     return;
   }
-  const padL = 26, padR = 10, padT = 14, padB = 24, w = cssW - padL - padR, h = cssH - padT - padB;
-  const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * (v - 1)) / 4;
-  ctx.strokeStyle = line; ctx.lineWidth = 1;
-  for (let v = 1; v <= 5; v += 2) { ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(cssW - padR, y(v)); ctx.stroke(); }
-  function plot(getter, color) {
-    const pts = days.map((k, i) => { const e = entries[k]; const val = e ? getter(e) : null; return val ? { x: x(i), y: y(val) } : null; });
-    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = "round"; ctx.beginPath(); let started = false;
-    pts.forEach((p) => { if (!p) { started = false; return; } if (!started) { ctx.moveTo(p.x, p.y); started = true; } else ctx.lineTo(p.x, p.y); });
-    ctx.stroke(); ctx.fillStyle = color;
-    pts.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill(); } });
+  const padL = 22, padR = 12, padT = 14, padB = 26, w = cssW - padL - padR, h = cssH - padT - padB;
+  const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * v) / 100; // v: 0-100
+  // 가로 그리드 + 좌측 눈금
+  ctx.textAlign = "right"; ctx.font = "9px sans-serif";
+  [0, 50, 100].forEach((v) => { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(cssW - padR, y(v)); ctx.stroke(); ctx.fillStyle = soft; ctx.fillText(v, padL - 4, y(v) + 3); });
+  const series = (getter) => days.map((k, i) => { const e = entries[k]; const val = e ? getter(e) : null; return val == null ? null : { x: x(i), y: y(val) }; });
+  // 기분: 영역 채우기 + 부드러운 곡선
+  const moodSeg = series((e) => entryScore(e)).filter(Boolean);
+  if (moodSeg.length) {
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + h);
+    grad.addColorStop(0, accent + "44"); grad.addColorStop(1, accent + "05");
+    ctx.beginPath(); smoothPath(ctx, moodSeg);
+    ctx.lineTo(moodSeg[moodSeg.length - 1].x, y(0)); ctx.lineTo(moodSeg[0].x, y(0)); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
   }
-  plot((e) => (e.mood ? moodMeta[e.mood].score : null), accent);
-  plot((e) => e.energy || null, energyC);
+  function plot(getter, color, dash) {
+    const pts = series(getter);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.setLineDash(dash || []);
+    // 연속 구간별로 곡선
+    let seg = []; const flush = () => { if (seg.length) { ctx.beginPath(); smoothPath(ctx, seg); ctx.stroke(); if (seg.length === 1) { ctx.beginPath(); ctx.arc(seg[0].x, seg[0].y, 2.6, 0, 7); ctx.fillStyle = color; ctx.fill(); } } seg = []; };
+    pts.forEach((p) => { if (!p) flush(); else seg.push(p); }); flush();
+    ctx.setLineDash([]);
+    pts.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = card; ctx.stroke(); } });
+  }
+  plot((e) => e.energy ? e.energy * 20 : null, energyC, [3, 3]);
+  plot((e) => entryScore(e), accent);
+  // x축 날짜 라벨 (양끝 + 가운데)
   ctx.fillStyle = soft; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
   const lab = (k) => { const p = k.split("-"); return `${+p[1]}/${+p[2]}`; };
-  ctx.fillText(lab(days[0]), x(0), cssH - 8); ctx.fillText(lab(days[days.length - 1]), x(days.length - 1), cssH - 8);
+  [0, Math.floor((days.length - 1) / 2), days.length - 1].forEach((i) => ctx.fillText(lab(days[i]), x(i), cssH - 8));
 }
+// 차트 좌우 드래그(주식창처럼 날짜 이동) — 한 번만 바인딩
+(function bindChartPan() {
+  const canvas = document.getElementById("chart"); if (!canvas) return;
+  let dragging = false, startX = 0, startOffset = 0;
+  const dayW = () => (canvas.clientWidth - 34) / (CHART_WIN - 1);
+  const move = (cx) => { const dx = cx - startX; chartOffset = startOffset + Math.round(dx / dayW()); drawChart(loadEntries()); };
+  canvas.style.touchAction = "pan-y";
+  canvas.addEventListener("pointerdown", (e) => { dragging = true; startX = e.clientX; startOffset = chartOffset; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} });
+  canvas.addEventListener("pointermove", (e) => { if (dragging) move(e.clientX); });
+  canvas.addEventListener("pointerup", () => { dragging = false; });
+  canvas.addEventListener("pointercancel", () => { dragging = false; });
+})();
+document.getElementById("chartPrev") && document.getElementById("chartPrev").addEventListener("click", () => { chartOffset += 7; Sound.tap(); drawChart(loadEntries()); });
+document.getElementById("chartNext") && document.getElementById("chartNext").addEventListener("click", () => { chartOffset = Math.max(0, chartOffset - 7); Sound.tap(); drawChart(loadEntries()); });
 
 // 근거기반 if-then 인사이트
 function renderInsight(entries, list) {

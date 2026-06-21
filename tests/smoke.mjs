@@ -31,7 +31,8 @@ window.AudioContext = class {
 window.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
 window.scrollTo = () => {}; window.confirm = () => true; window.alert = () => {};
 window.requestAnimationFrame = (fn) => setTimeout(fn, 0);
-window.HTMLCanvasElement.prototype.getContext = () => ({ scale() {}, clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, stroke() {}, arc() {}, fill() {}, fillText() {}, set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {}, set font(v) {}, set textAlign(v) {} });
+window.HTMLCanvasElement.prototype.getContext = () => ({ scale() {}, clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {}, bezierCurveTo() {}, closePath() {}, stroke() {}, arc() {}, fill() {}, fillText() {}, setLineDash() {}, createLinearGradient() { return { addColorStop() {} }; }, set fillStyle(v) {}, set strokeStyle(v) {}, set lineWidth(v) {}, set lineJoin(v) {}, set font(v) {}, set textAlign(v) {} });
+window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,";
 window.HTMLElement.prototype.scrollIntoView = () => {};
 window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,iVBORw0KGgo=";
 window.onerror = (m) => errors.push("onerror: " + m);
@@ -220,8 +221,8 @@ try {
   check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
   check("상관관계 과학 근거 표기", !!d.querySelector("#corrBody .sci-note") && /Cohen/.test(d.querySelector("#corrBody .corr-meta").textContent));
 
-  // 12) 페이지 전환들 (지난기록·리포트)
-  q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=log]").click();
+  // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
+  q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
   q("#history li.editable").click();
   check("지난 기록 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
   q("#subBack").click();
