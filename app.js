@@ -149,6 +149,7 @@ function activateTab(name, { scroll = true } = {}) {
     const cc = document.getElementById("checkin-card");
     cc.hidden = true; cc.classList.add("collapsed");
     document.getElementById("journeyStartCard").hidden = false;
+    updateJourneyHero();
   }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -260,7 +261,30 @@ function loadEntryForm(key) {
   if (t.reflection) { reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; }
   todayMore.hidden = false;
 }
-function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); }
+function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); updateJourneyHero(); }
+
+// 첫 화면(오늘의 여정) — 날짜·상태에 맞춰 주제 중심으로 안내
+function updateJourneyHero() {
+  const card = document.getElementById("journeyStartCard");
+  if (!card) return;
+  const tk = todayKey(), p = tk.split("-");
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set("journeyEyebrow", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일`);
+  const e = loadEntries()[tk];
+  const done = !!(e && e.mood);
+  card.classList.toggle("done", done);
+  if (done) {
+    set("journeyEmoji", "🌿");
+    set("journeyStartHint", `오늘 ${moodMeta[e.mood].emoji} ${e.mood} 마음을 남겼어요. 잘 해냈어요.`);
+    set("journeyStart", "오늘 여정 다시 하기");
+    set("journeySub", "원하면 언제든 다시 돌아볼 수 있어요");
+  } else {
+    set("journeyEmoji", "✨");
+    set("journeyStartHint", "한 걸음씩 따라가며 오늘 마음을 남겨봐요.");
+    set("journeyStart", "오늘의 여정 시작하기");
+    set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
+  }
+}
 entryDate.addEventListener("change", () => {
   let key = entryDate.value || todayKey();
   if (key > todayKey()) { key = todayKey(); entryDate.value = key; }

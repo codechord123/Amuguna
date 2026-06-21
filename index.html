@@ -51,10 +51,14 @@
     <!-- ========== 탭: 오늘 ========== -->
     <section class="tab" id="tab-today">
       <div class="card journey-hero" id="journeyStartCard">
-        <div class="js-emoji">✨</div>
-        <h2>오늘의 여정</h2>
-        <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
-        <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
+        <div class="jh-inner">
+          <div class="js-emoji" id="journeyEmoji">✨</div>
+          <p class="jh-eyebrow" id="journeyEyebrow"></p>
+          <h2>오늘의 여정</h2>
+          <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+          <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
+          <p class="jh-sub" id="journeySub">3분이면 충분해요 · 한 번에 하나씩</p>
+        </div>
       </div>
 
       <div class="card collapsible collapsed" id="checkin-card" hidden>
