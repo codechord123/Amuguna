@@ -152,6 +152,8 @@ try {
   check("글자 크기 적용", d.documentElement.getAttribute("data-textsize") === "xl");
   q("#toneSeg button[data-tone=plain]").click();
   check("위로 톤 저장", ls("settings_v2").tone === "plain");
+  q("#hapticToggle").checked = false; q("#hapticToggle").dispatchEvent(new window.Event("change"));
+  check("햅틱 설정 저장", ls("settings_v2").haptics === false);
   const themeCard = q("#themeGrid").closest(".card");
   const before2 = themeCard.classList.contains("collapsed");
   themeCard.querySelector("h2").click();

@@ -97,9 +97,10 @@
     const { error } = await sb.from("app_state").upsert({ user_id: currentUser.id, data: state, updated_at: new Date().toISOString() });
     if (error) throw error;
   }
-  let syncing = false;
+  let syncing = false, pendingPush = false;
   async function syncNow(showStatus) {
     if (!sb || !currentUser || syncing) return;
+    if (!navigator.onLine) { status("오프라인 — 다시 연결되면 자동으로 동기화돼요."); pendingPush = true; return; }
     syncing = true;
     try {
       if (showStatus) status("동기화 중…");
@@ -109,21 +110,27 @@
       const merged = mergeData(local, remote);
       if (window.__applyData) window.__applyData(merged);
       await push(merged);
+      pendingPush = false;
       status("마지막 동기화: " + new Date().toLocaleTimeString());
     } catch (e) {
-      status("동기화 실패: " + (e.message || e));
+      pendingPush = true;
+      status("동기화 실패: " + (e.message || e) + " — '지금 동기화'로 다시 시도할 수 있어요.");
     } finally { syncing = false; }
   }
   function markDirty() {
     if (!sb || !currentUser) return;
+    if (!navigator.onLine) { pendingPush = true; status("오프라인 — 변경사항은 연결되면 저장돼요."); return; }
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(async () => {
       try {
         const local = window.__getLocalData ? window.__getLocalData() : null;
-        if (local) { await push(local); status("저장됨: " + new Date().toLocaleTimeString()); }
-      } catch (e) { status("저장 실패: " + (e.message || e)); }
+        if (local) { await push(local); pendingPush = false; status("저장됨: " + new Date().toLocaleTimeString()); }
+      } catch (e) { pendingPush = true; status("저장 실패(오프라인일 수 있어요): 연결되면 다시 시도돼요."); }
     }, 2500);
   }
+  // 온라인 복귀 시 자동 재동기화
+  window.addEventListener("online", () => { if (currentUser && pendingPush) syncNow(true); });
+  window.addEventListener("offline", () => { if (currentUser) status("오프라인 상태예요. 기록은 기기에 안전하게 저장돼요."); });
 
   /* ---------- SDK 로딩 + 초기화 ---------- */
   function loadSdk() {

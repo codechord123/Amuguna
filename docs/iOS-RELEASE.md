@@ -27,7 +27,9 @@ npx cap open ios
 ```
 
 ### 출시 전 체크리스트
-- [ ] **앱 아이콘 PNG 세트** (1024×1024 등) — 현재 `icon.svg`를 PNG로 변환해 `AppIcon`에 추가.
+- [ ] **앱 아이콘 PNG 세트** — `tools/icon-export.html` 을 브라우저로 열어 180/192/256/512/1024 PNG를 받아 `AppIcon`에 추가.
+- [x] **개인정보 처리방침** — `privacy.html` (배포 URL: `/privacy.html`). App Store 제출 시 이 URL 사용.
+- [x] **햅틱** — 웹 `navigator.vibrate` 적용(설정에서 on/off). iOS 네이티브는 `@capacitor/haptics`로 교체 권장.
 - [ ] **스플래시 스크린** 설정.
 - [ ] `viewport-fit=cover` + safe-area 패딩 — 이미 적용됨(노치 대응).
 - [ ] **개인정보 처리방침 URL** — 데이터는 기기 저장(+선택적 Supabase). App Store 필수.

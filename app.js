@@ -38,6 +38,13 @@ const plainReplies = {
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
 
+/* 햅틱(진동) — 웹 vibrate. iOS Safari는 무시하므로 네이티브(Capacitor Haptics)로 대체 가능 */
+const Haptic = {
+  on: true,
+  tap() { if (this.on && navigator.vibrate) { try { navigator.vibrate(10); } catch (e) {} } },
+  success() { if (this.on && navigator.vibrate) { try { navigator.vibrate([12, 40, 18]); } catch (e) {} } },
+};
+
 function safeSet(key, value) {
   try {
     localStorage.setItem(key, value);
@@ -269,7 +276,7 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   const reflection = { good: reflectGood.value.trim(), hard: reflectHard.value.trim() };
   entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), tags: parseTags(tagInput.value), reflection, updatedAt: new Date().toISOString() };
   saveEntries(entries);
-  Sound.success();
+  Sound.success(); Haptic.success();
   const card = document.getElementById("checkin-card");
   card.classList.remove("saved"); void card.offsetWidth; card.classList.add("saved");
   if (k === todayKey()) {
@@ -770,7 +777,7 @@ function applyHabitAction(act, id, scopeEl) {
     let celebrated = false;
     if (h.done[k] && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
     saveChs(chs);
-    if (h.done[k]) { if (celebrated) { Sound.celebrate(); confetti(); } else Sound.success(); } else Sound.tap();
+    if (h.done[k]) { if (celebrated) { Sound.celebrate(); confetti(); Haptic.success(); } else { Sound.success(); Haptic.tap(); } } else Sound.tap();
     renderChallenge(); refreshHabitDetail(id);
     if (h.done[k]) { const grid = document.querySelector(`[data-grid="${id}"]`); const idx = daysSince(h.startDate); if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done"); }
     checkBadges();
@@ -1151,7 +1158,7 @@ function checkBadges() {
     settings.badges = earned; saveSettingsObj(settings);
     const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
     if (typeof toast === "function") toast("🏅 새 배지 획득: " + titles);
-    if (Sound.celebrate) Sound.celebrate(); confetti();
+    if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
   } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
 }
 
@@ -1294,7 +1301,7 @@ document.getElementById("histMore").addEventListener("click", () => { histShown 
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0 },
+  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0 },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
@@ -1308,6 +1315,8 @@ function applySettings() {
   document.querySelectorAll("#toneSeg button").forEach((b) => b.classList.toggle("active", b.dataset.tone === settings.tone));
   document.getElementById("sfxToggle").checked = settings.sfx;
   document.getElementById("breathSoundToggle").checked = settings.breathSound;
+  document.getElementById("hapticToggle").checked = settings.haptics;
+  Haptic.on = settings.haptics;
   document.getElementById("reminderToggle").checked = settings.reminderOn;
   document.getElementById("reminderTime").value = settings.reminderTime;
   document.getElementById("ambientVol").value = settings.ambientVol;
@@ -1331,6 +1340,7 @@ document.getElementById("toneSeg").addEventListener("click", (e) => {
 });
 document.getElementById("sfxToggle").addEventListener("change", (e) => { settings.sfx = e.target.checked; saveSettingsObj(settings); Sound.setSfx(settings.sfx); });
 document.getElementById("breathSoundToggle").addEventListener("change", (e) => { settings.breathSound = e.target.checked; saveSettingsObj(settings); Sound.setBreath(settings.breathSound); });
+document.getElementById("hapticToggle").addEventListener("change", (e) => { settings.haptics = e.target.checked; Haptic.on = settings.haptics; saveSettingsObj(settings); if (settings.haptics) Haptic.tap(); });
 document.getElementById("ambientVol").addEventListener("change", (e) => { settings.ambientVol = Number(e.target.value); saveSettingsObj(settings); });
 
 /* 알림 */
@@ -1550,7 +1560,7 @@ function saveJourney() {
     updatedAt: new Date().toISOString(),
   };
   settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings);
-  saveEntries(entries); Sound.success();
+  saveEntries(entries); Sound.success(); Haptic.success();
   closeJourney(); loadToday(); checkBadges();
   if (detectCrisis(jData.note)) showSafety();
   toast("오늘 기록을 마쳤어요. 고마워요 💛");

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>아이콘 PNG 추출기 · 오늘의 쉼</title>
+  <style>
+    body { font-family: -apple-system, "Noto Sans KR", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background: #fbf4ed; color: #3a2e2a; }
+    .grid { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; }
+    .item { text-align: center; }
+    canvas { background: #fff; border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+    a.btn { display: inline-block; margin-top: 8px; background: #e57350; color: #fff; text-decoration: none; padding: 8px 14px; border-radius: 999px; font-size: .9rem; }
+    p.muted { color: #948379; }
+    button#all { background:#3a2e2a;color:#fff;border:none;border-radius:999px;padding:10px 18px;cursor:pointer;font-size:1rem; }
+  </style>
+</head>
+<body>
+  <h1>아이콘 PNG 추출기</h1>
+  <p class="muted">App Store / PWA용 아이콘을 만듭니다. <code>icon.svg</code>를 각 크기 PNG로 변환해요. 아래 버튼으로 한 번에 받거나 개별 저장하세요.</p>
+  <p class="muted">생성된 파일을 저장소 루트(또는 <code>icons/</code>)에 두고, iOS 빌드 시 AppIcon에 넣으면 됩니다.</p>
+  <button id="all">전체 다운로드</button>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const SIZES = [180, 192, 256, 512, 1024];
+    const grid = document.getElementById("grid");
+    const made = [];
+    fetch("../icon.svg").then(r => r.text()).then((svgText) => {
+      const blob = new Blob([svgText], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        SIZES.forEach((s) => {
+          const c = document.createElement("canvas");
+          c.width = c.height = s;
+          const ctx = c.getContext("2d");
+          ctx.drawImage(img, 0, 0, s, s);
+          const display = document.createElement("canvas");
+          display.width = display.height = Math.min(s, 128);
+          display.getContext("2d").drawImage(c, 0, 0, display.width, display.height);
+          const dataUrl = c.toDataURL("image/png");
+          made.push({ s, dataUrl });
+          const wrap = document.createElement("div");
+          wrap.className = "item";
+          const a = document.createElement("a");
+          a.className = "btn"; a.href = dataUrl; a.download = `icon-${s}.png`; a.textContent = `icon-${s}.png`;
+          wrap.appendChild(display); wrap.appendChild(document.createElement("br")); wrap.appendChild(a);
+          grid.appendChild(wrap);
+        });
+      };
+      img.src = url;
+    });
+    document.getElementById("all").addEventListener("click", () => {
+      made.forEach(({ s, dataUrl }, i) => setTimeout(() => {
+        const a = document.createElement("a"); a.href = dataUrl; a.download = `icon-${s}.png`; a.click();
+      }, i * 250));
+    });
+  </script>
+</body>
+</html>
