@@ -47,45 +47,28 @@ const ls = (k) => JSON.parse(window.localStorage.getItem(k) || "null");
 try {
   q("#obSkip").click();
 
-  // 1) 오늘 기록 + 태그
-  q(".mood").click();
-  q("#journalInput").value = "야근하고 지침";
-  q("#tagInput").value = "피곤, 야근";
-  q("#saveBtn").click();
-  const ent = ls("entries_v2");
-  const todayKey = Object.keys(ent).sort().pop();
-  check("오늘 기록 저장됨", !!ent[todayKey] && ent[todayKey].mood);
-  check("감정 태그 저장됨", JSON.stringify(ent[todayKey].tags) === JSON.stringify(["피곤", "야근"]));
-
-  // 2) 백필 (과거 날짜)
-  const ed = q("#entryDate"); ed.value = "2026-06-18"; ed.dispatchEvent(new window.Event("change"));
-  q(".mood").click(); q("#saveBtn").click();
-  check("백필(과거 날짜) 저장됨", !!ls("entries_v2")["2026-06-18"]);
-
-  // 2ب) 기분 7단계 + 저녁 회고
-  check("기분 7단계 표시", d.querySelectorAll(".mood").length === 7);
+  // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
-  ed.value = tk; ed.dispatchEvent(new window.Event("change"));
-  [...d.querySelectorAll(".mood")].find((b) => b.dataset.mood === "활기차요").click();
-  check("저녁 회고 항상 노출", !q("#reflectFields").hasAttribute("hidden"));
-  q("#reflectGood").value = "좋은 점"; q("#reflectHard").value = "힘든 점";
-  q("#saveBtn").click();
-  const te = ls("entries_v2")[tk];
-  check("활기차요(7단계) 저장", te.mood === "활기차요");
-  check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
-
-  // 2c) 오늘의 여정 (적응형 경로)
   q("#journeyStart").click();
   check("여정 시작(기분 다이얼)", !q("#journey").hasAttribute("hidden") && !!q("#jBody #jScore"));
-  const sc1 = q("#jBody #jScore"); sc1.value = "70"; sc1.dispatchEvent(new window.Event("input"));
+  { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
   q('#jBody .emo-tag[data-tag="평온해요"]').click();
   let jg = 0;
-  while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 8) q("#jNext").click();
+  while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 10) {
+    if (q("#jBody #jNote")) q("#jBody #jNote").value = "야근하고 지침";
+    if (q("#jBody #jGood")) q("#jBody #jGood").value = "좋은 점";
+    if (q("#jBody #jHard")) q("#jBody #jHard").value = "힘든 점";
+    q("#jNext").click();
+  }
   check("여정 마지막 단계 도달", q("#jNext").textContent.indexOf("저장") >= 0);
   q("#jNext").click();
   check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
-  check("여정 100점 기분 저장(매핑)", ls("entries_v2")[tk].mood === "괜찮아요" && ls("entries_v2")[tk].score === 70);
-  check("감정 태그 저장", (ls("entries_v2")[tk].tags || []).includes("평온해요"));
+  const te = ls("entries_v2")[tk];
+  check("오늘 기록 저장됨", !!te && te.mood === "괜찮아요");
+  check("100점 기분 저장", te.score === 70);
+  check("감정 태그 저장", (te.tags || []).includes("평온해요"));
+  check("일기 저장", te.note === "야근하고 지침");
+  check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
 
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
   q("[data-tab=challenge]").click();

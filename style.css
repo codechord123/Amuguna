@@ -486,8 +486,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ----- 여정 시작 카드 (오늘 탭의 단일 주제) ----- */
 /* ----- 첫 화면 통계 + 응원 ----- */
 .today-stats { padding: var(--s4) var(--s5); }
-.ts-row { display: flex; justify-content: space-around; text-align: center; }
-.ts-item { display: flex; flex-direction: column; gap: 2px; }
+.ts-row { display: flex; justify-content: space-around; text-align: center; gap: var(--s2); }
+.ts-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; border: none; background: transparent; font-family: inherit; cursor: pointer; border-radius: var(--r-sm); padding: var(--s2) var(--s1); transition: background 0.2s; }
+.ts-item:hover { background: var(--bg-sunken); }
+.ts-item:active { transform: scale(0.96); }
 .ts-num { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
 .ts-num i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
 .ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
@@ -647,6 +649,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .mood-dot { background: var(--accent); }
 .energy-dot { background: var(--energy); }
 .insight { margin: 0; font-size: var(--t-base); line-height: 1.75; color: var(--ink-2); }
+.insight-actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
+.chip-btn { border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--accent-deep); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.chip-btn:hover { border-color: var(--accent); background: var(--card); }
+.chip-btn:active { transform: scale(0.96); }
 
 .dist { display: flex; flex-direction: column; gap: var(--s2); }
 .dist-row { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-base); }

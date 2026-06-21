@@ -180,14 +180,7 @@ function activateTab(name, { scroll = true } = {}) {
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
   if (name === "challenge") renderChallenge();
-  if (name === "today") {
-    // 오늘 탭은 '오늘의 여정'만 보이게. 직접 기록 폼은 수정 진입 시에만 노출.
-    const cc = document.getElementById("checkin-card");
-    cc.hidden = true; cc.classList.add("collapsed");
-    document.getElementById("journeyStartCard").hidden = false;
-    document.getElementById("todayStats").hidden = false;
-    updateJourneyHero(); updateTodayStats();
-  }
+  if (name === "today") { updateJourneyHero(); updateTodayStats(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -222,78 +215,11 @@ function openEntryEditor(dateKey) {
   openJourney(dateKey);
 }
 
-/* ===================== 오늘 기록 ===================== */
-const moodGrid = document.getElementById("moodGrid");
-const moodResponse = document.getElementById("moodResponse");
-const todayMore = document.getElementById("todayMore");
-const energyRange = document.getElementById("energyRange");
-const energyFace = document.getElementById("energyFace");
-const journalInput = document.getElementById("journalInput");
-const praiseInput = document.getElementById("praiseInput");
-const saveMsg = document.getElementById("saveMsg");
-const entryDate = document.getElementById("entryDate");
-const checkinTitle = document.getElementById("checkinTitle");
-let selectedMood = null;
-let currentDate = todayKey();
-
+/* ===================== 오늘 화면 ===================== */
+// 입력은 '오늘의 여정' 하나로 통일됨(옛 직접기록 폼 제거).
 function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
-
-function selectMood(mood) {
-  selectedMood = mood;
-  document.querySelectorAll(".mood").forEach((m) => {
-    const on = m.dataset.mood === mood;
-    m.classList.toggle("selected", on);
-    m.setAttribute("aria-pressed", on ? "true" : "false");
-  });
-  moodResponse.textContent = curReplies()[mood];
-  moodResponse.hidden = false;
-  todayMore.hidden = false; // 점진적 노출
-}
-moodGrid.addEventListener("click", (e) => {
-  const btn = e.target.closest(".mood");
-  if (!btn) return;
-  Sound.tap(); selectMood(btn.dataset.mood);
-});
-energyRange.addEventListener("input", () => { energyFace.textContent = energyFaces[energyRange.value]; });
-
-const tagInput = document.getElementById("tagInput");
-const reflectGood = document.getElementById("reflectGood");
-const reflectHard = document.getElementById("reflectHard");
-const reflectFields = document.getElementById("reflectFields");
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
-document.getElementById("tagSuggest").addEventListener("click", (e) => {
-  const b = e.target.closest(".link-chip"); if (!b) return;
-  Sound.tap();
-  const cur = parseTags(tagInput.value); const t = b.dataset.tag;
-  if (!cur.includes(t)) { cur.push(t); tagInput.value = cur.join(", "); }
-});
-
-function resetForm() {
-  selectedMood = null;
-  document.querySelectorAll(".mood").forEach((m) => { m.classList.remove("selected"); m.setAttribute("aria-pressed", "false"); });
-  moodResponse.hidden = true;
-  energyRange.value = 3; energyFace.textContent = energyFaces[3];
-  journalInput.value = ""; praiseInput.value = ""; tagInput.value = ""; saveMsg.hidden = true;
-  reflectGood.value = ""; reflectHard.value = "";
-}
-function updateCheckinTitle() {
-  const p = currentDate.split("-");
-  checkinTitle.textContent = currentDate === todayKey() ? "📔 오늘의 기록" : `📔 ${+p[1]}월 ${+p[2]}일 기록`;
-}
-function loadEntryForm(key) {
-  currentDate = key;
-  resetForm(); updateCheckinTitle();
-  const t = loadEntries()[key];
-  if (!t) { todayMore.hidden = (key === todayKey()); return; } // 과거 날짜는 바로 입력 가능
-  if (t.mood) selectMood(t.mood);
-  if (t.energy) { energyRange.value = t.energy; energyFace.textContent = energyFaces[t.energy]; }
-  if (t.note) journalInput.value = t.note;
-  if (t.praise) praiseInput.value = t.praise;
-  if (t.tags) tagInput.value = t.tags.join(", ");
-  if (t.reflection) { reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; }
-  todayMore.hidden = false;
-}
-function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); updateJourneyHero(); updateTodayStats(); }
+function loadToday() { updateJourneyHero(); updateTodayStats(); }
 
 // 첫 화면 통계 + 응원 — 동기 부여
 function updateTodayStats() {
@@ -341,12 +267,6 @@ function updateJourneyHero() {
     set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
   }
 }
-entryDate.addEventListener("change", () => {
-  let key = entryDate.value || todayKey();
-  if (key > todayKey()) { key = todayKey(); entryDate.value = key; }
-  Sound.tap(); loadEntryForm(key);
-});
-
 function detectCrisis(text) {
   if (!text) return false;
   const low = text.toLowerCase();
@@ -358,28 +278,7 @@ function showSafety() {
   c.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 document.getElementById("safetyClose").addEventListener("click", () => { document.getElementById("safetyCard").hidden = true; });
-
-document.getElementById("saveBtn").addEventListener("click", () => {
-  const entries = loadEntries(), k = currentDate;
-  const note = journalInput.value.trim();
-  const reflection = { good: reflectGood.value.trim(), hard: reflectHard.value.trim() };
-  entries[k] = { date: k, mood: selectedMood, energy: Number(energyRange.value), note, praise: praiseInput.value.trim(), tags: parseTags(tagInput.value), reflection, updatedAt: new Date().toISOString() };
-  saveEntries(entries);
-  Sound.success(); Haptic.success();
-  const card = document.getElementById("checkin-card");
-  card.classList.remove("saved"); void card.offsetWidth; card.classList.add("saved");
-  if (k === todayKey()) {
-    const streak = calcStreak(entries);
-    saveMsg.textContent = streak > 1 ? `기록 완료! 🌟 ${streak}일째 스스로를 돌보고 있어요.` : "오늘의 마음, 잘 담아뒀어요. 고마워요 💛";
-  } else {
-    const p = k.split("-");
-    saveMsg.textContent = `${+p[1]}월 ${+p[2]}일 기록을 채웠어요. 지난 날도 소중해요 🌿`;
-  }
-  saveMsg.hidden = false;
-  setTimeout(() => { saveMsg.hidden = true; }, 4000);
-  if (detectCrisis(note)) showSafety();
-  checkBadges();
-});
+document.getElementById("safetyBreath").addEventListener("click", () => { Sound.tap(); openBreath(); }); // 위기 → 호흡으로 바로 진정
 
 /* ===================== 쉼: 위로 / 호흡 / 미션 / 사운드 ===================== */
 // 타당화·자기자비·인지재구성 근거 문구 (심리학 자문)
@@ -1016,6 +915,25 @@ document.getElementById("statsSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   Sound.tap(); showStatsSeg(b.dataset.seg);
 });
+// 첫 화면 통계 숫자 → 기록 탭 해당 뷰로 점프 (편의 연결)
+document.getElementById("todayStats").addEventListener("click", (e) => {
+  const it = e.target.closest("[data-jump]"); if (!it) return;
+  Sound.tap(); activateTab("stats");
+  const j = it.dataset.jump;
+  if (j === "weekreport") { showStatsSeg("summary"); openReport("week"); }
+  else showStatsSeg(j);
+});
+// 인사이트 → 바로 행동(호흡·미션·위로)으로 이동 (연결성)
+document.getElementById("insightActions").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-go]"); if (!b) return;
+  Sound.tap();
+  const go = b.dataset.go;
+  if (go === "breath") { openBreath(); return; }
+  activateTab("rest");
+  const seg = document.querySelector('#restSeg button[data-rseg="comfort"]'); if (seg) seg.click();
+  if (go === "mission") document.getElementById("missionBtn").click();
+  if (go === "comfort") document.getElementById("quoteBtn").click();
+});
 
 /* 쉼 탭 서브탭 (위로 / 명상) */
 document.getElementById("restSeg").addEventListener("click", (e) => {
@@ -1632,8 +1550,6 @@ document.getElementById("textSizeSeg").addEventListener("click", (e) => {
 document.getElementById("toneSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   settings.tone = b.dataset.tone; saveSettingsObj(settings); applySettings(); Sound.tap();
-  // 현재 선택된 기분이 있으면 답변 톤 즉시 갱신
-  if (selectedMood) { moodResponse.textContent = curReplies()[selectedMood]; }
 });
 document.getElementById("sfxToggle").addEventListener("change", (e) => { settings.sfx = e.target.checked; saveSettingsObj(settings); Sound.setSfx(settings.sfx); });
 document.getElementById("breathSoundToggle").addEventListener("change", (e) => { settings.breathSound = e.target.checked; saveSettingsObj(settings); Sound.setBreath(settings.breathSound); });
@@ -1662,8 +1578,15 @@ function fireReminder() {
     const h = undone[0];
     body = `오늘 기록 고마워요 🌿 ${h.emoji} ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
   } else body = "오늘도 다 해냈어요. 푹 쉬어요 🌙";
-  if ("Notification" in window && Notification.permission === "granted") new Notification("오늘의 쉼 ☕", { body });
-  else { reminderMsg.textContent = body; reminderMsg.hidden = false; setTimeout(() => { reminderMsg.hidden = true; }, 6000); }
+  if ("Notification" in window && Notification.permission === "granted") {
+    const n = new Notification("오늘의 쉼 ☕", { body });
+    n.onclick = () => { try { window.focus(); } catch (e) {} activateTab("today"); if (!done) openJourney(); n.close(); };
+  } else {
+    reminderMsg.textContent = body + (done ? "" : "  ›  눌러서 시작하기");
+    reminderMsg.hidden = false; reminderMsg.style.cursor = done ? "default" : "pointer";
+    reminderMsg.onclick = done ? null : () => { activateTab("today"); openJourney(); };
+    setTimeout(() => { reminderMsg.hidden = true; }, 8000);
+  }
   Sound.chime(); scheduleReminder();
 }
 document.getElementById("reminderToggle").addEventListener("change", async (e) => {
@@ -1710,10 +1633,9 @@ document.addEventListener("click", (e) => {
 document.getElementById("clearBtn").addEventListener("click", () => {
   if (!confirm("정말 모든 기록을 지울까요? 되돌릴 수 없어요.")) return;
   localStorage.removeItem(DB.ENTRIES); localStorage.removeItem(DB.CH); localStorage.removeItem("projects_v1");
-  Sound.tap(); selectedMood = null;
-  document.querySelectorAll(".mood").forEach((m) => { m.classList.remove("selected"); m.setAttribute("aria-pressed", "false"); });
-  moodResponse.hidden = true; todayMore.hidden = true; journalInput.value = ""; praiseInput.value = "";
-  expandedIds.clear(); renderChallenge();
+  clearJDraft();
+  Sound.tap();
+  expandedIds.clear(); renderChallenge(); loadToday();
   alert("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
 });
 
