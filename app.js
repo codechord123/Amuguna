@@ -1221,7 +1221,7 @@ function reportDetailHtml(kind) {
   const kpis = [
     kpi("📅", `${cur.days}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
     kpi(cur.avgMood != null ? scoreEmoji(cur.avgMood) : "—", cur.avgMood != null ? `${Math.round(cur.avgMood)}<i>/100</i>${arrow(dMood)}` : "—", "평균 기분"),
-    kpi("⚡", cur.avgEnergy != null ? `${cur.avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 에너지"),
+    kpi("⚡", cur.avgEnergy != null ? `${cur.avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 활력"),
     cur.habPct != null ? kpi("🎯", `${cur.habPct}<i>%</i>`, `습관 ${cur.habDone}/${cur.habTotal}`)
       : kpi("🌱", `${cur.gratCount}<i>번</i>`, "잘한 일·감사"),
   ].join("");
@@ -1237,7 +1237,7 @@ function reportDetailHtml(kind) {
   }
 
   const chart = reportChartSvg(keys, entries);
-  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>에너지</span></div></div>` : "";
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>활력</span></div><p class="hint" style="margin:10px 0 0">⚡ <b>활력</b>은 그날 고른 감정의 활기 정도예요(신남·설렘 높음 · 무기력·지침 낮음).</p></div>` : "";
 
   // 하이라이트 — 가장 좋았던/힘들었던 날
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
@@ -1902,6 +1902,7 @@ function jComputeEnergy() {
   const ens = (jData.tags || []).map((t) => { const em = emoByKey(t); return em ? em.en : null; }).filter((v) => v != null);
   jData.energy = ens.length ? Math.round(ens.reduce((a, b) => a + b, 0) / ens.length) : scoreToEnergy(jData.score != null ? jData.score : 50);
 }
+const ENERGY_WORD = { 1: "아주 낮음", 2: "낮음", 3: "보통", 4: "높음", 5: "아주 높음" };
 function moodToScore(m) { return m && moodMeta[m] ? Math.round((moodMeta[m].score - 1) / 4 * 100) : 50; }
 const SCORE_COLORS = ["#e8896f", "#f0b07a", "#e9d8a6", "#9ed8b0", "#5ec8b0"];
 function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
@@ -1952,7 +1953,8 @@ function stepHtml(id) {
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능)</span></p>
-      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>`;
+      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>
+      <p class="energy-out" id="jEnergyOut"></p>`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
@@ -2009,6 +2011,11 @@ function renderStep() {
     const range = jBody.querySelector("#jScore");
     const dial = jBody.querySelector("#jDial");
     const fill = jBody.querySelector("#jDialFill"), thumb = jBody.querySelector("#jDialThumb");
+    function updateEnergyOut() {
+      const o = jBody.querySelector("#jEnergyOut"); if (!o) return;
+      const hasTags = (jData.tags || []).some((t) => emoByKey(t));
+      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "고른 감정의 활기 정도예요" : "감정을 고르면 더 정확해져요"}</span>`;
+    }
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
       jData.score = v; jData.mood = scoreToMood(v); jComputeEnergy();
@@ -2019,6 +2026,7 @@ function renderStep() {
       jBody.querySelector("#jDialNum").textContent = v;
       jBody.querySelector("#jDialEmoji").textContent = scoreEmoji(v);
       jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
+      updateEnergyOut();
     }
     function fromPointer(ev) {
       const r = dial.getBoundingClientRect();
@@ -2043,7 +2051,7 @@ function renderStep() {
       if (i >= 0) jData.tags.splice(i, 1); else jData.tags.push(k);
       const on = jData.tags.includes(k);
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
-      jComputeEnergy(); saveJDraft();
+      jComputeEnergy(); updateEnergyOut(); saveJDraft();
     });
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
