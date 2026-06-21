@@ -479,12 +479,11 @@ function updateFavBtn() {
   const fav = (settings.favQuotes || []).includes(currentQuote);
   favBtn.textContent = fav ? "♥" : "♡"; favBtn.classList.toggle("on", fav);
 }
-// 문장(.!?)·쉼표 뒤에서 줄을 띄워 보기 좋게
+// 문장이 끝나면 다음 문장은 한 줄 아래에 (쉼표는 그대로 둠)
 function formatQuote(t) {
-  return escapeHtml(t)
-    .replace(/([.!?。…])\s*/g, "$1<br><br>")
-    .replace(/([,，])\s*/g, "$1<br>")
-    .replace(/(<br>\s*)+$/g, "");
+  return escapeHtml((t || "").trim())
+    .replace(/([.!?。…])\s+/g, "$1<br>")   // 문장 끝 + 다음 문장 → 줄바꿈
+    .replace(/(<br>\s*)+$/g, "");           // 마지막 줄바꿈 제거
 }
 function showRandomQuote() {
   const pool = activePool(); if (!pool.length) return;
@@ -564,6 +563,7 @@ function makeBreather(circleEl, textEl, base, opts) {
       Sound.breathStop();
       circleEl.className = base; circleEl.style.transitionDuration = "";
       textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
+      if (typeof checkBadges === "function") checkBadges(); // 호흡 배지 즉시 반영
     },
   };
   return api;
@@ -2012,12 +2012,18 @@ window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
 /* 토스트 + 복귀 격려 (리텐션) */
-function toast(msg) {
+// 토스트 — 한 번에 하나씩 순차 표시(겹침 방지)
+let _toastQ = [], _toastBusy = false;
+function toast(msg) { _toastQ.push(msg); if (!_toastBusy) _toastNext(); }
+function _toastNext() {
+  if (!_toastQ.length) { _toastBusy = false; return; }
+  _toastBusy = true;
+  const msg = _toastQ.shift();
   const t = document.createElement("div");
   t.className = "toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.textContent = msg;
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add("show"));
-  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 400); }, 5000);
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => { t.remove(); _toastNext(); }, 400); }, 3000);
 }
 function comebackCheck() {
   const list = sortedEntries(loadEntries());
