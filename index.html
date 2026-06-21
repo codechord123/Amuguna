@@ -227,6 +227,11 @@
           <button class="report-tile" id="weekDetailBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
           <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
         </div>
+        <div class="card">
+          <h2>🧩 기록 구성 (최근 30일)</h2>
+          <p class="hint">여정에서 어떤 항목을 얼마나 남겼는지 보여줘요.</p>
+          <div class="dist" id="captureBody"></div>
+        </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">
@@ -256,7 +261,7 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>📈 마음 흐름 (100점)</h2><span class="today-date" id="chartRange"></span></div>
-          <p class="hint">좌우로 드래그하면 주식 차트처럼 날짜를 넘겨볼 수 있어요.</p>
+          <p class="hint">기분(좋고 나쁨)과 에너지(활력)의 흐름이에요. 좌우로 드래그해 날짜를 넘겨봐요.</p>
           <canvas id="chart" height="210" role="img" aria-label="기분과 에너지 추이 그래프"></canvas>
           <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>에너지</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
         </div>
@@ -273,6 +278,11 @@
         <div class="card">
           <h2>🌙 기분 분포 (최근 30일)</h2>
           <div class="dist" id="dist"></div>
+        </div>
+        <div class="card">
+          <h2>🌱 잘한 일 모아보기</h2>
+          <p class="hint">여정에서 적은 '잘한 일·감사'가 여기 모여요.</p>
+          <div id="gratList"></div>
         </div>
         <div class="card" id="corrCard">
           <h2>🔗 습관과 기분</h2>

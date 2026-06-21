@@ -877,15 +877,40 @@ function renderStats() {
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
+  renderCapture(entries);
   renderBadges();
   renderInsight(entries, list);
   renderCorrelation(entries);
   renderTagInsight(entries);
   renderDow(entries);
+  renderGratitude(list);
   drawChart(entries);
   renderMoodCalendar(entries);
   renderDist(list);
   renderHistory(list);
+}
+// 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
+function renderCapture(entries) {
+  const el = document.getElementById("captureBody"); if (!el) return;
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+  const recs = Object.values(entries).filter((e) => e.date && new Date(e.date + "T00:00:00") >= cutoff);
+  if (!recs.length) { el.innerHTML = '<p class="empty">여정을 시작하면 기록 구성이 채워져요 🌱</p>'; return; }
+  const total = recs.length;
+  const rows = [
+    { e: "🎯", k: "기분 점수", n: recs.filter((x) => x.mood).length },
+    { e: "🏷️", k: "감정 태그", n: recs.filter((x) => x.tags && x.tags.length).length },
+    { e: "📝", k: "일기", n: recs.filter((x) => x.note && x.note.trim()).length },
+    { e: "🌱", k: "잘한 일", n: recs.filter((x) => x.praise && x.praise.trim()).length },
+    { e: "🌙", k: "저녁 회고", n: recs.filter((x) => x.reflection && (x.reflection.good || x.reflection.hard)).length },
+  ];
+  el.innerHTML = rows.map((r) => `<div class="dist-row"><span class="cap-name">${r.e} ${r.k}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.n / total * 100)}%"></div></div><span class="dist-count">${r.n}</span></div>`).join("");
+}
+// 잘한 일(감사) 모아보기 — 여정의 감사 데이터를 한곳에(분석/회고)
+function renderGratitude(list) {
+  const el = document.getElementById("gratList"); if (!el) return;
+  const items = list.filter((e) => e.praise && e.praise.trim()).reverse();
+  if (!items.length) { el.innerHTML = '<p class="empty">여정에서 \'잘한 일\'을 적으면 여기에 모여요 🌱</p>'; return; }
+  el.innerHTML = items.slice(0, 10).map((e) => { const p = e.date.split("-"); return `<div class="grat-item"><span class="grat-date">${+p[1]}/${+p[2]}</span><span class="grat-text">${escapeHtml(e.praise)}</span></div>`; }).join("");
 }
 
 let calOffset = 0; // 0 = 이번 달, -1 = 지난 달 …
@@ -1822,6 +1847,11 @@ function scoreToMood(s) { return s < 20 ? "우울해요" : s < 40 ? "지쳤어�
 function scoreLabel(s) { return s < 20 ? "많이 힘들어요" : s < 40 ? "지쳐 있어요" : s < 60 ? "그럭저럭이에요" : s < 80 ? "괜찮아요" : "좋아요"; }
 function scoreEmoji(s) { return s < 20 ? "😢" : s < 40 ? "😮‍💨" : s < 60 ? "😐" : s < 80 ? "🙂" : "😄"; }
 function scoreToEnergy(s) { return Math.max(1, Math.min(5, Math.round(s / 20))); }
+// 에너지(활력) = 고른 감정 태그의 각성도 평균. 태그 없으면 점수에서 환산.
+function jComputeEnergy() {
+  const ens = (jData.tags || []).map((t) => { const em = emoByKey(t); return em ? em.en : null; }).filter((v) => v != null);
+  jData.energy = ens.length ? Math.round(ens.reduce((a, b) => a + b, 0) / ens.length) : scoreToEnergy(jData.score != null ? jData.score : 50);
+}
 function moodToScore(m) { return m && moodMeta[m] ? Math.round((moodMeta[m].score - 1) / 4 * 100) : 50; }
 const SCORE_COLORS = ["#e8896f", "#f0b07a", "#e9d8a6", "#9ed8b0", "#5ec8b0"];
 function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
@@ -1931,7 +1961,7 @@ function renderStep() {
     const fill = jBody.querySelector("#jDialFill"), thumb = jBody.querySelector("#jDialThumb");
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
-      jData.score = v; jData.mood = scoreToMood(v); jData.energy = scoreToEnergy(v);
+      jData.score = v; jData.mood = scoreToMood(v); jComputeEnergy();
       range.value = v;
       fill.setAttribute("d", dialArc(v));
       const [tx, ty] = dialPt(v); thumb.setAttribute("cx", tx); thumb.setAttribute("cy", ty);
@@ -1963,7 +1993,7 @@ function renderStep() {
       if (i >= 0) jData.tags.splice(i, 1); else jData.tags.push(k);
       const on = jData.tags.includes(k);
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
-      saveJDraft();
+      jComputeEnergy(); saveJDraft();
     });
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {

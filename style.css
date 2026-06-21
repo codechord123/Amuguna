@@ -666,6 +666,15 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 지난 기록 필터 + 점수 칩 */
 .hist-filter button { font-size: var(--t-xs); }
 .h-score { display: inline-block; min-width: 24px; text-align: center; background: var(--bg-sunken); border-radius: var(--r-pill); padding: 1px 7px; font-size: 0.7rem; font-weight: 800; color: var(--ink-2); margin-right: var(--s1); }
+
+/* 기록 구성 라벨 */
+.cap-name { flex: 0 0 92px; font-size: var(--t-sm); color: var(--ink-2); font-weight: var(--w-semi); white-space: nowrap; }
+
+/* 잘한 일 모아보기 */
+.grat-item { display: flex; gap: var(--s3); align-items: baseline; padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+.grat-item:last-child { border-bottom: none; }
+.grat-date { flex: 0 0 38px; font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
+.grat-text { flex: 1; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
 .stat-label { font-size: var(--t-xs); color: var(--soft); }
 #chart { width: 100%; display: block; margin-top: var(--s2); }
 .legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
