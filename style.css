@@ -351,12 +351,27 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-summary .insight { color: var(--ink); }
 
 /* ----- 리포트 KPI 타일 (2×2) ----- */
-.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s4); }
-.kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-sm); padding: var(--s4) var(--s3); display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
-.kpi-emoji { font-size: 1.5rem; line-height: 1; margin-bottom: var(--s1); }
-.kpi-val { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
-.kpi-val i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; margin-left: 1px; }
-.kpi-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
+/* 리포트 히어로 — 게이지 링 + 핵심 지표(공간 절약·데이터 밀도) */
+.rpt-hero { display: flex; align-items: center; gap: var(--s4); margin-bottom: var(--s4); }
+.gauge-wrap { flex: 0 0 100px; }
+.gauge { position: relative; width: 100px; height: 100px; }
+.gauge svg { width: 100%; height: 100%; display: block; }
+.g-track { fill: none; stroke: var(--bg-sunken); stroke-width: 9; }
+.g-fill { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.7s var(--ease-soft); }
+.g-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.g-emoji { font-size: 1.2rem; }
+.g-num { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; }
+.g-unit { font-size: 0.6rem; color: var(--soft); font-weight: var(--w-semi); }
+.gauge-empty { width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg-sunken); color: var(--soft); font-size: var(--t-xs); text-align: center; }
+.rpt-hero-side { flex: 1; min-width: 0; }
+.rpt-hero-cap { margin: 0 0 var(--s2); font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+.kpi-delta { font-size: 0.62rem; font-weight: 800; }
+.kpi-delta.up { color: var(--success); } .kpi-delta.down { color: var(--danger); } .kpi-delta.flat { color: var(--soft); }
+.hero-stats { display: flex; }
+.hs { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center; border-left: 1px solid var(--line); }
+.hs:first-child { border-left: none; }
+.hs b { font-size: 1.25rem; font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; }
+.hs span { font-size: 0.62rem; color: var(--soft); font-weight: var(--w-semi); }
 
 /* ----- 리포트 추이 차트 (SVG) ----- */
 .rc-svg { width: 100%; height: auto; aspect-ratio: 320 / 132; display: block; margin-top: var(--s2); overflow: visible; }

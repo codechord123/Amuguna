@@ -1105,6 +1105,11 @@ function openReport(kind) {
 }
 const SCORE_FACES = ["😣", "😟", "😐", "🙂", "😄"];
 function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Math.max(0, Math.round(v) - 1))]; }
+// 평균 기분 게이지 링 (0-100) — 리포트 히어로 비주얼
+function moodGaugeSvg(v) {
+  const R = 52, C = 2 * Math.PI * R, off = C * (1 - Math.max(0, Math.min(100, v)) / 100), col = scoreColor(v);
+  return `<div class="gauge"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="${R}"/><circle class="g-fill" cx="60" cy="60" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="g-center"><span class="g-emoji">${scoreEmoji(v)}</span><span class="g-num" style="color:${col}">${Math.round(v)}</span><span class="g-unit">/100</span></div></div>`;
+}
 // 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
 function reportChartSvg(keys, entries) {
   const n = keys.length;
@@ -1213,15 +1218,18 @@ function reportDetailHtml(kind) {
   const arrow = (d, unitTxt) => d == null ? "" : ` <small class="kpi-delta ${d >= 1 ? "up" : d <= -1 ? "down" : "flat"}">${d > 0 ? "▲" : d < 0 ? "▼" : "–"}${Math.abs(Math.round(d))}${unitTxt || ""}</small>`;
   const dMood = delta(cur.avgMood, prev.avgMood);
 
-  const kpi = (emoji, val, label) => `<div class="kpi"><span class="kpi-emoji">${emoji}</span><span class="kpi-val">${val}</span><span class="kpi-label">${label}</span></div>`;
-  const topMoodEntry = Object.entries(cur.dist).sort((a, b) => b[1] - a[1])[0];
-  const kpis = [
-    kpi("📅", `${cur.days}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
-    kpi(cur.avgMood != null ? scoreEmoji(cur.avgMood) : "—", cur.avgMood != null ? `${Math.round(cur.avgMood)}<i>/100</i>${arrow(dMood)}` : "—", "평균 기분"),
-    kpi("⚡", cur.avgEnergy != null ? `${cur.avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 활력"),
-    cur.habPct != null ? kpi("🎯", `${cur.habPct}<i>%</i>`, `습관 ${cur.habDone}/${cur.habTotal}`)
-      : kpi("🌱", `${cur.gratCount}<i>번</i>`, "잘한 일·감사"),
+  // 혁신적 히어로 — 평균 기분 게이지 링 + 옆에 핵심 지표 3개(컴팩트)
+  const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
+  const heroStats = [
+    hs(`${cur.days}`, kind === "month" ? "기록일" : "기록일"),
+    hs(cur.avgEnergy != null ? cur.avgEnergy.toFixed(1) : "—", "활력/5"),
+    cur.habPct != null ? hs(`${cur.habPct}%`, "습관") : hs(`${cur.gratCount}`, "잘한 일"),
   ].join("");
+  const deltaChip = dMood != null ? `<span class="kpi-delta ${dMood >= 1 ? "up" : dMood <= -1 ? "down" : "flat"}">${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(Math.round(dMood))} 지난 ${unit}</span>` : "";
+  const heroCard = `<div class="card rpt-hero">
+    <div class="gauge-wrap">${cur.avgMood != null ? moodGaugeSvg(cur.avgMood) : '<div class="gauge-empty">기록<br>없음</div>'}</div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">평균 기분 ${deltaChip}</p><div class="hero-stats">${heroStats}</div></div>
+  </div>`;
 
   // 지난 기간 대비 비교
   let compareCard = "";
@@ -1273,7 +1281,7 @@ function reportDetailHtml(kind) {
   return `
     <p class="detail-stat">${period}</p>
     ${summary && summary.summary ? `<div class="card rpt-summary"><p class="insight">${summary.summary}</p></div>` : ""}
-    <div class="kpi-grid">${kpis}</div>
+    ${heroCard}
     ${compareCard}
     ${chartCard}
     ${weekBreakCard}
