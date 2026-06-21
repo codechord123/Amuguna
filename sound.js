@@ -211,7 +211,7 @@
   function chime() { if (!state.sfxOn || !ensure()) return; tone(660, 0.55, 0, "sine", 0.13, true); tone(990, 0.6, 0.1, "sine", 0.10, true); }
   function tap() { if (!state.sfxOn || !ensure()) return; tone(540, 0.16, 0, "sine", 0.07); }
   // 호흡 카운트다운 틱 (호흡 가이드 소리 설정에 연동)
-  function tick() { if (!state.breathOn || !ensure()) return; tone(660, 0.06, 0, "sine", 0.03); }
+  function tick() { if (!state.breathOn || !ensure()) return; tone(880, 0.08, 0, "sine", 0.07); }
   function success() {
     if (!state.sfxOn || !ensure()) return;
     tone(523, 0.45, 0, "sine", 0.12, true);
@@ -254,18 +254,17 @@
   function breathStart() {
     if (!state.breathOn || !ensure()) return;
     breathStop();
-    // 따뜻한 드론 (C3·G3·C4 화음)
+    // 따뜻한 드론 — 휴대폰 스피커에서도 들리도록 한 옥타브 올림 (A3·E4·A4)
     const g = ctx.createGain(); g.gain.value = 0.0001; g.connect(master);
-    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 650; lp.connect(g);
-    const freqs = [130.81, 196.00, 261.63], amps = [0.5, 0.3, 0.16];
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400; lp.connect(g);
+    const freqs = [220.0, 329.63, 440.0], amps = [0.5, 0.34, 0.22];
     const oscs = freqs.map((f, i) => { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f; const og = ctx.createGain(); og.gain.value = amps[i]; o.connect(og).connect(lp); o.start(); return o; });
-    // 느린 흔들림(코러스)
-    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07; const lfoG = ctx.createGain(); lfoG.gain.value = 4;
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07; const lfoG = ctx.createGain(); lfoG.gain.value = 5;
     lfo.connect(lfoG).connect(oscs[1].detune); lfo.start();
-    g.gain.setTargetAtTime(0.085, ctx.currentTime, 1.6);
-    // 숨소리 노이즈 레이어 (밴드패스가 들숨에 열리고 날숨에 닫힘)
+    g.gain.setTargetAtTime(0.17, ctx.currentTime, 1.2);
+    // 숨소리 노이즈 (밴드패스가 들숨에 열리고 날숨에 닫힘)
     const src = ctx.createBufferSource(); src.buffer = noiseBuffer(3, "white"); src.loop = true;
-    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 500; bp.Q.value = 0.7;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 600; bp.Q.value = 0.6;
     const ng = ctx.createGain(); ng.gain.value = 0.0001;
     src.connect(bp).connect(ng).connect(master); src.start();
     breathSession = { g, lp, oscs, lfo, src, bp, ng };
@@ -295,9 +294,9 @@
     if (!breathSession) { padCue(phase, dur); return; } // 세션 밖이면 패드
     const t = ctx.currentTime, ng = breathSession.ng.gain, bp = breathSession.bp.frequency;
     const ramp = (param, to, time) => { param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(to, t + time); };
-    if (phase === "inhale") { ramp(ng, 0.05, dur); ramp(bp, 950, dur); bowl(523.25, 3.6, 0.10); }      // 숨 들어오며 밝아짐 + C5 볼
-    else if (phase === "exhale") { ramp(ng, 0.0001, dur); ramp(bp, 280, dur); bowl(392.00, 4.6, 0.10); } // 숨 나가며 어두워짐 + G4 볼
-    else { ramp(ng, 0.022, Math.min(dur, 1.5)); }                                                       // 멈춤: 잔잔히 유지
+    if (phase === "inhale") { ramp(ng, 0.12, dur); ramp(bp, 1400, dur); bowl(523.25, 3.6, 0.18); }      // 숨 들어오며 밝아짐 + C5 볼
+    else if (phase === "exhale") { ramp(ng, 0.0001, dur); ramp(bp, 350, dur); bowl(392.00, 4.6, 0.18); } // 숨 나가며 어두워짐 + G4 볼
+    else { ramp(ng, 0.05, Math.min(dur, 1.5)); }                                                        // 멈춤: 잔잔히 유지
   }
 
   window.Sound = {

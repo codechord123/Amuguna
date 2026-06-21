@@ -67,7 +67,7 @@ try {
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
   ed.value = tk; ed.dispatchEvent(new window.Event("change"));
   [...d.querySelectorAll(".mood")].find((b) => b.dataset.mood === "활기차요").click();
-  q("#reflectToggle").click();
+  check("저녁 회고 항상 노출", !q("#reflectFields").hasAttribute("hidden"));
   q("#reflectGood").value = "좋은 점"; q("#reflectHard").value = "힘든 점";
   q("#saveBtn").click();
   const te = ls("entries_v2")[tk];
@@ -172,9 +172,10 @@ try {
   q("#myQuoteInput").value = "내 문구"; q("#myQuoteAdd").click();
   check("내 문구 추가 저장", (ls("settings_v2").myQuotes || []).includes("내 문구"));
   q("#manageToggle").click();
-  check("문구 관리 목록 표시", d.querySelectorAll("#quoteManage .manage-row").length >= 1);
-  d.querySelector('#quoteManage [data-mk="my"]').click();
+  check("문구 관리 페이지 목록 표시", d.querySelectorAll("#subBody .manage-row").length >= 1);
+  d.querySelector('#subBody [data-mk="my"]').click();
   check("내 문구 삭제됨", !(ls("settings_v2").myQuotes || []).includes("내 문구"));
+  q("#subBack").click();
 
   // 9) 사운드 함수 무결성
   ["startAmbient", "stopAmbient", "setAmbientVolume", "chime", "celebrate", "breathCue"].forEach((fn) =>
@@ -193,14 +194,26 @@ try {
   check("병합: 설정은 로컬 우선+원격 보완", merged.settings.tone === "plain" && merged.settings.theme === "dark");
 
   // 11) 습관↔기분 상관관계 (데이터 주입 후 검증)
-  const corr = {};
-  ["2026-06-02", "2026-06-03", "2026-06-04"].forEach((dt) => corr[dt] = { date: dt, mood: "활기차요" });
-  ["2026-06-05", "2026-06-06", "2026-06-07"].forEach((dt) => corr[dt] = { date: dt, mood: "지쳤어요" });
+  const corr = {}, doneDays = ["2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06"];
+  const notDays = ["2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11"];
+  doneDays.forEach((dt) => corr[dt] = { date: dt, mood: "활기차요" });
+  notDays.forEach((dt) => corr[dt] = { date: dt, mood: "지쳤어요" });
   window.localStorage.setItem("entries_v2", JSON.stringify(corr));
-  window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { "2026-06-02": true, "2026-06-03": true, "2026-06-04": true }, celebrated: [] }]));
+  const doneMap = {}; doneDays.forEach((dt) => doneMap[dt] = true);
+  window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: doneMap, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("상관관계 분석 표시", d.querySelectorAll("#corrBody .corr-row").length === 1);
   check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
+  check("상관관계 과학 근거 표기", !!d.querySelector("#corrBody .sci-note") && /Cohen/.test(d.querySelector("#corrBody .corr-meta").textContent));
+
+  // 12) 페이지 전환들 (지난기록·리포트)
+  q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=log]").click();
+  q("#history li.editable").click();
+  check("지난 기록 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
+  q("#subBack").click();
+  q("#statsSeg button[data-seg=summary]").click(); q("#weekDetailBtn").click();
+  check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
+  q("#subBack").click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

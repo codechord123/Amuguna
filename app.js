@@ -145,6 +145,26 @@ tabbar.addEventListener("click", (e) => {
   Sound.tap(); activateTab(btn.dataset.tab);
 });
 // 지난 기록을 탭/달력에서 눌러 바로 그 날짜를 편집
+function openEntryDetail(dateKey) {
+  const e = loadEntries()[dateKey]; if (!e) return;
+  subEntryDate = dateKey;
+  const p = dateKey.split("-");
+  openSubpage(`${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(dateKey)})`, entryDetailHtml(e), "entry");
+}
+function entryDetailHtml(e) {
+  const mood = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "기분 기록 없음";
+  const refl = e.reflection && (e.reflection.good || e.reflection.hard);
+  return `
+    <p class="detail-stat">${mood}${e.energy ? ` · 에너지 ${e.energy}/5` : ""}</p>
+    ${e.note ? `<div class="card"><h2>📝 일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
+    ${e.praise ? `<div class="card"><h2>🌱 잘한 일</h2><p>${escapeHtml(e.praise)}</p></div>` : ""}
+    ${refl ? `<div class="card"><h2>🌙 저녁 회고</h2>${e.reflection.good ? `<p>🌤️ ${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p>🌧️ ${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
+    ${(e.tags && e.tags.length) ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+    <div class="data-btns" style="margin-top:18px">
+      <button class="btn primary" data-eact="edit">✏️ 수정</button>
+      <button class="btn danger" data-eact="del">삭제</button>
+    </div>`;
+}
 function openEntryEditor(dateKey) {
   if (dateKey > todayKey()) return;
   activateTab("today");
@@ -191,7 +211,6 @@ const tagInput = document.getElementById("tagInput");
 const reflectGood = document.getElementById("reflectGood");
 const reflectHard = document.getElementById("reflectHard");
 const reflectFields = document.getElementById("reflectFields");
-document.getElementById("reflectToggle").addEventListener("click", () => { Sound.tap(); reflectFields.hidden = !reflectFields.hidden; });
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
 document.getElementById("tagSuggest").addEventListener("click", (e) => {
   const b = e.target.closest(".link-chip"); if (!b) return;
@@ -206,7 +225,7 @@ function resetForm() {
   moodResponse.hidden = true;
   energyRange.value = 3; energyFace.textContent = energyFaces[3];
   journalInput.value = ""; praiseInput.value = ""; tagInput.value = ""; saveMsg.hidden = true;
-  reflectGood.value = ""; reflectHard.value = ""; reflectFields.hidden = true;
+  reflectGood.value = ""; reflectHard.value = "";
 }
 function updateCheckinTitle() {
   const p = currentDate.split("-");
@@ -222,9 +241,7 @@ function loadEntryForm(key) {
   if (t.note) journalInput.value = t.note;
   if (t.praise) praiseInput.value = t.praise;
   if (t.tags) tagInput.value = t.tags.join(", ");
-  if (t.reflection && (t.reflection.good || t.reflection.hard)) {
-    reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; reflectFields.hidden = false;
-  }
+  if (t.reflection) { reflectGood.value = t.reflection.good || ""; reflectHard.value = t.reflection.hard || ""; }
   todayMore.hidden = false;
 }
 function loadToday() { entryDate.value = todayKey(); entryDate.max = todayKey(); loadEntryForm(todayKey()); }
@@ -389,27 +406,19 @@ document.getElementById("myQuoteAdd").addEventListener("click", () => {
   if (!settings.myQuotes.includes(t)) settings.myQuotes.push(t);
   saveSettingsObj(settings); inp.value = ""; Sound.success();
   currentQuote = t; quoteEl.textContent = "“" + t + "”"; updateFavBtn();
-  if (!quoteManage.hidden) renderQuoteManage();
+  if (subMode === "quotes" && !subpage.hidden) subBody.innerHTML = quoteManageHtml();
 });
 
-const manageToggle = document.getElementById("manageToggle");
-const quoteManage = document.getElementById("quoteManage");
-function renderQuoteManage() {
+function quoteManageHtml() {
   const fav = settings.favQuotes || [], mine = settings.myQuotes || [];
   const section = (title, arr, kind) => arr.length
     ? `<p class="manage-h">${title}</p>` + arr.map((q, i) =>
         `<div class="manage-row"><span>${escapeHtml(q)}</span><button class="task-del" data-mk="${kind}" data-mi="${i}" aria-label="삭제">×</button></div>`).join("")
     : "";
   const html = section("♥ 즐겨찾기", fav, "fav") + section("✍️ 내 문구", mine, "my");
-  quoteManage.innerHTML = html || '<p class="empty">아직 즐겨찾기나 내 문구가 없어요.</p>';
+  return html || '<p class="empty">아직 즐겨찾기나 내 문구가 없어요.</p>';
 }
-manageToggle.addEventListener("click", () => { Sound.tap(); quoteManage.hidden = !quoteManage.hidden; if (!quoteManage.hidden) renderQuoteManage(); });
-quoteManage.addEventListener("click", (e) => {
-  const b = e.target.closest("[data-mk]"); if (!b) return;
-  const arr = b.dataset.mk === "fav" ? (settings.favQuotes || []) : (settings.myQuotes || []);
-  arr.splice(Number(b.dataset.mi), 1);
-  saveSettingsObj(settings); Sound.tap(); renderQuoteManage(); updateFavBtn();
-});
+document.getElementById("manageToggle").addEventListener("click", () => { Sound.tap(); openSubpage("내 문구 · 즐겨찾기", quoteManageHtml(), "quotes"); });
 
 // 호흡 컨트롤러 — 매 초 카운트다운 + 반복 횟수 표시 (4-7-8)
 const BREATH_PHASES = [
@@ -696,30 +705,30 @@ document.getElementById("challengeList").addEventListener("keydown", (e) => {
 const subpage = document.getElementById("subpage");
 const subBody = document.getElementById("subBody");
 const subTitle = document.getElementById("subTitle");
-let openHabitId = null, subAnim = 0;
-function openSubpage(title, html) {
-  subAnim++; subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
+let openHabitId = null, subAnim = 0, subMode = null, subEntryDate = null;
+function openSubpage(title, html, mode) {
+  subAnim++; subMode = mode || null; subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
   requestAnimationFrame(() => subpage.classList.add("show"));
 }
 function stowSetup() { // 폼 노드를 탭으로 되돌려 숨김 (리스너 보존)
   if (setup.parentNode === subBody) { setup.hidden = true; document.getElementById("tab-challenge").appendChild(setup); }
 }
 function closeSubpage() {
-  subpage.classList.remove("show"); openHabitId = null;
+  subpage.classList.remove("show"); openHabitId = null; subMode = null;
   const my = ++subAnim;
   setTimeout(() => { if (my !== subAnim) return; subpage.hidden = true; stowSetup(); subBody.innerHTML = ""; }, 300);
 }
 function openHabitDetail(id) {
   const h = loadChs().find((x) => x.id === id); if (!h) return;
   stowSetup();
-  openHabitId = id; openSubpage(`${h.emoji} ${h.title}`, detailHabitHtml(h)); fillHabitGrid(h);
+  openHabitId = id; openSubpage(`${h.emoji} ${h.title}`, detailHabitHtml(h), "habit"); fillHabitGrid(h);
 }
 function openAddHabit() {
   resetSetupForm();
   setup.hidden = false;
   subTitle.textContent = "새 습관 만들기";
   subBody.innerHTML = ""; subBody.appendChild(setup);
-  subpage.hidden = false; openHabitId = null; subAnim++;
+  subpage.hidden = false; openHabitId = null; subAnim++; subMode = "add";
   requestAnimationFrame(() => subpage.classList.add("show"));
 }
 function refreshHabitDetail(id) {
@@ -729,8 +738,26 @@ function refreshHabitDetail(id) {
 }
 document.getElementById("subBack").addEventListener("click", () => { Sound.tap(); closeSubpage(); });
 subBody.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-act]"); if (!el || !openHabitId) return;
-  applyHabitAction(el.dataset.act, openHabitId, subBody);
+  if (subMode === "habit") {
+    const el = e.target.closest("[data-act]"); if (el && openHabitId) applyHabitAction(el.dataset.act, openHabitId, subBody);
+  } else if (subMode === "quotes") {
+    const b = e.target.closest("[data-mk]"); if (!b) return;
+    const arr = b.dataset.mk === "fav" ? (settings.favQuotes || []) : (settings.myQuotes || []);
+    arr.splice(Number(b.dataset.mi), 1); saveSettingsObj(settings); Sound.tap();
+    subBody.innerHTML = quoteManageHtml(); updateFavBtn();
+  } else if (subMode === "entry") {
+    const el = e.target.closest("[data-eact]"); if (!el) return;
+    if (el.dataset.eact === "edit") { closeSubpage(); openEntryEditor(subEntryDate); }
+    else if (el.dataset.eact === "del") {
+      if (!confirm("이 기록을 지울까요?")) return;
+      const entries = loadEntries(); delete entries[subEntryDate]; saveEntries(entries);
+      Sound.tap(); closeSubpage(); renderStats();
+    }
+  } else if (subMode === "report") {
+    const el = e.target.closest("[data-ract]"); if (!el) return;
+    if (el.dataset.ract === "img") { Sound.tap(); const url = el.dataset.kind === "month" ? drawMonthCanvas() : drawWeekCanvas(); const a = document.createElement("a"); a.href = url; a.download = `${el.dataset.kind === "month" ? "월간" : "주간"}리포트_${todayKey()}.png`; a.click(); }
+    else if (el.dataset.ract === "share") { Sound.tap(); shareReport(el.dataset.kind); }
+  }
 });
 
 // 습관 동작 (목록·상세 공용)
@@ -929,21 +956,7 @@ function drawWeekCanvas() {
   return c.toDataURL("image/png");
 }
 function dataURLtoBlob(d) { const [h, b] = d.split(","); const m = h.match(/:(.*?);/)[1]; const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: m }); }
-document.getElementById("weekImageBtn").addEventListener("click", () => {
-  Sound.tap(); const url = drawWeekCanvas();
-  const a = document.createElement("a"); a.href = url; a.download = `주간리포트_${todayKey()}.png`; a.click();
-});
-document.getElementById("weekShareBtn").addEventListener("click", async () => {
-  Sound.tap();
-  const url = drawWeekCanvas();
-  const text = weekData ? `오늘의 쉼 · 주간 리포트 (${weekData.range}) — 기록 ${weekData.daysLogged}일${weekData.avgMood != null ? `, 평균 기분 ${weekData.avgMood.toFixed(1)}/5` : ""} 🌿` : "오늘의 쉼 주간 리포트";
-  try {
-    const file = new File([dataURLtoBlob(url)], "weekly.png", { type: "image/png" });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
-    if (navigator.share) { await navigator.share({ text }); return; }
-    await navigator.clipboard.writeText(text); alert("주간 리포트 요약을 복사했어요!\n\n" + text);
-  } catch (e) {}
-});
+document.getElementById("weekDetailBtn").addEventListener("click", () => { Sound.tap(); openReport("week"); });
 
 /* 월간 리포트 */
 let monthData = null;
@@ -1002,21 +1015,49 @@ function drawMonthCanvas() {
   ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("한 달의 마음 흐름 🌙", 32, 318);
   return c.toDataURL("image/png");
 }
-document.getElementById("monthImageBtn").addEventListener("click", () => {
-  Sound.tap(); const url = drawMonthCanvas();
-  const a = document.createElement("a"); a.href = url; a.download = `월간리포트_${todayKey()}.png`; a.click();
-});
-document.getElementById("monthShareBtn").addEventListener("click", async () => {
-  Sound.tap();
-  const url = drawMonthCanvas();
-  const text = monthData ? `오늘의 쉼 · 월간 리포트 (${monthData.label}) — 기록 ${monthData.daysLogged}일${monthData.avgMood != null ? `, 평균 기분 ${monthData.avgMood.toFixed(1)}/5` : ""} 🌙` : "오늘의 쉼 월간 리포트";
+document.getElementById("monthDetailBtn").addEventListener("click", () => { Sound.tap(); openReport("month"); });
+
+/* 리포트 상세 페이지 */
+function openReport(kind) {
+  renderWeekly(loadEntries()); renderMonthly(loadEntries());
+  openSubpage(kind === "month" ? "📈 월간 리포트" : "🗓️ 주간 리포트", reportDetailHtml(kind), "report");
+}
+function reportDetailHtml(kind) {
+  const entries = loadEntries();
+  let keys = [];
+  if (kind === "month") { const now = new Date(), y = now.getFullYear(), m = now.getMonth(), days = new Date(y, m + 1, 0).getDate(); for (let d = 1; d <= days; d++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`); }
+  else { for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); } }
+  const recs = keys.map((k) => entries[k]).filter(Boolean);
+  const moods = recs.filter((e) => e.mood);
+  const avgMood = moods.length ? moods.reduce((s, e) => s + moodMeta[e.mood].score, 0) / moods.length : null;
+  const energies = recs.filter((e) => e.energy);
+  const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
+  const dist = {}; moods.forEach((e) => dist[e.mood] = (dist[e.mood] || 0) + 1);
+  const distMax = Object.keys(dist).length ? Math.max(...Object.values(dist)) : 1;
+  const summary = kind === "month" ? monthData : weekData;
+  const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${e.energy ? "⚡" + e.energy : ""}</span></div>`; }).join("");
+  return `
+    <p class="detail-stat">${summary ? (summary.range || summary.label || "") : ""} · 기록 ${recs.length}일</p>
+    <div class="card">
+      ${avgMood != null ? `<p>평균 기분 <b>${avgMood.toFixed(1)} / 5</b></p>` : ""}
+      ${avgEnergy != null ? `<p>평균 에너지 <b>${avgEnergy.toFixed(1)} / 5</b></p>` : ""}
+      ${avgMood == null ? '<p class="empty">아직 기록이 없어요.</p>' : ""}
+    </div>
+    ${Object.keys(dist).length ? `<div class="card"><h2>기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(dist[m] / distMax) * 100}%"></div></div><span class="dist-count">${dist[m]}</span></div>`).join("")}</div></div>` : ""}
+    <div class="card"><h2>날짜별 기록</h2><div class="rpt-list">${rows || '<p class="empty">기록이 없어요.</p>'}</div></div>
+    <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
+}
+async function shareReport(kind) {
+  const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
+  const d = kind === "month" ? monthData : weekData;
+  const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${d.avgMood.toFixed(1)}/5` : ""} 🌿` : "오늘의 쉼 리포트";
   try {
-    const file = new File([dataURLtoBlob(url)], "monthly.png", { type: "image/png" });
+    const file = new File([dataURLtoBlob(url)], "report.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     if (navigator.share) { await navigator.share({ text }); return; }
-    await navigator.clipboard.writeText(text); alert("월간 리포트 요약을 복사했어요!\n\n" + text);
+    await navigator.clipboard.writeText(text); alert("리포트 요약을 복사했어요!\n\n" + text);
   } catch (e) {}
-});
+}
 
 /* 성취 배지 */
 const BADGES = [
@@ -1064,15 +1105,23 @@ function renderCorrelation(entries) {
       if (d < h.startDate || d > today) return;
       (h.done[d] ? done : not).push(moodByDate[d]);
     });
-    if (done.length >= 3 && not.length >= 3) {
+    if (done.length >= 5 && not.length >= 5) {  // 표본 5+/5+ 이상에서만 (과소표본 과잉해석 방지)
       const ad = done.reduce((s, v) => s + v, 0) / done.length;
       const an = not.reduce((s, v) => s + v, 0) / not.length;
-      rows.push({ h, ad, an, diff: ad - an });
+      const sd = (arr, m) => Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length);
+      // Cohen's d (효과크기) — pooled SD 근사
+      const pooled = Math.sqrt((sd(done, ad) ** 2 + sd(not, an) ** 2) / 2) || 0.0001;
+      const d = (ad - an) / pooled;
+      rows.push({ h, ad, an, diff: ad - an, d, n: done.length + not.length });
     }
   });
-  if (!rows.length) { body.innerHTML = '<p class="empty">조금 더 기록되면 보여드릴게요. (습관을 한 날·안 한 날 각각 3일 이상 기분 기록이 필요해요)</p>'; return; }
+  if (!rows.length) {
+    body.innerHTML = '<p class="empty">조금 더 기록되면 보여드릴게요. (한 날·안 한 날 각각 <b>5일 이상</b> 기분 기록이 모이면 분석해요)</p>';
+    return;
+  }
   rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
-  body.innerHTML = rows.map(({ h, ad, an, diff }) => {
+  const effectLabel = (d) => { const a = Math.abs(d); return a >= 0.8 ? "큰 차이" : a >= 0.5 ? "중간 차이" : a >= 0.2 ? "작은 차이" : "미미한 차이"; };
+  body.innerHTML = rows.map(({ h, ad, an, diff, d, n }) => {
     const up = diff >= 0.3, down = diff <= -0.3;
     const sign = diff >= 0 ? "▲" : "▼";
     const msg = up ? `한 날 기분이 평균 <b>${diff.toFixed(1)}점 더 높아요</b> 🌿`
@@ -1081,8 +1130,10 @@ function renderCorrelation(entries) {
     return `<div class="corr-row">
       <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.abs(diff).toFixed(1)}</span></div>
       <div class="corr-detail">한 날 ⌀${ad.toFixed(1)} · 안 한 날 ⌀${an.toFixed(1)} — ${msg}</div>
+      <div class="corr-meta">표본 n=${n} · 효과크기(Cohen's d) ${d.toFixed(2)} (${effectLabel(d)})</div>
     </div>`;
   }).join("");
+  body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
 }
 
 function checkBadges() {
@@ -1223,7 +1274,7 @@ function renderHistory(list) {
   more.textContent = `더 보기 (${rev.length - shown.length}개 남음)`;
   ul.querySelectorAll("li.editable").forEach((li) => li.addEventListener("click", (ev) => {
     if (ev.target.closest(".h-del")) return;
-    Sound.tap(); openEntryEditor(li.dataset.date);
+    Sound.tap(); openEntryDetail(li.dataset.date);
   }));
   ul.querySelectorAll(".h-del").forEach((b) => b.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -1385,13 +1436,12 @@ const jBody = document.getElementById("jBody"), jBar = document.getElementById("
 const jPrev = document.getElementById("jPrev"), jNext = document.getElementById("jNext");
 let jData = {}, curId = "mood";
 function jSteps() {
-  const hr = new Date().getHours();
   const low = jData.mood && moodMeta[jData.mood].score <= 2;
   const s = ["mood", "energy"];
   if (low) s.push("breathe");
   s.push("note", "tags", "praise");
   if (loadChs().length) s.push("habits");
-  if (hr >= 18 || hr < 5) s.push("reflect");
+  s.push("reflect"); // 저녁 회고는 항상 경로에 포함
   s.push("finish");
   return s;
 }

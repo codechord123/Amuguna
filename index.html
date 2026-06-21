@@ -106,8 +106,8 @@
           </div>
           <input type="text" id="tagInput" class="text-input" placeholder="태그를 쉼표로 구분해 입력 (예: 피곤, 야근)" maxlength="100" style="margin-top:8px" />
 
-          <button type="button" class="reflect-toggle" id="reflectToggle">🌙 저녁 회고 더하기 (선택)</button>
-          <div id="reflectFields" hidden>
+          <p class="field-label">🌙 저녁 회고</p>
+          <div id="reflectFields">
             <p class="field-label">오늘 가장 좋았던 순간</p>
             <input type="text" id="reflectGood" class="text-input" placeholder="작아도 좋아요. 예: 따뜻한 커피 한 잔" maxlength="120" />
             <p class="field-label">오늘 힘들었던 순간</p>
@@ -135,8 +135,7 @@
           <input type="text" id="myQuoteInput" class="text-input" placeholder="나만의 위로 문구 추가하기" maxlength="100" />
           <button class="btn" id="myQuoteAdd">추가</button>
         </div>
-        <button type="button" class="reflect-toggle" id="manageToggle">📋 내 문구 · 즐겨찾기 관리</button>
-        <div id="quoteManage" hidden></div>
+        <button type="button" class="reflect-toggle" id="manageToggle">📋 내 문구 · 즐겨찾기 관리 ›</button>
       </div>
 
       <div class="card center">
@@ -258,8 +257,7 @@
           <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
           <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
           <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="weekImageBtn">🖼️ 카드 이미지로 저장</button>
-            <button class="btn" id="weekShareBtn">📤 공유하기</button>
+            <button class="btn" id="weekDetailBtn">📄 자세히 보기 ›</button>
           </div>
           <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         </div>
@@ -267,8 +265,7 @@
           <div class="card-head"><h2>📈 월간 리포트</h2><span class="today-date" id="monthRange"></span></div>
           <p class="insight" id="monthlySummary">이번 달 기록이 쌓이면 요약해드릴게요.</p>
           <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="monthImageBtn">🖼️ 카드 이미지로 저장</button>
-            <button class="btn" id="monthShareBtn">📤 공유하기</button>
+            <button class="btn" id="monthDetailBtn">📄 자세히 보기 ›</button>
           </div>
           <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         </div>
@@ -286,7 +283,7 @@
         </div>
         <div class="card" id="corrCard">
           <h2>🔗 습관과 기분</h2>
-          <p class="hint">습관을 한 날과 안 한 날, 기분이 어떻게 달랐는지 비교해요.</p>
+          <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
           <div id="corrBody"></div>
         </div>
         <div class="card">
