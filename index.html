@@ -219,7 +219,7 @@
 
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
-        <button data-seg="graph">그래프</button>
+        <button data-seg="graph">분석</button>
         <button data-seg="calendar">기록·달력</button>
       </div>
 
@@ -231,11 +231,6 @@
         <div class="duo-grid">
           <button class="report-tile" id="weekDetailBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
           <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
-        </div>
-        <div class="card">
-          <h2>🧩 기록 구성 (최근 30일)</h2>
-          <p class="hint">여정에서 어떤 항목을 얼마나 남겼는지 보여줘요.</p>
-          <div class="dist" id="captureBody"></div>
         </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
@@ -266,11 +261,16 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>📈 마음 흐름 (100점)</h2><span class="today-date" id="chartRange"></span></div>
-          <p class="hint">기분(좋고 나쁨)과 에너지(활력)의 흐름이에요. 좌우로 드래그해 날짜를 넘겨봐요.</p>
+          <p class="hint">기분·활력의 흐름이에요. 좌우로 드래그해 날짜를 넘기고, 점을 누르면 그날 기록이 열려요.</p>
           <canvas id="chart" height="210" role="img" aria-label="기분과 에너지 추이 그래프"></canvas>
           <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>활력</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
         </div>
         <p class="section-label">🔎 더 깊은 분석 <span class="opt">(눌러서 펼치기)</span></p>
+        <div class="card collapsible collapsed">
+          <h2>🧩 기록 구성 (최근 30일)</h2>
+          <p class="hint">여정에서 어떤 항목을 얼마나 남겼는지 보여줘요.</p>
+          <div class="dist" id="captureBody"></div>
+        </div>
         <div class="card collapsible collapsed">
           <h2>📆 요일별 평균 기분</h2>
           <p class="hint">어떤 요일에 마음이 좋은/힘든 편인지 보여줘요.</p>

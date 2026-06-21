@@ -1415,7 +1415,7 @@ function renderBadges() {
     const got = items.filter((b) => earned.has(b.id)).length;
     return `<button data-bcat="${c.id}" class="${c.id === badgeCat ? "active" : ""}">${c.label} ${got}/${items.length}</button>`;
   }).join("");
-  const badgeHtml = (b) => `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`;
+  const badgeHtml = (b) => `<button class="badge ${earned.has(b.id) ? "earned" : "locked"}" data-bid="${b.id}" aria-label="${b.t} — ${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></button>`;
   const items = BADGES.filter((b) => b.cat === badgeCat);
   const sorted = [...items].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
   document.getElementById("badgeGrid").innerHTML = `<div class="badge-grid">${sorted.map(badgeHtml).join("")}</div>`;
@@ -1424,6 +1424,14 @@ let badgeCat = "record";
 document.getElementById("badgeSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-bcat]"); if (!b) return;
   Sound.tap(); badgeCat = b.dataset.bcat; renderBadges();
+});
+// 배지 탭 → 설명 표시
+document.getElementById("badgeGrid").addEventListener("click", (e) => {
+  const el = e.target.closest(".badge[data-bid]"); if (!el) return;
+  const b = BADGES.find((x) => x.id === el.dataset.bid); if (!b) return;
+  Sound.tap();
+  const got = new Set(earnedBadgeIds()).has(b.id);
+  toast(`${b.e} ${b.t} · ${got ? "획득 ✓" : "아직"} — ${b.d}`);
 });
 /* 습관 ↔ 기분 상관관계 */
 function renderCorrelation(entries) {
@@ -1481,7 +1489,7 @@ function renderWeekGlance(entries) {
   const avg = moods.reduce((s, e) => s + entryScore(e), 0) / moods.length;
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  el.innerHTML = `<div class="wg-row"><div class="wg-stat"><b>${recs.length}</b><span>기록</span></div><div class="wg-stat"><b>${scoreEmoji(avg)} ${Math.round(avg)}</b><span>평균</span></div><div class="wg-stat"><b>${moodMeta[top].emoji}</b><span>${top}</span></div></div>${reportChartSvg(keys, entries)}`;
+  el.innerHTML = `<div class="wg-row"><div class="wg-stat"><b>${recs.length}</b><span>기록</span></div><div class="wg-stat"><b>${scoreEmoji(avg)} ${Math.round(avg)}</b><span>평균</span></div><div class="wg-stat"><b>${moodMeta[top].emoji}</b><span>${top}</span></div></div><p class="wg-more">주간 리포트 자세히 ›</p>`;
 }
 // 요일별 평균 기분(0-100) 막대
 function renderDow(entries) {
@@ -1609,16 +1617,27 @@ function drawChart(entries) {
   const lab = (k) => { const p = k.split("-"); return `${+p[1]}/${+p[2]}`; };
   [0, Math.floor((days.length - 1) / 2), days.length - 1].forEach((i) => ctx.fillText(lab(days[i]), x(i), cssH - 8));
 }
-// 차트 좌우 드래그(주식창처럼 날짜 이동) — 한 번만 바인딩
+// 차트 좌우 드래그(날짜 이동) + 점 탭(그날 기록 열기) — 한 번만 바인딩
 (function bindChartPan() {
   const canvas = document.getElementById("chart"); if (!canvas) return;
-  let dragging = false, startX = 0, startOffset = 0;
+  let dragging = false, startX = 0, startOffset = 0, moved = 0, downX = 0;
   const dayW = () => (canvas.clientWidth - 34) / (CHART_WIN - 1);
   const move = (cx) => { const dx = cx - startX; chartOffset = startOffset + Math.round(dx / dayW()); drawChart(loadEntries()); };
   canvas.style.touchAction = "pan-y";
-  canvas.addEventListener("pointerdown", (e) => { dragging = true; startX = e.clientX; startOffset = chartOffset; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} });
-  canvas.addEventListener("pointermove", (e) => { if (dragging) move(e.clientX); });
-  canvas.addEventListener("pointerup", () => { dragging = false; });
+  canvas.addEventListener("pointerdown", (e) => { dragging = true; startX = e.clientX; downX = e.clientX; moved = 0; startOffset = chartOffset; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} });
+  canvas.addEventListener("pointermove", (e) => { if (dragging) { moved = Math.max(moved, Math.abs(e.clientX - downX)); move(e.clientX); } });
+  canvas.addEventListener("pointerup", (e) => {
+    dragging = false;
+    if (moved > 6) return; // 드래그였으면 탭 무시
+    // 탭 위치에서 가장 가까운 날짜를 찾아 기록 열기
+    const r = canvas.getBoundingClientRect(); const padL = 22, padR = 12;
+    const w = canvas.clientWidth - padL - padR; const rel = (e.clientX - r.left - padL) / w;
+    const idx = Math.round(rel * (CHART_WIN - 1));
+    if (idx < 0 || idx > CHART_WIN - 1) return;
+    const d = new Date(); d.setDate(d.getDate() - (CHART_WIN - 1 - idx) - chartOffset);
+    const k = todayKey(d);
+    if (loadEntries()[k]) { Sound.tap(); openEntryDetail(k); }
+  });
   canvas.addEventListener("pointercancel", () => { dragging = false; });
 })();
 document.getElementById("chartPrev") && document.getElementById("chartPrev").addEventListener("click", () => { chartOffset += 7; Sound.tap(); drawChart(loadEntries()); });

@@ -140,6 +140,7 @@ try {
   q('#badgeSeg button[data-bcat="mind"]').click();
   check("배지 탭 전환(마음챙김 9종)", d.querySelectorAll("#badgeGrid .badge").length === 9);
   q('#badgeSeg button[data-bcat="record"]').click();
+  check("배지 버튼화(설명 표시용)", !!q("#badgeGrid button.badge[data-bid]"));
   check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
   q("[data-tab=today]").click();
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);

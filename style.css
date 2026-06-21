@@ -434,7 +434,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }
 .badge-cat-h span { color: var(--soft); font-weight: var(--w-semi); font-size: var(--t-xs); }
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: var(--s2); }
-.badge { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s2) var(--s1); border-radius: var(--r-sm); background: var(--bg-sunken); text-align: center; transition: transform 0.15s var(--ease-soft); }
+.badge { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s2) var(--s1); border: 1px solid transparent; border-radius: var(--r-sm); background: var(--bg-sunken); text-align: center; font-family: inherit; cursor: pointer; color: var(--ink); transition: transform 0.15s var(--ease-soft); }
+.badge:active { transform: scale(0.94); }
 .badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm); }
 [data-theme="dark"] .badge.earned { background: var(--card); }
 .badge.earned:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -677,6 +678,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .wg-row { display: flex; justify-content: space-around; text-align: center; margin: var(--s1) 0 var(--s3); }
 .wg-stat b { display: block; font-size: var(--t-md); font-weight: 800; color: var(--accent-deep); }
 .wg-stat span { font-size: var(--t-xs); color: var(--soft); }
+.wg-more { margin: var(--s2) 0 0; text-align: right; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--accent-deep); }
 
 /* 요일별 평균 기분 */
 .dow { display: flex; align-items: flex-end; gap: var(--s1); }
