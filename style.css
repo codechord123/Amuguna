@@ -374,7 +374,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hs span { font-size: 0.62rem; color: var(--soft); font-weight: var(--w-semi); }
 
 /* ----- 리포트 추이 차트 (SVG) ----- */
-.rc-svg { width: 100%; height: auto; aspect-ratio: 320 / 132; display: block; margin-top: var(--s2); overflow: visible; }
+.rc-svg { width: 100%; height: auto; aspect-ratio: 320 / 146; display: block; margin-top: var(--s2); overflow: visible; }
 .rc-grid { stroke: var(--line); stroke-width: 1; }
 .rc-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 .rc-mood { stroke: var(--accent); }
@@ -383,6 +383,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rc-mdot { fill: var(--accent); }
 .rc-edot { fill: var(--energy); }
 .rc-xlabel { fill: var(--soft); font-size: 8px; text-anchor: middle; font-family: inherit; }
+.rc-ylabel { fill: var(--soft); font-size: 7.5px; text-anchor: end; font-family: inherit; }
+.rc-axis { stroke: var(--line-strong); stroke-width: 1; }
 .rc-fill-top { stop-color: var(--accent); stop-opacity: 0.26; }
 .rc-fill-bot { stop-color: var(--accent); stop-opacity: 0.02; }
 .rpt-legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
@@ -702,6 +704,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .wg-stat b { display: block; font-size: var(--t-md); font-weight: 800; color: var(--accent-deep); }
 .wg-stat span { font-size: var(--t-xs); color: var(--soft); }
 .wg-more { margin: var(--s2) 0 0; text-align: right; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--accent-deep); }
+
+/* 감정 워드클라우드 (Mentimeter식) */
+.wordcloud { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); align-items: baseline; justify-content: center; padding: var(--s2) 0; }
+.wc-word { font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
 
 /* 감정 지도 (활력×기분 산점도) */
 .mx-svg { width: 100%; height: auto; aspect-ratio: 300 / 240; display: block; margin-top: var(--s2); }
