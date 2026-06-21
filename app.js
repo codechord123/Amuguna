@@ -886,6 +886,7 @@ function renderStats() {
   renderInsight(entries, list);
   renderMoodMatrix(entries);
   renderCorrelation(entries);
+  renderHabitHeatmap();
   renderTagInsight(entries);
   renderDow(entries);
   renderTimeOfDay(entries);
@@ -1493,6 +1494,33 @@ function renderCorrelation(entries) {
     </div>`;
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
+}
+// 습관 실천 매트릭스 — 최근 14일 × 습관별 실천 히트맵 (옵시디언/깃 잔디 기법)
+function renderHabitHeatmap() {
+  const el = document.getElementById("habitHeatmap"); if (!el) return;
+  const chs = loadChs();
+  if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천 흐름을 한눈에 보여드려요.</p>'; return; }
+  const N = 14, days = [];
+  for (let i = N - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(todayKey(d)); }
+  const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const head = `<div class="hm-row hm-head"><span class="hm-name"></span><div class="hm-cells">${days.map((k) => {
+    const d = new Date(k + "T00:00:00");
+    return `<span class="hm-dlabel">${d.getDate() === 1 || k === days[0] ? (d.getMonth() + 1) + "/" + d.getDate() : ""}</span>`;
+  }).join("")}</div></div>`;
+  const rows = chs.map((h) => {
+    const cells = days.map((k) => {
+      const before = k < h.startDate;
+      const done = !!(h.done && h.done[k]);
+      const cls = before ? "hm-na" : done ? "hm-on" : "hm-off";
+      const lbl = before ? "" : done ? "✓" : "";
+      return `<span class="hm-cell ${cls}" title="${k} ${done ? "실천" : before ? "" : "미실천"}">${lbl}</span>`;
+    }).join("");
+    const total = days.filter((k) => k >= h.startDate).length;
+    const did = days.filter((k) => k >= h.startDate && h.done && h.done[k]).length;
+    const rate = total ? Math.round(did / total * 100) : 0;
+    return `<div class="hm-row"><span class="hm-name">${h.emoji} ${escapeHtml(h.title)}<i class="hm-rate">${rate}%</i></span><div class="hm-cells">${cells}</div></div>`;
+  }).join("");
+  el.innerHTML = `<div class="hm">${head}${rows}</div><p class="hint" style="margin-top:10px">진한 칸 = 실천한 날 · 최근 ${N}일</p>`;
 }
 // 통계를 쉬운 한 문장으로 — 사용자 인식 도움
 function renderStatsHeadline(list) {

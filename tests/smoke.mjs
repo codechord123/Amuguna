@@ -228,6 +228,10 @@ try {
   check("상관관계 분석 표시", d.querySelectorAll("#corrBody .corr-row").length === 1);
   check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
   check("상관관계 과학 근거 표기", !!d.querySelector("#corrBody .sci-note") && /Cohen/.test(d.querySelector("#corrBody .corr-meta").textContent));
+  const hmToday = new Date().toISOString().slice(0, 10);
+  window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  check("습관 실천 매트릭스 표시", d.querySelectorAll("#habitHeatmap .hm-row").length >= 2 && d.querySelectorAll("#habitHeatmap .hm-cell.hm-on").length >= 1);
 
   // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
   q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();

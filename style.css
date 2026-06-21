@@ -46,10 +46,11 @@
   --blob-b: #ffc2b3;
   --blob-c: #cfe6df;
 
-  /* ----- 그림자 (절제) ----- */
-  --shadow-sm: 0 1px 2px rgba(120, 84, 60, 0.05);
-  --shadow: 0 6px 18px rgba(150, 104, 74, 0.07), 0 1px 3px rgba(150, 104, 74, 0.05);
-  --shadow-lg: 0 16px 40px rgba(140, 96, 66, 0.12), 0 2px 8px rgba(140, 96, 66, 0.06);
+  /* ----- 그림자 (입체감) + 상단 하이라이트 ----- */
+  --shadow-sm: 0 2px 5px rgba(120, 84, 60, 0.08);
+  --shadow: 0 10px 24px rgba(150, 104, 74, 0.13), 0 3px 8px rgba(150, 104, 74, 0.08);
+  --shadow-lg: 0 22px 50px rgba(140, 96, 66, 0.18), 0 6px 16px rgba(140, 96, 66, 0.10);
+  --card-hi: rgba(255, 255, 255, 0.65);
 
   /* ----- 이징 ----- */
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -73,9 +74,10 @@
   --energy: #e79a52;
   --ring: rgba(47, 138, 118, 0.16);
   --blob-a: #c4e6dd; --blob-b: #aedbe6; --blob-c: #dcebcd;
-  --shadow-sm: 0 1px 2px rgba(60, 110, 100, 0.05);
-  --shadow: 0 6px 18px rgba(70, 120, 110, 0.08), 0 1px 3px rgba(70, 120, 110, 0.05);
-  --shadow-lg: 0 16px 40px rgba(60, 110, 100, 0.13), 0 2px 8px rgba(60, 110, 100, 0.06);
+  --shadow-sm: 0 2px 5px rgba(60, 110, 100, 0.08);
+  --shadow: 0 10px 24px rgba(70, 120, 110, 0.13), 0 3px 8px rgba(70, 120, 110, 0.08);
+  --shadow-lg: 0 22px 50px rgba(60, 110, 100, 0.18), 0 6px 16px rgba(60, 110, 100, 0.10);
+  --card-hi: rgba(255, 255, 255, 0.75);
 }
 
 [data-theme="dark"] {
@@ -95,9 +97,10 @@
   --energy: #63d4be;
   --ring: rgba(172, 149, 240, 0.24);
   --blob-a: #463a66; --blob-b: #553758; --blob-c: #2c4a53;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.32), 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.34);
+  --shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 3px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 22px 52px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.4);
+  --card-hi: rgba(255, 255, 255, 0.06);
 }
 
 /* ============================================================
@@ -148,10 +151,10 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   padding: var(--s5);
   margin-bottom: var(--s4);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi);
 }
 .card.center { text-align: center; }
 .card h2 { margin: 0 0 var(--s2); font-size: var(--t-md); font-weight: var(--w-bold); }
@@ -177,8 +180,8 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 }
 .btn:hover { transform: translateY(-1px); filter: brightness(1.02); }
 .btn:active { transform: translateY(0) scale(0.98); }
-.btn.primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring); }
-.btn.primary:hover { box-shadow: 0 10px 24px var(--ring); }
+.btn.primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+.btn.primary:hover { box-shadow: 0 10px 24px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .btn.block { display: block; width: 100%; margin-top: var(--s5); }
 .btn.danger { color: #fff; background: var(--danger); }
 [data-theme="dark"] .btn.primary { color: #17161d; }
@@ -461,9 +464,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: var(--s2); }
 .badge { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s2) var(--s1); border: 1px solid transparent; border-radius: var(--r-sm); background: var(--bg-sunken); text-align: center; font-family: inherit; cursor: pointer; color: var(--ink); transition: transform 0.15s var(--ease-soft); }
 .badge:active { transform: scale(0.94); }
-.badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm); }
+.badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm), inset 0 1px 0 var(--card-hi); }
 [data-theme="dark"] .badge.earned { background: var(--card); }
-.badge.earned:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.badge.earned:hover { transform: translateY(-2px); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); }
 .badge.locked { opacity: 0.38; filter: grayscale(1); }
 .badge-emoji { font-size: 1.5rem; }
 .badge-title { font-size: 0.68rem; line-height: 1.25; color: var(--ink-2); font-weight: var(--w-semi); }
@@ -476,7 +479,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
    챌린지 (복수 습관)
    ============================================================ */
 .ch-summary { text-align: center; color: var(--ink-2); font-weight: var(--w-semi); margin: 0 0 var(--s4); font-size: var(--t-base); }
-.habit-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s5); margin-bottom: var(--s4); box-shadow: var(--shadow); }
+.habit-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s5); margin-bottom: var(--s4); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); }
 .habit-top { display: flex; align-items: center; gap: var(--s4); }
 .habit-info { flex: 1; min-width: 0; cursor: pointer; }
 .habit-title { font-weight: var(--w-bold); font-size: var(--t-md); display: flex; align-items: center; gap: var(--s2); }
@@ -506,8 +509,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .settings-grid .card h2 { font-size: var(--t-base); line-height: 1.35; }
 .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s4); }
 .duo-grid > .card { margin-bottom: var(--s4); }
-.report-tile { display: flex; width: 100%; align-items: center; gap: var(--s3); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: var(--s4); margin-bottom: var(--s4); cursor: pointer; font-family: inherit; color: var(--ink); font-weight: var(--w-bold); font-size: var(--t-base); transition: transform 0.15s var(--ease-soft), box-shadow 0.2s; }
-.report-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.report-tile { display: flex; width: 100%; align-items: center; gap: var(--s3); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); padding: var(--s4); margin-bottom: var(--s4); cursor: pointer; font-family: inherit; color: var(--ink); font-weight: var(--w-bold); font-size: var(--t-base); transition: transform 0.15s var(--ease-soft), box-shadow 0.2s; }
+.report-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-hi); }
 .report-tile .rt-emoji { font-size: 1.25rem; }
 .report-tile .rt-label { flex: 1; text-align: left; }
 .report-tile .rt-go { color: var(--soft); font-size: 1.2rem; }
@@ -551,7 +554,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
     radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 60%),
     linear-gradient(170deg, var(--card), var(--card));
   border-color: var(--line-strong);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-hi);
   overflow: hidden;
 }
 [data-theme="dark"] .journey-hero { background: radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 65%), var(--card); }
@@ -560,7 +564,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .jh-eyebrow { color: var(--accent-deep); font-weight: var(--w-bold); font-size: var(--t-sm); letter-spacing: 0.02em; margin: 0 0 var(--s1); }
 .journey-hero h2 { font-size: 2rem; margin: 0 0 var(--s3); font-weight: var(--w-bold); letter-spacing: -0.02em; }
 .journey-hero .hint { margin: 0 auto var(--s6); font-size: var(--t-md); line-height: 1.55; }
-.journey-hero .btn.block { margin-top: 0; padding: 17px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring); }
+.journey-hero .btn.block { margin-top: 0; padding: 17px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .jh-sub { color: var(--soft); font-size: var(--t-sm); margin: var(--s4) 0 0; }
 .journey-hero.done .js-emoji { animation: none; }
 /* 하위호환: 구버전 마크업 */
@@ -724,6 +728,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .dow-val { font-size: 0.62rem; color: var(--soft); font-weight: 700; }
 .dow-name { font-size: var(--t-xs); color: var(--soft); }
 
+/* 습관 실천 매트릭스 (히트맵) */
+.hm { display: flex; flex-direction: column; gap: var(--s2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.hm-row { display: flex; align-items: center; gap: var(--s2); }
+.hm-name { flex: 0 0 96px; font-size: var(--t-xs); color: var(--ink-2); font-weight: var(--w-semi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+.hm-rate { font-style: normal; font-size: 0.6rem; color: var(--soft); font-weight: 800; margin-left: auto; }
+.hm-cells { display: flex; gap: 3px; flex: 1; }
+.hm-cell { flex: 1; min-width: 14px; aspect-ratio: 1; border-radius: 5px; background: var(--bg-sunken); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff; font-weight: 800; }
+.hm-on { background: var(--success); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.hm-off { background: var(--bg-sunken); border: 1px solid var(--line); }
+.hm-na { background: transparent; }
+.hm-head .hm-cell { background: transparent; }
+.hm-dlabel { flex: 1; min-width: 14px; text-align: center; font-size: 0.55rem; color: var(--soft); font-weight: 700; }
+
 /* 지난 기록 필터 + 점수 칩 */
 .hist-filter button { font-size: var(--t-xs); }
 .h-score { display: inline-block; min-width: 24px; text-align: center; background: var(--bg-sunken); border-radius: var(--r-pill); padding: 1px 7px; font-size: 0.7rem; font-weight: 800; color: var(--ink-2); margin-right: var(--s1); }
@@ -841,7 +858,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
    빠른 호흡 FAB + 오버레이
    ============================================================ */
 /* 우상단 고정 — 콘텐츠를 가리지 않게 (안전영역 고려) */
-.fab { position: fixed; right: var(--s3); top: calc(var(--s2) + env(safe-area-inset-top)); z-index: 50; width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.3rem; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring); transition: transform 0.15s var(--ease-soft); }
+.fab { position: fixed; right: var(--s3); top: calc(var(--s2) + env(safe-area-inset-top)); z-index: 50; width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.3rem; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.3); transition: transform 0.15s var(--ease-soft); }
 .fab:hover { transform: scale(1.06); }
 .fab:active { transform: scale(0.92); }
 [data-theme="dark"] .fab { color: #17161d; }
