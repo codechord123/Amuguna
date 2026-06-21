@@ -197,14 +197,22 @@ function openEntryDetail(dateKey) {
   openSubpage(`${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(dateKey)})`, entryDetailHtml(e), "entry");
 }
 function entryDetailHtml(e) {
-  const mood = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "기분 기록 없음";
+  const sc = entryScore(e);
+  const moodTxt = e.mood ? `${moodMeta[e.mood].emoji} ${e.mood}` : "기분 기록 없음";
   const refl = e.reflection && (e.reflection.good || e.reflection.hard);
+  const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
+  const tags = (e.tags && e.tags.length) ? `<div class="hist-tags" style="margin-top:var(--s3)">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
+  // 한 페이지 한눈에 — 게이지(점수) + 기분/활력/태그 + 일기·잘한일·회고
   return `
-    <p class="detail-stat">${mood}${e.energy ? ` · 에너지 ${e.energy}/5` : ""}</p>
+    <div class="card rpt-hero">
+      <div class="gauge-wrap">${sc != null ? moodGaugeSvg(sc) : '<div class="gauge-empty">기분<br>없음</div>'}</div>
+      <div class="rpt-hero-side"><p class="rpt-hero-cap">${moodTxt}</p><div class="hero-stats">${hs(e.energy || "—", "활력/5")}${hs((e.tags && e.tags.length) || 0, "감정 태그")}</div></div>
+    </div>
+    ${tags ? `<div class="card">${tags}</div>` : ""}
     ${e.note ? `<div class="card"><h2>📝 일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
-    ${e.praise ? `<div class="card"><h2>🌱 잘한 일</h2><p>${escapeHtml(e.praise)}</p></div>` : ""}
-    ${refl ? `<div class="card"><h2>🌙 저녁 회고</h2>${e.reflection.good ? `<p>🌤️ ${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p>🌧️ ${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
-    ${(e.tags && e.tags.length) ? `<div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+    ${e.praise ? `<div class="card"><h2>🌱 잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
+    ${refl ? `<div class="card"><h2>🌙 저녁 회고</h2>${e.reflection.good ? `<p class="h-note">🌤️ ${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">🌧️ ${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
+    ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
     <div class="data-btns" style="margin-top:18px">
       <button class="btn primary" data-eact="edit">✏️ 수정</button>
       <button class="btn danger" data-eact="del">삭제</button>
@@ -869,6 +877,7 @@ function renderStats() {
   document.getElementById("totalNum").textContent = list.length;
   const sb = document.getElementById("statBadge");
   if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
+  renderStatsHeadline(list);
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
@@ -1428,13 +1437,14 @@ document.getElementById("badgeSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-bcat]"); if (!b) return;
   Sound.tap(); badgeCat = b.dataset.bcat; renderBadges();
 });
-// 배지 탭 → 설명 표시
+// 배지 탭 → 설명 즉시 표시 (토스트 큐를 거치지 않아 지연 없음)
 document.getElementById("badgeGrid").addEventListener("click", (e) => {
   const el = e.target.closest(".badge[data-bid]"); if (!el) return;
   const b = BADGES.find((x) => x.id === el.dataset.bid); if (!b) return;
   Sound.tap();
   const got = new Set(earnedBadgeIds()).has(b.id);
-  toast(`${b.e} ${b.t} · ${got ? "획득 ✓" : "아직"} — ${b.d}`);
+  const d = document.getElementById("badgeDetail");
+  if (d) { d.innerHTML = `<b>${b.e} ${b.t}</b> <span class="${got ? "bd-got" : "bd-no"}">${got ? "획득 ✓" : "아직"}</span> — ${b.d}`; d.classList.remove("pulse"); void d.offsetWidth; d.classList.add("pulse"); }
 });
 /* 습관 ↔ 기분 상관관계 */
 function renderCorrelation(entries) {
@@ -1479,6 +1489,23 @@ function renderCorrelation(entries) {
     </div>`;
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
+}
+// 통계를 쉬운 한 문장으로 — 사용자 인식 도움
+function renderStatsHeadline(list) {
+  const el = document.getElementById("statsHeadline"); if (!el) return;
+  if (list.length < 2) { el.textContent = "기록이 쌓이면 이번 주를 한 문장으로 요약해 드릴게요 🌱"; return; }
+  const tk = todayKey();
+  const wk = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
+  const pv = []; for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); pv.push(todayKey(d)); }
+  const ent = {}; list.forEach((e) => ent[e.date] = e);
+  const avg = (ks) => { const v = ks.map((k) => ent[k] && ent[k].mood ? entryScore(ent[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const a = avg(wk), b = avg(pv);
+  if (a == null) { el.textContent = "이번 주는 아직 기록이 없어요. 오늘 한 줄 남겨볼까요? 🌿"; return; }
+  if (b == null) { el.textContent = `이번 주 평균 기분은 ${Math.round(a)}점이에요.`; return; }
+  const d = a - b;
+  el.textContent = d >= 5 ? `이번 주는 지난주보다 기분이 좋아졌어요 ☀️ (평균 ${Math.round(a)}점, ▲${Math.round(d)})`
+    : d <= -5 ? `이번 주는 조금 가라앉았어요. 스스로를 더 아껴줘요 🫂 (평균 ${Math.round(a)}점, ▼${Math.round(-d)})`
+    : `이번 주 기분은 지난주와 비슷해요 (평균 ${Math.round(a)}점).`;
 }
 // 이번 주 한눈에 — 미니 통계 + 스파크라인
 function renderWeekGlance(entries) {
