@@ -407,6 +407,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge-bar { height: 10px; border-radius: var(--r-pill); background: var(--bg-sunken); overflow: hidden; }
 .badge-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 0.7s var(--ease-soft); }
 .badge-status { margin: var(--s2) 0 var(--s4); font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-med); }
+.badge-seg { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; margin-bottom: var(--s3); scrollbar-width: none; }
+.badge-seg::-webkit-scrollbar { display: none; }
+.badge-seg button { flex: 0 0 auto; white-space: nowrap; font-size: var(--t-xs); padding: var(--s2) var(--s3); }
 .badge-cat { margin-bottom: var(--s4); }
 .badge-cat:last-child { margin-bottom: 0; }
 .badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }

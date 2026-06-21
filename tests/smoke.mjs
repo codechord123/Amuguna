@@ -143,9 +143,12 @@ try {
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
-  check("배지 다양화(40종)", d.querySelectorAll("#badgeGrid .badge").length === 40);
-  check("배지 카테고리 표시", d.querySelectorAll("#badgeGrid .badge-cat").length >= 5);
-  check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
+  check("배지 카테고리 탭(7종)", d.querySelectorAll("#badgeSeg button").length === 7);
+  check("기록 카테고리 11종", d.querySelectorAll("#badgeGrid .badge").length === 11);
+  check("첫 기록 배지 획득(기록 탭)", d.querySelector("#badgeGrid .badge.earned") !== null);
+  q('#badgeSeg button[data-bcat="mind"]').click();
+  check("배지 탭 전환(마음챙김 9종)", d.querySelectorAll("#badgeGrid .badge").length === 9);
+  q('#badgeSeg button[data-bcat="record"]').click();
   check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
   q("[data-tab=today]").click();
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
@@ -176,9 +179,10 @@ try {
 
   // 8) 호흡 카운터 + 빠른 호흡 + 명상 분리
   q("[data-tab=rest]").click();
-  check("쉼 탭 위로 패널 기본 표시", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden"));
+  check("쉼 탭 명상 패널 기본 표시", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
+  q("#restSeg button[data-rseg=comfort]").click();
+  check("위로 패널로 전환", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   q("#restSeg button[data-rseg=meditate]").click();
-  check("명상 패널로 분리 전환", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden"));
   q("#breathBtn").click();
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
   q("#breathBtn").click();

@@ -218,14 +218,8 @@ function entryDetailHtml(e) {
 }
 function openEntryEditor(dateKey) {
   if (dateKey > todayKey()) return;
-  activateTab("today");
-  // 수정할 때만 기록 폼을 펼쳐 보이고, 여정 히어로는 잠시 감춤
-  const cc = document.getElementById("checkin-card");
-  document.getElementById("journeyStartCard").hidden = true;
-  document.getElementById("todayStats").hidden = true;
-  cc.hidden = false; cc.classList.remove("collapsed");
-  entryDate.value = dateKey; loadEntryForm(dateKey);
-  cc.scrollIntoView({ behavior: "smooth", block: "start" });
+  // 기록·수정 모두 '오늘의 여정'과 같은 입력(다이얼)으로 통일 — 달력/기록과 싱크 일치
+  openJourney(dateKey);
 }
 
 /* ===================== 오늘 기록 ===================== */
@@ -485,12 +479,19 @@ function updateFavBtn() {
   const fav = (settings.favQuotes || []).includes(currentQuote);
   favBtn.textContent = fav ? "♥" : "♡"; favBtn.classList.toggle("on", fav);
 }
+// 문장(.!?)·쉼표 뒤에서 줄을 띄워 보기 좋게
+function formatQuote(t) {
+  return escapeHtml(t)
+    .replace(/([.!?。…])\s*/g, "$1<br><br>")
+    .replace(/([,，])\s*/g, "$1<br>")
+    .replace(/(<br>\s*)+$/g, "");
+}
 function showRandomQuote() {
   const pool = activePool(); if (!pool.length) return;
   let i, tries = 0; do { i = Math.floor(Math.random() * pool.length); tries++; } while (pool[i] === currentQuote && pool.length > 1 && tries < 12);
   currentQuote = pool[i];
   quoteEl.classList.add("swap");
-  setTimeout(() => { quoteEl.textContent = "“" + currentQuote + "”"; quoteEl.classList.remove("swap"); updateFavBtn(); }, 230);
+  setTimeout(() => { quoteEl.innerHTML = "“" + formatQuote(currentQuote) + "”"; quoteEl.classList.remove("swap"); updateFavBtn(); }, 230);
 }
 document.getElementById("quoteBtn").addEventListener("click", () => { Sound.chime(); showRandomQuote(); });
 favBtn.addEventListener("click", () => {
@@ -507,7 +508,7 @@ document.getElementById("myQuoteAdd").addEventListener("click", () => {
   settings.myQuotes = settings.myQuotes || [];
   if (!settings.myQuotes.includes(t)) settings.myQuotes.push(t);
   saveSettingsObj(settings); inp.value = ""; Sound.success();
-  currentQuote = t; quoteEl.textContent = "“" + t + "”"; updateFavBtn();
+  currentQuote = t; quoteEl.innerHTML = "“" + formatQuote(t) + "”"; updateFavBtn();
   if (subMode === "quotes" && !subpage.hidden) subBody.innerHTML = quoteManageHtml();
 });
 
@@ -589,6 +590,14 @@ const missions = [
   "지금 기분을 한 단어로 말해보기 🗣️", "따뜻한 물로 손 씻기 🚿", "의자에 기대 1분 멍때리기 🌫️",
   "좋아하는 음료 천천히 한 모금 🥤", "휴대폰 알림 잠깐 꺼두기 🔕", "가장 편한 자세로 2분 눕기 🛋️",
   "오늘의 작은 성공 하나 떠올리기 🌟", "식물이나 창밖 초록 바라보기 🪴", "좋아하는 노래 흥얼거리기 🎶",
+  "양손을 깍지 껴 위로 쭉 뻗기 🙌", "차가운 물 한 모금 마시기 🧊", "오늘 입은 옷 색깔 의식해 보기 👕",
+  "좋아하는 책 한 문단만 읽기 📖", "지금 들리는 소리 3가지 찾기 🔊", "창문 열어 환기 1분 🪟",
+  "발바닥을 바닥에 꾹 붙여보기 🦶", "어제보다 잘한 것 하나 칭찬하기 👏", "기지개 켜며 하품 한 번 😪",
+  "좋아하는 간식 한 입 음미하기 🍪", "휴대폰 화면 밝기 낮추기 🌗", "오늘 날씨를 한 문장으로 적기 ⛅",
+  "손목·발목 천천히 돌리기 🔄", "거울 보며 미소 한 번 😊", "미뤄둔 일 딱 1분만 시작하기 ⏱️",
+  "좋아하는 사람 사진 한 장 보기 🖼️", "따뜻한 차 천천히 우리기 🍵", "눈을 감고 10까지 세기 🔢",
+  "오늘 감사한 것 하나 소리 내 말하기 🗣️", "방 안 물건 하나 제자리에 두기 🧹", "심장 박동에 1분 집중하기 💓",
+  "좋아하는 향수·로션 바르기 🧴", "잠깐 맨발로 서 있기 🦶", "내일의 나에게 한 줄 응원 쓰기 ✉️",
 ];
 const missionEl = document.getElementById("mission");
 let lastMission = -1;
@@ -1267,16 +1276,20 @@ const BADGES = [
   { id: "d100", e: "🏔️", t: "백 일의 여정", d: "누적 100일 기록", cat: "record", ok: (D) => D.total >= 100 },
   { id: "d200", e: "🗻", t: "이백 일", d: "누적 200일 기록", cat: "record", ok: (D) => D.total >= 200 },
   { id: "d365", e: "🎆", t: "일 년의 기록", d: "누적 365일 기록", cat: "record", ok: (D) => D.total >= 365 },
+  { id: "note10", e: "✏️", t: "글쓰기 시작", d: "일기 10번 작성", cat: "record", ok: (D) => D.list.filter((e) => e.note && e.note.trim()).length >= 10 },
   { id: "note50", e: "✍️", t: "기록가", d: "일기 50번 작성", cat: "record", ok: (D) => D.list.filter((e) => e.note && e.note.trim()).length >= 50 },
+  { id: "note100", e: "📕", t: "작가의 마음", d: "일기 100번 작성", cat: "record", ok: (D) => D.list.filter((e) => e.note && e.note.trim()).length >= 100 },
   // 꾸준함
   { id: "streak3", e: "🌤️", t: "사흘 연속", d: "3일 연속 기록", cat: "streak", ok: (D) => D.streak >= 3 },
   { id: "week", e: "🗓️", t: "일주일 연속", d: "7일 연속 기록", cat: "streak", ok: (D) => D.streak >= 7 },
   { id: "streak14", e: "⚡", t: "2주 연속", d: "14일 연속 기록", cat: "streak", ok: (D) => D.streak >= 14 },
   { id: "streak30", e: "👑", t: "한 달 연속", d: "30일 연속 기록", cat: "streak", ok: (D) => D.streak >= 30 },
   { id: "streak60", e: "💫", t: "두 달 연속", d: "60일 연속 기록", cat: "streak", ok: (D) => D.streak >= 60 },
+  { id: "streak100", e: "🌌", t: "백 일 연속", d: "100일 연속 기록", cat: "streak", ok: (D) => D.streak >= 100 },
   // 습관
   { id: "habit", e: "🎯", t: "습관 시작", d: "습관을 만들었어요", cat: "habit", ok: (D) => D.chs.length >= 1 },
   { id: "habit1", e: "✅", t: "첫 완료", d: "습관을 한 번 완료", cat: "habit", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 1) },
+  { id: "habit7", e: "🗒️", t: "일주일 습관", d: "한 습관 7회 완료", cat: "habit", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 7) },
   { id: "habit2", e: "🎲", t: "두 가지 습관", d: "습관 2개 이상 운영", cat: "habit", ok: (D) => D.chs.length >= 2 },
   { id: "habit3done", e: "💪", t: "하루 세 습관", d: "하루에 습관 3개 완료", cat: "habit", ok: (D) => { const m = {}; D.chs.forEach((h) => Object.keys(h.done || {}).forEach((d) => { if (h.done[d]) m[d] = (m[d] || 0) + 1; })); return Object.values(m).some((c) => c >= 3); } },
   { id: "habit21", e: "🔥", t: "21일의 힘", d: "한 습관 21일 달성", cat: "habit", ok: (D) => D.chs.some((h) => Object.values(h.done || {}).filter(Boolean).length >= 21) },
@@ -1286,25 +1299,32 @@ const BADGES = [
   { id: "journey_first", e: "🚪", t: "여정의 시작", d: "오늘의 여정 첫 완주", cat: "mind", ok: () => (settings.journeyCount || 0) >= 1 },
   { id: "journey5", e: "✨", t: "여정의 동반자", d: "오늘의 여정 5번 완주", cat: "mind", ok: () => (settings.journeyCount || 0) >= 5 },
   { id: "journey20", e: "🧭", t: "여정 베테랑", d: "오늘의 여정 20번 완주", cat: "mind", ok: () => (settings.journeyCount || 0) >= 20 },
+  { id: "journey50", e: "🛤️", t: "여정의 길잡이", d: "오늘의 여정 50번 완주", cat: "mind", ok: () => (settings.journeyCount || 0) >= 50 },
   { id: "breath10", e: "🌬️", t: "숨 고르기", d: "호흡 10번 하기", cat: "mind", ok: () => (settings.breathCount || 0) >= 10 },
   { id: "breath30", e: "🧘", t: "호흡 마스터", d: "호흡 30번 하기", cat: "mind", ok: () => (settings.breathCount || 0) >= 30 },
   { id: "breath50", e: "🌊", t: "호흡 고수", d: "호흡 50번 하기", cat: "mind", ok: () => (settings.breathCount || 0) >= 50 },
+  { id: "breath100", e: "🪷", t: "호흡 달인", d: "호흡 100번 하기", cat: "mind", ok: () => (settings.breathCount || 0) >= 100 },
   { id: "reflect", e: "🌙", t: "돌아보는 밤", d: "저녁 회고를 남겼어요", cat: "mind", ok: (D) => D.list.some((e) => e.reflection && (e.reflection.good || e.reflection.hard)) },
   // 감정
   { id: "energized", e: "😄", t: "활기찬 날", d: "'활기차요'를 기록", cat: "emotion", ok: (D) => D.list.some((e) => e.mood === "활기차요") },
   { id: "allmoods", e: "🌈", t: "마음의 무지개", d: "7가지 기분 모두 경험", cat: "emotion", ok: (D) => new Set(D.list.filter((e) => e.mood).map((e) => e.mood)).size >= 7 },
   { id: "tags5", e: "🏷️", t: "감정의 언어", d: "감정 태그 5일 기록", cat: "emotion", ok: (D) => D.list.filter((e) => e.tags && e.tags.length).length >= 5 },
   { id: "tags20", e: "🎨", t: "감정의 화가", d: "감정 태그 20일 기록", cat: "emotion", ok: (D) => D.list.filter((e) => e.tags && e.tags.length).length >= 20 },
+  { id: "tags50", e: "🖼️", t: "감정의 거장", d: "감정 태그 50일 기록", cat: "emotion", ok: (D) => D.list.filter((e) => e.tags && e.tags.length).length >= 50 },
   { id: "score100", e: "🌟", t: "최고의 날", d: "기분 100점을 기록", cat: "emotion", ok: (D) => D.list.some((e) => e.score >= 100) },
+  { id: "pos10", e: "☀️", t: "맑은 날들", d: "기분 좋은 날(60점↑) 10번", cat: "emotion", ok: (D) => D.list.filter((e) => e.score != null ? e.score >= 60 : (e.mood && moodMeta[e.mood].score >= 4)).length >= 10 },
   { id: "score_track", e: "📈", t: "섬세한 기록", d: "기분 점수 10일 기록", cat: "emotion", ok: (D) => D.list.filter((e) => e.score != null).length >= 10 },
   // 돌봄·감사
   { id: "grat10", e: "🙏", t: "감사의 습관", d: "잘한 일 10번 기록", cat: "care", ok: (D) => D.list.filter((e) => e.praise && e.praise.trim()).length >= 10 },
   { id: "praise30", e: "💝", t: "감사 부자", d: "잘한 일 30번 기록", cat: "care", ok: (D) => D.list.filter((e) => e.praise && e.praise.trim()).length >= 30 },
+  { id: "praise50", e: "🎁", t: "감사의 달인", d: "잘한 일 50번 기록", cat: "care", ok: (D) => D.list.filter((e) => e.praise && e.praise.trim()).length >= 50 },
   { id: "fav", e: "💛", t: "나의 위로", d: "위로 문구를 즐겨찾기", cat: "care", ok: () => (settings.favQuotes || []).length >= 1 },
+  { id: "fav5", e: "💖", t: "위로 수집가", d: "위로 문구 5개 즐겨찾기", cat: "care", ok: () => (settings.favQuotes || []).length >= 5 },
   // 특별
   { id: "earlybird", e: "🐦", t: "이른 새", d: "아침 8시 전에 기록", cat: "special", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 8) },
   { id: "nightowl", e: "🦉", t: "밤의 위로", d: "새벽(0~5시)에 기록", cat: "special", ok: (D) => D.list.some((e) => e.updatedAt && new Date(e.updatedAt).getHours() < 5) },
   { id: "weekend", e: "🌅", t: "주말에도", d: "토·일 모두 기록한 적 있어요", cat: "special", ok: (D) => { const s = new Set(D.list.filter((e) => e.mood).map((e) => new Date(e.date + "T00:00:00").getDay())); return s.has(0) && s.has(6); } },
+  { id: "myquote", e: "🖊️", t: "나만의 한마디", d: "나만의 문구를 추가", cat: "special", ok: () => (settings.myQuotes || []).length >= 1 },
 ];
 // 레벨 — 획득한 배지 수가 목표에 도달하면 레벨업
 const LEVELS = [
@@ -1316,6 +1336,7 @@ const LEVELS = [
   { min: 21, name: "나무",     emoji: "🌳" },
   { min: 28, name: "숲",       emoji: "🌲" },
   { min: 36, name: "별빛",     emoji: "🌟" },
+  { min: 45, name: "우주",     emoji: "🌌" },
 ];
 function levelInfo(n) {
   let idx = 0; LEVELS.forEach((l, i) => { if (n >= l.min) idx = i; });
@@ -1340,16 +1361,23 @@ function renderBadges() {
     ? "🎉 모든 배지를 모았어요! 정말 대단해요."
     : n === 0 ? "첫 배지를 향해 한 걸음씩 🌱"
     : `획득률 ${pct}% · ${total - n}개 남았어요`);
-  // 카테고리별 그룹 + 카테고리 안에서 획득한 것을 앞으로
-  const badgeHtml = (b) => `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`;
-  document.getElementById("badgeGrid").innerHTML = BADGE_CATS.map((c) => {
+  // 카테고리 탭(세그) — 선택한 카테고리만 표시
+  const seg = document.getElementById("badgeSeg");
+  if (seg) seg.innerHTML = BADGE_CATS.map((c) => {
     const items = BADGES.filter((b) => b.cat === c.id);
-    if (!items.length) return "";
     const got = items.filter((b) => earned.has(b.id)).length;
-    const sorted = [...items].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
-    return `<div class="badge-cat"><p class="badge-cat-h">${c.label}<span>${got}/${items.length}</span></p><div class="badge-grid">${sorted.map(badgeHtml).join("")}</div></div>`;
+    return `<button data-bcat="${c.id}" class="${c.id === badgeCat ? "active" : ""}">${c.label} ${got}/${items.length}</button>`;
   }).join("");
+  const badgeHtml = (b) => `<div class="badge ${earned.has(b.id) ? "earned" : "locked"}" title="${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></div>`;
+  const items = BADGES.filter((b) => b.cat === badgeCat);
+  const sorted = [...items].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
+  document.getElementById("badgeGrid").innerHTML = `<div class="badge-grid">${sorted.map(badgeHtml).join("")}</div>`;
 }
+let badgeCat = "record";
+document.getElementById("badgeSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-bcat]"); if (!b) return;
+  Sound.tap(); badgeCat = b.dataset.bcat; renderBadges();
+});
 /* 습관 ↔ 기분 상관관계 */
 function renderCorrelation(entries) {
   const body = document.getElementById("corrBody");
@@ -1745,11 +1773,13 @@ function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
 function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 80 * Math.cos(a)).toFixed(1), (100 + 80 * Math.sin(a)).toFixed(1)]; }
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
-  const s = ["feel", "breathe"]; // 호흡 단계는 항상 포함(짧게 건너뛸 수 있음)
+  const editingPast = jData.date && jData.date !== todayKey(); // 지난 기록 수정은 간단 경로
+  const s = ["feel"];
+  if (!editingPast) s.push("breathe"); // 호흡은 '지금' 행동이라 오늘만
   s.push("note", "praise");
-  if (loadChs().length) s.push("habits");
+  if (!editingPast && loadChs().length) s.push("habits");
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
-  s.push("care");    // 나를 위한 한마디 + 오늘의 미션
+  if (!editingPast) s.push("care"); // 한마디·미션도 오늘만
   s.push("finish");
   return s;
 }
@@ -1806,7 +1836,7 @@ function stepHtml(id) {
     if (!jData.quote) jData.quote = pickQuote();
     if (!jData.mission) jData.mission = pickMission();
     return `<div class="js-emoji">💌</div><p class="j-q">잠깐, 나를 위한 한마디</p>
-      <blockquote class="j-quote" id="jQuote">“${escapeHtml(jData.quote)}”</blockquote>
+      <blockquote class="j-quote" id="jQuote">“${formatQuote(jData.quote)}”</blockquote>
       <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ↻</button>
       <p class="field-label" style="text-align:center;margin-top:22px">✨ 오늘의 작은 미션</p>
       <p class="mission" id="jMission">${escapeHtml(jData.mission)}</p>
@@ -1816,7 +1846,8 @@ function stepHtml(id) {
     <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
     <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
   const ins = quickInsight();
-  return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>오늘도 잘 기록했어요</h3>
+  const isToday = (jData.date || todayKey()) === todayKey();
+  return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>${isToday ? "오늘도 잘 기록했어요" : "기록을 정리했어요"}</h3>
     <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
     ${journeyFinishStatsHtml()}
     ${ins ? `<div class="j-insight"><span class="j-insight-h">🧭 오늘의 인사이트</span>${ins}</div>` : ""}
@@ -1881,7 +1912,7 @@ function renderStep() {
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
-    if (qm) qm.addEventListener("click", () => { Sound.tap(); jData.quote = pickQuote(jData.quote); jBody.querySelector("#jQuote").textContent = "“" + jData.quote + "”"; saveJDraft(); });
+    if (qm) qm.addEventListener("click", () => { Sound.tap(); jData.quote = pickQuote(jData.quote); jBody.querySelector("#jQuote").innerHTML = "“" + formatQuote(jData.quote) + "”"; saveJDraft(); });
     const mm = jBody.querySelector("#jMissionMore");
     if (mm) mm.addEventListener("click", () => { Sound.tap(); jData.mission = pickMission(jData.mission); jBody.querySelector("#jMission").textContent = jData.mission; saveJDraft(); });
   } else if (curId === "breathe") {
@@ -1907,20 +1938,21 @@ function collectStep() {
 function saveJDraft() { try { localStorage.setItem(DB.JDRAFT, JSON.stringify({ date: jData.date || todayKey(), curId, data: jData })); } catch (e) {} }
 function loadJDraft() { try { return JSON.parse(localStorage.getItem(DB.JDRAFT)); } catch { return null; } }
 function clearJDraft() { try { localStorage.removeItem(DB.JDRAFT); } catch (e) {} }
-function openJourney() {
+function openJourney(dateKey) {
   Sound.unlock();
-  jData = { date: todayKey(), tags: [] };
-  const t = loadEntries()[todayKey()];
+  const k = (dateKey && dateKey <= todayKey()) ? dateKey : todayKey();
+  jData = { date: k, tags: [] };
+  const t = loadEntries()[k];
   if (t) {
     jData.score = (t.score != null) ? t.score : moodToScore(t.mood);
     jData.mood = t.mood || scoreToMood(jData.score); jData.energy = t.energy;
     jData.note = t.note; jData.praise = t.praise; jData.tags = t.tags || [];
     if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; }
   }
-  // 중간에 닫았던 진행분이 있으면 이어서
+  // 중간에 닫았던 진행분이 있으면 이어서 (오늘 작성에 한함)
   const draft = loadJDraft();
   let resumed = false;
-  if (draft && draft.date === todayKey() && draft.data) { jData = draft.data; resumed = true; }
+  if (k === todayKey() && draft && draft.date === todayKey() && draft.data) { jData = draft.data; resumed = true; }
   curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : "feel";
   journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
   if (resumed) toast("이어서 작성해요 ✍️");
@@ -1936,14 +1968,15 @@ function saveJourney() {
     tags: jData.tags || prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
     updatedAt: new Date().toISOString(),
   };
-  settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings);
-  saveEntries(entries); clearJDraft(); Sound.success(); Haptic.success();
+  const isToday = k === todayKey();
+  if (isToday) { settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings); }
+  saveEntries(entries); if (isToday) clearJDraft(); Sound.success(); Haptic.success();
   // 클라우드 동기화 (로그인 시) — 마친 즉시 반영
   const loggedIn = !!(window.Cloud && window.Cloud.getUser && window.Cloud.getUser());
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
-  closeJourney(); loadToday(); checkBadges();
+  closeJourney(); loadToday(); renderStats(); checkBadges(); // 달력·기록 즉시 동기화
   if (detectCrisis(jData.note)) showSafety();
-  toast(loggedIn ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "오늘 기록을 마쳤어요. 고마워요 💛");
+  toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)
 function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); }

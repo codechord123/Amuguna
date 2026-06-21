@@ -135,11 +135,11 @@
     <!-- ========== 탭: 쉼 ========== -->
     <section class="tab" id="tab-rest" hidden>
       <div class="seg stats-seg" id="restSeg">
-        <button data-rseg="comfort" class="active">💌 위로</button>
-        <button data-rseg="meditate">🧘 명상</button>
+        <button data-rseg="meditate" class="active">🧘 명상</button>
+        <button data-rseg="comfort">💌 위로</button>
       </div>
 
-      <div class="rest-panel" data-rpanel="comfort">
+      <div class="rest-panel" data-rpanel="comfort" hidden>
       <div class="card center comfort-card">
         <h2>💌 나를 위한 한마디</h2>
         <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
@@ -168,7 +168,7 @@
       </div>
       </div>
 
-      <div class="rest-panel" data-rpanel="meditate" hidden>
+      <div class="rest-panel" data-rpanel="meditate">
       <div class="card center">
         <h2>🧘 호흡 명상</h2>
         <p class="hint">동그라미를 따라 천천히 (4초 들이쉬고 · 7초 멈추고 · 8초 내쉬기). 싱잉볼 소리가 단계를 안내해요.</p>
@@ -294,6 +294,7 @@
             </div>
           </div>
           <p class="badge-status" id="badgeStatus"></p>
+          <div class="seg badge-seg" id="badgeSeg"></div>
           <div id="badgeGrid"></div>
         </div>
       </div>
