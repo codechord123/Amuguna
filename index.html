@@ -205,15 +205,15 @@
       <div class="card stat-row">
         <div class="stat">
           <span class="stat-num" id="streakNum">0</span>
-          <span class="stat-label">연속 기록</span>
+          <span class="stat-label">🔥 연속</span>
         </div>
         <div class="stat">
           <span class="stat-num" id="totalNum">0</span>
-          <span class="stat-label">전체 기록</span>
+          <span class="stat-label">📒 전체 기록</span>
         </div>
         <div class="stat">
-          <span class="stat-num" id="avgMood">–</span>
-          <span class="stat-label">최근 기분(100)</span>
+          <span class="stat-num" id="statBadge">0</span>
+          <span class="stat-label">🏅 획득 배지</span>
         </div>
       </div>
 
@@ -228,10 +228,7 @@
           <div class="card-head"><h2>📅 이번 주 한눈에</h2><span class="today-date" id="wgRange"></span></div>
           <div id="wgBody"></div>
         </button>
-        <div class="duo-grid">
-          <button class="report-tile" id="weekDetailBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
-          <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
-        </div>
+        <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">

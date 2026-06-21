@@ -867,14 +867,8 @@ function renderStats() {
   const entries = loadEntries(), list = sortedEntries(entries);
   document.getElementById("streakNum").textContent = calcStreak(entries);
   document.getElementById("totalNum").textContent = list.length;
-  const recent = list.slice(-7).filter((e) => e.mood);
-  if (recent.length) {
-    const avg = recent.reduce((s, e) => s + entryScore(e), 0) / recent.length;
-    const prev = list.slice(-14, -7).filter((e) => e.mood);
-    let arrow = "";
-    if (prev.length) { const pa = prev.reduce((s, e) => s + entryScore(e), 0) / prev.length; const d = avg - pa; arrow = d >= 5 ? '<span class="trend up">↗</span>' : d <= -5 ? '<span class="trend down">↘</span>' : '<span class="trend flat">→</span>'; }
-    document.getElementById("avgMood").innerHTML = `<span class="am-emoji">${scoreEmoji(avg)}</span>${Math.round(avg)}${arrow}`;
-  } else document.getElementById("avgMood").textContent = "–";
+  const sb = document.getElementById("statBadge");
+  if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
@@ -1045,7 +1039,8 @@ function drawWeekCanvas() {
   return c.toDataURL("image/png");
 }
 function dataURLtoBlob(d) { const [h, b] = d.split(","); const m = h.match(/:(.*?);/)[1]; const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: m }); }
-document.getElementById("weekDetailBtn").addEventListener("click", () => { Sound.tap(); openReport("week"); });
+const _weekDetailBtn = document.getElementById("weekDetailBtn");
+if (_weekDetailBtn) _weekDetailBtn.addEventListener("click", () => { Sound.tap(); openReport("week"); });
 
 /* 월간 리포트 */
 let monthData = null;

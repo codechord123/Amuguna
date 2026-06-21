@@ -481,9 +481,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .settings-grid .card h2 { font-size: var(--t-base); line-height: 1.35; }
 .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s4); }
 .duo-grid > .card { margin-bottom: var(--s4); }
-.report-tile { display: flex; align-items: center; gap: var(--s2); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: var(--s4); cursor: pointer; font-family: inherit; color: var(--ink); font-weight: var(--w-bold); font-size: var(--t-base); transition: transform 0.15s var(--ease-soft), box-shadow 0.2s; }
+.report-tile { display: flex; width: 100%; align-items: center; gap: var(--s3); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: var(--s4); margin-bottom: var(--s4); cursor: pointer; font-family: inherit; color: var(--ink); font-weight: var(--w-bold); font-size: var(--t-base); transition: transform 0.15s var(--ease-soft), box-shadow 0.2s; }
 .report-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.report-tile .rt-emoji { font-size: 1.3rem; }
+.report-tile .rt-emoji { font-size: 1.25rem; }
 .report-tile .rt-label { flex: 1; text-align: left; }
 .report-tile .rt-go { color: var(--soft); font-size: 1.2rem; }
 .duo-grid .card-head { flex-direction: column; align-items: flex-start; gap: 2px; }
@@ -700,7 +700,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .grat-item:last-child { border-bottom: none; }
 .grat-date { flex: 0 0 38px; font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
 .grat-text { flex: 1; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
-.stat-label { font-size: var(--t-xs); color: var(--soft); }
+.stat-label { font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
 #chart { width: 100%; display: block; margin-top: var(--s2); }
 .legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
 .chart-nav { display: flex; align-items: center; justify-content: space-between; margin-top: var(--s2); }

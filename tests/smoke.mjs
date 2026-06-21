@@ -130,7 +130,7 @@ try {
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
-  check("리포트 진입 타일 표시", !!q("#weekDetailBtn") && !!q("#monthDetailBtn"));
+  check("리포트 진입 표시", !!q("#weekGlanceCard") && !!q("#monthDetailBtn"));
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
@@ -234,7 +234,7 @@ try {
   q("#history li.editable").click();
   check("지난 기록 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
   q("#subBack").click();
-  q("#statsSeg button[data-seg=summary]").click(); q("#weekDetailBtn").click();
+  q("#statsSeg button[data-seg=summary]").click(); q("#weekGlanceCard").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   q("#subBack").click();
 } catch (e) {
