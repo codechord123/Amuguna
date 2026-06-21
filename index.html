@@ -263,16 +263,18 @@
       </div>
 
       <div class="stats-panel" data-panel="graph" hidden>
-        <div class="card analyze-summary">
-          <p class="as-line"><span class="ai-ico">🧭</span><span id="analyzeInsight"></span></p>
+        <div class="card as-kpis-card">
           <div class="as-kpis" id="analyzeKpis"></div>
         </div>
-        <div class="card">
-          <div class="card-head"><h2>🗓️ 마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
-          <p class="hint">요일(가로) × 시간대(세로)별 평균 기분. 가장 진한 초록 칸이 '나에게 좋은 시간'이에요. 가장자리 숫자는 요일·시간대별 평균이에요.</p>
-          <div id="rhythmGrid"></div>
-        </div>
-        <p class="section-label">🔎 더 깊은 분석 <span class="opt">(눌러서 펼치기)</span></p>
+        <p class="section-label">🔍 나에 대한 발견</p>
+        <div id="discoveries"></div>
+        <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 ▾</button>
+        <div id="allAnalysis" hidden>
+          <div class="card">
+            <div class="card-head"><h2>🗓️ 마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
+            <p class="hint">요일(가로) × 시간대(세로)별 평균 기분. 가장 진한 초록 칸이 '나에게 좋은 시간'이에요. 가장자리 숫자는 요일·시간대별 평균이에요.</p>
+            <div id="rhythmGrid"></div>
+          </div>
         <div class="card collapsible collapsed">
           <h2>🧭 감정 지도 (최근 30일)</h2>
           <p class="hint">가로=활력, 세로=기분. 점이 어느 구역에 모이는지 보면 내 감정 패턴이 보여요.</p>
@@ -306,6 +308,7 @@
           <h2>🔥 습관 실천 매트릭스</h2>
           <p class="hint">최근 14일 × 습관별 실천 여부 — 진할수록 꾸준히 해낸 칸이에요.</p>
           <div id="habitHeatmap"></div>
+        </div>
         </div>
       </div>
 

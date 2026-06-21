@@ -226,6 +226,7 @@ try {
   check("상관관계 분석 표시", d.querySelectorAll("#corrBody .corr-row").length === 1);
   check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
   check("상관관계 과학 근거 표기", !!d.querySelector("#corrBody .sci-note") && /Cohen/.test(d.querySelector("#corrBody .corr-meta").textContent));
+  check("발견: 도움된 습관 카드", [...d.querySelectorAll("#discoveries .disc .disc-title")].some((n) => /산책/.test(n.textContent)));
   const hmToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
@@ -236,7 +237,7 @@ try {
   window.localStorage.setItem("entries_v2", JSON.stringify(rh));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
-  check("분석 탭 종합 인사이트 표시", (d.querySelector("#analyzeInsight").textContent || "").trim().length > 0);
+  check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);
