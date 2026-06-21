@@ -242,17 +242,68 @@
     o1.start(t); o2.start(t); o1.stop(t + dur + 0.15); o2.stop(t + dur + 0.15);
   }
   // phase: inhale(상승)/exhale(하강)/hold(잔잔). dur: 단계 길이(초)
+  // 폴백(세션 밖)용 부드러운 패드
+  function padCue(phase, dur) {
+    if (phase === "inhale") softPad(174, 261, dur || 4, 0.09);
+    else if (phase === "exhale") softPad(261, 130, dur || 8, 0.10);
+    else softPad(174, 174, Math.min(dur || 7, 3), 0.045);
+  }
+
+  /* ---------- 호흡 사운드 세션 (드론 + 숨소리 노이즈 + 싱잉볼) ---------- */
+  let breathSession = null;
+  function breathStart() {
+    if (!state.breathOn || !ensure()) return;
+    breathStop();
+    // 따뜻한 드론 (C3·G3·C4 화음)
+    const g = ctx.createGain(); g.gain.value = 0.0001; g.connect(master);
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 650; lp.connect(g);
+    const freqs = [130.81, 196.00, 261.63], amps = [0.5, 0.3, 0.16];
+    const oscs = freqs.map((f, i) => { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f; const og = ctx.createGain(); og.gain.value = amps[i]; o.connect(og).connect(lp); o.start(); return o; });
+    // 느린 흔들림(코러스)
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07; const lfoG = ctx.createGain(); lfoG.gain.value = 4;
+    lfo.connect(lfoG).connect(oscs[1].detune); lfo.start();
+    g.gain.setTargetAtTime(0.085, ctx.currentTime, 1.6);
+    // 숨소리 노이즈 레이어 (밴드패스가 들숨에 열리고 날숨에 닫힘)
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(3, "white"); src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 500; bp.Q.value = 0.7;
+    const ng = ctx.createGain(); ng.gain.value = 0.0001;
+    src.connect(bp).connect(ng).connect(master); src.start();
+    breathSession = { g, lp, oscs, lfo, src, bp, ng };
+  }
+  function breathStop() {
+    if (!breathSession) return;
+    const b = breathSession; breathSession = null;
+    const t = ctx.currentTime;
+    try { b.g.gain.setTargetAtTime(0, t, 0.7); b.ng.gain.setTargetAtTime(0, t, 0.7); } catch (e) {}
+    setTimeout(() => { try { b.oscs.forEach((o) => o.stop()); b.lfo.stop(); b.src.stop(); } catch (e) {} }, 1600);
+  }
+  // 싱잉볼 한 번 (비배음 부분음 + 긴 잔향)
+  function bowl(freq, dur, peak) {
+    const t = ctx.currentTime;
+    [[1, 1], [2.76, 0.5], [5.4, 0.25], [8.9, 0.12]].forEach(([mult, amp]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = freq * mult;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak * amp, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(master); g.connect(reverbGain);
+      o.start(t); o.stop(t + dur + 0.1);
+    });
+  }
   function breathCue(phase, dur) {
     if (!state.breathOn || !ensure()) return;
-    if (phase === "inhale") softPad(174, 261, dur || 4, 0.09);        // F3 → C4 천천히 상승
-    else if (phase === "exhale") softPad(261, 130, dur || 8, 0.10);   // C4 → C3 천천히 하강
-    else softPad(174, 174, Math.min(dur || 7, 3), 0.045);            // 멈춤: 낮고 잔잔
+    dur = dur || (phase === "inhale" ? 4 : phase === "exhale" ? 8 : 7);
+    if (!breathSession) { padCue(phase, dur); return; } // 세션 밖이면 패드
+    const t = ctx.currentTime, ng = breathSession.ng.gain, bp = breathSession.bp.frequency;
+    const ramp = (param, to, time) => { param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(to, t + time); };
+    if (phase === "inhale") { ramp(ng, 0.05, dur); ramp(bp, 950, dur); bowl(523.25, 3.6, 0.10); }      // 숨 들어오며 밝아짐 + C5 볼
+    else if (phase === "exhale") { ramp(ng, 0.0001, dur); ramp(bp, 280, dur); bowl(392.00, 4.6, 0.10); } // 숨 나가며 어두워짐 + G4 볼
+    else { ramp(ng, 0.022, Math.min(dur, 1.5)); }                                                       // 멈춤: 잔잔히 유지
   }
 
   window.Sound = {
     state, unlock: ensure,
     startAmbient, stopAmbient, setAmbientVolume,
-    chime, tap, tick, success, celebrate, breathCue,
+    chime, tap, tick, success, celebrate, breathCue, breathStart, breathStop,
     setSfx(v) { state.sfxOn = v; },
     setBreath(v) { state.breathOn = v; },
   };

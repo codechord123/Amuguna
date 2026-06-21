@@ -74,6 +74,17 @@ try {
   check("활기차요(7단계) 저장", te.mood === "활기차요");
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
 
+  // 2c) 오늘의 여정 (적응형 경로)
+  q("#journeyStart").click();
+  check("여정 시작", !q("#journey").hasAttribute("hidden") && !!q("#jBody .mood-grid"));
+  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "괜찮아요").click();
+  let jg = 0;
+  while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 8) q("#jNext").click();
+  check("여정 마지막 단계 도달", q("#jNext").textContent.indexOf("저장") >= 0);
+  q("#jNext").click();
+  check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
+  check("여정으로 오늘 기분 저장", ls("entries_v2")[tk].mood === "괜찮아요");
+
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
   q("[data-tab=challenge]").click();
   check("빈 상태 표시", !q("#chEmpty").hasAttribute("hidden"));
@@ -135,6 +146,7 @@ try {
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
   q("#breathBtn").click();
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
+  check("Sound.breathStart/Stop 존재", typeof window.Sound.breathStart === "function" && typeof window.Sound.breathStop === "function");
   // 수면 모드 토글
   q("#quickBreathFab").click();
   q("#sleepToggle").click();

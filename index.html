@@ -50,6 +50,15 @@
 
     <!-- ========== 탭: 오늘 ========== -->
     <section class="tab" id="tab-today">
+      <div class="card journey-start" id="journeyStartCard">
+        <div class="js-emoji">✨</div>
+        <div class="js-text">
+          <h2>오늘의 여정</h2>
+          <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+        </div>
+        <button class="btn primary" id="journeyStart">시작</button>
+      </div>
+
       <div class="card" id="checkin-card">
         <div class="card-head">
           <h2 id="checkinTitle">📔 오늘의 기록</h2>
@@ -413,6 +422,19 @@
     <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
     <button type="button" class="sleep-toggle" id="sleepToggle">🌙 수면 모드 끔</button>
     <button class="btn primary" id="qbClose">그만하기</button>
+  </div>
+
+  <!-- 오늘의 여정 (적응형 단계 기록) -->
+  <div class="journey" id="journey" hidden>
+    <header class="journey-head">
+      <button class="subback" id="jClose" aria-label="닫기">✕</button>
+      <div class="journey-progress"><i id="jBar"></i></div>
+    </header>
+    <div class="journey-body" id="jBody"></div>
+    <footer class="journey-foot">
+      <button class="btn" id="jPrev" hidden>이전</button>
+      <button class="btn primary" id="jNext">다음</button>
+    </footer>
   </div>
 
   <!-- 슬라이드 상세 페이지 -->

@@ -308,6 +308,31 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .card.collapsible.collapsed > h2::after { transform: rotate(-90deg); }
 .card.collapsible.collapsed > :not(h2) { display: none !important; }
 
+/* 오늘의 여정 시작 카드 */
+.journey-start { display: flex; align-items: center; gap: 14px; }
+.journey-start .js-emoji { font-size: 2rem; }
+.journey-start .js-text { flex: 1; }
+.journey-start .js-text h2 { margin: 0 0 2px; font-size: 1.15rem; }
+.journey-start .js-text .hint { margin: 0; }
+
+/* 여정 오버레이 */
+.journey { position: fixed; inset: 0; z-index: 85; background: var(--bg); display: flex; flex-direction: column; transform: translateY(16px); opacity: 0; transition: transform 0.3s var(--ease-soft), opacity 0.3s ease; }
+.journey.show { transform: translateY(0); opacity: 1; }
+.journey-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; }
+.journey-progress { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; }
+.journey-progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--accent-deep)); border-radius: 999px; transition: width 0.4s var(--ease-soft); }
+.journey-body { flex: 1; overflow-y: auto; max-width: 600px; width: 100%; margin: 0 auto; padding: 10px 22px 20px; display: flex; flex-direction: column; justify-content: center; }
+.journey-foot { display: flex; gap: 10px; max-width: 600px; width: 100%; margin: 0 auto; padding: 14px 22px calc(18px + env(safe-area-inset-bottom)); }
+.journey-foot .btn { flex: 1; }
+.journey-foot .btn.primary { flex: 2; }
+.j-q { font-size: 1.4rem; font-weight: 700; text-align: center; margin: 0 0 20px; line-height: 1.5; }
+.journey .js-emoji { font-size: 3rem; text-align: center; margin-bottom: 6px; }
+.journey .mood-grid { gap: 12px; }
+.journey .energy { margin-top: 10px; }
+.j-finish { text-align: center; }
+.j-finish h3 { font-size: 1.4rem; margin: 8px 0 10px; }
+.j-finish p { color: var(--ink-2); }
+
 /* 슬라이드 상세 페이지 */
 .subpage { position: fixed; inset: 0; z-index: 80; background: var(--bg); transform: translateX(100%); transition: transform 0.3s var(--ease-soft); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .subpage.show { transform: translateX(0); }

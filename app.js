@@ -392,7 +392,7 @@ function makeBreather(circleEl, textEl, base, opts) {
     cycles: () => cycles,
     start() {
       if (running) return;
-      Sound.unlock(); running = true; cycles = 0; enter(0);
+      Sound.unlock(); Sound.breathStart(); running = true; cycles = 0; enter(0);
       tick = setInterval(() => {
         remain--;
         if (remain <= 0) {
@@ -402,11 +402,12 @@ function makeBreather(circleEl, textEl, base, opts) {
             if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
           }
           enter(next);
-        } else { render(); if (!isSleep()) Sound.tick(); } // 수면 모드에선 카운트 틱 없이 패드만
+        } else { render(); }   // 카운트는 숫자로, 소리는 몰입형 사운드 세션이 담당
       }, 1000);
     },
     stop() {
       running = false; if (tick) { clearInterval(tick); tick = null; }
+      Sound.breathStop();
       circleEl.className = base; circleEl.style.transitionDuration = "";
       textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
     },
@@ -1286,44 +1287,144 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 const breathOverlay = document.getElementById("breathOverlay");
 const sleepToggle = document.getElementById("sleepToggle");
 let sleepMode = !!settings.sleepBreath;
-let sleepAmbientOn = false, wakeLock = null;
+let wakeLock = null;
 
 async function requestWake() { try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {} }
 function releaseWake() { try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {} }
-function startSleepAmbient() { if (!sleepAmbientOn) { Sound.startAmbient("rain"); Sound.setAmbientVolume(0.22); sleepAmbientOn = true; } }
-function stopSleepAmbient() { if (sleepAmbientOn) { Sound.stopAmbient(); sleepAmbientOn = false; } }
-function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "🌙 수면 모드 켜짐 (카운트 끔·자동 종료·화면 유지)" : "🌙 수면 모드 끔"; }
+function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "🌙 수면 모드 켜짐 (자동 종료·화면 유지)" : "🌙 수면 모드 끔"; }
 updateSleepLabel();
 
 const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big", {
   sleep: () => sleepMode,
   maxCycles: 12,
-  onAutoEnd: () => { stopSleepAmbient(); releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
+  onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
 });
 function openBreath() {
   breathOverlay.hidden = false;
   breathOverlay.classList.toggle("sleep", sleepMode);
   requestWake();                 // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
-  if (sleepMode) startSleepAmbient();
   qbBreather.start();
   document.getElementById("qbClose").focus();
 }
-function closeBreath() { qbBreather.stop(); stopSleepAmbient(); releaseWake(); breathOverlay.hidden = true; }
+function closeBreath() { qbBreather.stop(); releaseWake(); breathOverlay.hidden = true; }
 document.getElementById("quickBreathFab").addEventListener("click", openBreath);
 document.getElementById("qbClose").addEventListener("click", closeBreath);
 sleepToggle.addEventListener("click", () => {
   Sound.tap();
   sleepMode = !sleepMode; settings.sleepBreath = sleepMode; saveSettingsObj(settings);
   updateSleepLabel(); breathOverlay.classList.toggle("sleep", sleepMode);
-  if (!breathOverlay.hidden) { if (sleepMode) startSleepAmbient(); else stopSleepAmbient(); }
 });
 // 화면 복귀 시 wake lock 재획득
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !breathOverlay.hidden) requestWake(); });
 
+/* ===================== 오늘의 여정 (적응형 단계 기록) ===================== */
+const MOOD_ORDER = ["지쳤어요", "우울해요", "불안해요", "무기력해요", "그럭저럭", "괜찮아요", "활기차요"];
+const journey = document.getElementById("journey");
+const jBody = document.getElementById("jBody"), jBar = document.getElementById("jBar");
+const jPrev = document.getElementById("jPrev"), jNext = document.getElementById("jNext");
+let jData = {}, curId = "mood";
+function jSteps() {
+  const hr = new Date().getHours();
+  const low = jData.mood && moodMeta[jData.mood].score <= 2;
+  const s = ["mood", "energy"];
+  if (low) s.push("breathe");
+  s.push("note", "praise");
+  if (hr >= 18 || hr < 5) s.push("reflect");
+  s.push("finish");
+  return s;
+}
+function notePrompt(m) {
+  if (!m) return "오늘 하루, 한 줄로 남긴다면?";
+  const s = moodMeta[m].score;
+  if (s <= 2) return "지금 마음에 가장 걸리는 건 뭐예요? (안 적어도 괜찮아요)";
+  if (s >= 4) return "오늘 어떤 순간이 좋았어요?";
+  return "오늘 하루, 한 줄로 남긴다면?";
+}
+function stepHtml(id) {
+  if (id === "mood") return `<p class="j-q">지금 마음은 어때요?</p>
+    <div class="mood-grid">${MOOD_ORDER.map((m) => `<button class="mood ${jData.mood === m ? "selected" : ""}" data-mood="${m}">${moodMeta[m].emoji}<span>${m}</span></button>`).join("")}</div>
+    <p class="mood-response" id="jMoodReply" ${jData.mood ? "" : "hidden"}>${jData.mood ? curReplies()[jData.mood] : ""}</p>`;
+  if (id === "energy") return `<p class="j-q">오늘 에너지는 몇 칸쯤?</p>
+    <div class="energy"><input type="range" id="jEnergy" min="1" max="5" step="1" value="${jData.energy || 3}" aria-label="에너지"><div class="energy-face" id="jEnergyFace"></div></div>`;
+  if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
+    <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요. 준비되면 '다음'을 눌러요.<br>(오른쪽 아래 🌬️ 버튼으로 더 길게도 할 수 있어요)</p>`;
+  if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
+    <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
+  if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요 🌱</p>
+    <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">`;
+  if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
+    <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
+    <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
+  return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>오늘도 잘 기록했어요</h3>
+    <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
+    <p class="hint">아래 버튼을 누르면 저장돼요.</p></div>`;
+}
+function renderStep() {
+  const arr = jSteps(), i = Math.max(0, arr.indexOf(curId));
+  jBar.style.width = `${(i / (arr.length - 1)) * 100}%`;
+  jPrev.hidden = i <= 0;
+  jNext.textContent = curId === "finish" ? "기록 저장하기 💾" : "다음";
+  jBody.innerHTML = stepHtml(curId);
+  if (curId === "mood") {
+    jBody.querySelectorAll(".mood").forEach((b) => b.addEventListener("click", () => {
+      Sound.tap(); jData.mood = b.dataset.mood;
+      jBody.querySelectorAll(".mood").forEach((x) => x.classList.toggle("selected", x === b));
+      const r = jBody.querySelector("#jMoodReply"); r.textContent = curReplies()[jData.mood]; r.hidden = false;
+    }));
+  } else if (curId === "energy") {
+    const r = jBody.querySelector("#jEnergy"), f = jBody.querySelector("#jEnergyFace");
+    f.textContent = energyFaces[r.value]; r.addEventListener("input", () => { f.textContent = energyFaces[r.value]; });
+  }
+  jBody.scrollTop = 0;
+}
+function collectStep() {
+  if (curId === "energy") { const r = jBody.querySelector("#jEnergy"); if (r) jData.energy = Number(r.value); }
+  else if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
+  else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); }
+  else if (curId === "reflect") { const g = jBody.querySelector("#jGood"), h = jBody.querySelector("#jHard"); if (g) jData.good = g.value.trim(); if (h) jData.hard = h.value.trim(); }
+}
+function openJourney() {
+  Sound.unlock();
+  jData = { date: todayKey() };
+  const t = loadEntries()[todayKey()];
+  if (t) { jData.mood = t.mood; jData.energy = t.energy; jData.note = t.note; jData.praise = t.praise; if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; } }
+  curId = "mood"; journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
+}
+function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; }, 300); }
+function saveJourney() {
+  const entries = loadEntries(), k = jData.date || todayKey();
+  const prev = entries[k] || {};
+  entries[k] = {
+    date: k, mood: jData.mood, energy: Number(jData.energy || 3),
+    note: (jData.note || "").trim(), praise: (jData.praise || "").trim(),
+    tags: prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
+    updatedAt: new Date().toISOString(),
+  };
+  saveEntries(entries); Sound.success();
+  closeJourney(); loadToday(); checkBadges();
+  if (detectCrisis(jData.note)) showSafety();
+  toast("오늘 기록을 마쳤어요. 고마워요 💛");
+}
+document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
+document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); closeJourney(); });
+jNext.addEventListener("click", () => {
+  collectStep();
+  if (curId === "mood" && !jData.mood) { alert("지금 마음을 하나 골라주세요 🙂"); return; }
+  if (curId === "finish") { saveJourney(); return; }
+  const arr = jSteps(), i = arr.indexOf(curId);
+  curId = arr[Math.min(i + 1, arr.length - 1)]; Sound.tap(); renderStep();
+});
+jPrev.addEventListener("click", () => {
+  collectStep();
+  const arr = jSteps(), i = arr.indexOf(curId);
+  curId = arr[Math.max(i - 1, 0)]; Sound.tap(); renderStep();
+});
+
 // Esc로 오버레이/카드 닫기 (접근성)
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (!breathOverlay.hidden) closeBreath();
+  if (!journey.hidden) closeJourney();
+  else if (!breathOverlay.hidden) closeBreath();
   else if (!subpage.hidden) closeSubpage();
   else if (!onboard.hidden) { finishOnboard(); }
   else { const sc = document.getElementById("safetyCard"); if (!sc.hidden) sc.hidden = true; }
