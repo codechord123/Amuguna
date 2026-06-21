@@ -1170,62 +1170,112 @@ function reportSolutions(d) { // avgMood: 0-100
   if (!out.length) out.push({ t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling });
   return out.slice(0, 3);
 }
-function reportDetailHtml(kind) {
-  const entries = loadEntries();
-  let keys = [];
-  if (kind === "month") { const now = new Date(), y = now.getFullYear(), m = now.getMonth(), days = new Date(y, m + 1, 0).getDate(); for (let d = 1; d <= days; d++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`); }
-  else { for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); } }
+// 기간 통계 — 리포트 알고리즘의 코어 (현재/직전 기간을 같은 방식으로 계산)
+function periodStats(keys, entries) {
   const recs = keys.map((k) => entries[k]).filter(Boolean);
   const moods = recs.filter((e) => e.mood);
-  const avgMood = moods.length ? moods.reduce((s, e) => s + entryScore(e), 0) / moods.length : null; // 0-100
+  const scores = moods.map((e) => entryScore(e));
+  const avgMood = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+  const sd = scores.length > 1 ? Math.sqrt(scores.reduce((s, v) => s + (v - avgMood) ** 2, 0) / scores.length) : null;
   const energies = recs.filter((e) => e.energy);
   const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
-  const dist = {}; moods.forEach((e) => dist[e.mood] = (dist[e.mood] || 0) + 1);
-  const distMax = Object.keys(dist).length ? Math.max(...Object.values(dist)) : 1;
-  const distTotal = moods.length || 1;
-  const chs = loadChs(); let habTotal = 0, habDone = 0;
-  chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate && k <= todayKey()) { habTotal++; if (h.done[k]) habDone++; } }));
+  const chs = loadChs(); let habTotal = 0, habDone = 0; const perHab = [];
+  chs.forEach((h) => { let t = 0, dn = 0; keys.forEach((k) => { if (k >= h.startDate && k <= todayKey()) { t++; habTotal++; if (h.done[k]) { dn++; habDone++; } } }); if (t > 0) perHab.push({ h, t, d: dn }); });
   const habPct = habTotal ? Math.round((habDone / habTotal) * 100) : null;
+  const gratCount = recs.filter((e) => e.praise && e.praise.trim()).length;
+  const reflectCount = recs.filter((e) => e.reflection && (e.reflection.good || e.reflection.hard)).length;
+  const tagCounts = {}; moods.forEach((e) => (e.tags || []).forEach((t) => tagCounts[t] = (tagCounts[t] || 0) + 1));
+  const dist = {}; moods.forEach((e) => dist[e.mood] = (dist[e.mood] || 0) + 1);
+  let best = null, worst = null;
+  moods.forEach((e) => { const sc = entryScore(e); if (best == null || sc > best.sc) best = { e, sc }; if (worst == null || sc < worst.sc) worst = { e, sc }; });
+  return { recs, days: recs.length, moods, scores, avgMood, sd, avgEnergy, habTotal, habDone, habPct, perHab, gratCount, reflectCount, tagCounts, dist, best, worst };
+}
+function reportDetailHtml(kind) {
+  const entries = loadEntries();
+  let keys = [], prevKeys = [];
+  if (kind === "month") {
+    const now = new Date(), y = now.getFullYear(), m = now.getMonth(), days = new Date(y, m + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+    const pm = new Date(y, m - 1, 1), py = pm.getFullYear(), pmo = pm.getMonth(), pdays = new Date(py, pmo + 1, 0).getDate();
+    for (let d = 1; d <= pdays; d++) prevKeys.push(`${py}-${String(pmo + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+  } else {
+    for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+    for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); prevKeys.push(todayKey(d)); }
+  }
+  const cur = periodStats(keys, entries), prev = periodStats(prevKeys, entries);
   const summary = kind === "month" ? monthData : weekData;
   const period = summary ? (summary.range || summary.label || "") : "";
+  const unit = kind === "month" ? "달" : "주";
 
-  if (recs.length === 0) {
+  if (cur.recs.length === 0) {
     return `<p class="detail-stat">${period}</p><div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">아직 이 기간엔 기록이 없어요.<br>오늘의 여정으로 첫 기록을 남겨봐요.</p></div>
     <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
   }
 
-  const kpi = (emoji, val, label, cls) => `<div class="kpi ${cls || ""}"><span class="kpi-emoji">${emoji}</span><span class="kpi-val">${val}</span><span class="kpi-label">${label}</span></div>`;
+  const delta = (a, b) => (a == null || b == null) ? null : a - b;
+  const arrow = (d, unitTxt) => d == null ? "" : ` <small class="kpi-delta ${d >= 1 ? "up" : d <= -1 ? "down" : "flat"}">${d > 0 ? "▲" : d < 0 ? "▼" : "–"}${Math.abs(Math.round(d))}${unitTxt || ""}</small>`;
+  const dMood = delta(cur.avgMood, prev.avgMood);
+
+  const kpi = (emoji, val, label) => `<div class="kpi"><span class="kpi-emoji">${emoji}</span><span class="kpi-val">${val}</span><span class="kpi-label">${label}</span></div>`;
+  const topMoodEntry = Object.entries(cur.dist).sort((a, b) => b[1] - a[1])[0];
   const kpis = [
-    kpi("📅", `${recs.length}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
-    kpi(avgMood != null ? scoreEmoji(avgMood) : "—", avgMood != null ? `${Math.round(avgMood)}<i>/100</i>` : "—", "평균 기분"),
-    kpi("⚡", avgEnergy != null ? `${avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 에너지"),
-    habPct != null
-      ? kpi("🎯", `${habPct}<i>%</i>`, `습관 ${habDone}/${habTotal}`)
-      : kpi(Object.keys(dist).length ? moodMeta[Object.entries(dist).sort((a, b) => b[1] - a[1])[0][0]].emoji : "🙂", Object.keys(dist).length ? `${Object.entries(dist).sort((a, b) => b[1] - a[1])[0][1]}<i>일</i>` : "—", "가장 잦은 기분"),
+    kpi("📅", `${cur.days}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
+    kpi(cur.avgMood != null ? scoreEmoji(cur.avgMood) : "—", cur.avgMood != null ? `${Math.round(cur.avgMood)}<i>/100</i>${arrow(dMood)}` : "—", "평균 기분"),
+    kpi("⚡", cur.avgEnergy != null ? `${cur.avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 에너지"),
+    cur.habPct != null ? kpi("🎯", `${cur.habPct}<i>%</i>`, `습관 ${cur.habDone}/${cur.habTotal}`)
+      : kpi("🌱", `${cur.gratCount}<i>번</i>`, "잘한 일·감사"),
   ].join("");
+
+  // 지난 기간 대비 비교
+  let compareCard = "";
+  if (prev.days > 0) {
+    const items = [];
+    if (dMood != null) items.push(`<span class="cmp ${dMood >= 1 ? "up" : dMood <= -1 ? "down" : ""}">기분 ${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(Math.round(dMood))}</span>`);
+    items.push(`<span class="cmp ${cur.days - prev.days >= 0 ? "up" : "down"}">기록 ${cur.days - prev.days >= 0 ? "▲" : "▼"}${Math.abs(cur.days - prev.days)}일</span>`);
+    if (cur.habPct != null && prev.habPct != null) { const dh = cur.habPct - prev.habPct; items.push(`<span class="cmp ${dh >= 0 ? "up" : "down"}">습관 ${dh >= 0 ? "▲" : "▼"}${Math.abs(dh)}%</span>`); }
+    compareCard = `<div class="card"><h2>↔️ 지난 ${unit} 대비</h2><div class="cmp-row">${items.join("")}</div></div>`;
+  }
 
   const chart = reportChartSvg(keys, entries);
   const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>에너지</span></div></div>` : "";
 
-  const distCard = Object.keys(dist).length ? `<div class="card"><h2>🌈 기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(dist[m] / distMax) * 100}%"></div></div><span class="dist-count">${Math.round((dist[m] / distTotal) * 100)}%</span></div>`).join("")}</div></div>` : "";
+  // 하이라이트 — 가장 좋았던/힘들었던 날
+  const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
+  const hlCard = (cur.best && cur.worst && cur.best.e.date !== cur.worst.e.date) ? `<div class="card"><h2>✨ 이 기간 하이라이트</h2>${dayLine(cur.best, "🌟", "가장 좋았던 날")}${dayLine(cur.worst, "🌧️", "가장 힘들었던 날")}</div>` : "";
 
-  // 추세(전반부 vs 후반부 평균 기분, 0-100) + 감사 기록 수 → 솔루션 근거
-  const ms = moods.map((e) => entryScore(e));
+  // 자주 느낀 감정 (태그)
+  const topTags = Object.entries(cur.tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const tagCard = topTags.length ? `<div class="card"><h2>🏷️ 자주 느낀 감정</h2><div class="tag-chips">${topTags.map(([t, n]) => `<span class="tag-chip">${escapeHtml(t)} <i>${n}</i></span>`).join("")}</div></div>` : "";
+
+  // 기분 안정성(변동성)
+  let stabCard = "";
+  if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabCard = `<div class="card"><h2>📐 기분 안정성</h2><p class="insight">이 기간 기분의 변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
+
+  // 습관별 달성
+  const habCard = cur.perHab.length ? `<div class="card"><h2>🎯 습관별 달성</h2><div class="dist">${cur.perHab.map(({ h, t, d }) => `<div class="dist-row"><span class="cap-name">${h.emoji} ${escapeHtml(h.title)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(d / t * 100)}%"></div></div><span class="dist-count">${d}/${t}</span></div>`).join("")}</div></div>` : "";
+
+  const distCard = Object.keys(cur.dist).length ? `<div class="card"><h2>🌈 기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => cur.dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(cur.dist[m] / Math.max(...Object.values(cur.dist))) * 100}%"></div></div><span class="dist-count">${Math.round((cur.dist[m] / cur.moods.length) * 100)}%</span></div>`).join("")}</div></div>` : "";
+
+  // 추세 → 솔루션
   let trend = "flat";
-  if (ms.length >= 4) { const h = Math.floor(ms.length / 2); const a = ms.slice(0, h).reduce((s, v) => s + v, 0) / h; const b = ms.slice(h).reduce((s, v) => s + v, 0) / (ms.length - h); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
-  const gratCount = recs.filter((e) => e.praise && e.praise.trim()).length;
-  const sols = reportSolutions({ avgMood, avgEnergy, habPct, trend, gratCount, days: recs.length });
+  if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
+  const sols = reportSolutions({ avgMood: cur.avgMood, avgEnergy: cur.avgEnergy, habPct: cur.habPct, trend, gratCount: cur.gratCount, days: cur.days });
   const solCard = `<div class="card sol-card"><h2>🧪 오늘의 쉼 솔루션</h2><p class="hint">이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
 
-  const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${e.energy ? "⚡" + e.energy : ""}</span></div>`; }).join("");
-  const daysCard = `<details class="card rpt-days"${kind === "week" ? " open" : ""}><summary>🗓️ 날짜별 기록 (${recs.length}일)</summary><div class="rpt-list">${rows}</div></details>`;
+  const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
+  const daysCard = `<details class="card rpt-days"${kind === "week" ? " open" : ""}><summary>🗓️ 날짜별 기록 (${cur.days}일)</summary><div class="rpt-list">${rows}</div></details>`;
 
   return `
     <p class="detail-stat">${period}</p>
     ${summary && summary.summary ? `<div class="card rpt-summary"><p class="insight">${summary.summary}</p></div>` : ""}
     <div class="kpi-grid">${kpis}</div>
+    ${compareCard}
     ${chartCard}
+    ${hlCard}
+    ${stabCard}
+    ${tagCard}
     ${distCard}
+    ${habCard}
     ${solCard}
     ${daysCard}
     <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
@@ -1233,7 +1283,7 @@ function reportDetailHtml(kind) {
 async function shareReport(kind) {
   const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
   const d = kind === "month" ? monthData : weekData;
-  const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${d.avgMood.toFixed(1)}/5` : ""} 🌿` : "오늘의 쉼 리포트";
+  const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${Math.round(d.avgMood)}/100` : ""} 🌿` : "오늘의 쉼 리포트";
   try {
     const file = new File([dataURLtoBlob(url)], "report.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }

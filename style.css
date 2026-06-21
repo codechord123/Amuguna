@@ -375,6 +375,23 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-legend .rl-mood { background: var(--accent); }
 .rpt-legend .rl-energy { background: var(--energy); }
 
+/* ----- 리포트: 비교·하이라이트·태그·KPI 델타 ----- */
+.kpi-delta { font-size: 0.62rem; font-weight: 800; vertical-align: middle; }
+.kpi-delta.up { color: var(--success); } .kpi-delta.down { color: var(--danger); } .kpi-delta.flat { color: var(--soft); }
+.cmp-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.cmp { background: var(--bg-sunken); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); }
+.cmp.up { color: var(--success); } .cmp.down { color: var(--danger); }
+.hl-row { display: flex; gap: var(--s3); align-items: flex-start; padding: var(--s2) 0; }
+.hl-row + .hl-row { border-top: 1px solid var(--line); }
+.hl-emoji { font-size: 1.5rem; line-height: 1.2; }
+.hl-body { flex: 1; min-width: 0; }
+.hl-top { margin: 0; font-size: var(--t-sm); color: var(--ink-2); font-weight: var(--w-semi); }
+.hl-top b { color: var(--accent-deep); }
+.hl-note { margin: 2px 0 0; font-size: var(--t-sm); color: var(--soft); word-break: keep-all; }
+.tag-chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.tag-chip { background: var(--bg-sunken); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); }
+.tag-chip i { color: var(--accent-deep); font-style: normal; font-weight: 800; }
+
 /* ----- 리포트 솔루션 (과학 근거) ----- */
 .sol-card .sol { padding: var(--s3) 0; border-bottom: 1px solid var(--line); }
 .sol-card .sol:last-child { border-bottom: none; padding-bottom: 0; }
