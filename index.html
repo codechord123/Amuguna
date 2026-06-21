@@ -262,11 +262,12 @@
       </div>
 
       <div class="stats-panel" data-panel="summary">
+        <div class="duo-grid">
         <div class="card" id="weeklyCard">
           <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
           <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
           <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="weekDetailBtn">📄 자세히 보기 ›</button>
+            <button class="btn" id="weekDetailBtn">📄 자세히 ›</button>
           </div>
           <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         </div>
@@ -274,9 +275,10 @@
           <div class="card-head"><h2>📈 월간 리포트</h2><span class="today-date" id="monthRange"></span></div>
           <p class="insight" id="monthlySummary">이번 달 기록이 쌓이면 요약해드릴게요.</p>
           <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="monthDetailBtn">📄 자세히 보기 ›</button>
+            <button class="btn" id="monthDetailBtn">📄 자세히 ›</button>
           </div>
           <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
+        </div>
         </div>
         <div class="card" id="badgeCard">
           <h2>🏅 배지</h2>
@@ -361,6 +363,7 @@
         </div>
       </div>
 
+      <div class="settings-grid">
       <div class="card collapsible collapsed">
         <h2>🎨 테마</h2>
         <div class="theme-grid" id="themeGrid">
@@ -432,6 +435,7 @@
         </div>
         <p class="hint" style="margin-top:12px">☁️ <strong>기기 간 이동:</strong> 기존 기기에서 "내보내기" → 새 기기에서 "복원".</p>
         <p class="hint"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">🔒 개인정보 처리방침</a></p>
+      </div>
       </div>
     </section>
 
