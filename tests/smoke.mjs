@@ -80,10 +80,17 @@ try {
   check("습관 1개 생성됨", ls("challenges_v2").length === 1);
   q(".habit-check").click();
   check("습관 오늘 완료 저장됨", Object.values(ls("challenges_v2")[0].done).some(Boolean));
-  q(".habit-info").click(); q(".habit-card [data-act=edit]").click();
-  q('.habit-card [data-ef="title"]').value = "아침 산책";
-  q(".habit-card [data-act=savehabit]").click();
+  // 상세 페이지로 전환 → 편집
+  q(".habit-info").click();
+  check("습관 상세 페이지 열림", !d.querySelector("#subpage").hasAttribute("hidden"));
+  check("상세에 90칸 그리드", d.querySelectorAll("#subBody .ch-cell").length === 90);
+  q("#subBody [data-act=edit]").click();
+  q('#subBody [data-ef="title"]').value = "아침 산책";
+  q("#subBody [data-act=savehabit]").click();
   check("습관 편집(이름 변경)됨", ls("challenges_v2")[0].title === "아침 산책");
+  check("편집 후 상세 제목 갱신", d.querySelector("#subTitle").textContent.includes("아침 산책"));
+  q("#subBack").click();
+  check("상세 페이지 닫기 동작", !d.querySelector("#subpage").classList.contains("show"));
 
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();

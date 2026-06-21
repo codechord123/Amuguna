@@ -567,9 +567,8 @@ function renderChallenge() {
   summary.hidden = false;
   summary.textContent = `오늘 ${doneToday} / ${chs.length} 완료 ${doneToday === chs.length ? "🎉 다 해냈어요!" : "🌱"}`;
 
-  // 카드 목록
+  // 카드 목록 (가벼운 카드 — 누르면 상세 페이지로 전환)
   list.innerHTML = chs.map((h) => habitCardHtml(h)).join("");
-  chs.forEach((h) => fillHabitGrid(h));
 
   addBtn.hidden = false;
   setup.hidden = !addingMode;
@@ -581,38 +580,46 @@ function habitCardHtml(h) {
   const doneCount = Object.values(h.done).filter(Boolean).length;
   const streak = challengeStreak(h);
   const todayDone = !!h.done[todayKey()];
-  const open = expandedIds.has(h.id);
-  const reached = Object.keys(MILESTONES).map(Number).filter((m) => doneCount >= m);
-  const ms = reached.length ? MILESTONES[Math.max(...reached)] : "";
   return `
   <div class="habit-card" data-id="${h.id}">
     <div class="habit-top">
-      <div class="habit-info" data-act="expand">
-        <div class="habit-title">${h.emoji} ${escapeHtml(h.title)}</div>
+      <div class="habit-info" data-act="open" role="button" tabindex="0">
+        <div class="habit-title">${h.emoji} ${escapeHtml(h.title)} <span class="go">›</span></div>
         <div class="habit-meta">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일</div>
       </div>
       <button class="habit-check ${todayDone ? "done" : ""}" data-act="check" aria-label="오늘 완료 체크">${todayDone ? "✓" : "○"}</button>
     </div>
     <div class="habit-mini-bar"><i style="width:${(doneCount / CH_TARGET) * 100}%"></i></div>
-    <div class="habit-detail ${open ? "open" : ""}">
-      ${h.cue ? `<p class="habit-cue">⏰ ${escapeHtml(h.cue)}에 하기</p>` : ""}
-      ${h.minVersion ? `<p class="habit-min">💡 힘든 날엔 최소만: ${escapeHtml(h.minVersion)}</p>` : ""}
-      ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
-      <div class="ch-grid" data-grid="${h.id}"></div>
-      <div class="inline-edit" data-edit hidden>
-        <input class="text-input" data-ef="title" value="${escapeHtml(h.title)}" maxlength="40" />
-        <input class="text-input" data-ef="cue" value="${escapeHtml(h.cue || "")}" placeholder="언제 할까요 (트리거)" maxlength="20" />
-        <input class="text-input" data-ef="min" value="${escapeHtml(h.minVersion || "")}" placeholder="최소 버전 (선택)" maxlength="40" />
-        <div class="edit-actions"><button class="btn primary" data-act="savehabit">저장</button><button class="btn" data-act="canceledit">취소</button></div>
-      </div>
-      <div class="data-btns" style="margin-top:16px">
-        <button class="btn" data-act="edit">✏️ 편집</button>
-        <button class="btn" data-act="calendar">📅 캘린더에 매일 알림</button>
-        <button class="btn" data-act="share">📤 진행 공유</button>
-        <button class="btn danger" data-act="giveup">이 습관 그만두기</button>
-      </div>
-    </div>
   </div>`;
+}
+
+function detailHabitHtml(h) {
+  const dayNum = Math.min(daysSince(h.startDate) + 1, CH_TARGET);
+  const doneCount = Object.values(h.done).filter(Boolean).length;
+  const streak = challengeStreak(h);
+  const todayDone = !!h.done[todayKey()];
+  const reached = Object.keys(MILESTONES).map(Number).filter((m) => doneCount >= m);
+  const ms = reached.length ? MILESTONES[Math.max(...reached)] : "";
+  return `
+    <p class="detail-stat">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일 · 남은 ${Math.max(CH_TARGET - doneCount, 0)}일</p>
+    <div class="ch-progress"><div class="ch-bar" style="width:${(doneCount / CH_TARGET) * 100}%"></div></div>
+    <button class="btn ${todayDone ? "" : "primary"} block" data-act="check">${todayDone ? "오늘 완료함 ✓ (취소하려면 누르기)" : "오늘 완료 체크 ✓"}</button>
+    ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
+    ${h.cue ? `<p class="habit-cue">⏰ ${escapeHtml(h.cue)}에 하기</p>` : ""}
+    ${h.minVersion ? `<p class="habit-min">💡 힘든 날엔 최소만: ${escapeHtml(h.minVersion)}</p>` : ""}
+    <div class="ch-grid" data-grid="${h.id}"></div>
+    <div class="inline-edit" data-edit hidden>
+      <input class="text-input" data-ef="title" value="${escapeHtml(h.title)}" maxlength="40" />
+      <input class="text-input" data-ef="cue" value="${escapeHtml(h.cue || "")}" placeholder="언제 할까요 (트리거)" maxlength="20" />
+      <input class="text-input" data-ef="min" value="${escapeHtml(h.minVersion || "")}" placeholder="최소 버전 (선택)" maxlength="40" />
+      <div class="edit-actions"><button class="btn primary" data-act="savehabit">저장</button><button class="btn" data-act="canceledit">취소</button></div>
+    </div>
+    <div class="data-btns" style="margin-top:16px">
+      <button class="btn" data-act="edit">✏️ 편집</button>
+      <button class="btn" data-act="calendar">📅 캘린더에 매일 알림</button>
+      <button class="btn" data-act="share">📤 진행 공유</button>
+      <button class="btn danger" data-act="giveup">이 습관 그만두기</button>
+    </div>`;
 }
 
 function fillHabitGrid(h) {
@@ -632,54 +639,81 @@ function fillHabitGrid(h) {
   grid.innerHTML = html;
 }
 
+// 목록 카드: 누르면 상세 페이지로 전환, 체크 버튼은 바로 완료 토글
 document.getElementById("challengeList").addEventListener("click", (e) => {
   const card = e.target.closest(".habit-card"); if (!card) return;
-  const id = card.dataset.id;
   const actEl = e.target.closest("[data-act]"); if (!actEl) return;
-  const act = actEl.dataset.act;
-  const chs = loadChs(); const h = chs.find((x) => x.id === id); if (!h) return;
+  const id = card.dataset.id, act = actEl.dataset.act;
+  if (act === "open") { Sound.tap(); openHabitDetail(id); }
+  else if (act === "check") applyHabitAction("check", id, card);
+});
+document.getElementById("challengeList").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const info = e.target.closest(".habit-info"); if (!info) return;
+  e.preventDefault(); const card = info.closest(".habit-card"); Sound.tap(); openHabitDetail(card.dataset.id);
+});
 
-  if (act === "expand") {
-    if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
-    card.querySelector(".habit-detail").classList.toggle("open");
-  } else if (act === "check") {
+/* 습관 상세 — 슬라이드 페이지 */
+const subpage = document.getElementById("subpage");
+const subBody = document.getElementById("subBody");
+const subTitle = document.getElementById("subTitle");
+let openHabitId = null;
+function openSubpage(title, html) {
+  subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
+  requestAnimationFrame(() => subpage.classList.add("show"));
+}
+function closeSubpage() {
+  subpage.classList.remove("show"); openHabitId = null;
+  setTimeout(() => { subpage.hidden = true; subBody.innerHTML = ""; }, 300);
+}
+function openHabitDetail(id) {
+  const h = loadChs().find((x) => x.id === id); if (!h) return;
+  openHabitId = id; openSubpage(`${h.emoji} ${h.title}`, detailHabitHtml(h)); fillHabitGrid(h);
+}
+function refreshHabitDetail(id) {
+  if (subpage.hidden || openHabitId !== id) return;
+  const h = loadChs().find((x) => x.id === id); if (!h) return;
+  subTitle.textContent = `${h.emoji} ${h.title}`; subBody.innerHTML = detailHabitHtml(h); fillHabitGrid(h);
+}
+document.getElementById("subBack").addEventListener("click", () => { Sound.tap(); closeSubpage(); });
+subBody.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]"); if (!el || !openHabitId) return;
+  applyHabitAction(el.dataset.act, openHabitId, subBody);
+});
+
+// 습관 동작 (목록·상세 공용)
+function applyHabitAction(act, id, scopeEl) {
+  const chs = loadChs(); const h = chs.find((x) => x.id === id); if (!h) return;
+  if (act === "check") {
     const k = todayKey();
     h.done[k] = !h.done[k];
     const after = Object.values(h.done).filter(Boolean).length;
     let celebrated = false;
-    if (h.done[k] && MILESTONES[after] && !h.celebrated.includes(after)) {
-      h.celebrated.push(after); celebrated = true;
-    }
+    if (h.done[k] && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
     saveChs(chs);
-    if (h.done[k]) { if (celebrated) { Sound.celebrate(); confetti(); expandedIds.add(id); } else Sound.success(); }
-    else Sound.tap();
-    renderChallenge();
-    if (h.done[k]) { // 오늘 칸 채움 애니메이션
-      const grid = document.querySelector(`[data-grid="${id}"]`);
-      const idx = daysSince(h.startDate);
-      if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done");
-    }
+    if (h.done[k]) { if (celebrated) { Sound.celebrate(); confetti(); } else Sound.success(); } else Sound.tap();
+    renderChallenge(); refreshHabitDetail(id);
+    if (h.done[k]) { const grid = document.querySelector(`[data-grid="${id}"]`); const idx = daysSince(h.startDate); if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done"); }
     checkBadges();
   } else if (act === "edit") {
-    const f = card.querySelector("[data-edit]"); f.hidden = !f.hidden; Sound.tap();
+    const f = scopeEl.querySelector("[data-edit]"); if (f) { f.hidden = !f.hidden; Sound.tap(); }
   } else if (act === "savehabit") {
-    const f = card.querySelector("[data-edit]");
+    const f = scopeEl.querySelector("[data-edit]");
     const title = f.querySelector('[data-ef="title"]').value.trim();
     if (!title) { alert("습관 이름을 비울 수 없어요 🙂"); return; }
     h.title = title; h.cue = f.querySelector('[data-ef="cue"]').value.trim(); h.minVersion = f.querySelector('[data-ef="min"]').value.trim();
-    saveChs(chs); Sound.success(); expandedIds.add(id); renderChallenge();
+    saveChs(chs); Sound.success(); renderChallenge(); refreshHabitDetail(id);
   } else if (act === "canceledit") {
-    renderChallenge();
+    refreshHabitDetail(id);
   } else if (act === "calendar") {
     Sound.tap(); exportHabitIcs(h);
   } else if (act === "share") {
     Sound.tap(); shareHabit(h);
   } else if (act === "giveup") {
     if (!confirm("이 습관을 그만둘까요? 기록은 사라져요.\n그만둬도 괜찮아요 — 쉬어가는 것도 용기예요.")) return;
-    saveChs(chs.filter((x) => x.id !== id)); expandedIds.delete(id);
-    Sound.tap(); renderChallenge();
+    saveChs(chs.filter((x) => x.id !== id)); Sound.tap(); closeSubpage(); renderChallenge();
   }
-});
+}
 
 /* 🔌 캘린더(.ics) — 습관을 캘린더 앱에 90일치 매일 알림으로 */
 function exportHabitIcs(h) {
@@ -1269,6 +1303,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if (!breathOverlay.hidden) closeBreath();
+  else if (!subpage.hidden) closeSubpage();
   else if (!onboard.hidden) { finishOnboard(); }
   else { const sc = document.getElementById("safetyCard"); if (!sc.hidden) sc.hidden = true; }
 });
