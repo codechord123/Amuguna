@@ -263,26 +263,13 @@
 
       <div class="stats-panel" data-panel="summary">
         <div class="duo-grid">
-        <div class="card" id="weeklyCard">
-          <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
-          <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
-          <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="weekDetailBtn">📄 자세히 ›</button>
-          </div>
-          <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
+          <button class="report-tile" id="weekDetailBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
+          <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
         </div>
-        <div class="card" id="monthlyCard">
-          <div class="card-head"><h2>📈 월간 리포트</h2><span class="today-date" id="monthRange"></span></div>
-          <p class="insight" id="monthlySummary">이번 달 기록이 쌓이면 요약해드릴게요.</p>
-          <div class="data-btns" style="margin-top:14px">
-            <button class="btn" id="monthDetailBtn">📄 자세히 ›</button>
-          </div>
-          <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
-        </div>
-        </div>
+        <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
+        <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         <div class="card" id="badgeCard">
           <h2>🏅 배지</h2>
-          <p class="hint">기록을 이어가며 하나씩 모아봐요.</p>
           <div class="badge-grid" id="badgeGrid"></div>
         </div>
       </div>

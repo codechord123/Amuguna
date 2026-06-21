@@ -927,17 +927,14 @@ function renderWeekly(entries) {
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
   const topMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
   const range = `${+keys[0].split("-")[1]}/${+keys[0].split("-")[2]} ~ ${+keys[6].split("-")[1]}/${+keys[6].split("-")[2]}`;
-  document.getElementById("weekRange").textContent = range;
-  const el = document.getElementById("weeklySummary");
-  if (days.length === 0) { el.textContent = "이번 주 기록이 아직 없어요. 한 번만 남겨도 다음 주 리포트가 시작돼요 🌱"; weekData = null; return; }
+  if (days.length === 0) { weekData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 주 ${days.length}일 기록.` : `이번 주 ${days.length}일이나 마음을 남겼어요.`);
   if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 에너지 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
   if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요 💛" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
-  el.textContent = parts.join(" ");
-  weekData = { range, daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+  weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
 }
 
 function drawWeekCanvas() {
@@ -989,9 +986,7 @@ function renderMonthly(entries) {
   const reflections = recs.filter((e) => e.reflection && (e.reflection.good || e.reflection.hard)).length;
   const chs = loadChs(); let habTotal = 0, habDone = 0;
   chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate && k <= todayKey()) { habTotal++; if (h.done[k]) habDone++; } }));
-  document.getElementById("monthRange").textContent = `${y}년 ${m + 1}월`;
-  const el = document.getElementById("monthlySummary");
-  if (recs.length === 0) { el.textContent = "이번 달 기록이 아직 없어요. 한 번만 남겨도 시작돼요 🌱"; monthData = null; return; }
+  if (recs.length === 0) { monthData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 달 ${recs.length}일 기록.` : `이번 달 ${recs.length}일 마음을 남겼어요.`);
   if (avgMood != null) parts.push(`평균 기분 ${avgMood.toFixed(1)}/5${topMood ? `, 가장 자주 ${moodMeta[topMood[0]].emoji} ${topMood[0]}` : ""}.`);
@@ -999,8 +994,7 @@ function renderMonthly(entries) {
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
   if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
   if (!plain) parts.push("한 달을 차곡차곡 살아냈어요 💛");
-  el.textContent = parts.join(" ");
-  monthData = { label: `${y}년 ${m + 1}월`, daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
+  monthData = { label: `${y}년 ${m + 1}월`, summary: parts.join(" "), daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null) };
 }
 function drawMonthCanvas() {
   const c = document.getElementById("monthCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
@@ -1053,6 +1047,7 @@ function reportDetailHtml(kind) {
   const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${e.energy ? "⚡" + e.energy : ""}</span></div>`; }).join("");
   return `
     <p class="detail-stat">${summary ? (summary.range || summary.label || "") : ""} · 기록 ${recs.length}일</p>
+    ${summary && summary.summary ? `<p class="insight" style="margin:0 0 14px">${summary.summary}</p>` : ""}
     <div class="card">
       ${avgMood != null ? `<p>평균 기분 <b>${avgMood.toFixed(1)} / 5</b></p>` : ""}
       ${avgEnergy != null ? `<p>평균 에너지 <b>${avgEnergy.toFixed(1)} / 5</b></p>` : ""}
