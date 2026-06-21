@@ -151,8 +151,9 @@ function escapeHtml(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<
 /* ===================== 온보딩 ===================== */
 const obSlides = [
   { e: "☕", t: "여긴 잘 쉬려고 온 곳이에요", d: "잘하려고 애쓰지 않아도 돼요. 그냥 와준 것만으로 충분해요." },
-  { e: "📔", t: "하루 한 줄, 마음만 남겨요", d: "기분 하나만 눌러도 기록은 시작돼요. 일기는 비워둬도 괜찮아요." },
-  { e: "🌿", t: "지칠 땐 '쉼' 탭에서 숨 한 번", d: "위로 한마디, 호흡, 잔잔한 소리. 언제든 도망 와도 돼요." },
+  { e: "✨", t: "'오늘의 여정'으로 기록해요", d: "동그라미를 돌려 오늘 기분을 0~100점으로, 감정도 골라요. 한 걸음씩 따라가면 끝나요." },
+  { e: "📊", t: "기록이 쌓이면 나를 알게 돼요", d: "기분·활력 흐름, 요일 패턴, 감정과 습관의 관계까지 '기록' 탭이 분석해줘요." },
+  { e: "🌿", t: "지칠 땐 '쉼' 탭에서 숨 한 번", d: "위로 한마디, 호흡 명상, 잔잔한 소리. 언제든 도망 와도 돼요." },
 ];
 let obIndex = 0;
 const onboard = document.getElementById("onboard");
@@ -883,6 +884,7 @@ function renderStats() {
   renderCorrelation(entries);
   renderTagInsight(entries);
   renderDow(entries);
+  renderTimeOfDay(entries);
   renderGratitude(list);
   drawChart(entries);
   renderMoodCalendar(entries);
@@ -1251,6 +1253,14 @@ function reportDetailHtml(kind) {
   let stabCard = "";
   if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabCard = `<div class="card"><h2>📐 기분 안정성</h2><p class="insight">이 기간 기분의 변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
 
+  // 월간: 주차별 평균 기분
+  let weekBreakCard = "";
+  if (kind === "month") {
+    const wk = [[], [], [], [], []];
+    keys.forEach((k) => { const day = +k.split("-")[2]; const wi = Math.min(4, Math.floor((day - 1) / 7)); if (entries[k] && entries[k].mood) wk[wi].push(entryScore(entries[k])); });
+    const rows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
+    if (rows.length >= 2) weekBreakCard = `<div class="card"><h2>📅 주차별 평균 기분</h2><div class="dist">${rows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
+  }
   // 습관별 달성
   const habCard = cur.perHab.length ? `<div class="card"><h2>🎯 습관별 달성</h2><div class="dist">${cur.perHab.map(({ h, t, d }) => `<div class="dist-row"><span class="cap-name">${h.emoji} ${escapeHtml(h.title)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(d / t * 100)}%"></div></div><span class="dist-count">${d}/${t}</span></div>`).join("")}</div></div>` : "";
 
@@ -1271,6 +1281,7 @@ function reportDetailHtml(kind) {
     <div class="kpi-grid">${kpis}</div>
     ${compareCard}
     ${chartCard}
+    ${weekBreakCard}
     ${hlCard}
     ${stabCard}
     ${tagCard}
@@ -1483,6 +1494,21 @@ function renderDow(entries) {
     const avg = ns[i] ? sums[i] / ns[i] : null;
     return `<div class="dow-col"><span class="dow-val">${avg != null ? Math.round(avg) : ""}</span><div class="dow-bar-wrap"><div class="dow-bar" style="height:${avg != null ? Math.max(4, Math.round(avg)) : 0}%;background:${avg != null ? scoreColor(avg) : "var(--bg-sunken)"}"></div></div><span class="dow-name">${nm}</span></div>`;
   }).join("");
+}
+// 시간대별 평균 기분(0-100) — 기록한 시각(updatedAt) 기준
+function renderTimeOfDay(entries) {
+  const el = document.getElementById("timeOfDay"); if (!el) return;
+  const buckets = [{ k: "아침", e: "🌅", lo: 5, hi: 11 }, { k: "오후", e: "☀️", lo: 12, hi: 17 }, { k: "저녁", e: "🌇", lo: 18, hi: 21 }, { k: "밤", e: "🌙", lo: 22, hi: 4 }];
+  const sums = {}, ns = {};
+  Object.values(entries).forEach((e) => {
+    if (!e.mood || !e.updatedAt) return;
+    const h = new Date(e.updatedAt).getHours();
+    const b = buckets.find((b) => b.lo <= b.hi ? (h >= b.lo && h <= b.hi) : (h >= b.lo || h <= b.hi));
+    if (!b) return; sums[b.k] = (sums[b.k] || 0) + entryScore(e); ns[b.k] = (ns[b.k] || 0) + 1;
+  });
+  const rows = buckets.filter((b) => ns[b.k]);
+  if (!rows.length) { el.innerHTML = '<p class="empty">기록이 쌓이면 시간대별 패턴을 보여드려요.</p>'; return; }
+  el.innerHTML = rows.map((b) => { const avg = sums[b.k] / ns[b.k]; return `<div class="dist-row"><span class="cap-name">${b.e} ${b.k}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(avg)}%;background:${scoreColor(avg)}"></div></div><span class="dist-count">${Math.round(avg)}</span></div>`; }).join("");
 }
 // 감정 태그별 평균 기분(0-100) — 어떤 감정일 때 점수가 높/낮은지
 function renderTagInsight(entries) {
@@ -1816,19 +1842,39 @@ document.getElementById("importBtn").addEventListener("click", () => { Sound.tap
 document.getElementById("importFile").addEventListener("change", async (e) => {
   const file = e.target.files[0]; if (!file) return;
   try {
+    if (file.size > 8 * 1024 * 1024) throw new Error("파일이 너무 커요");
     const data = JSON.parse(await file.text());
-    if (!data || typeof data !== "object") throw 0;
+    if (!data || typeof data !== "object" || (!data.entries && !data.challenges)) throw new Error("형식이 올바르지 않아요");
+    let nEntry = 0, nCh = 0;
     if (data.entries && typeof data.entries === "object") {
-      const entries = loadEntries(); Object.entries(data.entries).forEach(([k, v]) => { entries[k] = v; }); saveEntries(entries);
+      const entries = loadEntries();
+      Object.entries(data.entries).forEach(([k, v]) => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !v || typeof v !== "object") return; // 날짜 키·객체만
+        entries[k] = {
+          date: k,
+          mood: typeof v.mood === "string" ? v.mood : undefined,
+          score: (typeof v.score === "number" && v.score >= 0 && v.score <= 100) ? v.score : undefined,
+          energy: (typeof v.energy === "number") ? Math.max(1, Math.min(5, v.energy)) : undefined,
+          note: typeof v.note === "string" ? v.note.slice(0, 4000) : "",
+          praise: typeof v.praise === "string" ? v.praise.slice(0, 500) : "",
+          tags: Array.isArray(v.tags) ? v.tags.filter((t) => typeof t === "string").slice(0, 30) : [],
+          reflection: (v.reflection && typeof v.reflection === "object") ? { good: String(v.reflection.good || "").slice(0, 500), hard: String(v.reflection.hard || "").slice(0, 500) } : { good: "", hard: "" },
+          updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : new Date().toISOString(),
+        };
+        nEntry++;
+      });
+      saveEntries(entries);
     }
     if (Array.isArray(data.challenges)) {
       const chs = loadChs(); const ids = new Set(chs.map((c) => c.id));
-      data.challenges.forEach((c) => { if (c && c.id && !ids.has(c.id)) chs.push(c); }); saveChs(chs);
+      data.challenges.forEach((c) => { if (c && typeof c === "object" && c.id && c.title && !ids.has(c.id)) { c.done = c.done && typeof c.done === "object" ? c.done : {}; chs.push(c); nCh++; } });
+      saveChs(chs);
     }
+    if (!nEntry && !nCh) throw new Error("복원할 기록이 없어요");
     Sound.success(); loadToday(); renderChallenge();
-    alert("복원 완료! 기존 기록과 합쳤어요 🌿");
+    alert(`복원 완료! 기록 ${nEntry}개${nCh ? ` · 습관 ${nCh}개` : ""}를 기존 데이터와 합쳤어요 🌿`);
   } catch (err) {
-    alert("불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.");
+    alert(`불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.\n(${err && err.message ? err.message : "형식 오류"})`);
   }
   e.target.value = "";
 });
@@ -2205,3 +2251,16 @@ scheduleReminder();
 if (!settings.badges) { settings.badges = earnedBadgeIds(); saveSettingsObj(settings); } // 첫 실행은 조용히 시드(스팸 방지)
 if (!localStorage.getItem(DB.ONBOARD)) showOnboard();
 else comebackCheck();
+
+/* 자정 넘김 처리 — 앱을 켜둔 채 날짜가 바뀌면 '오늘'을 갱신 */
+let _lastDayKey = todayKey();
+function checkDayRollover() {
+  const t = todayKey();
+  if (t === _lastDayKey) return;
+  _lastDayKey = t;
+  loadToday();
+  if (!document.getElementById("tab-stats").hidden) renderStats();
+  scheduleReminder();
+}
+setInterval(checkDayRollover, 60000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkDayRollover(); });
