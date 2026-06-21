@@ -29,7 +29,7 @@
   --card: #fffefc;
   --ink: #322a25;
   --ink-2: #6a5c53;
-  --soft: #9b8b80;
+  --soft: #877668;
   --line: #ece1d6;
   --line-strong: #e0d1c2;
   --bg-sunken: #f2e9df;
@@ -61,7 +61,7 @@
   --card: #ffffff;
   --ink: #24302c;
   --ink-2: #4c5b56;
-  --soft: #7a8a85;
+  --soft: #6b7c77;
   --line: #dde8e5;
   --line-strong: #cddedb;
   --bg-sunken: #e5efec;
@@ -491,6 +491,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 
 /* ----- 서브탭 컨테이너 ----- */
 .stats-seg { margin-bottom: var(--s4); }
+.section-label { font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: var(--s5) 0 var(--s2); }
+.section-label .opt { font-weight: var(--w-reg); color: var(--soft); font-size: var(--t-xs); }
 .stats-panel > .card:last-child { margin-bottom: 0; }
 
 /* ----- 접기 카드 ----- */

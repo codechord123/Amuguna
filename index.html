@@ -17,7 +17,7 @@
   </div>
 
   <!-- ========== 온보딩 ========== -->
-  <div class="onboard" id="onboard" hidden>
+  <div class="onboard" id="onboard" role="dialog" aria-modal="true" aria-label="앱 소개" hidden>
     <div class="onboard-card">
       <div class="onboard-emoji" id="obEmoji">☕</div>
       <h2 id="obTitle"></h2>
@@ -265,31 +265,32 @@
           <canvas id="chart" height="210" role="img" aria-label="기분과 에너지 추이 그래프"></canvas>
           <div class="chart-nav"><button id="chartPrev" aria-label="이전 기간">‹ 이전</button><div class="legend"><span><i class="dot mood-dot"></i>기분</span><span><i class="dot energy-dot"></i>활력</span></div><button id="chartNext" aria-label="다음 기간">다음 ›</button></div>
         </div>
-        <div class="card">
+        <p class="section-label">🔎 더 깊은 분석 <span class="opt">(눌러서 펼치기)</span></p>
+        <div class="card collapsible collapsed">
           <h2>📆 요일별 평균 기분</h2>
           <p class="hint">어떤 요일에 마음이 좋은/힘든 편인지 보여줘요.</p>
           <div class="dow" id="dowChart"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible collapsed">
           <h2>🕑 시간대별 기분</h2>
           <p class="hint">기록한 시각 기준 — 언제 마음이 좋은/힘든 편인지 보여줘요.</p>
           <div class="dist" id="timeOfDay"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible collapsed">
           <h2>🏷️ 감정 태그와 기분</h2>
           <p class="hint">어떤 감정을 느낀 날의 평균 기분 점수가 높/낮은지 보여줘요(2회 이상).</p>
           <div class="dist" id="tagInsight"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible collapsed">
           <h2>🌙 기분 분포 (최근 30일)</h2>
           <div class="dist" id="dist"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible collapsed">
           <h2>🌱 잘한 일 모아보기</h2>
           <p class="hint">여정에서 적은 '잘한 일·감사'가 여기 모여요.</p>
           <div id="gratList"></div>
         </div>
-        <div class="card" id="corrCard">
+        <div class="card collapsible collapsed" id="corrCard">
           <h2>🔗 습관과 기분</h2>
           <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
           <div id="corrBody"></div>
@@ -433,7 +434,7 @@
   </main>
 
   <button class="fab" id="quickBreathFab" aria-label="어디서든 빠른 호흡">🌬️</button>
-  <div class="breath-overlay" id="breathOverlay" hidden>
+  <div class="breath-overlay" id="breathOverlay" role="dialog" aria-modal="true" aria-label="호흡 명상" hidden>
     <p class="qb-title">잠깐, 같이 숨 쉬어요</p>
     <div class="breath-circle big" id="qbCircle"><span id="qbText">시작</span></div>
     <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
@@ -442,7 +443,7 @@
   </div>
 
   <!-- 오늘의 여정 (적응형 단계 기록) -->
-  <div class="journey" id="journey" hidden>
+  <div class="journey" id="journey" role="dialog" aria-modal="true" aria-label="오늘의 여정" hidden>
     <header class="journey-head">
       <button class="subback" id="jClose" aria-label="닫기">✕</button>
       <div class="journey-progress"><i id="jBar"></i></div>
@@ -455,7 +456,7 @@
   </div>
 
   <!-- 슬라이드 상세 페이지 -->
-  <div class="subpage" id="subpage" hidden>
+  <div class="subpage" id="subpage" role="dialog" aria-modal="true" hidden>
     <header class="subpage-head">
       <button class="subback" id="subBack" aria-label="뒤로">←</button>
       <h2 id="subTitle"></h2>
