@@ -500,7 +500,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey-head { display: flex; align-items: center; gap: var(--s3); padding: var(--s4) var(--s5); }
 .journey-progress { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
 .journey-progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); border-radius: var(--r-pill); transition: width 0.4s var(--ease-soft); }
-.journey-body { flex: 1; overflow-y: auto; max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s3) var(--s6) var(--s5); display: flex; flex-direction: column; justify-content: center; }
+.journey-body { flex: 1; overflow-y: auto; max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s3) var(--s6) var(--s5); display: flex; flex-direction: column; justify-content: safe center; }
 .journey-foot { display: flex; gap: var(--s3); max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s4) var(--s6) calc(var(--s5) + env(safe-area-inset-bottom)); }
 .journey-foot .btn { flex: 1; }
 .journey-foot .btn.primary { flex: 2; }
@@ -517,6 +517,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .j-finish { text-align: center; }
 .j-finish h3 { font-size: var(--t-xl); margin: var(--s2) 0 var(--s3); }
 .j-finish p { color: var(--ink-2); }
+
+/* 감정 통합 도구 (마음+에너지+태그) */
+.emo-band { text-align: center; font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); margin: var(--s4) 0 var(--s2); }
+.emo-band:first-of-type { margin-top: var(--s2); }
+.emo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s2); }
+.emo { position: relative; border: 1.5px solid var(--line); background: var(--bg-sunken); border-radius: var(--r-sm); padding: var(--s3) 2px; cursor: pointer; font-size: 1.45rem; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: inherit; color: var(--ink); transition: transform 0.14s var(--ease-soft), border-color 0.2s, background 0.2s; }
+.emo span { font-size: 0.66rem; line-height: 1.2; color: var(--soft); font-weight: var(--w-semi); }
+.emo:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+.emo.selected { border-color: var(--accent); border-width: 2px; background: var(--card); box-shadow: 0 0 0 3px var(--ring); }
+.emo.selected span { color: var(--accent-deep); }
+.emo-star { position: absolute; top: -7px; right: -3px; background: var(--accent); color: #fff; font-size: 0.55rem; font-style: normal; font-weight: 800; padding: 1px 5px; border-radius: var(--r-pill); box-shadow: var(--shadow-sm); }
+[data-theme="dark"] .emo-star { color: #17161d; }
+.journey .mood-response { margin-top: var(--s4); }
 
 /* ============================================================
    슬라이드 상세 페이지

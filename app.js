@@ -36,6 +36,39 @@ const plainReplies = {
   "활기차요": "컨디션이 좋네요. 이 기운을 잘 활용하세요.",
 };
 const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
+
+/* 감정 팔레트 — '마음 + 에너지 + 태그'를 하나로 통합한 도구.
+   정서 원형모형(Russell 1980): 에너지(각성) × 쾌-불쾌(정서가).
+   base = 통계·점수용 기존 7분류, en = 에너지(1-5) */
+const EMOTIONS = [
+  // 에너지 높음
+  { k: "신나요",   e: "🤩", base: "활기차요",   en: 5, band: "high" },
+  { k: "설레요",   e: "😆", base: "활기차요",   en: 5, band: "high" },
+  { k: "뿌듯해요", e: "😏", base: "괜찮아요",   en: 4, band: "high" },
+  { k: "화나요",   e: "😤", base: "불안해요",   en: 5, band: "high" },
+  { k: "불안해요", e: "😰", base: "불안해요",   en: 4, band: "high" },
+  { k: "초조해요", e: "😣", base: "불안해요",   en: 4, band: "high" },
+  { k: "스트레스", e: "😫", base: "불안해요",   en: 4, band: "high" },
+  // 에너지 보통
+  { k: "괜찮아요", e: "🙂", base: "괜찮아요",   en: 3, band: "mid" },
+  { k: "평온해요", e: "😊", base: "괜찮아요",   en: 3, band: "mid" },
+  { k: "그럭저럭", e: "😐", base: "그럭저럭",   en: 3, band: "mid" },
+  { k: "멍해요",   e: "😶", base: "그럭저럭",   en: 3, band: "mid" },
+  { k: "복잡해요", e: "🤔", base: "그럭저럭",   en: 3, band: "mid" },
+  // 에너지 낮음
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 2, band: "low" },
+  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "low" },
+  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "low" },
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 2, band: "low" },
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 2, band: "low" },
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 2, band: "low" },
+];
+const EMO_BANDS = [
+  { id: "high", label: "⚡ 에너지가 높아요" },
+  { id: "mid",  label: "🌤️ 보통이에요" },
+  { id: "low",  label: "🔋 가라앉아 있어요" },
+];
+function emoByKey(k) { return EMOTIONS.find((x) => x.k === k); }
 const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
 
 /* 햅틱(진동) — 웹 vibrate. iOS Safari는 무시하므로 네이티브(Capacitor Haptics)로 대체 가능 */
@@ -1515,7 +1548,9 @@ const qbBreather = makeBreather(document.getElementById("qbCircle"), document.ge
 function openBreath() {
   breathOverlay.hidden = false;
   breathOverlay.classList.toggle("sleep", sleepMode);
+  Sound.unlock();                // iOS: 사용자 제스처 안에서 오디오 컨텍스트 확실히 재개
   requestWake();                 // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
+  if (qbBreather.isRunning()) qbBreather.stop(); // 이전 세션이 남아있으면 정리 후 새로 시작
   qbBreather.start();
   document.getElementById("qbClose").focus();
 }
@@ -1536,12 +1571,22 @@ const JTAGS = ["피곤", "불안", "보람", "외로움", "평온", "짜증", "�
 const journey = document.getElementById("journey");
 const jBody = document.getElementById("jBody"), jBar = document.getElementById("jBar");
 const jPrev = document.getElementById("jPrev"), jNext = document.getElementById("jNext");
-let jData = {}, curId = "mood";
+let jData = {}, curId = "feel";
+// 감정 선택 → 마음(점수)·에너지·태그를 한 번에 채움
+function jApplyEmotions() {
+  const sel = jData.emotions || [];
+  if (!sel.length) { jData.mood = null; jData.tags = []; return; }
+  const primary = emoByKey(sel[0]);
+  jData.mood = primary.base;
+  const ens = sel.map((k) => emoByKey(k).en);
+  jData.energy = Math.round(ens.reduce((a, b) => a + b, 0) / ens.length);
+  jData.tags = sel.slice(); // 고른 감정이 곧 태그
+}
 function jSteps() {
   const low = jData.mood && moodMeta[jData.mood].score <= 2;
-  const s = ["mood", "energy"];
+  const s = ["feel"]; // 마음+에너지+태그 통합 단계
   if (low) s.push("breathe");
-  s.push("note", "tags", "praise");
+  s.push("note", "praise");
   if (loadChs().length) s.push("habits");
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
   s.push("finish");
@@ -1555,21 +1600,25 @@ function notePrompt(m) {
   return "오늘 하루, 한 줄로 남긴다면?";
 }
 function stepHtml(id) {
-  if (id === "mood") return `<p class="j-q">지금 마음은 어때요?</p>
-    <div class="mood-grid">${MOOD_ORDER.map((m) => `<button class="mood ${jData.mood === m ? "selected" : ""}" data-mood="${m}">${moodMeta[m].emoji}<span>${m}</span></button>`).join("")}</div>
-    <p class="mood-response" id="jMoodReply" ${jData.mood ? "" : "hidden"}>${jData.mood ? curReplies()[jData.mood] : ""}</p>`;
-  if (id === "energy") return `<p class="j-q">오늘 에너지는 몇 칸쯤?</p>
-    <div class="energy"><input type="range" id="jEnergy" min="1" max="5" step="1" value="${jData.energy || 3}" aria-label="에너지"><div class="energy-face" id="jEnergyFace"></div></div>`;
+  if (id === "feel") {
+    const sel = jData.emotions || [];
+    const bands = EMO_BANDS.map((b) => `
+      <p class="emo-band">${b.label}</p>
+      <div class="emo-grid">${EMOTIONS.filter((e) => e.band === b.id).map((e) => {
+        const idx = sel.indexOf(e.k);
+        return `<button class="emo ${idx >= 0 ? "selected" : ""}" data-emo="${e.k}">${e.e}<span>${e.k}</span>${idx === 0 ? '<i class="emo-star">대표</i>' : ""}</button>`;
+      }).join("")}</div>`).join("");
+    return `<p class="j-q">지금 마음, 어떤가요?</p>
+      <p class="hint" style="text-align:center;margin:-10px 0 4px">느껴지는 감정을 골라요. 여러 개도 좋아요 — 첫 감정이 '대표'가 돼요.</p>
+      ${bands}
+      <p class="mood-response" id="jMoodReply" ${jData.mood ? "" : "hidden"}>${jData.mood ? curReplies()[jData.mood] : ""}</p>`;
+  }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
     <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">🌬️ 호흡 시작하기</button>
     <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
   if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
     <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
-  if (id === "tags") return `<p class="j-q">오늘 마음에 태그를 달아볼까요?</p>
-    <p class="hint" style="text-align:center">눌러서 추가하거나 직접 입력해요. (선택)</p>
-    <div class="link-grid" id="jTagSuggest" style="justify-content:center">${JTAGS.map((t) => `<button type="button" class="link-chip" data-tag="${t}">${t}</button>`).join("")}</div>
-    <input type="text" id="jTags" class="text-input" style="margin-top:12px" maxlength="100" value="${escapeHtml((jData.tags || []).join(", "))}" placeholder="쉼표로 구분 (예: 피곤, 야근)">`;
   if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요 🌱</p>
     <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">`;
   if (id === "habits") {
@@ -1591,21 +1640,27 @@ function renderStep() {
   jPrev.hidden = i <= 0;
   jNext.textContent = curId === "finish" ? "기록 저장하기 💾" : "다음";
   jBody.innerHTML = stepHtml(curId);
-  if (curId === "mood") {
-    jBody.querySelectorAll(".mood").forEach((b) => b.addEventListener("click", () => {
-      Sound.tap(); jData.mood = b.dataset.mood;
-      jBody.querySelectorAll(".mood").forEach((x) => x.classList.toggle("selected", x === b));
-      const r = jBody.querySelector("#jMoodReply"); r.textContent = curReplies()[jData.mood]; r.hidden = false;
+  if (curId === "feel") {
+    const reply = jBody.querySelector("#jMoodReply");
+    const refresh = () => {
+      const sel = jData.emotions || [];
+      jBody.querySelectorAll(".emo").forEach((btn) => {
+        const idx = sel.indexOf(btn.dataset.emo);
+        btn.classList.toggle("selected", idx >= 0);
+        let star = btn.querySelector(".emo-star");
+        if (idx === 0) { if (!star) { star = document.createElement("i"); star.className = "emo-star"; star.textContent = "대표"; btn.appendChild(star); } }
+        else if (star) star.remove();
+      });
+      if (jData.mood) { reply.textContent = curReplies()[jData.mood]; reply.hidden = false; } else { reply.hidden = true; }
+    };
+    jBody.querySelectorAll(".emo").forEach((b) => b.addEventListener("click", () => {
+      Sound.tap();
+      jData.emotions = jData.emotions || [];
+      const k = b.dataset.emo, i = jData.emotions.indexOf(k);
+      if (i >= 0) jData.emotions.splice(i, 1); else jData.emotions.push(k);
+      jApplyEmotions(); refresh();
     }));
-  } else if (curId === "energy") {
-    const r = jBody.querySelector("#jEnergy"), f = jBody.querySelector("#jEnergyFace");
-    f.textContent = energyFaces[r.value]; r.addEventListener("input", () => { f.textContent = energyFaces[r.value]; });
-  } else if (curId === "tags") {
-    const inp = jBody.querySelector("#jTags");
-    jBody.querySelector("#jTagSuggest").addEventListener("click", (e) => {
-      const b = e.target.closest(".link-chip"); if (!b) return;
-      Sound.tap(); const cur = parseTags(inp.value); if (!cur.includes(b.dataset.tag)) { cur.push(b.dataset.tag); inp.value = cur.join(", "); }
-    });
+    refresh();
   } else if (curId === "breathe") {
     const bb = jBody.querySelector("#jBreatheBtn");
     if (bb) bb.addEventListener("click", () => { Sound.tap(); openBreath(); }); // 여정 위에 호흡 오버레이(더 높은 z-index)
@@ -1620,18 +1675,16 @@ function renderStep() {
   jBody.scrollTop = 0;
 }
 function collectStep() {
-  if (curId === "energy") { const r = jBody.querySelector("#jEnergy"); if (r) jData.energy = Number(r.value); }
-  else if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
-  else if (curId === "tags") { const r = jBody.querySelector("#jTags"); if (r) jData.tags = parseTags(r.value); }
+  if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
   else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); }
   else if (curId === "reflect") { const g = jBody.querySelector("#jGood"), h = jBody.querySelector("#jHard"); if (g) jData.good = g.value.trim(); if (h) jData.hard = h.value.trim(); }
 }
 function openJourney() {
   Sound.unlock();
-  jData = { date: todayKey() };
+  jData = { date: todayKey(), emotions: [] };
   const t = loadEntries()[todayKey()];
   if (t) { jData.mood = t.mood; jData.energy = t.energy; jData.note = t.note; jData.praise = t.praise; if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; } }
-  curId = "mood"; journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
+  curId = "feel"; journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
 }
 function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; }, 300); }
 function saveJourney() {
@@ -1653,7 +1706,7 @@ document.getElementById("journeyStart").addEventListener("click", () => { Sound.
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); closeJourney(); });
 jNext.addEventListener("click", () => {
   collectStep();
-  if (curId === "mood" && !jData.mood) { alert("지금 마음을 하나 골라주세요 🙂"); return; }
+  if (curId === "feel" && !jData.mood) { alert("지금 느껴지는 감정을 하나 골라주세요 🙂"); return; }
   if (curId === "finish") { saveJourney(); return; }
   const arr = jSteps(), i = arr.indexOf(curId);
   curId = arr[Math.min(i + 1, arr.length - 1)]; Sound.tap(); renderStep();

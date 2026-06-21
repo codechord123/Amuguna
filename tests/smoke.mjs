@@ -76,14 +76,15 @@ try {
 
   // 2c) 오늘의 여정 (적응형 경로)
   q("#journeyStart").click();
-  check("여정 시작", !q("#journey").hasAttribute("hidden") && !!q("#jBody .mood-grid"));
-  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "괜찮아요").click();
+  check("여정 시작(감정 통합 도구)", !q("#journey").hasAttribute("hidden") && !!q("#jBody .emo-grid"));
+  q('#jBody .emo[data-emo="괜찮아요"]').click();
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 8) q("#jNext").click();
   check("여정 마지막 단계 도달", q("#jNext").textContent.indexOf("저장") >= 0);
   q("#jNext").click();
   check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
   check("여정으로 오늘 기분 저장", ls("entries_v2")[tk].mood === "괜찮아요");
+  check("감정→태그 통합 저장", (ls("entries_v2")[tk].tags || []).includes("괜찮아요"));
 
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
   q("[data-tab=challenge]").click();
@@ -109,18 +110,18 @@ try {
 
   // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
   q("[data-tab=today]").click(); q("#journeyStart").click();
-  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "괜찮아요").click();
-  let g2 = 0, foundHabit = false, foundTags = false;
-  while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; if (q("#jBody #jTags")) foundTags = true; q("#jNext").click(); }
+  check("여정 감정 통합 도구 표시", !!q("#jBody .emo-grid"));
+  q('#jBody .emo[data-emo="괜찮아요"]').click();
+  let g2 = 0, foundHabit = false;
+  while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; q("#jNext").click(); }
   if (q("#jBody .j-habit")) foundHabit = true;
-  check("여정에 감정 태그 단계 포함", foundTags);
   check("여정에 습관 단계 포함", foundHabit);
   q("#jClose").click();
 
   // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
   q("[data-tab=today]").click(); q("#journeyStart").click();
-  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "지쳤어요").click();
-  q("#jNext").click(); q("#jNext").click(); // mood→energy→breathe
+  q('#jBody .emo[data-emo="지쳤어요"]').click();
+  q("#jNext").click(); // 감정(통합)→호흡
   check("저기분 여정 호흡 단계 버튼", !!q("#jBody #jBreatheBtn"));
   q("#jClose").click();
 
