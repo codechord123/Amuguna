@@ -453,7 +453,7 @@ function makeBreather(circleEl, textEl, base, opts) {
             if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
           }
           enter(next);
-        } else { render(); if (!isSleep()) Sound.tick(); }   // 숫자 + 부드러운 카운트 틱 (수면 모드 제외)
+        } else { render(); Sound.tick(); }   // 숫자 + 카운트 틱 (모든 모드)
       }, 1000);
     },
     stop() {
@@ -1467,7 +1467,9 @@ function stepHtml(id) {
   if (id === "energy") return `<p class="j-q">오늘 에너지는 몇 칸쯤?</p>
     <div class="energy"><input type="range" id="jEnergy" min="1" max="5" step="1" value="${jData.energy || 3}" aria-label="에너지"><div class="energy-face" id="jEnergyFace"></div></div>`;
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
-    <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요. 준비되면 '다음'을 눌러요.<br>(오른쪽 아래 🌬️ 버튼으로 더 길게도 할 수 있어요)</p>`;
+    <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
+    <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">🌬️ 호흡 시작하기</button>
+    <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
   if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
     <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
   if (id === "tags") return `<p class="j-q">오늘 마음에 태그를 달아볼까요?</p>
@@ -1510,6 +1512,9 @@ function renderStep() {
       const b = e.target.closest(".link-chip"); if (!b) return;
       Sound.tap(); const cur = parseTags(inp.value); if (!cur.includes(b.dataset.tag)) { cur.push(b.dataset.tag); inp.value = cur.join(", "); }
     });
+  } else if (curId === "breathe") {
+    const bb = jBody.querySelector("#jBreatheBtn");
+    if (bb) bb.addEventListener("click", () => { Sound.tap(); openBreath(); }); // 여정 위에 호흡 오버레이(더 높은 z-index)
   } else if (curId === "habits") {
     jBody.querySelectorAll(".j-habit").forEach((btn) => btn.addEventListener("click", () => {
       const chs = loadChs(); const h = chs.find((x) => x.id === btn.dataset.hid); if (!h) return;

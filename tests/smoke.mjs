@@ -117,6 +117,13 @@ try {
   check("여정에 습관 단계 포함", foundHabit);
   q("#jClose").click();
 
+  // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
+  q("[data-tab=today]").click(); q("#journeyStart").click();
+  [...q("#jBody").querySelectorAll(".mood")].find((b) => b.dataset.mood === "지쳤어요").click();
+  q("#jNext").click(); q("#jNext").click(); // mood→energy→breathe
+  check("저기분 여정 호흡 단계 버튼", !!q("#jBody #jBreatheBtn"));
+  q("#jClose").click();
+
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
