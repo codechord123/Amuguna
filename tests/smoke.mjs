@@ -120,6 +120,13 @@ try {
   check("여정 진행 임시저장 복원", q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
   q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
+  // 3e) 빠른 기록 (1화면 저장)
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  { const s = q("#jBody #jScore"); s.value = "82"; s.dispatchEvent(new window.Event("input")); }
+  check("빠른 저장 버튼 노출", !!q("#jBody #jQuickSave"));
+  q("#jBody #jQuickSave").click();
+  check("빠른 저장으로 기록됨", ls("entries_v2")[tk].score === 82 && q("#journey").classList.contains("show") === false);
+
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);

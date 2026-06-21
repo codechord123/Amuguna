@@ -2000,7 +2000,8 @@ function stepHtml(id) {
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능)</span></p>
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>
-      <p class="energy-out" id="jEnergyOut"></p>`;
+      <p class="energy-out" id="jEnergyOut"></p>
+      ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="reflect-toggle" id="jQuickSave">⚡ 여기까지만 빠르게 저장</button>' : ""}`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
@@ -2099,6 +2100,8 @@ function renderStep() {
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
       jComputeEnergy(); updateEnergyOut(); saveJDraft();
     });
+    const qs = jBody.querySelector("#jQuickSave");
+    if (qs) qs.addEventListener("click", () => { if (!jData.mood) { alert("지금 기분을 먼저 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
