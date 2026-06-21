@@ -888,8 +888,7 @@ function renderStats() {
   renderCorrelation(entries);
   renderHabitHeatmap();
   renderTagInsight(entries);
-  renderDow(entries);
-  renderTimeOfDay(entries);
+  renderRhythm(entries);
   renderGratitude(list);
   drawChart(entries);
   renderMoodCalendar(entries);
@@ -1580,32 +1579,38 @@ function renderMoodMatrix(entries) {
     + `<text x="11" y="${H / 2}" class="mx-al" text-anchor="middle" transform="rotate(-90 11 ${H / 2})">기분 →</text>`;
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="mx-svg" role="img" aria-label="활력 가로축, 기분 세로축 감정 분포 지도">${mids}${axis}${dots}${ql}${al}</svg>`;
 }
-// 요일별 평균 기분(0-100) 막대
-function renderDow(entries) {
-  const el = document.getElementById("dowChart"); if (!el) return;
-  const names = ["일", "월", "화", "수", "목", "금", "토"];
-  const sums = Array(7).fill(0), ns = Array(7).fill(0);
-  Object.values(entries).forEach((e) => { if (!e.date || !e.mood) return; const d = new Date(e.date + "T00:00:00").getDay(); sums[d] += entryScore(e); ns[d]++; });
-  if (ns.every((n) => n === 0)) { el.innerHTML = '<p class="empty">기록이 쌓이면 요일별 패턴을 보여드려요.</p>'; return; }
-  el.innerHTML = names.map((nm, i) => {
-    const avg = ns[i] ? sums[i] / ns[i] : null;
-    return `<div class="dow-col"><span class="dow-val">${avg != null ? Math.round(avg) : ""}</span><div class="dow-bar-wrap"><div class="dow-bar" style="height:${avg != null ? Math.max(4, Math.round(avg)) : 0}%;background:${avg != null ? scoreColor(avg) : "var(--bg-sunken)"}"></div></div><span class="dow-name">${nm}</span></div>`;
-  }).join("");
-}
-// 시간대별 평균 기분(0-100) — 기록한 시각(updatedAt) 기준
-function renderTimeOfDay(entries) {
-  const el = document.getElementById("timeOfDay"); if (!el) return;
+// 마음 리듬 — 요일(7) × 시간대(4) 평균 기분 히트맵 (요일별·시간대별 막대를 한 그래픽으로 통합)
+// 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)
+function renderRhythm(entries) {
+  const el = document.getElementById("rhythmGrid"); if (!el) return;
   const buckets = [{ k: "아침", e: "🌅", lo: 5, hi: 11 }, { k: "오후", e: "☀️", lo: 12, hi: 17 }, { k: "저녁", e: "🌇", lo: 18, hi: 21 }, { k: "밤", e: "🌙", lo: 22, hi: 4 }];
-  const sums = {}, ns = {};
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const cell = buckets.map(() => days.map(() => ({ sum: 0, n: 0 })));
+  let total = 0;
   Object.values(entries).forEach((e) => {
-    if (!e.mood || !e.updatedAt) return;
+    if (!e.mood || !e.date || !e.updatedAt) return;
     const h = new Date(e.updatedAt).getHours();
-    const b = buckets.find((b) => b.lo <= b.hi ? (h >= b.lo && h <= b.hi) : (h >= b.lo || h <= b.hi));
-    if (!b) return; sums[b.k] = (sums[b.k] || 0) + entryScore(e); ns[b.k] = (ns[b.k] || 0) + 1;
+    const bi = buckets.findIndex((b) => b.lo <= b.hi ? (h >= b.lo && h <= b.hi) : (h >= b.lo || h <= b.hi));
+    if (bi < 0) return;
+    const di = new Date(e.date + "T00:00:00").getDay();
+    cell[bi][di].sum += entryScore(e); cell[bi][di].n++; total++;
   });
-  const rows = buckets.filter((b) => ns[b.k]);
-  if (!rows.length) { el.innerHTML = '<p class="empty">기록이 쌓이면 시간대별 패턴을 보여드려요.</p>'; return; }
-  el.innerHTML = rows.map((b) => { const avg = sums[b.k] / ns[b.k]; return `<div class="dist-row"><span class="cap-name">${b.e} ${b.k}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(avg)}%;background:${scoreColor(avg)}"></div></div><span class="dist-count">${Math.round(avg)}</span></div>`; }).join("");
+  if (total < 3) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 요일·시간대별 마음 리듬을 보여드려요 🌱</p>'; return; }
+  const rowAvg = buckets.map((_, bi) => { let s = 0, n = 0; days.forEach((_, di) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
+  const colAvg = days.map((_, di) => { let s = 0, n = 0; buckets.forEach((_, bi) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
+  const cellHtml = (avg, n, label, marg) => avg == null
+    ? `<span class="rh-cell rh-empty${marg ? " rh-marg" : ""}"></span>`
+    : `<span class="rh-cell${marg ? " rh-marg" : ""}" style="background:${scoreColor(avg)}"${label ? ` title="${label}"` : ""}>${Math.round(avg)}</span>`;
+  let html = '<div class="rhythm"><span class="rh-corner"></span>';
+  days.forEach((d, i) => html += `<span class="rh-dh${i === 0 || i === 6 ? " rh-we" : ""}">${d}</span>`);
+  buckets.forEach((b, bi) => {
+    html += `<span class="rh-tl">${b.e}<i>${b.k}</i>${rowAvg[bi] != null ? `<b>${Math.round(rowAvg[bi])}</b>` : ""}</span>`;
+    days.forEach((d, di) => { const c = cell[bi][di]; html += cellHtml(c.n ? c.sum / c.n : null, c.n, c.n ? `${b.k} ${d}요일 · ${c.n}회 · 평균 ${Math.round(c.sum / c.n)}점` : "", false); });
+  });
+  html += '<span class="rh-tl rh-ml">전체<i>요일</i></span>';
+  days.forEach((d, di) => html += cellHtml(colAvg[di], 0, colAvg[di] != null ? `${d}요일 평균 ${Math.round(colAvg[di])}점` : "", true));
+  html += "</div>";
+  el.innerHTML = html;
 }
 // 감정 태그별 평균 기분(0-100) — 어떤 감정일 때 점수가 높/낮은지
 function renderTagInsight(entries) {

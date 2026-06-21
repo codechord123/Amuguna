@@ -232,6 +232,12 @@ try {
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("습관 실천 매트릭스 표시", d.querySelectorAll("#habitHeatmap .hm-row").length >= 2 && d.querySelectorAll("#habitHeatmap .hm-cell.hm-on").length >= 1);
+  // 마음 리듬 (요일×시간대 히트맵) — updatedAt 시각 기준
+  const rh = {};
+  ["2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });
+  window.localStorage.setItem("entries_v2", JSON.stringify(rh));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
 
   // 12) 페이지 전환들 (지난기록·리포트) — 기록은 달력 탭에 통합됨
   q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=calendar]").click();
