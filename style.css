@@ -335,20 +335,6 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cal-legend i { width: 16px; height: 16px; border-radius: var(--s1); display: inline-block; }
 .cal-legend .m1 { background: #e8896f; } .cal-legend .m2 { background: #f0b07a; } .cal-legend .m3 { background: #e9d8a6; } .cal-legend .m4 { background: #9ed8b0; } .cal-legend .m5 { background: #5ec8b0; }
 
-/* 통합 글리프 달력 — 한 칸에 기분·습관·활력·일기 */
-.cal-cell.glyph { flex-direction: column; gap: 1px; position: relative; overflow: hidden; padding-bottom: 4px; }
-.gc-day { font-size: var(--t-xs); font-weight: var(--w-bold); line-height: 1; }
-.gc-habits { font-size: 0.5rem; line-height: 0.5; letter-spacing: 0.5px; color: rgba(0, 0, 0, 0.5); }
-.cal-cell.m1 .gc-habits { color: rgba(255, 255, 255, 0.8); }
-.gc-energy { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--energy); border-radius: 0 2px 2px 0; opacity: 0.9; }
-.gc-note { position: absolute; top: 3px; right: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent-deep); }
-.cal-cell.m1 .gc-note { background: #fff; }
-.cal-legend2 { gap: var(--s3); margin-top: var(--s2); flex-wrap: wrap; }
-.gl-item { display: inline-flex; align-items: center; gap: 3px; }
-.gl-dot { color: var(--accent-deep); font-size: 0.9rem; line-height: 1; }
-.cal-legend2 .gl-energy { width: 14px; height: 3px; border-radius: 2px; background: var(--energy); display: inline-block; }
-.cal-legend2 .gl-note { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-deep); display: inline-block; }
-
 /* ----- 습관-기분 상관관계 ----- */
 .corr-row { padding: var(--s3) 0; border-bottom: 1px solid var(--line); }
 .corr-row:last-child { border-bottom: none; }

@@ -245,7 +245,7 @@ try {
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2020-01-01", done: { [calToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=calendar]").click();
   q("#calNext").click(); q("#calNext").click();
-  check("마음 달력 통합 글리프 표시", !!d.querySelector("#moodCal .gc-energy") && !!d.querySelector("#moodCal .gc-habits") && !!d.querySelector("#moodCal .gc-note"));
+  check("마음 달력 기분 색 표시", !!d.querySelector(`#moodCal [data-cal="${calToday}"][class*="m"]`));
 
   // 12) 페이지 전환들 (달력→그날 상세 · 리포트)
   q("[data-tab=calendar]").click();

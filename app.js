@@ -927,7 +927,6 @@ function renderMoodCalendar(entries) {
   document.getElementById("calMonth").textContent = `${y}년 ${m + 1}월`;
   document.getElementById("calNext").disabled = calOffset >= 0;
   const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
-  const chs = (typeof loadChs === "function") ? loadChs() : [];
   const tk = todayKey();
   let html = "";
   for (let i = 0; i < first; i++) html += `<span class="cal-cell blank"></span>`;
@@ -937,16 +936,7 @@ function renderMoodCalendar(entries) {
     const score = e && e.mood ? moodMeta[e.mood].score : 0;
     const isToday = key === tk;
     const future = key > tk;
-    // 통합 글리프: 기분(배경색) + 습관(점) + 활력(하단바) + 일기(모서리 점)
-    let inner = `<span class="gc-day">${d}</span>`;
-    if (e) {
-      const journaled = !!(e.note || e.praise || (e.reflection && (e.reflection.good || e.reflection.hard)));
-      const doneN = chs.filter((h) => key >= h.startDate && h.done && h.done[key]).length;
-      if (doneN) inner += `<span class="gc-habits">${"•".repeat(Math.min(3, doneN))}${doneN > 3 ? "+" : ""}</span>`;
-      if (e.energy) inner += `<span class="gc-energy" style="width:${Math.round(e.energy / 5 * 100)}%"></span>`;
-      if (journaled) inner += `<i class="gc-note"></i>`;
-    }
-    html += `<button class="cal-cell glyph m${score} ${isToday ? "today" : ""}" ${future ? "disabled" : ""} data-cal="${key}" title="${e && e.mood ? e.mood : ""}">${inner}</button>`;
+    html += `<button class="cal-cell m${score} ${isToday ? "today" : ""}" ${future ? "disabled" : ""} data-cal="${key}" title="${e && e.mood ? e.mood : ""}">${d}</button>`;
   }
   wrap.innerHTML = html;
   wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => {
