@@ -884,6 +884,7 @@ function renderStats() {
   renderCapture(entries);
   renderBadges();
   renderInsight(entries, list);
+  renderMoodMatrix(entries);
   renderCorrelation(entries);
   renderTagInsight(entries);
   renderDow(entries);
@@ -973,7 +974,8 @@ document.getElementById("todayStats").addEventListener("click", (e) => {
   else showStatsSeg(j);
 });
 // 인사이트 → 바로 행동(호흡·미션·위로)으로 이동 (연결성)
-document.getElementById("insightActions").addEventListener("click", (e) => {
+const _insightActions = document.getElementById("insightActions");
+if (_insightActions) _insightActions.addEventListener("click", (e) => {
   const b = e.target.closest("[data-go]"); if (!b) return;
   Sound.tap();
   const go = b.dataset.go;
@@ -1527,6 +1529,27 @@ function renderWeekGlance(entries) {
     <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(moodMeta[top].emoji, "대표")}${hs(avgEn, "활력")}</div></div>
   </div><p class="wg-more">주간 리포트 자세히 ›</p>`;
 }
+// 감정 지도 — 활력(가로) × 기분(세로) 2D 산점도 (정서 원형모형, Russell 1980)
+function renderMoodMatrix(entries) {
+  const el = document.getElementById("moodMatrix"); if (!el) return;
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+  const pts = Object.values(entries).filter((e) => e.date && e.mood && new Date(e.date + "T00:00:00") >= cutoff)
+    .sort((a, b) => a.date < b.date ? -1 : 1)
+    .map((e) => ({ x: (((e.energy || scoreToEnergy(entryScore(e))) - 1) / 4) * 100, y: entryScore(e) }));
+  if (pts.length < 2) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 감정 지도를 그려드려요.</p>'; return; }
+  const W = 300, H = 240, pad = 26;
+  const X = (v) => pad + (W - pad * 2) * v / 100, Y = (v) => H - pad - (H - pad * 2) * v / 100;
+  const mids = `<line x1="${X(50)}" y1="${pad}" x2="${X(50)}" y2="${H - pad}" class="mx-mid"/><line x1="${pad}" y1="${Y(50)}" x2="${W - pad}" y2="${Y(50)}" class="mx-mid"/>`;
+  const axis = `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" class="mx-axis"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" class="mx-axis"/>`;
+  const dots = pts.map((p, i) => { const op = (0.4 + 0.55 * (i / (pts.length - 1))).toFixed(2); const r = i === pts.length - 1 ? 6 : 5; return `<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${r}" fill="${scoreColor(p.y)}" opacity="${op}"${i === pts.length - 1 ? ' stroke="var(--card)" stroke-width="1.5"' : ""}/>`; }).join("");
+  const ql = `<text x="${W - pad - 2}" y="${pad + 9}" class="mx-q" text-anchor="end">😄 활기참</text>`
+    + `<text x="${pad + 2}" y="${pad + 9}" class="mx-q">😌 평온</text>`
+    + `<text x="${W - pad - 2}" y="${H - pad - 4}" class="mx-q" text-anchor="end">😣 긴장</text>`
+    + `<text x="${pad + 2}" y="${H - pad - 4}" class="mx-q">😮‍💨 지침</text>`;
+  const al = `<text x="${W / 2}" y="${H - 5}" class="mx-al" text-anchor="middle">활력 →</text>`
+    + `<text x="11" y="${H / 2}" class="mx-al" text-anchor="middle" transform="rotate(-90 11 ${H / 2})">기분 →</text>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="mx-svg" role="img" aria-label="활력 가로축, 기분 세로축 감정 분포 지도">${mids}${axis}${dots}${ql}${al}</svg>`;
+}
 // 요일별 평균 기분(0-100) 막대
 function renderDow(entries) {
   const el = document.getElementById("dowChart"); if (!el) return;
@@ -1622,11 +1645,18 @@ function drawChart(entries) {
     ctx.fillText("주식 차트처럼 보여드려요 🌿", cssW / 2, cssH / 2 + 12);
     return;
   }
-  const padL = 22, padR = 12, padT = 14, padB = 26, w = cssW - padL - padR, h = cssH - padT - padB;
+  const padL = 30, padR = 12, padT = 16, padB = 28, w = cssW - padL - padR, h = cssH - padT - padB;
   const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * v) / 100; // v: 0-100
-  // 가로 그리드 + 좌측 눈금
+  const strong = css.getPropertyValue("--line-strong").trim() || line;
+  // 가로 그리드 + 좌측 눈금(세로축 값)
   ctx.textAlign = "right"; ctx.font = "9px sans-serif";
-  [0, 50, 100].forEach((v) => { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(cssW - padR, y(v)); ctx.stroke(); ctx.fillStyle = soft; ctx.fillText(v, padL - 4, y(v) + 3); });
+  [0, 50, 100].forEach((v) => { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(cssW - padR, y(v)); ctx.stroke(); ctx.fillStyle = soft; ctx.fillText(v, padL - 5, y(v) + 3); });
+  // 축선 (세로=기분, 가로=날짜)
+  ctx.strokeStyle = strong; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + h); ctx.lineTo(cssW - padR, padT + h); ctx.stroke();
+  // 축 제목
+  ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText("기분", padL - 26, padT + 4);
   const series = (getter) => days.map((k, i) => { const e = entries[k]; const val = e ? getter(e) : null; return val == null ? null : { x: x(i), y: y(val) }; });
   // 기분: 영역 채우기 + 부드러운 곡선
   const moodSeg = series((e) => entryScore(e)).filter(Boolean);
@@ -1697,6 +1727,7 @@ document.getElementById("chartNext") && document.getElementById("chartNext").add
 // 근거기반 if-then 인사이트
 function renderInsight(entries, list) {
   const el = document.getElementById("insight");
+  if (!el) return; // 분석 탭 인사이트 카드 제거됨(첫 화면·완료 화면에서만 사용)
   if (list.length < 3) {
     el.textContent = "기록이 3일 이상 쌓이면, 당신만의 마음 패턴을 살며시 알려드릴게요. 지금처럼 조금씩이면 충분해요 🌱";
     return;

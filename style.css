@@ -703,6 +703,13 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .wg-stat span { font-size: var(--t-xs); color: var(--soft); }
 .wg-more { margin: var(--s2) 0 0; text-align: right; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--accent-deep); }
 
+/* 감정 지도 (활력×기분 산점도) */
+.mx-svg { width: 100%; height: auto; aspect-ratio: 300 / 240; display: block; margin-top: var(--s2); }
+.mx-mid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.mx-axis { stroke: var(--line-strong); stroke-width: 1.2; }
+.mx-q { fill: var(--soft); font-size: 9px; font-family: inherit; }
+.mx-al { fill: var(--soft); font-size: 9px; font-weight: 700; font-family: inherit; }
+
 /* 요일별 평균 기분 */
 .dow { display: flex; align-items: flex-end; gap: var(--s1); }
 .dow-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
