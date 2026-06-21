@@ -211,7 +211,7 @@
   function chime() { if (!state.sfxOn || !ensure()) return; tone(660, 0.55, 0, "sine", 0.13, true); tone(990, 0.6, 0.1, "sine", 0.10, true); }
   function tap() { if (!state.sfxOn || !ensure()) return; tone(540, 0.16, 0, "sine", 0.07); }
   // 호흡 카운트다운 틱 (호흡 가이드 소리 설정에 연동)
-  function tick() { if (!state.breathOn || !ensure()) return; tone(880, 0.07, 0, "sine", 0.05); }
+  function tick() { if (!state.breathOn || !ensure()) return; tone(660, 0.06, 0, "sine", 0.03); }
   function success() {
     if (!state.sfxOn || !ensure()) return;
     tone(523, 0.45, 0, "sine", 0.12, true);
@@ -224,22 +224,29 @@
     const notes = [523, 587, 659, 784, 880, 1047];
     notes.forEach((f, i) => tone(f, 0.6, i * 0.12, "triangle", 0.11, true));
   }
-  function breathCue(phase) {
-    if (!state.breathOn || !ensure()) return;
+  // 부드러운 저음 패드 — 호흡 단계 길이만큼 천천히 차오르고 빠짐 (수면용)
+  function softPad(fStart, fEnd, dur, peak) {
     const t = ctx.currentTime;
-    if (phase === "inhale") {
-      const osc = ctx.createOscillator(), g = ctx.createGain();
-      osc.type = "sine"; osc.frequency.setValueAtTime(330, t); osc.frequency.linearRampToValueAtTime(495, t + 1.2);
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.12, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
-      osc.connect(g).connect(master); g.connect(reverbGain); osc.start(t); osc.stop(t + 1.5);
-    } else if (phase === "exhale") {
-      const osc = ctx.createOscillator(), g = ctx.createGain();
-      osc.type = "sine"; osc.frequency.setValueAtTime(440, t); osc.frequency.linearRampToValueAtTime(220, t + 1.6);
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.12, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
-      osc.connect(g).connect(master); g.connect(reverbGain); osc.start(t); osc.stop(t + 1.9);
-    } else {
-      tone(396, 0.25, 0, "sine", 0.05, true);
-    }
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    o1.type = "sine"; o2.type = "triangle"; o2.detune.value = 5;
+    lp.type = "lowpass"; lp.frequency.value = 700; lp.Q.value = 0.4;
+    o1.frequency.setValueAtTime(fStart, t); o1.frequency.linearRampToValueAtTime(fEnd, t + dur);
+    o2.frequency.setValueAtTime(fStart / 2, t); o2.frequency.linearRampToValueAtTime(fEnd / 2, t + dur);
+    const atk = Math.min(1.4, dur * 0.35), rel = Math.min(2.2, dur * 0.45);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(peak, t + atk);
+    g.gain.setValueAtTime(peak, t + Math.max(atk, dur - rel));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o1.connect(lp); o2.connect(lp); lp.connect(g);
+    g.connect(master); g.connect(reverbGain);
+    o1.start(t); o2.start(t); o1.stop(t + dur + 0.15); o2.stop(t + dur + 0.15);
+  }
+  // phase: inhale(상승)/exhale(하강)/hold(잔잔). dur: 단계 길이(초)
+  function breathCue(phase, dur) {
+    if (!state.breathOn || !ensure()) return;
+    if (phase === "inhale") softPad(174, 261, dur || 4, 0.09);        // F3 → C4 천천히 상승
+    else if (phase === "exhale") softPad(261, 130, dur || 8, 0.10);   // C4 → C3 천천히 하강
+    else softPad(174, 174, Math.min(dur || 7, 3), 0.045);            // 멈춤: 낮고 잔잔
   }
 
   window.Sound = {

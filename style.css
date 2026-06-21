@@ -421,6 +421,14 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .qb-title { font-size: 1.3rem; font-weight: 700; margin: 0; }
 .qb-hint { color: var(--soft); margin: 0; }
 .breath-circle.big { width: 180px; height: 180px; font-size: 1.2rem; }
+.sleep-toggle { background: transparent; border: 1px solid var(--line); color: var(--ink-2); border-radius: 999px; padding: 10px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
+/* 수면 모드: 화면을 어둡게 + 자극 최소화 */
+.breath-overlay.sleep { background: #0c0b10; color: #6f6a82; transition: background 0.8s ease; }
+.breath-overlay.sleep .qb-title, .breath-overlay.sleep .qb-hint { color: #5c5870; }
+.breath-overlay.sleep .breath-circle { background: radial-gradient(circle at 30% 30%, #3a3550, #241f38); color: #8a83a6; box-shadow: 0 0 0 0 rgba(120,110,160,0.18); }
+.breath-overlay.sleep .breath-circle.inhale { box-shadow: 0 0 0 30px rgba(120,110,160,0.14); }
+.breath-overlay.sleep .sleep-toggle { border-color: #2a2740; color: #6f6a82; }
+.breath-overlay.sleep .btn.primary { background: #2a2740; color: #b6b0cc; box-shadow: none; }
 
 /* 주간 리포트 */
 #weekRange { font-weight: 600; }

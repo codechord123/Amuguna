@@ -376,17 +376,20 @@ const BREATH_PHASES = [
   { name: "잠깐 멈춰요", dur: 7, cls: "hold", cue: "hold" },
   { name: "내쉬기", dur: 8, cls: "exhale", cue: "exhale" },
 ];
-function makeBreather(circleEl, textEl, base) {
+function makeBreather(circleEl, textEl, base, opts) {
+  opts = opts || {};
+  const isSleep = opts.sleep || (() => false);
   let running = false, tick = null, pi = 0, remain = 0, cycles = 0;
   function render() { textEl.innerHTML = `${BREATH_PHASES[pi].name}<br><b>${remain}</b>`; }
   function enter(i) {
     pi = i; const ph = BREATH_PHASES[i]; remain = ph.dur;
     circleEl.className = base + " " + ph.cls;
     circleEl.style.transitionDuration = (ph.cls === "hold" ? 0.4 : ph.dur) + "s";
-    Sound.breathCue(ph.cue); render();
+    Sound.breathCue(ph.cue, ph.dur); render();
   }
-  return {
+  const api = {
     isRunning: () => running,
+    cycles: () => cycles,
     start() {
       if (running) return;
       Sound.unlock(); running = true; cycles = 0; enter(0);
@@ -394,9 +397,12 @@ function makeBreather(circleEl, textEl, base) {
         remain--;
         if (remain <= 0) {
           let next = pi + 1;
-          if (next >= BREATH_PHASES.length) { next = 0; cycles++; }
+          if (next >= BREATH_PHASES.length) {
+            next = 0; cycles++;
+            if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
+          }
           enter(next);
-        } else { render(); Sound.tick(); }
+        } else { render(); if (!isSleep()) Sound.tick(); } // 수면 모드에선 카운트 틱 없이 패드만
       }, 1000);
     },
     stop() {
@@ -405,6 +411,7 @@ function makeBreather(circleEl, textEl, base) {
       textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
     },
   };
+  return api;
 }
 
 const restBreather = makeBreather(document.getElementById("breathCircle"), document.getElementById("breathText"), "breath-circle");
@@ -1118,7 +1125,7 @@ document.getElementById("histMore").addEventListener("click", () => { histShown 
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [] },
+  { theme: "warm", sfx: true, breathSound: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
@@ -1220,16 +1227,48 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   alert("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
 });
 
-/* 빠른 호흡 — 어디서든 (베타 피드백: 불안형 요구) */
+/* 빠른 호흡 — 어디서든 + 수면 모드 */
 const breathOverlay = document.getElementById("breathOverlay");
-const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big");
-document.getElementById("quickBreathFab").addEventListener("click", () => { breathOverlay.hidden = false; qbBreather.start(); document.getElementById("qbClose").focus(); });
-document.getElementById("qbClose").addEventListener("click", () => { qbBreather.stop(); breathOverlay.hidden = true; });
+const sleepToggle = document.getElementById("sleepToggle");
+let sleepMode = !!settings.sleepBreath;
+let sleepAmbientOn = false, wakeLock = null;
+
+async function requestWake() { try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {} }
+function releaseWake() { try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {} }
+function startSleepAmbient() { if (!sleepAmbientOn) { Sound.startAmbient("rain"); Sound.setAmbientVolume(0.22); sleepAmbientOn = true; } }
+function stopSleepAmbient() { if (sleepAmbientOn) { Sound.stopAmbient(); sleepAmbientOn = false; } }
+function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "🌙 수면 모드 켜짐 (카운트 끔·자동 종료·화면 유지)" : "🌙 수면 모드 끔"; }
+updateSleepLabel();
+
+const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big", {
+  sleep: () => sleepMode,
+  maxCycles: 12,
+  onAutoEnd: () => { stopSleepAmbient(); releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
+});
+function openBreath() {
+  breathOverlay.hidden = false;
+  breathOverlay.classList.toggle("sleep", sleepMode);
+  requestWake();                 // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
+  if (sleepMode) startSleepAmbient();
+  qbBreather.start();
+  document.getElementById("qbClose").focus();
+}
+function closeBreath() { qbBreather.stop(); stopSleepAmbient(); releaseWake(); breathOverlay.hidden = true; }
+document.getElementById("quickBreathFab").addEventListener("click", openBreath);
+document.getElementById("qbClose").addEventListener("click", closeBreath);
+sleepToggle.addEventListener("click", () => {
+  Sound.tap();
+  sleepMode = !sleepMode; settings.sleepBreath = sleepMode; saveSettingsObj(settings);
+  updateSleepLabel(); breathOverlay.classList.toggle("sleep", sleepMode);
+  if (!breathOverlay.hidden) { if (sleepMode) startSleepAmbient(); else stopSleepAmbient(); }
+});
+// 화면 복귀 시 wake lock 재획득
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !breathOverlay.hidden) requestWake(); });
 
 // Esc로 오버레이/카드 닫기 (접근성)
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (!breathOverlay.hidden) { qbBreather.stop(); breathOverlay.hidden = true; }
+  if (!breathOverlay.hidden) closeBreath();
   else if (!onboard.hidden) { finishOnboard(); }
   else { const sc = document.getElementById("safetyCard"); if (!sc.hidden) sc.hidden = true; }
 });

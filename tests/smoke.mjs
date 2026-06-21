@@ -26,7 +26,7 @@ window.AudioContext = class {
   createConvolver() { return { buffer: null, connect: () => chain() }; }
   createBuffer() { return { getChannelData: () => new Float32Array(8) }; }
   createBufferSource() { return { buffer: null, loop: false, connect: () => chain(), start() {}, stop() {} }; }
-  createOscillator() { return { type: "", frequency: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, connect: () => chain(), start() {}, stop() {} }; }
+  createOscillator() { return { type: "", frequency: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, detune: { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} }, connect: () => chain(), start() {}, stop() {} }; }
 };
 window.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
 window.scrollTo = () => {}; window.confirm = () => true; window.alert = () => {};
@@ -117,6 +117,13 @@ try {
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
   q("#breathBtn").click();
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
+  // 수면 모드 토글
+  q("#quickBreathFab").click();
+  q("#sleepToggle").click();
+  check("수면 모드 저장", ls("settings_v2").sleepBreath === true);
+  check("수면 모드 화면 클래스", d.querySelector("#breathOverlay").classList.contains("sleep"));
+  q("#qbClose").click();
+  check("호흡 오버레이 닫힘", d.querySelector("#breathOverlay").hasAttribute("hidden"));
 
   // 8b) 위로 문구 즐겨찾기 / 내 문구
   q("#quoteBtn").click();
