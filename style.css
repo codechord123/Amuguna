@@ -61,10 +61,10 @@ html, body {
 
 .app { max-width: 620px; margin: 0 auto; padding: 22px 16px 108px; }
 
-.hero { text-align: center; margin-bottom: 22px; }
-.greeting { color: var(--accent-deep); font-weight: 600; margin: 0 0 6px; font-size: 0.95rem; }
-.hero h1 { font-size: 2.1rem; margin: 0 0 8px; letter-spacing: -0.5px; }
-.subtitle { color: var(--ink-2); margin: 0; font-size: 0.95rem; }
+.hero { text-align: center; margin-bottom: 14px; }
+.greeting { color: var(--accent-deep); font-weight: 600; margin: 0 0 2px; font-size: 0.85rem; }
+.hero h1 { font-size: 1.6rem; margin: 0; letter-spacing: -0.5px; }
+.subtitle { display: none; }
 
 .tab { animation: fade 0.45s var(--ease-soft) both; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -75,20 +75,20 @@ html, body {
 }
 .card.center { text-align: center; }
 .card h2 { margin: 0 0 6px; font-size: 1.12rem; }
-.hint { color: var(--soft); font-size: 0.88rem; margin: 0 0 14px; }
+.hint { color: var(--soft); font-size: 0.86rem; margin: 0 0 10px; }
 .hint code { background: var(--bg-sunken); padding: 1px 6px; border-radius: 6px; font-size: 0.85em; }
 .micro-hint { color: var(--soft); font-size: 0.82rem; margin: -4px 0 8px; }
 .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
 .card-head h2 { margin: 0; }
 .today-date { color: var(--soft); font-size: 0.85rem; font-weight: 600; }
-.field-label { font-weight: 600; font-size: 0.92rem; margin: 18px 0 8px; color: var(--ink); }
+.field-label { font-weight: 600; font-size: 0.92rem; margin: 14px 0 6px; color: var(--ink); }
 .field-label:first-of-type { margin-top: 4px; }
 .field-label .opt { font-weight: 400; color: var(--soft); font-size: 0.82rem; }
 
 /* buttons */
 .btn {
   border: none; cursor: pointer; border-radius: 999px;
-  padding: 13px 24px; font-size: 1rem; font-weight: 600;
+  padding: 12px 22px; font-size: 1rem; font-weight: 600;
   color: var(--accent-deep); background: var(--accent-2);
   transition: transform 0.15s var(--ease-soft), box-shadow 0.2s ease, filter 0.2s ease;
   font-family: inherit;
@@ -101,18 +101,18 @@ html, body {
 [data-theme="dark"] .btn.primary { color: #1a1920; }
 
 /* mood */
-.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .mood {
-  border: 2px solid transparent; background: var(--bg-sunken); border-radius: 16px;
-  padding: 14px 4px; cursor: pointer; font-size: 1.6rem;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border: 2px solid transparent; background: var(--bg-sunken); border-radius: 14px;
+  padding: 11px 4px; cursor: pointer; font-size: 1.5rem;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   transition: transform 0.15s var(--ease-soft), border-color 0.2s ease; font-family: inherit; color: var(--ink);
 }
 .mood span { font-size: 0.78rem; color: var(--soft); font-weight: 600; }
 .mood:hover { transform: translateY(-3px); }
 .mood.selected { border-color: var(--accent); background: var(--card); animation: mood-press 0.35s var(--ease-soft); }
 @keyframes mood-press { 0% { transform: scale(1); } 40% { transform: scale(0.92); } 100% { transform: scale(1); } }
-.mood-response { margin: 16px 0 0; padding: 14px 16px; background: var(--bg-sunken); border-radius: 14px; font-weight: 500; color: var(--ink-2); animation: fade 0.4s var(--ease-soft) both; }
+.mood-response { margin: 12px 0 0; padding: 12px 14px; background: var(--bg-sunken); border-radius: 14px; font-weight: 500; color: var(--ink-2); animation: fade 0.4s var(--ease-soft) both; }
 
 #todayMore { animation: fade 0.5s var(--ease-soft) both; }
 
@@ -158,7 +158,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .reflect-toggle:hover { border-color: var(--accent); }
 .h-reflect { margin-top: 6px; }
 .h-reflect p { margin: 2px 0; font-size: 0.88rem; color: var(--ink-2); }
-.breather { display: flex; justify-content: center; align-items: center; height: 220px; }
+.breather { display: flex; justify-content: center; align-items: center; height: 190px; }
 .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.05rem; box-shadow: 0 0 0 0 var(--ring); transition: transform 4s var(--ease-breath), box-shadow 4s var(--ease-breath); }
 .breath-circle.inhale { transform: scale(1.55); box-shadow: 0 0 0 30px var(--ring); }
 .breath-circle.hold { transform: scale(1.55); }
@@ -287,7 +287,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .sci-list b { color: var(--ink); }
 
 /* 기록 탭 / 쉼 탭 서브탭 */
-.stats-seg { margin-bottom: 16px; }
+.stats-seg { margin-bottom: 12px; }
 .stats-panel > .card:last-child { margin-bottom: 0; }
 
 /* 설정 접기 카드 */
@@ -420,7 +420,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .data-btns { display: flex; flex-direction: column; gap: 10px; }
 
 /* footer + tabbar */
-.foot { text-align: center; color: var(--soft); font-size: 0.83rem; margin-top: 26px; }
+.foot { text-align: center; color: var(--soft); font-size: 0.76rem; margin-top: 18px; line-height: 1.5; }
 .foot .hotline { margin-top: 6px; }
 .foot strong { color: var(--accent-deep); }
 .tabbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-around; background: var(--card); border-top: 1px solid var(--line); padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(120, 90, 70, 0.08); }
