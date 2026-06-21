@@ -893,7 +893,6 @@ function renderStats() {
   renderTagInsight(entries);
   renderRhythm(entries);
   renderGratitude(list);
-  drawChart(entries);
   renderDist(list);
 }
 // 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
@@ -964,7 +963,6 @@ document.getElementById("weekGlanceCard").addEventListener("click", () => { Soun
 function showStatsSeg(seg) {
   document.querySelectorAll("#statsSeg button").forEach((b) => b.classList.toggle("active", b.dataset.seg === seg));
   document.querySelectorAll(".stats-panel").forEach((p) => { p.hidden = p.dataset.panel !== seg; });
-  if (seg === "graph") drawChart(loadEntries());        // 보일 때 정확한 폭으로 다시 그림
 }
 document.getElementById("statsSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1715,148 +1713,6 @@ function checkBadges() {
   } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
 }
 
-let chartOffset = 0;     // 0 = 오늘로 끝나는 창. 양수 = 과거로 이동
-const CHART_WIN = 14;    // 한 화면에 보는 일수
-function chartMaxOffset(entries) {
-  const ks = Object.keys(entries).filter((k) => entries[k] && entries[k].mood).sort();
-  if (!ks.length) return 0;
-  const oldest = new Date(ks[0] + "T00:00:00"), today = new Date(todayKey() + "T00:00:00");
-  const span = Math.round((today - oldest) / 86400000);
-  return Math.max(0, span - (CHART_WIN - 1));
-}
-function smoothCurve(ctx, pts) { // 카멀롬-롬: 현재 점(pts[0])에서 이어 곡선
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-    ctx.bezierCurveTo(p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6, p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6, p2.x, p2.y);
-  }
-}
-function smoothPath(ctx, pts) { // 부드러운 곡선 (moveTo부터)
-  if (pts.length < 2) return;
-  ctx.moveTo(pts[0].x, pts[0].y);
-  smoothCurve(ctx, pts);
-}
-function drawChart(entries) {
-  const canvas = document.getElementById("chart");
-  const chs = (typeof loadChs === "function") ? loadChs() : [];
-  const hasHabits = chs.length > 0;
-  const dpr = window.devicePixelRatio || 1, cssW = canvas.clientWidth || 560, cssH = hasHabits ? 236 : 210;
-  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
-  const ctx = canvas.getContext("2d"); if (!ctx) return; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, cssW, cssH);
-  const css = getComputedStyle(document.documentElement);
-  const accent = css.getPropertyValue("--accent").trim(), energyC = css.getPropertyValue("--energy").trim();
-  const line = css.getPropertyValue("--line").trim(), soft = css.getPropertyValue("--soft").trim(), card = css.getPropertyValue("--card").trim();
-  chartOffset = Math.max(0, Math.min(chartOffset, chartMaxOffset(entries)));
-  const days = [];
-  for (let i = CHART_WIN - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i - chartOffset); days.push(todayKey(d)); }
-  const rangeEl = document.getElementById("chartRange");
-  if (rangeEl) { const a = days[0].split("-"), b = days[days.length - 1].split("-"); rangeEl.textContent = `${+a[1]}/${+a[2]} ~ ${+b[1]}/${+b[2]}`; }
-  const moodPts = days.filter((k) => entries[k] && entries[k].mood).length;
-  if (moodPts < 1 && chartOffset === 0) {
-    ctx.fillStyle = soft; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
-    ctx.fillText("기록이 쌓이면 마음·에너지 흐름을", cssW / 2, cssH / 2 - 8);
-    ctx.fillText("주식 차트처럼 보여드려요 🌿", cssW / 2, cssH / 2 + 12);
-    return;
-  }
-  const padL = 30, padR = 12, padT = 16, padB = hasHabits ? 50 : 28, w = cssW - padL - padR, h = cssH - padT - padB;
-  const x = (i) => padL + (w * i) / (days.length - 1), y = (v) => padT + h - (h * v) / 100; // v: 0-100
-  const strong = css.getPropertyValue("--line-strong").trim() || line;
-  // 가로 그리드 + 좌측 눈금(세로축 값)
-  ctx.textAlign = "right"; ctx.font = "9px sans-serif";
-  [0, 50, 100].forEach((v) => { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(cssW - padR, y(v)); ctx.stroke(); ctx.fillStyle = soft; ctx.fillText(v, padL - 5, y(v) + 3); });
-  // 축선 (세로=기분, 가로=날짜)
-  ctx.strokeStyle = strong; ctx.lineWidth = 1.2;
-  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + h); ctx.lineTo(cssW - padR, padT + h); ctx.stroke();
-  // 축 제목
-  ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
-  ctx.fillText("기분", padL - 26, padT + 4);
-  // 무드 리본 — 높이·색=기분, 두께=활력
-  // 세로 그라데이션(아래 빨강 ~ 위 초록): 리본이 위로 갈수록 초록 = 그날 기분이 색으로 읽힘
-  const ribGrad = ctx.createLinearGradient(0, y(0), 0, y(100));
-  ribGrad.addColorStop(0, SCORE_COLORS[0]); ribGrad.addColorStop(0.25, SCORE_COLORS[1]);
-  ribGrad.addColorStop(0.5, SCORE_COLORS[2]); ribGrad.addColorStop(0.75, SCORE_COLORS[3]); ribGrad.addColorStop(1, SCORE_COLORS[4]);
-  const rib = days.map((k, i) => {
-    const e = entries[k]; if (!e || !e.mood) return null;
-    const en = e.energy || scoreToEnergy(entryScore(e));
-    return { x: x(i), y: y(entryScore(e)), half: 3 + (Math.max(1, Math.min(5, en)) / 5) * 9 };
-  });
-  const drawRibbon = (s) => {
-    if (s.length === 1) { ctx.beginPath(); ctx.arc(s[0].x, s[0].y, s[0].half, 0, Math.PI * 2); ctx.fillStyle = ribGrad; ctx.globalAlpha = 0.92; ctx.fill(); ctx.globalAlpha = 1; return; }
-    const top = s.map((p) => ({ x: p.x, y: p.y - p.half })), bot = s.map((p) => ({ x: p.x, y: p.y + p.half }));
-    ctx.beginPath(); smoothPath(ctx, top);
-    ctx.lineTo(bot[bot.length - 1].x, bot[bot.length - 1].y);
-    smoothCurve(ctx, bot.slice().reverse());
-    ctx.closePath(); ctx.fillStyle = ribGrad; ctx.globalAlpha = 0.92; ctx.fill(); ctx.globalAlpha = 1;
-  };
-  let rseg = [];
-  rib.forEach((p) => { if (!p) { if (rseg.length) drawRibbon(rseg); rseg = []; } else rseg.push(p); });
-  if (rseg.length) drawRibbon(rseg);
-  // 평균선 (보이는 구간의 기분 평균)
-  const moodVals = days.map((k) => entries[k] ? entryScore(entries[k]) : null).filter((v) => v != null);
-  if (moodVals.length >= 2) {
-    const m = moodVals.reduce((a, b) => a + b, 0) / moodVals.length, yy = y(m);
-    ctx.save(); ctx.strokeStyle = soft; ctx.globalAlpha = 0.6; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(cssW - padR, yy); ctx.stroke();
-    ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText(`평균 ${Math.round(m)}`, padL + 2, Math.max(padT + 8, yy - 3)); ctx.restore();
-  }
-  // 중심 추세선 + 점 마커 (또렷하게)
-  let sseg = [];
-  const flushSpine = () => { if (sseg.length > 1) { ctx.beginPath(); smoothPath(ctx, sseg); ctx.strokeStyle = card; ctx.globalAlpha = 0.85; ctx.lineWidth = 1.6; ctx.lineJoin = "round"; ctx.stroke(); ctx.globalAlpha = 1; } sseg = []; };
-  rib.forEach((p) => { if (!p) flushSpine(); else sseg.push({ x: p.x, y: p.y }); }); flushSpine();
-  rib.forEach((p) => { if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = accent; ctx.stroke(); } });
-  // 오늘 마커 (보이면 강조 링)
-  const ti = days.indexOf(todayKey());
-  if (ti >= 0 && entries[days[ti]] && entryScore(entries[days[ti]]) != null) {
-    const px = x(ti), py = y(entryScore(entries[days[ti]]));
-    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke();
-  }
-  // 습관 실천 레인 — 마음 흐름과 같은 날짜축에 겹쳐 보기 (연결성)
-  if (hasHabits) {
-    const today = todayKey();
-    const laneY = padT + h + 20;
-    const success = css.getPropertyValue("--success").trim();
-    ctx.fillStyle = soft; ctx.font = "9px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("습관", padL - 26, laneY + 3);
-    const sz = Math.max(8, Math.min(14, w / days.length - 5));
-    days.forEach((k, i) => {
-      const active = chs.filter((hh) => k >= hh.startDate && k <= today);
-      if (!active.length) return;
-      const done = active.filter((hh) => hh.done && hh.done[k]).length;
-      const rx = x(i) - sz / 2, ry = laneY - sz / 2;
-      if (done === 0) { ctx.fillStyle = line; ctx.fillRect(rx, ry, sz, sz); }
-      else { ctx.save(); ctx.globalAlpha = 0.32 + 0.68 * (done / active.length); ctx.fillStyle = success; ctx.fillRect(rx, ry, sz, sz); ctx.restore(); }
-    });
-  }
-  // x축 날짜 라벨 (양끝 + 가운데)
-  ctx.fillStyle = soft; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
-  const lab = (k) => { const p = k.split("-"); return `${+p[1]}/${+p[2]}`; };
-  [0, Math.floor((days.length - 1) / 2), days.length - 1].forEach((i) => ctx.fillText(lab(days[i]), x(i), cssH - 8));
-}
-// 차트 좌우 드래그(날짜 이동) + 점 탭(그날 기록 열기) — 한 번만 바인딩
-(function bindChartPan() {
-  const canvas = document.getElementById("chart"); if (!canvas) return;
-  let dragging = false, startX = 0, startOffset = 0, moved = 0, downX = 0;
-  const dayW = () => (canvas.clientWidth - 34) / (CHART_WIN - 1);
-  const move = (cx) => { const dx = cx - startX; chartOffset = startOffset + Math.round(dx / dayW()); drawChart(loadEntries()); };
-  canvas.style.touchAction = "pan-y";
-  canvas.addEventListener("pointerdown", (e) => { dragging = true; startX = e.clientX; downX = e.clientX; moved = 0; startOffset = chartOffset; try { canvas.setPointerCapture(e.pointerId); } catch (x) {} });
-  canvas.addEventListener("pointermove", (e) => { if (dragging) { moved = Math.max(moved, Math.abs(e.clientX - downX)); move(e.clientX); } });
-  canvas.addEventListener("pointerup", (e) => {
-    dragging = false;
-    if (moved > 6) return; // 드래그였으면 탭 무시
-    // 탭 위치에서 가장 가까운 날짜를 찾아 기록 열기
-    const r = canvas.getBoundingClientRect(); const padL = 22, padR = 12;
-    const w = canvas.clientWidth - padL - padR; const rel = (e.clientX - r.left - padL) / w;
-    const idx = Math.round(rel * (CHART_WIN - 1));
-    if (idx < 0 || idx > CHART_WIN - 1) return;
-    const d = new Date(); d.setDate(d.getDate() - (CHART_WIN - 1 - idx) - chartOffset);
-    const k = todayKey(d);
-    if (loadEntries()[k]) { Sound.tap(); openEntryDetail(k); }
-  });
-  canvas.addEventListener("pointercancel", () => { dragging = false; });
-})();
-document.getElementById("chartPrev") && document.getElementById("chartPrev").addEventListener("click", () => { chartOffset += 7; Sound.tap(); drawChart(loadEntries()); });
-document.getElementById("chartNext") && document.getElementById("chartNext").addEventListener("click", () => { chartOffset = Math.max(0, chartOffset - 7); Sound.tap(); drawChart(loadEntries()); });
 
 // 근거기반 if-then 인사이트
 function renderInsight(entries, list) {
@@ -1959,11 +1815,10 @@ function applySettings() {
   document.querySelectorAll(".sound-btn").forEach((b) => { const on = settings.ambientType && settings.ambientType !== "off" && b.dataset.sound === settings.ambientType; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
   Sound.setSfx(settings.sfx); Sound.setBreath(settings.breathSound); Sound.state.ambientVol = settings.ambientVol / 100;
 }
-if (darkMq) darkMq.addEventListener("change", () => { if (settings.theme === "auto") { applySettings(); if (!document.getElementById("tab-stats").hidden) drawChart(loadEntries()); } });
+if (darkMq) darkMq.addEventListener("change", () => { if (settings.theme === "auto") applySettings(); });
 document.getElementById("themeGrid").addEventListener("click", (e) => {
   const btn = e.target.closest(".theme-btn"); if (!btn) return;
   settings.theme = btn.dataset.theme; saveSettingsObj(settings); applySettings(); Sound.tap();
-  if (!document.getElementById("tab-stats").hidden) drawChart(loadEntries());
 });
 document.getElementById("textSizeSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
