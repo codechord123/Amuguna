@@ -521,6 +521,11 @@ challengeTitle.addEventListener("input", () => {
   presetEmoji = "🎯"; updateIntention();
 });
 
+function resetSetupForm() {
+  presetChoice = ""; presetEmoji = "🎯"; cueChoice = "";
+  challengeTitle.value = ""; challengeMin.value = ""; intentionPreview.textContent = "";
+  document.querySelectorAll(".preset,.cue").forEach((b) => b.classList.remove("selected"));
+}
 document.getElementById("startChallenge").addEventListener("click", () => {
   const title = challengeTitle.value.trim() || presetChoice;
   if (!title) { alert("어떤 습관을 만들지 골라주세요 🙂"); return; }
@@ -528,18 +533,12 @@ document.getElementById("startChallenge").addEventListener("click", () => {
   chs.push({ id: "c" + Date.now(), emoji: presetEmoji, title, cue: cueChoice, minVersion: challengeMin.value.trim(), startDate: todayKey(), done: {}, celebrated: [] });
   saveChs(chs);
   Sound.success();
-  // 폼 리셋
-  presetChoice = ""; presetEmoji = "🎯"; cueChoice = "";
-  challengeTitle.value = ""; challengeMin.value = ""; intentionPreview.textContent = "";
-  document.querySelectorAll(".preset,.cue").forEach((b) => b.classList.remove("selected"));
-  addingMode = false;
+  resetSetupForm();
+  closeSubpage();
   renderChallenge();
 });
 
-document.getElementById("addHabitBtn").addEventListener("click", () => {
-  addingMode = true; Sound.tap(); renderChallenge();
-  setup.scrollIntoView({ behavior: "smooth", block: "start" });
-});
+document.getElementById("addHabitBtn").addEventListener("click", () => { Sound.tap(); openAddHabit(); });
 
 function challengeStreak(h) {
   let streak = 0, d = new Date();
@@ -551,28 +550,17 @@ function challengeStreak(h) {
 function renderChallenge() {
   const chs = loadChs();
   const list = document.getElementById("challengeList");
-  const addBtn = document.getElementById("addHabitBtn");
   const summary = document.getElementById("chSummary");
-  const emptyEl = setup.querySelector(".setup-empty");
-
+  const chEmpty = document.getElementById("chEmpty");
   if (chs.length === 0) {
-    list.innerHTML = ""; addBtn.hidden = true; summary.hidden = true;
-    setup.hidden = false; emptyEl.hidden = false; addingMode = false;
-    return;
+    list.innerHTML = ""; summary.hidden = true; chEmpty.hidden = false; return;
   }
-
-  // 요약
   const today = todayKey();
   const doneToday = chs.filter((h) => h.done[today]).length;
   summary.hidden = false;
   summary.textContent = `오늘 ${doneToday} / ${chs.length} 완료 ${doneToday === chs.length ? "🎉 다 해냈어요!" : "🌱"}`;
-
-  // 카드 목록 (가벼운 카드 — 누르면 상세 페이지로 전환)
   list.innerHTML = chs.map((h) => habitCardHtml(h)).join("");
-
-  addBtn.hidden = false;
-  setup.hidden = !addingMode;
-  emptyEl.hidden = true; // 추가 모드일 땐 빈상태 헤더 숨김
+  chEmpty.hidden = true;
 }
 
 function habitCardHtml(h) {
@@ -657,18 +645,31 @@ document.getElementById("challengeList").addEventListener("keydown", (e) => {
 const subpage = document.getElementById("subpage");
 const subBody = document.getElementById("subBody");
 const subTitle = document.getElementById("subTitle");
-let openHabitId = null;
+let openHabitId = null, subAnim = 0;
 function openSubpage(title, html) {
-  subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
+  subAnim++; subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
   requestAnimationFrame(() => subpage.classList.add("show"));
+}
+function stowSetup() { // 폼 노드를 탭으로 되돌려 숨김 (리스너 보존)
+  if (setup.parentNode === subBody) { setup.hidden = true; document.getElementById("tab-challenge").appendChild(setup); }
 }
 function closeSubpage() {
   subpage.classList.remove("show"); openHabitId = null;
-  setTimeout(() => { subpage.hidden = true; subBody.innerHTML = ""; }, 300);
+  const my = ++subAnim;
+  setTimeout(() => { if (my !== subAnim) return; subpage.hidden = true; stowSetup(); subBody.innerHTML = ""; }, 300);
 }
 function openHabitDetail(id) {
   const h = loadChs().find((x) => x.id === id); if (!h) return;
+  stowSetup();
   openHabitId = id; openSubpage(`${h.emoji} ${h.title}`, detailHabitHtml(h)); fillHabitGrid(h);
+}
+function openAddHabit() {
+  resetSetupForm();
+  setup.hidden = false;
+  subTitle.textContent = "새 습관 만들기";
+  subBody.innerHTML = ""; subBody.appendChild(setup);
+  subpage.hidden = false; openHabitId = null; subAnim++;
+  requestAnimationFrame(() => subpage.classList.add("show"));
 }
 function refreshHabitDetail(id) {
   if (subpage.hidden || openHabitId !== id) return;
@@ -806,6 +807,18 @@ function renderMoodCalendar(entries) {
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
 document.getElementById("calNext").addEventListener("click", () => { if (calOffset < 0) { calOffset++; Sound.tap(); renderMoodCalendar(loadEntries()); } });
+
+/* 기록 탭 서브탭 (요약/그래프/달력/기록) */
+function showStatsSeg(seg) {
+  document.querySelectorAll("#statsSeg button").forEach((b) => b.classList.toggle("active", b.dataset.seg === seg));
+  document.querySelectorAll(".stats-panel").forEach((p) => { p.hidden = p.dataset.panel !== seg; });
+  if (seg === "graph") drawChart(loadEntries());        // 보일 때 정확한 폭으로 다시 그림
+  if (seg === "calendar") renderMoodCalendar(loadEntries());
+}
+document.getElementById("statsSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  Sound.tap(); showStatsSeg(b.dataset.seg);
+});
 
 /* 주간 리포트 (베타 피드백 #1) */
 let weekData = null;
@@ -1251,6 +1264,14 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
   e.target.value = "";
 });
 document.getElementById("replayOnboard").addEventListener("click", () => { Sound.tap(); showOnboard(); });
+
+/* 설정 카드 접기/펼치기 */
+document.getElementById("tab-settings").addEventListener("click", (e) => {
+  const h2 = e.target.closest("h2"); if (!h2) return;
+  const card = h2.parentElement;
+  if (!card.classList.contains("collapsible")) return;
+  card.classList.toggle("collapsed"); Sound.tap();
+});
 document.getElementById("clearBtn").addEventListener("click", () => {
   if (!confirm("정말 모든 기록을 지울까요? 되돌릴 수 없어요.")) return;
   localStorage.removeItem(DB.ENTRIES); localStorage.removeItem(DB.CH); localStorage.removeItem("projects_v1");

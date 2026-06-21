@@ -297,6 +297,17 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .habit-info[role="button"] { cursor: pointer; }
 .habit-title .go { color: var(--soft); font-weight: 400; margin-left: 2px; }
 
+/* 기록 탭 서브탭 */
+.stats-seg { margin-bottom: 16px; }
+.stats-panel > .card:last-child { margin-bottom: 0; }
+
+/* 설정 접기 카드 */
+.card.collapsible > h2 { cursor: pointer; position: relative; padding-right: 24px; user-select: none; }
+.card.collapsible > h2::after { content: "▾"; position: absolute; right: 0; top: 0; color: var(--soft); transition: transform 0.2s; }
+.card.collapsible.collapsed > h2 { margin-bottom: 0; }
+.card.collapsible.collapsed > h2::after { transform: rotate(-90deg); }
+.card.collapsible.collapsed > :not(h2) { display: none !important; }
+
 /* 슬라이드 상세 페이지 */
 .subpage { position: fixed; inset: 0; z-index: 80; background: var(--bg); transform: translateX(100%); transition: transform 0.3s var(--ease-soft); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .subpage.show { transform: translateX(0); }

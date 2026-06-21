@@ -176,16 +176,18 @@
       <p class="ch-summary" id="chSummary" hidden></p>
       <div id="challengeList"></div>
 
-      <button class="habit-add" id="addHabitBtn" hidden>＋ 새로운 습관 추가하기</button>
-
-      <!-- 추가/빈 상태 폼 -->
-      <div class="card" id="challengeSetup">
+      <div class="card" id="chEmpty" hidden>
         <div class="setup-empty">
           <div class="onboard-emoji">🌱</div>
           <h2>한 가지 작은 습관부터요</h2>
           <p class="hint">거창하지 않아도 괜찮아요. 매일 한 칸씩이면 충분해요. <strong>습관은 여러 개 등록할 수 있어요</strong> — 부담되면 하나부터 시작해도 좋아요.</p>
         </div>
+      </div>
 
+      <button class="habit-add" id="addHabitBtn">＋ 새 습관 만들기</button>
+
+      <!-- 추가 폼 (누르면 슬라이드 페이지로 열림) -->
+      <div class="card" id="challengeSetup" hidden>
         <p class="field-label">어떤 습관을 만들고 싶어요?</p>
         <div class="preset-grid" id="presetGrid">
           <button class="preset" data-h="10분 산책하기" data-e="🚶">🚶 10분 산책</button>
@@ -232,74 +234,84 @@
         </div>
       </div>
 
-      <div class="card" id="weeklyCard">
-        <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
-        <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
-        <div class="data-btns" style="margin-top:14px">
-          <button class="btn" id="weekImageBtn">🖼️ 카드 이미지로 저장</button>
-          <button class="btn" id="weekShareBtn">📤 공유하기</button>
+      <div class="seg stats-seg" id="statsSeg">
+        <button data-seg="summary" class="active">요약</button>
+        <button data-seg="graph">그래프</button>
+        <button data-seg="calendar">달력</button>
+        <button data-seg="log">기록</button>
+      </div>
+
+      <div class="stats-panel" data-panel="summary">
+        <div class="card" id="weeklyCard">
+          <div class="card-head"><h2>🗓️ 주간 리포트</h2><span class="today-date" id="weekRange"></span></div>
+          <p class="insight" id="weeklySummary">이번 주 기록이 쌓이면 요약해드릴게요.</p>
+          <div class="data-btns" style="margin-top:14px">
+            <button class="btn" id="weekImageBtn">🖼️ 카드 이미지로 저장</button>
+            <button class="btn" id="weekShareBtn">📤 공유하기</button>
+          </div>
+          <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         </div>
-        <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
-      </div>
-
-      <div class="card" id="monthlyCard">
-        <div class="card-head"><h2>📈 월간 리포트</h2><span class="today-date" id="monthRange"></span></div>
-        <p class="insight" id="monthlySummary">이번 달 기록이 쌓이면 요약해드릴게요.</p>
-        <div class="data-btns" style="margin-top:14px">
-          <button class="btn" id="monthImageBtn">🖼️ 카드 이미지로 저장</button>
-          <button class="btn" id="monthShareBtn">📤 공유하기</button>
+        <div class="card" id="monthlyCard">
+          <div class="card-head"><h2>📈 월간 리포트</h2><span class="today-date" id="monthRange"></span></div>
+          <p class="insight" id="monthlySummary">이번 달 기록이 쌓이면 요약해드릴게요.</p>
+          <div class="data-btns" style="margin-top:14px">
+            <button class="btn" id="monthImageBtn">🖼️ 카드 이미지로 저장</button>
+            <button class="btn" id="monthShareBtn">📤 공유하기</button>
+          </div>
+          <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
         </div>
-        <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
-      </div>
-
-      <div class="card" id="badgeCard">
-        <h2>🏅 배지</h2>
-        <p class="hint">기록을 이어가며 하나씩 모아봐요.</p>
-        <div class="badge-grid" id="badgeGrid"></div>
-      </div>
-
-      <div class="card">
-        <h2>🧭 오늘의 인사이트</h2>
-        <p class="insight" id="insight">기록이 쌓이면 패턴을 알려드릴게요.</p>
-      </div>
-
-      <div class="card" id="corrCard">
-        <h2>🔗 습관과 기분</h2>
-        <p class="hint">습관을 한 날과 안 한 날, 기분이 어떻게 달랐는지 비교해요.</p>
-        <div id="corrBody"></div>
-      </div>
-
-      <div class="card">
-        <h2>📊 마음 & 에너지 흐름</h2>
-        <p class="hint">최근 14일의 변화예요. 위로 갈수록 좋은 상태.</p>
-        <canvas id="chart" height="200" role="img" aria-label="최근 14일 기분과 에너지 추이 그래프"></canvas>
-        <div class="legend">
-          <span><i class="dot mood-dot"></i>기분</span>
-          <span><i class="dot energy-dot"></i>에너지</span>
+        <div class="card" id="badgeCard">
+          <h2>🏅 배지</h2>
+          <p class="hint">기록을 이어가며 하나씩 모아봐요.</p>
+          <div class="badge-grid" id="badgeGrid"></div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h2>🗓️ 기분 달력</h2>
-          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+      <div class="stats-panel" data-panel="graph" hidden>
+        <div class="card">
+          <h2>🧭 오늘의 인사이트</h2>
+          <p class="insight" id="insight">기록이 쌓이면 패턴을 알려드릴게요.</p>
         </div>
-        <p class="hint">날짜를 누르면 그날 기록을 바로 고칠 수 있어요.</p>
-        <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-        <div class="mood-cal" id="moodCal"></div>
-        <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
+        <div class="card" id="corrCard">
+          <h2>🔗 습관과 기분</h2>
+          <p class="hint">습관을 한 날과 안 한 날, 기분이 어떻게 달랐는지 비교해요.</p>
+          <div id="corrBody"></div>
+        </div>
+        <div class="card">
+          <h2>📊 마음 & 에너지 흐름</h2>
+          <p class="hint">최근 14일의 변화예요. 위로 갈수록 좋은 상태.</p>
+          <canvas id="chart" height="200" role="img" aria-label="최근 14일 기분과 에너지 추이 그래프"></canvas>
+          <div class="legend">
+            <span><i class="dot mood-dot"></i>기분</span>
+            <span><i class="dot energy-dot"></i>에너지</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>🌙 기분 분포 (최근 30일)</h2>
+          <div class="dist" id="dist"></div>
+        </div>
       </div>
 
-      <div class="card">
-        <h2>🌙 기분 분포 (최근 30일)</h2>
-        <div class="dist" id="dist"></div>
+      <div class="stats-panel" data-panel="calendar" hidden>
+        <div class="card">
+          <div class="card-head">
+            <h2>🗓️ 기분 달력</h2>
+            <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+          </div>
+          <p class="hint">날짜를 누르면 그날 기록을 바로 고칠 수 있어요.</p>
+          <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div class="mood-cal" id="moodCal"></div>
+          <div class="cal-legend"><span>지침</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋음</span></div>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
-        <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />
-        <ul class="history" id="history"></ul>
-        <button class="btn" id="histMore" hidden style="width:100%;margin-top:12px">더 보기</button>
+      <div class="stats-panel" data-panel="log" hidden>
+        <div class="card">
+          <div class="card-head"><h2>🗓️ 지난 기록</h2><span class="today-date" id="histCount"></span></div>
+          <input type="search" id="historySearch" class="text-input" placeholder="🔍 일기·태그·기분 검색" style="margin-bottom:12px" />
+          <ul class="history" id="history"></ul>
+          <button class="btn" id="histMore" hidden style="width:100%;margin-top:12px">더 보기</button>
+        </div>
       </div>
     </section>
 
@@ -331,7 +343,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>🎨 테마</h2>
         <div class="theme-grid" id="themeGrid">
           <button class="theme-btn" data-theme="warm">🌅<span>따뜻</span></button>
@@ -341,7 +353,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>🔠 글자 크기</h2>
         <p class="hint">눈이 편한 크기로 맞춰보세요.</p>
         <div class="seg" id="textSizeSeg">
@@ -351,7 +363,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>💬 위로 톤</h2>
         <p class="hint">달달한 위로가 부담스러우면 담백하게 바꿀 수 있어요.</p>
         <div class="seg" id="toneSeg">
@@ -360,13 +372,13 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>🔊 소리</h2>
         <label class="toggle-row"><span>효과음 (버튼·저장음)</span><input type="checkbox" id="sfxToggle" checked /></label>
         <label class="toggle-row"><span>호흡할 때 가이드 소리</span><input type="checkbox" id="breathSoundToggle" checked /></label>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>🔔 매일 기록 알림</h2>
         <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
         <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" /></label>
@@ -374,7 +386,7 @@
         <p class="save-msg" id="reminderMsg" role="status" aria-live="polite" hidden></p>
       </div>
 
-      <div class="card">
+      <div class="card collapsible collapsed">
         <h2>💾 내 데이터</h2>
         <p class="hint">모든 기록은 이 기기에만 저장돼요. 백업하거나 다른 기기로 옮길 수 있어요.</p>
         <div class="data-btns">

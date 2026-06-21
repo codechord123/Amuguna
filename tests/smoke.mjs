@@ -74,10 +74,14 @@ try {
   check("활기차요(7단계) 저장", te.mood === "활기차요");
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
 
-  // 3) 습관 생성 + 완료 체크 + 편집
+  // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
   q("[data-tab=challenge]").click();
+  check("빈 상태 표시", !q("#chEmpty").hasAttribute("hidden"));
+  q("#addHabitBtn").click();
+  check("새 습관 추가 페이지 열림", !q("#subpage").hasAttribute("hidden") && !!q("#subBody #challengeTitle"));
   q(".preset").click(); q("#startChallenge").click();
   check("습관 1개 생성됨", ls("challenges_v2").length === 1);
+  check("생성 후 추가 페이지 닫힘", !q("#subpage").classList.contains("show"));
   q(".habit-check").click();
   check("습관 오늘 완료 저장됨", Object.values(ls("challenges_v2")[0].done).some(Boolean));
   // 상세 페이지로 전환 → 편집
@@ -97,6 +101,9 @@ try {
   check("기분 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
   check("주간 리포트 텍스트 있음", q("#weeklySummary").textContent.length > 0);
   check("월간 리포트 텍스트 있음", q("#monthlySummary").textContent.length > 0);
+  q("#statsSeg button[data-seg=graph]").click();
+  check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
+  q("#statsSeg button[data-seg=summary]").click();
   check("배지 렌더됨", d.querySelectorAll("#badgeGrid .badge").length === 10);
   check("첫 기록 배지 획득", d.querySelector("#badgeGrid .badge.earned") !== null);
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
@@ -117,6 +124,10 @@ try {
   check("글자 크기 적용", d.documentElement.getAttribute("data-textsize") === "xl");
   q("#toneSeg button[data-tone=plain]").click();
   check("위로 톤 저장", ls("settings_v2").tone === "plain");
+  const themeCard = q("#themeGrid").closest(".card");
+  const before2 = themeCard.classList.contains("collapsed");
+  themeCard.querySelector("h2").click();
+  check("설정 카드 접기 토글", themeCard.classList.contains("collapsed") !== before2);
 
   // 8) 호흡 카운터 + 빠른 호흡
   q("[data-tab=rest]").click();
