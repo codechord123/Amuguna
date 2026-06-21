@@ -345,7 +345,40 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .sci-note { font-size: var(--t-xs); color: var(--soft); line-height: 1.65; margin: var(--s4) 0 0; padding-top: var(--s3); border-top: 1px solid var(--line); }
 .sci-note b { color: var(--ink-2); }
 
+/* ----- 리포트 상세: 요약 콜아웃 ----- */
+.rpt-summary { background: linear-gradient(160deg, var(--accent-2), var(--card) 78%); border-color: var(--line-strong); }
+[data-theme="dark"] .rpt-summary { background: var(--card); }
+.rpt-summary .insight { color: var(--ink); }
+
+/* ----- 리포트 KPI 타일 (2×2) ----- */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s4); }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-sm); padding: var(--s4) var(--s3); display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.kpi-emoji { font-size: 1.5rem; line-height: 1; margin-bottom: var(--s1); }
+.kpi-val { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
+.kpi-val i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; margin-left: 1px; }
+.kpi-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
+
+/* ----- 리포트 추이 차트 (SVG) ----- */
+.rc-svg { width: 100%; height: auto; aspect-ratio: 320 / 132; display: block; margin-top: var(--s2); overflow: visible; }
+.rc-grid { stroke: var(--line); stroke-width: 1; }
+.rc-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.rc-mood { stroke: var(--accent); }
+.rc-energy { stroke: var(--energy); stroke-width: 2; stroke-dasharray: 2.5 3.5; opacity: 0.85; }
+.rc-dot { stroke: var(--card); stroke-width: 1.2; }
+.rc-mdot { fill: var(--accent); }
+.rc-edot { fill: var(--energy); }
+.rc-xlabel { fill: var(--soft); font-size: 8px; text-anchor: middle; font-family: inherit; }
+.rpt-legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
+.rpt-legend i { display: inline-block; width: 14px; height: 3px; border-radius: var(--r-pill); margin-right: var(--s1); vertical-align: middle; }
+.rpt-legend .rl-mood { background: var(--accent); }
+.rpt-legend .rl-energy { background: var(--energy); }
+
 /* ----- 리포트 상세 날짜별 ----- */
+.rpt-days summary { list-style: none; cursor: pointer; font-weight: var(--w-bold); font-size: var(--t-md); }
+.rpt-days summary::-webkit-details-marker { display: none; }
+.rpt-days summary::after { content: "›"; float: right; color: var(--soft); font-size: 1.3rem; line-height: 1; transition: transform 0.25s var(--ease-soft); }
+.rpt-days[open] summary::after { transform: rotate(90deg); }
+.rpt-days[open] summary { margin-bottom: var(--s3); }
 .rpt-list { display: flex; flex-direction: column; }
 .rpt-row { display: grid; grid-template-columns: 1.2fr 1.4fr 0.6fr; gap: var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); font-size: var(--t-sm); }
 .rpt-row:last-child { border-bottom: none; }

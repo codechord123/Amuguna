@@ -144,6 +144,12 @@ function activateTab(name, { scroll = true } = {}) {
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
   if (name === "challenge") renderChallenge();
+  if (name === "today") {
+    // 오늘 탭은 '오늘의 여정'만 보이게. 직접 기록 폼은 수정 진입 시에만 노출.
+    const cc = document.getElementById("checkin-card");
+    cc.hidden = true; cc.classList.add("collapsed");
+    document.getElementById("journeyStartCard").hidden = false;
+  }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -175,9 +181,12 @@ function entryDetailHtml(e) {
 function openEntryEditor(dateKey) {
   if (dateKey > todayKey()) return;
   activateTab("today");
-  document.getElementById("checkin-card").classList.remove("collapsed"); // 펼쳐서 보이게
+  // 수정할 때만 기록 폼을 펼쳐 보이고, 여정 히어로는 잠시 감춤
+  const cc = document.getElementById("checkin-card");
+  document.getElementById("journeyStartCard").hidden = true;
+  cc.hidden = false; cc.classList.remove("collapsed");
   entryDate.value = dateKey; loadEntryForm(dateKey);
-  document.getElementById("checkin-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  cc.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ===================== 오늘 기록 ===================== */
@@ -1031,6 +1040,25 @@ function openReport(kind) {
   renderWeekly(loadEntries()); renderMonthly(loadEntries());
   openSubpage(kind === "month" ? "📈 월간 리포트" : "🗓️ 주간 리포트", reportDetailHtml(kind), "report");
 }
+const SCORE_FACES = ["😣", "😟", "😐", "🙂", "😄"];
+function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Math.max(0, Math.round(v) - 1))]; }
+// 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
+function reportChartSvg(keys, entries) {
+  const n = keys.length;
+  const mood = keys.map((k) => entries[k] && entries[k].mood ? moodMeta[entries[k].mood].score : null);
+  const energy = keys.map((k) => entries[k] && entries[k].energy ? entries[k].energy : null);
+  if (!mood.some((v) => v != null) && !energy.some((v) => v != null)) return "";
+  const W = 320, H = 132, padX = 8, padTop = 10, padBottom = 22;
+  const plotW = W - padX * 2, plotH = H - padTop - padBottom;
+  const xAt = (i) => padX + (n <= 1 ? plotW / 2 : plotW * i / (n - 1));
+  const yAt = (v) => padTop + plotH - plotH * (v - 1) / 4;
+  const path = (arr) => { let d = "", pen = false; arr.forEach((v, i) => { if (v == null) { pen = false; return; } const x = xAt(i).toFixed(1), y = yAt(v).toFixed(1); d += pen ? ` L${x} ${y}` : ` M${x} ${y}`; pen = true; }); return d.trim(); };
+  const dots = (arr, cls) => arr.map((v, i) => v == null ? "" : `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.6" class="${cls}"/>`).join("");
+  let grid = ""; for (let v = 1; v <= 5; v += 2) { const y = yAt(v).toFixed(1); grid += `<line x1="${padX}" y1="${y}" x2="${W - padX}" y2="${y}" class="rc-grid"/>`; }
+  let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 6);
+  keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 6}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
+  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분과 에너지 추이">${grid}<path d="${path(energy)}" class="rc-line rc-energy"/><path d="${path(mood)}" class="rc-line rc-mood"/>${dots(energy, "rc-dot rc-edot")}${dots(mood, "rc-dot rc-mdot")}${labels}</svg>`;
+}
 function reportDetailHtml(kind) {
   const entries = loadEntries();
   let keys = [];
@@ -1043,18 +1071,43 @@ function reportDetailHtml(kind) {
   const avgEnergy = energies.length ? energies.reduce((s, e) => s + e.energy, 0) / energies.length : null;
   const dist = {}; moods.forEach((e) => dist[e.mood] = (dist[e.mood] || 0) + 1);
   const distMax = Object.keys(dist).length ? Math.max(...Object.values(dist)) : 1;
+  const distTotal = moods.length || 1;
+  const chs = loadChs(); let habTotal = 0, habDone = 0;
+  chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate && k <= todayKey()) { habTotal++; if (h.done[k]) habDone++; } }));
+  const habPct = habTotal ? Math.round((habDone / habTotal) * 100) : null;
   const summary = kind === "month" ? monthData : weekData;
+  const period = summary ? (summary.range || summary.label || "") : "";
+
+  if (recs.length === 0) {
+    return `<p class="detail-stat">${period}</p><div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">아직 이 기간엔 기록이 없어요.<br>오늘의 여정으로 첫 기록을 남겨봐요.</p></div>
+    <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
+  }
+
+  const kpi = (emoji, val, label, cls) => `<div class="kpi ${cls || ""}"><span class="kpi-emoji">${emoji}</span><span class="kpi-val">${val}</span><span class="kpi-label">${label}</span></div>`;
+  const kpis = [
+    kpi("📅", `${recs.length}<i>일</i>`, kind === "month" ? "이번 달 기록" : "이번 주 기록"),
+    kpi(avgMood != null ? faceForScore(avgMood) : "—", avgMood != null ? `${avgMood.toFixed(1)}<i>/5</i>` : "—", "평균 기분"),
+    kpi("⚡", avgEnergy != null ? `${avgEnergy.toFixed(1)}<i>/5</i>` : "—", "평균 에너지"),
+    habPct != null
+      ? kpi("🎯", `${habPct}<i>%</i>`, `습관 ${habDone}/${habTotal}`)
+      : kpi(Object.keys(dist).length ? moodMeta[Object.entries(dist).sort((a, b) => b[1] - a[1])[0][0]].emoji : "🙂", Object.keys(dist).length ? `${Object.entries(dist).sort((a, b) => b[1] - a[1])[0][1]}<i>일</i>` : "—", "가장 잦은 기분"),
+  ].join("");
+
+  const chart = reportChartSvg(keys, entries);
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>에너지</span></div></div>` : "";
+
+  const distCard = Object.keys(dist).length ? `<div class="card"><h2>🌈 기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(dist[m] / distMax) * 100}%"></div></div><span class="dist-count">${Math.round((dist[m] / distTotal) * 100)}%</span></div>`).join("")}</div></div>` : "";
+
   const rows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? moodMeta[e.mood].emoji + " " + e.mood : "-"}</span><span>${e.energy ? "⚡" + e.energy : ""}</span></div>`; }).join("");
+  const daysCard = `<details class="card rpt-days"${kind === "week" ? " open" : ""}><summary>🗓️ 날짜별 기록 (${recs.length}일)</summary><div class="rpt-list">${rows}</div></details>`;
+
   return `
-    <p class="detail-stat">${summary ? (summary.range || summary.label || "") : ""} · 기록 ${recs.length}일</p>
-    ${summary && summary.summary ? `<p class="insight" style="margin:0 0 14px">${summary.summary}</p>` : ""}
-    <div class="card">
-      ${avgMood != null ? `<p>평균 기분 <b>${avgMood.toFixed(1)} / 5</b></p>` : ""}
-      ${avgEnergy != null ? `<p>평균 에너지 <b>${avgEnergy.toFixed(1)} / 5</b></p>` : ""}
-      ${avgMood == null ? '<p class="empty">아직 기록이 없어요.</p>' : ""}
-    </div>
-    ${Object.keys(dist).length ? `<div class="card"><h2>기분 분포</h2><div class="dist">${Object.keys(moodMeta).filter((m) => dist[m]).map((m) => `<div class="dist-row"><span class="dist-emoji">${moodMeta[m].emoji}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(dist[m] / distMax) * 100}%"></div></div><span class="dist-count">${dist[m]}</span></div>`).join("")}</div></div>` : ""}
-    <div class="card"><h2>날짜별 기록</h2><div class="rpt-list">${rows || '<p class="empty">기록이 없어요.</p>'}</div></div>
+    <p class="detail-stat">${period}</p>
+    ${summary && summary.summary ? `<div class="card rpt-summary"><p class="insight">${summary.summary}</p></div>` : ""}
+    <div class="kpi-grid">${kpis}</div>
+    ${chartCard}
+    ${distCard}
+    ${daysCard}
     <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
 }
 async function shareReport(kind) {
