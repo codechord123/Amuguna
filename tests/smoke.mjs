@@ -322,6 +322,16 @@ try {
   check("생각의 지도 단어 연결망", d.querySelectorAll("#wordWeb .ww-node").length >= 3 && d.querySelectorAll("#wordWeb .ww-edge").length >= 1);
   check("처방 DB 500개 이상", (window.__rxCount || 0) >= 500);
   q("#subBack").click();
+
+  // 13) 오류 모니터링(Sentry 호환) — DSN 있을 때만 envelope 전송, 개인정보 미포함
+  const _fetchCalls = [];
+  window.fetch = (url, opts) => { _fetchCalls.push({ url, opts }); return Promise.resolve({ ok: true }); };
+  window.ONEUL_CONFIG.SENTRY_DSN = "https://pubkey@o1.ingest.sentry.io/2";
+  window.eval(read("monitor.js"));
+  check("모니터: DSN 설정 시 활성화", window.Monitor && typeof window.Monitor.capture === "function");
+  window.Monitor.capture(new Error("테스트오류"));
+  check("모니터: 오류를 envelope로 전송", _fetchCalls.some((c) => /ingest\.sentry\.io\/api\/2\/envelope/.test(c.url) && /테스트오류/.test(String(c.opts && c.opts.body))));
+  check("모니터: 개인정보(일기·기록) 미전송", !_fetchCalls.some((c) => /entries_v2|journey_draft|"note"|"praise"/.test(String(c.opts && c.opts.body))));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

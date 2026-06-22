@@ -18,4 +18,10 @@ window.ONEUL_CONFIG = {
     // forest: "./sounds/forest.mp3",
     // fire: "./sounds/fire.mp3",
   },
+
+  // (선택) Sentry 오류 모니터링. sentry.io에서 무료 프로젝트 생성 후 'DSN'을 붙여넣으면
+  // 런타임 오류가 자동으로 대시보드에 보고돼요(사용자가 신고하기 전에 버그 파악).
+  // 비워두면 완전히 비활성 — 외부로 아무것도 전송하지 않아요.
+  // ⚠️ 개인정보 보호: 일기·기록·로컬 데이터는 절대 전송하지 않고, 오류 메시지/스택만 보냅니다.
+  SENTRY_DSN: "",  // 예: "https://abc123@o456.ingest.sentry.io/789"
 };
