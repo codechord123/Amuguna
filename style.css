@@ -811,15 +811,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rh-marg { border-radius: 7px; opacity: 0.55; }
 [data-theme="dark"] .rh-cell { color: rgba(18, 16, 22, 0.82); }
 
-/* 생각의 지도 — 단어 연결망 */
-.ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 300; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; }
-.ww-edge { stroke: var(--line-strong); opacity: 0.5; transition: opacity 0.2s, stroke 0.2s; }
-.ww-node circle { stroke: var(--card); stroke-width: 1.5; box-shadow: inset 0 1px 0 var(--card-hi); cursor: pointer; transition: opacity 0.2s; }
-.ww-label { fill: var(--ink-2); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; }
-.ww-svg.focused .ww-node { opacity: 0.2; }
+/* 생각의 지도 — 단어 연결망 (옵시디언 풍) */
+.ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 300; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; background: radial-gradient(120% 90% at 50% 40%, var(--bg-sunken), transparent 75%); border-radius: var(--r-lg); }
+.ww-edge { stroke: var(--line-strong); opacity: 0.45; transition: opacity 0.25s, stroke 0.25s; }
+.ww-node circle { stroke: var(--card); stroke-width: 2; cursor: pointer; transition: opacity 0.25s, transform 0.15s var(--ease-soft); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
+.ww-node:active circle { transform: scale(0.9); }
+.ww-label { fill: var(--ink); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
+.ww-node.major .ww-label { opacity: 0.92; }
+.ww-svg.focused .ww-node { opacity: 0.18; }
 .ww-svg.focused .ww-node.on { opacity: 1; }
-.ww-svg.focused .ww-edge { opacity: 0.06; }
-.ww-svg.focused .ww-edge.on { opacity: 0.9; stroke: var(--accent-deep); }
+.ww-svg.focused .ww-label { opacity: 0; }
+.ww-svg.focused .ww-node.on .ww-label { opacity: 1; }
+.ww-svg.focused .ww-edge { opacity: 0.05; }
+.ww-svg.focused .ww-edge.on { opacity: 0.95; stroke: var(--accent-deep); }
 
 /* 습관 실천 매트릭스 (히트맵) */
 .hm { display: flex; flex-direction: column; gap: var(--s2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
