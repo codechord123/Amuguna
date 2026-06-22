@@ -59,12 +59,12 @@ const EMOTIONS = [
   { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg" },
   { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg" },
   { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg" },
-  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 2, band: "neg" },
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg" },
   { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg" },
   { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg" },
-  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 2, band: "neg" },
-  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 2, band: "neg" },
-  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 2, band: "neg" },
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg" },
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg" },
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg" },
 ];
 const EMO_BANDS = [
   { id: "pos", label: "🌟 긍정적인 마음" },
@@ -1179,6 +1179,10 @@ const REPORT_PAPERS = {
   sleep: "수면과 정서 (Baglioni et al., 2016, Sleep Medicine Reviews)",
   help: "사회적 지지·도움 요청 (Cohen & Wills, 1985, Psychological Bulletin)",
   strength: "강점 활용 (Seligman et al., 2005, American Psychologist)",
+  grounding: "마음챙김·그라운딩 불안 감소 (Hofmann et al., 2010, J. Consulting and Clinical Psychology)",
+  connect: "사회적 연결·행동활성화 (Cohen & Wills, 1985; Mazzucchelli et al., 2010)",
+  boundary: "직무요구–자원 모형 (Bakker & Demerouti, 2007, J. Managerial Psychology)",
+  plan: "문제해결치료 (Nezu, 2004, J. Clinical Psychology)",
 };
 // 진단 구간 — 평균 기분(0-100)을 5단계로 구분. 각 구간의 진단(dx)·기본 처방(rx 키 목록)
 const DIAG_BANDS = [
@@ -1199,27 +1203,70 @@ const RX = {
   selfcomp: { t: "나에게 친절하게", b: "힘든 시기엔 자신을 다그치기보다 친구에게 하듯 다정하게 말해주세요. 자기자비는 회복탄력성을 높여줘요.", c: REPORT_PAPERS.selfcomp },
   savoring: { t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring },
   strength: { t: "강점을 써먹어요", b: "내가 잘하는 것·좋아하는 것을 오늘 한 가지 활용해보세요. 강점을 쓰는 날은 활력과 몰입이 올라가요.", c: REPORT_PAPERS.strength },
+  grounding:{ t: "지금-여기로 돌아오기", b: "불안이 올라오면 5-4-3-2-1(보이는 것 5·들리는 것 4…)로 감각에 주의를 옮겨보세요. 과각성이 빠르게 가라앉아요.", c: REPORT_PAPERS.grounding },
+  connect:  { t: "한 사람에게 연락해요", b: "괜찮은 사람에게 짧게 안부를 전해보세요. 외로움·우울감엔 작은 연결 한 번이 큰 완충이 돼요.", c: REPORT_PAPERS.connect },
+  rest:     { t: "‘아무것도 안 하기’도 일이에요", b: "소진된 날은 회복이 곧 생산성이에요. 죄책감 없이 10분 의도적으로 쉬어보세요.", c: REPORT_PAPERS.sleep },
+  boundary: { t: "일과 나 사이에 선을 그어요", b: "끝나는 시각을 정하고 알림을 끄는 등 ‘경계’를 하나 만들어보세요. 요구가 자원을 넘으면 소진돼요.", c: REPORT_PAPERS.boundary },
+  plan:     { t: "걱정을 ‘할 일’로 쪼개요", b: "막연한 걱정 하나를 골라 ‘다음 한 걸음’만 적어보세요. 통제 가능한 단위로 나누면 부담이 줄어요.", c: REPORT_PAPERS.plan },
 };
-// 진단 — 평균 기분 구간 + 보조 신호(변동성·활력)로 한 줄 진단
-function diagnose(cur) {
+// 감정 태그 → 임상 테마 (정서가·각성 묶음)
+const EMO_TO_THEME = {
+  "화나요": "anxiety", "스트레스": "anxiety", "불안해요": "anxiety", "초조해요": "anxiety",
+  "우울해요": "sadness", "슬퍼요": "sadness", "외로워요": "sadness",
+  "지쳤어요": "burnout", "무기력해요": "burnout", "졸려요": "burnout", "멍해요": "burnout",
+  "신나요": "positive", "설레요": "positive", "행복해요": "positive", "뿌듯해요": "positive", "고마워요": "positive", "평온해요": "positive", "괜찮아요": "positive",
+  "복잡해요": "mixed", "그럭저럭": "mixed",
+};
+// 테마별 진단·기본 처방
+const DX_THEMES = {
+  anxiety: { label: "긴장·불안이 잦아요", dx: "고각성(긴장) 상태가 자주 보여요. 몸의 각성을 낮추는 걸 먼저 해봐요.", rx: ["grounding", "breath", "plan"] },
+  sadness: { label: "마음이 가라앉아 있어요", dx: "저조·우울감이 두드러져요. 작은 활동과 연결이 회복을 도와요.", rx: ["ba", "connect", "selfcomp"] },
+  burnout: { label: "소진·낮은 활력", dx: "에너지가 고갈된 소진 신호예요. 회복과 수면을 가장 앞에 둬요.", rx: ["rest", "sleep", "ba"] },
+  positive:{ label: "좋은 흐름이에요", dx: "긍정 정서가 우세해요. 이 자원을 음미하고 넓혀봐요.", rx: ["savoring", "strength", "gratitude"] },
+  mixed:   { label: "여러 감정이 섞여 있어요", dx: "감정이 뒤섞여 있어요. 이름을 붙여 정리하면 한결 가벼워져요.", rx: ["labeling", "gratitude"] },
+};
+// 일기 키워드 → 맥락 테마
+const KEYWORD_THEME = {
+  work:    ["일", "직장", "회사", "업무", "야근", "상사", "과제", "시험", "마감", "공부", "프로젝트"],
+  rel:     ["관계", "친구", "가족", "엄마", "아빠", "부모", "연인", "남편", "아내", "이별", "싸웠", "사람들"],
+  sleep:   ["잠", "수면", "불면", "피곤", "졸려", "새벽", "못 잤"],
+  health:  ["아프", "몸살", "병원", "두통", "아픔", "건강", "통증"],
+  selfcrit:["자책", "못나", "부족", "실패", "한심", "비교", "내 탓"],
+  money:   ["돈", "월급", "빚", "대출", "경제", "생활비"],
+};
+const KW_RX = { work: "boundary", rel: "connect", sleep: "sleep", health: "help", selfcrit: "selfcomp", money: "plan" };
+const KW_LABEL = { work: "요즘 ‘일·과업’ 부담이 자주 보여요", rel: "‘관계’가 마음에 자주 올라와요", sleep: "‘수면·피로’ 언급이 잦아요", health: "‘몸·건강’ 이야기가 보여요", selfcrit: "스스로를 탓하는 표현이 보여요", money: "‘경제적 부담’이 비쳐요" };
+function dominantEmoTheme(tagCounts) {
+  const sc = { anxiety: 0, sadness: 0, burnout: 0, positive: 0, mixed: 0 };
+  Object.entries(tagCounts || {}).forEach(([t, n]) => { const th = EMO_TO_THEME[t]; if (th) sc[th] += n; });
+  let best = null, bv = 0; Object.entries(sc).forEach(([k, v]) => { if (v > bv) { bv = v; best = k; } });
+  return bv > 0 ? best : null;
+}
+function keywordThemes(entries, keys) {
+  const text = keys.map((k) => entries[k]).filter(Boolean).map((e) => `${e.note || ""} ${e.praise || ""} ${e.reflection ? (e.reflection.good || "") + " " + (e.reflection.hard || "") : ""}`).join(" ").toLowerCase();
+  const hits = []; Object.entries(KEYWORD_THEME).forEach(([theme, words]) => { if (words.some((w) => text.includes(w))) hits.push(theme); });
+  return hits;
+}
+// 세분 진단 — 기분 구간(심각도) × 감정 테마 × 일기 키워드 맥락 → 진단 + 처방
+function richDiagnose(cur, entries, keys) {
   if (cur.avgMood == null) return null;
   const band = DIAG_BANDS.find((b) => cur.avgMood < b.max) || DIAG_BANDS[DIAG_BANDS.length - 1];
-  const extra = [];
-  if (cur.sd != null && cur.sd >= 22) extra.push("기복이 큰 편");
-  if (cur.avgEnergy != null && cur.avgEnergy < 2.4) extra.push("활력이 특히 낮음");
-  return { band, dx: band.dx + (extra.length ? ` (${extra.join(" · ")})` : "") };
-}
-function reportSolutions(d) { // avgMood: 0-100 — 진단 구간 기본 처방 + 데이터 신호 보조 처방
-  const picked = [];
-  const add = (k) => { if (k && RX[k] && !picked.some((p) => p.k === k)) picked.push(Object.assign({ k }, RX[k])); };
-  const band = (d.avgMood == null) ? DIAG_BANDS[2] : (DIAG_BANDS.find((b) => d.avgMood < b.max) || DIAG_BANDS[DIAG_BANDS.length - 1]);
-  band.rx.forEach(add);                                            // 1) 구간 기본 처방
-  if (d.avgEnergy != null && d.avgEnergy < 2.6) add("breath");     // 2) 데이터 신호 보조 처방
-  if (d.habPct != null && d.habPct < 50) add("ii");
-  if (d.gratCount === 0 && d.days >= 3) add("gratitude");
-  if (d.trend === "down") add("selfcomp");
-  if (!picked.length) picked.push(Object.assign({ k: "labeling" }, { t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling }));
-  return picked.slice(0, 3);
+  const theme = dominantEmoTheme(cur.tagCounts);
+  const base = (theme && DX_THEMES[theme]) ? DX_THEMES[theme] : null;
+  const label = base ? base.label : band.label;
+  const parts = [base ? base.dx : band.dx];
+  if (band.key === "crisis") parts.push("특히 낮은 시기라 무리하지 않는 게 가장 중요해요.");
+  if (cur.sd != null && cur.sd >= 22) parts.push("기복도 큰 편이에요.");
+  const kws = keywordThemes(entries, keys);
+  kws.forEach((k) => { if (KW_LABEL[k]) parts.push(KW_LABEL[k] + "."); });
+  const rx = [];
+  if (band.key === "crisis") rx.push("help");                 // 위기 최우선
+  (base ? base.rx : band.rx).forEach((k) => rx.push(k));       // 테마(또는 구간) 기본 처방
+  kws.forEach((k) => { if (KW_RX[k]) rx.push(KW_RX[k]); });    // 키워드 맥락 처방
+  if (cur.avgEnergy != null && cur.avgEnergy < 2.6) rx.push("breath"); // 데이터 신호
+  if (cur.habPct != null && cur.habPct < 50) rx.push("ii");
+  if (cur.gratCount === 0 && cur.days >= 3) rx.push("gratitude");
+  return { band, label, dx: parts.join(" "), rx };
 }
 // 기간 통계 — 리포트 알고리즘의 코어 (현재/직전 기간을 같은 방식으로 계산)
 function periodStats(keys, entries) {
@@ -1292,10 +1339,15 @@ function reportDetailHtml(kind) {
   // 추세 → 솔루션
   let trend = "flat";
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
-  const sols = reportSolutions({ avgMood: cur.avgMood, avgEnergy: cur.avgEnergy, habPct: cur.habPct, trend, gratCount: cur.gratCount, days: cur.days });
-  const diag = diagnose(cur);
-  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.band.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
-  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단 구간과 이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
+  cur.trend = trend;
+  const diag = richDiagnose(cur, entries, keys);
+  const rxKeys = (diag ? diag.rx : []).concat(trend === "down" ? ["selfcomp"] : []);
+  const sols = [];
+  rxKeys.forEach((k) => { const r = RX[k]; if (r && !sols.some((s) => s.k === k)) sols.push(Object.assign({ k }, r)); });
+  if (!sols.length) sols.push({ k: "labeling", t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling });
+  const finalSols = sols.slice(0, 3);
+  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
+  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${finalSols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";

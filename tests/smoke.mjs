@@ -258,6 +258,15 @@ try {
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
   q("#subBack").click();
+  // 세분 진단 — 슬픔 테마 + '관계' 키워드 맥락
+  const sadE = {};
+  for (let i = 0; i < 7; i++) { const dd = new Date(); dd.setDate(dd.getDate() - i); const k = dd.toISOString().slice(0, 10); sadE[k] = { date: k, mood: "우울해요", score: 15, tags: ["우울해요", "외로워요"], note: "요즘 친구도 없고 너무 외로워", updatedAt: k + "T20:00:00" }; }
+  window.localStorage.setItem("entries_v2", JSON.stringify(sadE));
+  q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
+  check("진단: 슬픔 테마 반영", /가라앉/.test(q("#subBody .diag-label").textContent));
+  check("진단: 일기 키워드 맥락 반영", /관계/.test(q("#subBody .diag-dx").textContent));
+  check("처방: 맥락 처방 포함", [...d.querySelectorAll("#subBody .sol .sol-t")].some((nn) => /연락|행동|혼자/.test(nn.textContent)));
+  q("#subBack").click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }
