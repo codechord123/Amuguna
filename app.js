@@ -1125,43 +1125,47 @@ function reportChartSvg(keys, entries) {
   const n = keys.length;
   const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null);       // 0-100
   const energy = keys.map((k) => entries[k] && entries[k].energy ? entries[k].energy * 20 : null); // 0-100
-  if (!mood.some((v) => v != null) && !energy.some((v) => v != null)) return "";
-  const W = 320, H = 146, padX = 22, padR = 8, padTop = 10, padBottom = 24;
-  const plotW = W - padX - padR, plotH = H - padTop - padBottom;
-  const xAt = (i) => padX + (n <= 1 ? plotW / 2 : plotW * i / (n - 1));
-  const yAt = (v) => padTop + plotH - plotH * v / 100;
-  // 부드러운 곡선(카멀롬) — 연속 구간을 잇고 결측은 끊는다
-  const smooth = (arr) => {
-    const segs = []; let cur = [];
-    arr.forEach((v, i) => { if (v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([xAt(i), yAt(v)]); });
-    if (cur.length) segs.push(cur);
-    return segs.map((p) => {
-      if (p.length === 1) return `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)} l0.01 0`;
-      let d = `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
-      for (let i = 0; i < p.length - 1; i++) {
-        const p0 = p[i - 1] || p[i], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2] || p2;
-        const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
-        const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
-        d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
-      }
-      return d;
-    }).join(" ");
+  if (!mood.some((v) => v != null)) return "";
+  const W = 340, H = 178, padL = 22, padR = 16, padT = 20, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xAt = (i) => padL + (n <= 1 ? plotW / 2 : plotW * i / (n - 1));
+  const yAt = (v) => padT + plotH - plotH * v / 100;
+  // 연속 구간을 점 배열로 — 결측은 끊는다
+  const segsOf = (arr) => { const segs = []; let cur = []; arr.forEach((v, i) => { if (v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push({ x: xAt(i), y: yAt(v), v, i }); }); if (cur.length) segs.push(cur); return segs; };
+  // 카멀롬-롬 부드러운 곡선
+  const curve = (p) => {
+    if (p.length === 1) return `M${p[0].x.toFixed(1)} ${p[0].y.toFixed(1)} l0.01 0`;
+    let d = `M${p[0].x.toFixed(1)} ${p[0].y.toFixed(1)}`;
+    for (let i = 0; i < p.length - 1; i++) {
+      const p0 = p[i - 1] || p[i], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2] || p2;
+      const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return d;
   };
-  const moodPath = smooth(mood), energyPath = smooth(energy);
-  // 기분 곡선 아래 영역 채우기(첫 연속 구간 기준)
-  let areaPath = "";
-  const firstSeg = []; for (let i = 0; i < n; i++) { if (mood[i] != null) firstSeg.push(i); else if (firstSeg.length) break; }
-  if (firstSeg.length > 1) {
-    const baseY = (padTop + plotH).toFixed(1);
-    areaPath = `${smooth(mood.map((v, i) => firstSeg.includes(i) ? v : null))} L${xAt(firstSeg[firstSeg.length - 1]).toFixed(1)} ${baseY} L${xAt(firstSeg[0]).toFixed(1)} ${baseY} Z`;
+  const moodSegs = segsOf(mood), energySegs = segsOf(energy);
+  const moodLine = moodSegs.map(curve).join(" ");
+  const energyLine = energySegs.map(curve).join(" ");
+  const baseY = (padT + plotH).toFixed(1);
+  const area = moodSegs.filter((p) => p.length > 1).map((p) => `${curve(p)} L${p[p.length - 1].x.toFixed(1)} ${baseY} L${p[0].x.toFixed(1)} ${baseY} Z`).join(" ");
+  // 옅은 점선 가로 그리드 + 작은 눈금
+  let grid = "", ylab = "";
+  [0, 50, 100].forEach((v) => { const y = yAt(v).toFixed(1); grid += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="rc-grid"/>`; ylab += `<text x="${padL - 6}" y="${(+y + 3).toFixed(1)}" class="rc-ylabel">${v}</text>`; });
+  // 핵심 포인트만 — 최고·최저·마지막
+  const valid = mood.map((v, i) => v == null ? null : { v, i }).filter(Boolean);
+  let pts = "";
+  if (valid.length) {
+    const peak = valid.reduce((a, b) => b.v > a.v ? b : a), valley = valid.reduce((a, b) => b.v < a.v ? b : a), last = valid[valid.length - 1];
+    const seen = new Set();
+    const addPt = (m, lab) => { if (!m || seen.has(m.i)) return; seen.add(m.i); const x = xAt(m.i).toFixed(1), y = yAt(m.v).toFixed(1); pts += (lab ? `<text x="${x}" y="${(+y - 9).toFixed(1)}" class="rc-ptlab">${Math.round(m.v)}</text>` : "") + `<circle cx="${x}" cy="${y}" r="3.6" class="rc-pt"/>`; };
+    addPt(peak, true); addPt(valley, true); addPt(last, false);
   }
-  const dots = (arr, cls) => arr.map((v, i) => v == null ? "" : `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.4" class="${cls}"/>`).join("");
-  let grid = "", ticks = ""; [0, 50, 100].forEach((v) => { const y = yAt(v).toFixed(1); grid += `<line x1="${padX}" y1="${y}" x2="${W - padR}" y2="${y}" class="rc-grid"/>`; ticks += `<text x="${padX - 4}" y="${(+y + 3).toFixed(1)}" class="rc-ylabel">${v}</text>`; });
-  // 축선 (세로=기분, 가로=날짜)
-  const axes = `<line x1="${padX}" y1="${padTop}" x2="${padX}" y2="${padTop + plotH}" class="rc-axis"/><line x1="${padX}" y1="${padTop + plotH}" x2="${W - padR}" y2="${padTop + plotH}" class="rc-axis"/>`;
-  let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 6);
-  keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 7}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
-  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분과 활력 추이"><defs><linearGradient id="rcMoodFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-fill-top"/><stop offset="100%" class="rc-fill-bot"/></linearGradient></defs>${grid}${ticks}${areaPath ? `<path d="${areaPath}" fill="url(#rcMoodFill)" stroke="none"/>` : ""}<path d="${energyPath}" class="rc-line rc-energy"/><path d="${moodPath}" class="rc-line rc-mood"/>${dots(energy, "rc-dot rc-edot")}${dots(mood, "rc-dot rc-mdot")}${axes}${labels}</svg>`;
+  // x 라벨 (드물게)
+  let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 5);
+  keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 10}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
+  const defs = `<defs><linearGradient id="rcArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-area-top"/><stop offset="100%" class="rc-area-bot"/></linearGradient><linearGradient id="rcStroke" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-stroke-top"/><stop offset="100%" class="rc-stroke-bot"/></linearGradient></defs>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea)" stroke="none"/>` : ""}${energyLine ? `<path d="${energyLine}" class="rc-energy" fill="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke)" fill="none"/>${pts}${labels}</svg>`;
 }
 // 리포트 솔루션 — 데이터에 맞춘 과학 논문 기반 추천 (근거 DB: docs/SCIENCE.md)
 const REPORT_PAPERS = {

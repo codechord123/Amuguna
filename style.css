@@ -382,19 +382,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hs span { font-size: 0.62rem; color: var(--soft); font-weight: var(--w-semi); }
 
 /* ----- 리포트 추이 차트 (SVG) ----- */
-.rc-svg { width: 100%; height: auto; aspect-ratio: 320 / 146; display: block; margin-top: var(--s2); overflow: visible; }
-.rc-grid { stroke: var(--line); stroke-width: 1; }
-.rc-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.rc-mood { stroke: var(--accent); }
-.rc-energy { stroke: var(--energy); stroke-width: 2; stroke-dasharray: 2.5 3.5; opacity: 0.85; }
-.rc-dot { stroke: var(--card); stroke-width: 1.2; }
-.rc-mdot { fill: var(--accent); }
-.rc-edot { fill: var(--energy); }
-.rc-xlabel { fill: var(--soft); font-size: 8px; text-anchor: middle; font-family: inherit; }
-.rc-ylabel { fill: var(--soft); font-size: 7.5px; text-anchor: end; font-family: inherit; }
-.rc-axis { stroke: var(--line-strong); stroke-width: 1; }
-.rc-fill-top { stop-color: var(--accent); stop-opacity: 0.26; }
-.rc-fill-bot { stop-color: var(--accent); stop-opacity: 0.02; }
+.rc-svg { width: 100%; height: auto; aspect-ratio: 340 / 178; display: block; margin-top: var(--s2); overflow: visible; }
+.rc-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 1 6; opacity: 0.8; }
+.rc-area-top { stop-color: var(--accent); stop-opacity: 0.22; }
+.rc-area-bot { stop-color: var(--accent); stop-opacity: 0; }
+.rc-stroke-top { stop-color: var(--accent-deep); }
+.rc-stroke-bot { stop-color: var(--accent); }
+.rc-mood { stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.rc-glow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: 0.16; filter: blur(4px); }
+.rc-energy { stroke: var(--energy); stroke-width: 1.4; stroke-dasharray: 1.5 4.5; stroke-linecap: round; opacity: 0.45; }
+.rc-pt { fill: var(--card); stroke: var(--accent-deep); stroke-width: 2; }
+.rc-ptlab { fill: var(--ink-2); font-size: 8.5px; font-weight: 800; text-anchor: middle; font-family: inherit; }
+.rc-xlabel { fill: var(--soft); font-size: 8.5px; text-anchor: middle; font-family: inherit; }
+.rc-ylabel { fill: var(--soft); font-size: 8px; text-anchor: end; font-family: inherit; opacity: 0.8; }
 .rpt-legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
 .rpt-legend i { display: inline-block; width: 14px; height: 3px; border-radius: var(--r-pill); margin-right: var(--s1); vertical-align: middle; }
 .rpt-legend .rl-mood { background: var(--accent); }
