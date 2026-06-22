@@ -58,6 +58,13 @@ try {
   check("점수만 설정 시 다이얼 반영", q("#jBody #jDialNum").textContent === "70");
   q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 평온해요(v:78) → 점수가 78로 동기화
   check("감정 선택 시 긍부정 점수 동기화", q("#jBody #jDialNum").textContent === "78");
+  check("다이얼 라벨이 고른 감정 반영", q("#jBody #jDialLabel").textContent === "평온해요");
+  // 부정 감정도 점수대 기본('지쳐 있어요')이 아니라 그 감정 이름을 보여줘야 함
+  q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 해제
+  q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 초조해요(v:32)
+  check("부정 감정 라벨 정확(초조해요)", q("#jBody #jDialLabel").textContent === "초조해요" && q("#jBody #jDialNum").textContent === "32");
+  q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 해제
+  q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 원래 시나리오 복구(평온해요)
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 10) {
     if (q("#jBody #jNote")) q("#jBody #jNote").value = "야근하고 지침";

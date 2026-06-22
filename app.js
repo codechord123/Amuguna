@@ -46,29 +46,29 @@ const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 �
 // v = 정서가(valence) 0~100 — 감정과 긍부정 점수를 일치시키는 기준값.
 //     감정을 고르면 다이얼 점수가 고른 감정들의 평균 v로 맞춰진다.
 const EMOTIONS = [
-  // 긍정
-  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos", v: 92 },
-  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos", v: 90 },
+  // 긍정 (정서가 68~96, 좋을수록 높게)
+  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos", v: 96 },
+  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos", v: 92 },
   { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos", v: 90 },
-  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos", v: 84 },
   { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos", v: 86 },
+  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos", v: 82 },
   { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos", v: 78 },
   { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos", v: 70 },
-  // 보통
-  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu", v: 50 },
-  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu", v: 46 },
-  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu", v: 42 },
-  // 부정
-  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg", v: 26 },
-  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg", v: 22 },
-  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg", v: 24 },
-  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg", v: 28 },
-  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg", v: 30 },
-  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg", v: 24 },
-  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg", v: 42 },
-  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 14 },
-  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg", v: 14 },
-  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg", v: 18 },
+  // 보통 (44~52)
+  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu", v: 52 },
+  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu", v: 48 },
+  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu", v: 44 },
+  // 부정 (12~40, 힘들수록 낮게 — 감정마다 촘촘히 구분)
+  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg", v: 40 },
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg", v: 34 },
+  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg", v: 32 },
+  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg", v: 30 },
+  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg", v: 27 },
+  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg", v: 25 },
+  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg", v: 22 },
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg", v: 19 },
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg", v: 15 },
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 12 },
 ];
 const EMO_BANDS = [
   { id: "pos", label: "🌟 긍정적인 마음" },
@@ -2964,6 +2964,15 @@ let jData = {}, curId = "feel";
 function scoreToMood(s) { return s < 20 ? "우울해요" : s < 40 ? "지쳤어요" : s < 60 ? "그럭저럭" : s < 80 ? "괜찮아요" : "활기차요"; }
 function scoreLabel(s) { return s < 20 ? "많이 힘들어요" : s < 40 ? "지쳐 있어요" : s < 60 ? "그럭저럭이에요" : s < 80 ? "괜찮아요" : "좋아요"; }
 function scoreEmoji(s) { return s < 20 ? "😢" : s < 40 ? "😮‍💨" : s < 60 ? "😐" : s < 80 ? "🙂" : "😄"; }
+// 고른 감정 중 현재 점수를 가장 잘 대표하는 감정(평균 정서가에 가장 가까운 것)
+function domEmotion(tags, score) {
+  const ems = (tags || []).map(emoByKey).filter(Boolean);
+  if (!ems.length) return null;
+  return ems.reduce((best, e) => (Math.abs((e.v == null ? 50 : e.v) - score) < Math.abs((best.v == null ? 50 : best.v) - score) ? e : best), ems[0]);
+}
+// 다이얼 중앙 표정·이름 — 감정을 고르면 그 감정을, 안 골랐으면 점수대 기본값을 보여줘 라벨이 어긋나지 않게
+function dialEmoji(score, tags) { const dom = domEmotion(tags, score); return dom ? dom.e : scoreEmoji(score); }
+function dialLabel(score, tags) { const dom = domEmotion(tags, score); return dom ? dom.k : scoreLabel(score); }
 function scoreToEnergy(s) { return Math.max(1, Math.min(5, Math.round(s / 20))); }
 // 에너지(활력) = 고른 감정 태그의 각성도 평균. 태그 없으면 점수에서 환산.
 function jComputeEnergy() {
@@ -3094,8 +3103,8 @@ function renderStep() {
       const [tx, ty] = dialPt(v); thumb.setAttribute("cx", tx); thumb.setAttribute("cy", ty);
       const col = scoreColor(v); fill.style.stroke = col; thumb.style.fill = col;
       jBody.querySelector("#jDialNum").textContent = v;
-      jBody.querySelector("#jDialEmoji").textContent = scoreEmoji(v);
-      jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
+      jBody.querySelector("#jDialEmoji").textContent = dialEmoji(v, jData.tags);
+      jBody.querySelector("#jDialLabel").textContent = dialLabel(v, jData.tags);
       updateEnergyOut();
     }
     function fromPointer(ev) {
@@ -3124,8 +3133,8 @@ function renderStep() {
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
       // 감정 ↔ 긍부정 점수 일치: 고른 감정들의 평균 정서가(v)로 다이얼 점수를 맞춘다.
       const vs = jData.tags.map((t) => { const em = emoByKey(t); return em && em.v != null ? em.v : null; }).filter((x) => x != null);
-      if (vs.length) setScore(Math.round(vs.reduce((a, c) => a + c, 0) / vs.length)); // setScore가 점수·기분·활력·표시 모두 갱신
-      else { jComputeEnergy(); updateEnergyOut(); }
+      // setScore가 점수·기분·활력·표정·이름 모두 갱신(감정 해제 시엔 점수대 기본 표정으로 복귀)
+      setScore(vs.length ? Math.round(vs.reduce((a, c) => a + c, 0) / vs.length) : (jData.score != null ? jData.score : 50));
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
