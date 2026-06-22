@@ -285,6 +285,21 @@ try {
   const wasCollapsed = colCard.classList.contains("collapsed");
   colCard.querySelector(":scope > h2").click();
   check("완료 후 카드 접기/펴기 동작", colCard.classList.contains("collapsed") !== wasCollapsed);
+
+  // 감정 빈도 뷰(감정 축) — 빈도 막대 + 색은 감정 고유 정서가(점수와 독립)
+  window.localStorage.setItem("entries_v2", JSON.stringify({
+    "2026-06-10": { date: "2026-06-10", mood: "활기차요", score: 90, tags: ["불안해요", "평온해요"], updatedAt: "2026-06-10T09:00:00" },
+    "2026-06-11": { date: "2026-06-11", mood: "활기차요", score: 88, tags: ["불안해요"], updatedAt: "2026-06-11T09:00:00" },
+    "2026-06-12": { date: "2026-06-12", mood: "괜찮아요", score: 70, tags: ["평온해요", "고마워요"], updatedAt: "2026-06-12T09:00:00" },
+  }));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  const fr = d.querySelectorAll("#tagInsight .freq .dist-row");
+  check("감정 빈도 막대 표시", fr.length >= 3);
+  check("감정 빈도 '회/%' 표기", /회·\d+%/.test(q("#tagInsight").textContent));
+  check("감정 빈도 내림차순(불안해요 최다)", /불안해요/.test(fr[0].textContent));
+  const frBar = fr[0].querySelector(".dist-bar").getAttribute("style");
+  // 불안(v27→#f0b07a)으로 칠해져야 하고, 그날 높은 점수(89 평균→초록 #5ec8b0)와 무관해야 함(2축 분리)
+  check("감정 막대 색=감정 고유 정서가(점수와 독립)", frBar.includes("#f0b07a") && !frBar.includes("#5ec8b0"));
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));

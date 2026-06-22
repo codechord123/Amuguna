@@ -2766,23 +2766,21 @@ function renderRhythm(entries) {
   html += "</div>";
   el.innerHTML = html;
 }
-// 감정 태그별 평균 기분(0-100) — 어떤 감정일 때 점수가 높/낮은지
+// 감정 빈도 — 감정 축(점수와 독립). 어떤 감정을 얼마나 '자주' 느꼈는지 막대로 표기.
+// 색은 그 감정의 고유 긍·부정(intrinsic valence)이라 점수 축과 섞이지 않음.
 function renderTagInsight(entries) {
   const el = document.getElementById("tagInsight"); if (!el) return;
-  const map = {};
-  Object.values(entries).forEach((e) => {
-    if (!e.mood || !e.tags || !e.tags.length) return;
-    const sc = entryScore(e);
-    e.tags.forEach((t) => { (map[t] = map[t] || { sum: 0, n: 0 }); map[t].sum += sc; map[t].n++; });
-  });
-  const rows = Object.entries(map).map(([t, v]) => ({ t, avg: v.sum / v.n, n: v.n }));
-  if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면 자주 느낀 감정을 크기로 보여드려요.</p>'; return; }
-  const max = Math.max(...rows.map((r) => r.n));
+  const cnt = {};
+  Object.values(entries).forEach((e) => { if (!e.tags || !e.tags.length) return; e.tags.forEach((t) => cnt[t] = (cnt[t] || 0) + 1); });
+  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "·", v: em && em.v != null ? em.v : 50 }; });
+  if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면 자주 느낀 감정을 빈도로 보여드려요.</p>'; return; }
+  const total = rows.reduce((s, r) => s + r.n, 0);
   rows.sort((a, b) => b.n - a.n);
-  el.innerHTML = `<div class="wordcloud">${rows.slice(0, 20).map((r) => {
-    const size = (0.85 + (r.n / max) * 1.25).toFixed(2);
-    return `<span class="wc-word" style="font-size:${size}rem;color:${scoreColor(r.avg)}" title="${r.n}번 · 평균 ${Math.round(r.avg)}점">${escapeHtml(r.t)}</span>`;
-  }).join("")}</div><p class="hint" style="margin-top:10px">글자 크기 = 자주 느낌 · 색 = 그때 평균 기분(빨강 낮음 ~ 초록 높음)</p>`;
+  const max = rows[0].n;
+  el.innerHTML = `<div class="freq">` + rows.slice(0, 12).map((r) => {
+    const col = scoreColor(r.v), pct = Math.round(r.n / total * 100);
+    return `<div class="dist-row"><span class="cap-name">${r.e} ${escapeHtml(r.t)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.max(6, Math.round(r.n / max * 100))}%;background:${col}"></div></div><span class="dist-count">${r.n}<small>회·${pct}%</small></span></div>`;
+  }).join("") + `</div><p class="hint" style="margin-top:10px">막대 길이 = 그 감정을 느낀 <b>빈도</b> · 색 = 그 감정의 긍·부정(빨강 낮음 ~ 초록 높음). 기분 점수와는 <b>별개</b>로 집계돼요.</p>`;
 }
 
 function checkBadges() {
