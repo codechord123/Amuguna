@@ -3074,15 +3074,6 @@ let jData = {}, curId = "feel";
 function scoreToMood(s) { return s < 20 ? "우울해요" : s < 40 ? "지쳤어요" : s < 60 ? "그럭저럭" : s < 80 ? "괜찮아요" : "활기차요"; }
 function scoreLabel(s) { return s < 20 ? "많이 힘들어요" : s < 40 ? "지쳐 있어요" : s < 60 ? "그럭저럭이에요" : s < 80 ? "괜찮아요" : "좋아요"; }
 function scoreEmoji(s) { return s < 20 ? "😢" : s < 40 ? "😮‍💨" : s < 60 ? "😐" : s < 80 ? "🙂" : "😄"; }
-// 고른 감정 중 현재 점수를 가장 잘 대표하는 감정(평균 정서가에 가장 가까운 것)
-function domEmotion(tags, score) {
-  const ems = (tags || []).map(emoByKey).filter(Boolean);
-  if (!ems.length) return null;
-  return ems.reduce((best, e) => (Math.abs((e.v == null ? 50 : e.v) - score) < Math.abs((best.v == null ? 50 : best.v) - score) ? e : best), ems[0]);
-}
-// 다이얼 중앙 표정·이름 — 감정을 고르면 그 감정을, 안 골랐으면 점수대 기본값을 보여줘 라벨이 어긋나지 않게
-function dialEmoji(score, tags) { const dom = domEmotion(tags, score); return dom ? dom.e : scoreEmoji(score); }
-function dialLabel(score, tags) { const dom = domEmotion(tags, score); return dom ? dom.k : scoreLabel(score); }
 function scoreToEnergy(s) { return Math.max(1, Math.min(5, Math.round(s / 20))); }
 // 에너지(활력) = 고른 감정 태그의 각성도 평균. 태그 없으면 점수에서 환산.
 function jComputeEnergy() {
@@ -3140,7 +3131,7 @@ function stepHtml(id) {
         <div class="dial-center"><span class="dial-emoji" id="jDialEmoji">😐</span><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
-      <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능)</span></p>
+      <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>
       <p class="energy-out" id="jEnergyOut"></p>
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="reflect-toggle" id="jQuickSave">⚡ 여기까지만 빠르게 저장</button>' : ""}`;
@@ -3203,7 +3194,7 @@ function renderStep() {
     function updateEnergyOut() {
       const o = jBody.querySelector("#jEnergyOut"); if (!o) return;
       const hasTags = (jData.tags || []).some((t) => emoByKey(t));
-      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "고른 감정에 맞춰 점수·활력이 정해져요" : "감정을 고르면 점수가 더 정확해져요"}</span>`;
+      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "활력은 고른 감정에서 계산돼요 (점수와 별개 축)" : "감정을 고르면 활력이 더 정확해져요"}</span>`;
     }
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
@@ -3213,19 +3204,10 @@ function renderStep() {
       const [tx, ty] = dialPt(v); thumb.setAttribute("cx", tx); thumb.setAttribute("cy", ty);
       const col = scoreColor(v); fill.style.stroke = col; thumb.style.fill = col;
       jBody.querySelector("#jDialNum").textContent = v;
-      jBody.querySelector("#jDialEmoji").textContent = dialEmoji(v, jData.tags);
-      jBody.querySelector("#jDialLabel").textContent = dialLabel(v, jData.tags);
+      // 점수 축은 점수 자체를 표현(감정과 독립). 감정은 아래 태그로 따로 기록.
+      jBody.querySelector("#jDialEmoji").textContent = scoreEmoji(v);
+      jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
       updateEnergyOut();
-    }
-    // 다이얼을 직접 옮겨 점수가 고른 감정과 크게 어긋나면(>25점) 그 감정을 자동 해제 —
-    // '슬퍼요인데 100점' 같은 모순/잘못된 라벨을 원천 차단(양방향 일치).
-    function reconcileTagsToScore(v) {
-      if (!jData.tags || !jData.tags.length) return;
-      const keep = [], removed = [];
-      jData.tags.forEach((t) => { const em = emoByKey(t); if (em && em.v != null && Math.abs(em.v - v) > 25) removed.push(t); else keep.push(t); });
-      if (!removed.length) return;
-      jData.tags = keep;
-      removed.forEach((t) => { const btn = jBody.querySelector(`.emo-tag[data-tag="${t}"]`); if (btn) { btn.classList.remove("selected"); btn.setAttribute("aria-pressed", "false"); } });
     }
     function fromPointer(ev) {
       const r = dial.getBoundingClientRect();
@@ -3236,14 +3218,14 @@ function renderStep() {
       let a = (Math.atan2(y, x) * 180 / Math.PI - 135 + 360) % 360; // 0 = 시작점
       if (a > 270) a = (a - 270 < 360 - a) ? 270 : 0; // 하단 빈 구간은 가까운 끝으로
       let sc = a / 2.7; if (sc < 3) sc = 0; else if (sc > 97) sc = 100; // 양 끝(0·100)에 손가락으로 닿기 쉽게 스냅
-      reconcileTagsToScore(Math.round(sc)); setScore(sc); saveJDraft();
+      setScore(sc); saveJDraft();
     }
     let dragging = false;
     dial.addEventListener("pointerdown", (e) => { dragging = true; try { dial.setPointerCapture(e.pointerId); } catch (x) {} fromPointer(e); });
     dial.addEventListener("pointermove", (e) => { if (dragging) fromPointer(e); });
     dial.addEventListener("pointerup", () => { dragging = false; Sound.tap(); });
     dial.addEventListener("pointercancel", () => { dragging = false; });
-    range.addEventListener("input", () => { const v = Number(range.value); reconcileTagsToScore(v); setScore(v); saveJDraft(); });
+    range.addEventListener("input", () => { setScore(Number(range.value)); saveJDraft(); });
     jBody.querySelector("#jEmoTags").addEventListener("click", (e) => {
       const b = e.target.closest(".emo-tag"); if (!b) return; Sound.tap();
       jData.tags = jData.tags || [];
@@ -3251,10 +3233,8 @@ function renderStep() {
       if (i >= 0) jData.tags.splice(i, 1); else jData.tags.push(k);
       const on = jData.tags.includes(k);
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
-      // 감정 ↔ 긍부정 점수 일치: 고른 감정들의 평균 정서가(v)로 다이얼 점수를 맞춘다.
-      const vs = jData.tags.map((t) => { const em = emoByKey(t); return em && em.v != null ? em.v : null; }).filter((x) => x != null);
-      // setScore가 점수·기분·활력·표정·이름 모두 갱신(감정 해제 시엔 점수대 기본 표정으로 복귀)
-      setScore(vs.length ? Math.round(vs.reduce((a, c) => a + c, 0) / vs.length) : (jData.score != null ? jData.score : 50));
+      // 2축 독립: 감정은 점수를 바꾸지 않는다(점수=별도 다이얼). 감정에서 활력만 계산.
+      jComputeEnergy(); updateEnergyOut();
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
