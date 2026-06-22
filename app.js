@@ -2481,6 +2481,17 @@ function layoutGraph(nodes, edges, W, H) {
     temp *= 0.985;
   }
 }
+// Cytoscape를 필요할 때만 로드(초기 로딩 가볍게 유지). SW가 precache하므로 오프라인도 OK.
+let _cyLoading = false;
+function ensureCytoscape(cb) {
+  if (window.cytoscape) return cb(true);
+  if (_cyLoading) return; // 로딩 중이면 onload에서 다시 그림
+  _cyLoading = true;
+  const s = document.createElement("script"); s.src = "vendor/cytoscape.min.js";
+  s.onload = () => { _cyLoading = false; cb(true); };
+  s.onerror = () => { _cyLoading = false; cb(false); };
+  document.head.appendChild(s);
+}
 function renderWordWeb(entries) {
   const el = document.getElementById("wordWeb"); if (!el) return;
   const docs = [];
@@ -2490,11 +2501,11 @@ function renderWordWeb(entries) {
     const ws = [...new Set(tokenizeKo(txt))];
     if (ws.length) docs.push({ words: ws, score: entryScore(e) });
   });
-  if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; return; }
+  if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; el._wwData = null; return; }
   const freq = {}, mSum = {}, mN = {};
   docs.forEach((d) => d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } }));
   const top = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 16);
-  if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; return; }
+  if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; el._wwData = null; return; }
   const idx = {}; top.forEach((w, i) => idx[w] = i);
   const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
   const ew = {};
@@ -2502,16 +2513,24 @@ function renderWordWeb(entries) {
   let edges = Object.entries(ew).map(([key, w]) => { const [a, b] = key.split("-").map(Number); return { a, b, w }; });
   edges.sort((a, b) => b.w - a.w); const drawEdges = edges.slice(0, 28); // 레이아웃은 전체, 표시는 강한 연결 위주로 정리
   const deg = nodes.map(() => 0); drawEdges.forEach((e) => { deg[e.a]++; deg[e.b]++; }); const maxDeg = Math.max(1, ...deg);
+  const maxF = Math.max(...nodes.map((nd) => nd.f));
+  el._wwData = { nodes, edges, drawEdges, deg, maxF, maxDeg };
+  // 인터랙티브(Cytoscape)가 가능하면 그걸로, 아니면 SVG로 폴백(오프라인·테스트 안전)
+  if (window.cytoscape) { renderWordWebCy(el); return; }
+  renderWordWebSvg(el);
+  ensureCytoscape((ok) => { if (ok && el.isConnected && el._wwData) renderWordWebCy(el); });
+}
+function renderWordWebSvg(el) {
+  const dt = el._wwData; if (!dt) return;
+  const { nodes, edges, drawEdges, deg, maxF, maxDeg } = dt;
   const W = 320, H = 300; layoutGraph(nodes, edges, W, H);
-  const maxF = Math.max(...nodes.map((nd) => nd.f)), maxW = Math.max(1, ...drawEdges.map((e) => e.w));
-  // 곡선 엣지(살짝 휘어 옵시디언 느낌)
+  const maxW = Math.max(1, ...drawEdges.map((e) => e.w));
   const edgeSvg = drawEdges.map((e) => {
     const a = nodes[e.a], b = nodes[e.b], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
     const nx = -(b.y - a.y), ny = (b.x - a.x), nl = Math.hypot(nx, ny) || 1, bend = Math.hypot(b.x - a.x, b.y - a.y) * 0.12;
     const cx = (mx + nx / nl * bend).toFixed(1), cy = (my + ny / nl * bend).toFixed(1);
     return `<path class="ww-edge" data-a="${e.a}" data-b="${e.b}" d="M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${cx} ${cy} ${b.x.toFixed(1)} ${b.y.toFixed(1)}" stroke-width="${(0.5 + e.w / maxW * 2.4).toFixed(1)}" fill="none"/>`;
   }).join("");
-  // 노드 크기 = 빈도 + 연결 수(degree). 라벨은 주요 노드만(상위 8) 기본 표시
   const nodeSvg = nodes.map((nd, i) => {
     const r = (6 + nd.f / maxF * 9 + deg[i] / maxDeg * 7), fs = (8.5 + nd.f / maxF * 4.5).toFixed(1);
     const major = i < 8;
@@ -2529,6 +2548,47 @@ function renderWordWeb(entries) {
     svg.querySelectorAll(".ww-edge").forEach((ee) => ee.classList.toggle("on", +ee.dataset.a === wi || +ee.dataset.b === wi));
     Sound.tap();
   });
+}
+// 인터랙티브 연결망 — 드래그·확대축소·탭하면 이웃 강조 (옵시디언 느낌)
+function renderWordWebCy(el) {
+  const dt = el._wwData; if (!dt || !window.cytoscape) { renderWordWebSvg(el); return; }
+  const { nodes, drawEdges, deg, maxF, maxDeg } = dt;
+  if (el._cy) { try { el._cy.destroy(); } catch (e) {} el._cy = null; }
+  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · 색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 드래그·확대해서 살펴보고, 단어를 누르면 연결이 또렷해져요.</p>`;
+  const host = el.querySelector("#wwCy");
+  const cs = getComputedStyle(document.documentElement);
+  const ink = (cs.getPropertyValue("--ink") || "#4a4a42").trim();
+  const bg = (cs.getPropertyValue("--bg") || "#ffffff").trim();
+  const edgeCol = (cs.getPropertyValue("--line-strong") || "#cdd6cf").trim();
+  const accent = (cs.getPropertyValue("--accent") || "#5ec8b0").trim();
+  const maxW = Math.max(1, ...drawEdges.map((e) => e.w));
+  const els = nodes.map((nd, i) => ({ data: { id: "n" + i, label: nd.w, col: scoreColor(nd.score), size: Math.round(18 + nd.f / maxF * 24 + deg[i] / maxDeg * 16) } }))
+    .concat(drawEdges.map((e, i) => ({ data: { id: "e" + i, source: "n" + e.a, target: "n" + e.b, w: (1 + e.w / maxW * 4) } })));
+  const cy = window.cytoscape({
+    container: host, elements: els,
+    style: [
+      { selector: "node", style: { "background-color": "data(col)", "width": "data(size)", "height": "data(size)", "label": "data(label)", "font-size": 11, "font-family": "inherit", "color": ink, "text-valign": "bottom", "text-margin-y": 3, "text-outline-width": 2, "text-outline-color": bg, "min-zoomed-font-size": 6, "transition-property": "opacity, background-color", "transition-duration": "0.2s" } },
+      { selector: "edge", style: { "width": "data(w)", "line-color": edgeCol, "curve-style": "bezier", "opacity": 0.5 } },
+      { selector: ".ww-faded", style: { "opacity": 0.12, "text-opacity": 0.12 } },
+      { selector: ".ww-hl", style: { "line-color": accent, "opacity": 0.95 } },
+      { selector: "node.ww-pick", style: { "border-width": 3, "border-color": accent } },
+    ],
+    layout: { name: "cose", animate: false, padding: 16, nodeRepulsion: 9000, idealEdgeLength: 70, gravity: 0.35, numIter: 700 },
+    minZoom: 0.4, maxZoom: 2.6, wheelSensitivity: 0.2, autoungrabify: false,
+  });
+  el._cy = cy;
+  cy.on("tap", "node", (ev) => {
+    const n = ev.target, nb = n.closedNeighborhood();
+    cy.elements().addClass("ww-faded"); nb.removeClass("ww-faded");
+    nb.connectedEdges().addClass("ww-hl"); cy.nodes().removeClass("ww-pick"); n.addClass("ww-pick");
+    if (window.Sound) Sound.tap();
+  });
+  cy.on("tap", (ev) => { if (ev.target === cy) { cy.elements().removeClass("ww-faded ww-hl ww-pick"); } });
+  // 접힌 카드/숨은 패널에서 0크기로 초기화될 수 있어, 보일 때 크기를 다시 잡는다
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => { if (host.offsetWidth > 4 && host.offsetHeight > 4) { try { cy.resize(); cy.fit(undefined, 18); } catch (e) {} } });
+    ro.observe(host);
+  } else { setTimeout(() => { try { cy.resize(); cy.fit(undefined, 18); } catch (e) {} }, 300); }
 }
 function renderHabitHeatmap() {
   const el = document.getElementById("habitHeatmap"); if (!el) return;

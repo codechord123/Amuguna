@@ -1,5 +1,5 @@
 // 오늘의 쉼 — 서비스워커 (오프라인 캐시)
-const CACHE = "oneul-shim-v94";
+const CACHE = "oneul-shim-v95";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const ASSETS = [
   "./config.js",
   "./monitor.js",
   "./cloud.js",
+  "./vendor/cytoscape.min.js",
   "./manifest.json",
   "./icon.svg",
 ];
