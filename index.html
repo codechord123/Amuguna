@@ -271,48 +271,52 @@
         </div>
         <p class="section-label">🔍 나에 대한 발견</p>
         <div id="discoveries"></div>
-        <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 ▾</button>
+        <div class="stat-tools">
+          <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 ▾</button>
+          <button class="sec-edit-btn" id="statEditBtn" aria-pressed="false">🔧 맞춤</button>
+        </div>
+        <p class="sec-edit-hint" id="statEditHint" hidden>보고 싶은 분석을 ▲▼로 위로 올리고, 👁로 숨길 수 있어요. 위에 둔 것부터 먼저 보여요.</p>
         <div id="allAnalysis" hidden>
-          <div class="card">
+          <div class="card" data-sec="rhythm">
             <div class="card-head"><h2>🗓️ 마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
             <p class="hint">요일(가로) × 시간대(세로)별 평균 기분. 가장 진한 초록 칸이 '나에게 좋은 시간'이에요. 가장자리 숫자는 요일·시간대별 평균이에요.</p>
             <div id="rhythmGrid"></div>
           </div>
-        <div class="card collapsible collapsed">
+        <div class="card collapsible collapsed" data-sec="matrix">
           <h2>🧭 감정 지도 (최근 30일)</h2>
           <p class="hint">가로=활력, 세로=기분. 점이 어느 구역에 모이는지 보면 내 감정 패턴이 보여요.</p>
           <div id="moodMatrix"></div>
         </div>
-        <div class="card collapsible collapsed">
+        <div class="card collapsible collapsed" data-sec="capture">
           <h2>🧩 기록 구성 (최근 30일)</h2>
           <p class="hint">여정에서 어떤 항목을 얼마나 남겼는지 보여줘요.</p>
           <div class="dist" id="captureBody"></div>
         </div>
-        <div class="card collapsible collapsed">
+        <div class="card collapsible collapsed" data-sec="tags">
           <h2>🏷️ 자주 느낀 감정</h2>
           <p class="hint">감정 워드클라우드 — 자주 느낄수록 크게, 그때 기분에 따라 색이 달라요.</p>
           <div id="tagInsight"></div>
         </div>
-        <div class="card collapsible collapsed">
+        <div class="card collapsible collapsed" data-sec="dist">
           <h2>🌙 기분 분포 (최근 30일)</h2>
           <div class="dist" id="dist"></div>
         </div>
-        <div class="card collapsible collapsed">
+        <div class="card collapsible collapsed" data-sec="grat">
           <h2>🌱 잘한 일 모아보기</h2>
           <p class="hint">여정에서 적은 '잘한 일·감사'가 여기 모여요.</p>
           <div id="gratList"></div>
         </div>
-        <div class="card collapsible collapsed" id="corrCard">
+        <div class="card collapsible collapsed" id="corrCard" data-sec="corr">
           <h2>🔗 습관과 기분</h2>
           <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
           <div id="corrBody"></div>
         </div>
-        <div class="card collapsible collapsed" id="heatCard">
+        <div class="card collapsible collapsed" id="heatCard" data-sec="heat">
           <h2>🔥 습관 실천 매트릭스</h2>
           <p class="hint">최근 14일 × 습관별 실천 여부 — 진할수록 꾸준히 해낸 칸이에요.</p>
           <div id="habitHeatmap"></div>
         </div>
-        <div class="card collapsible collapsed" id="webCard">
+        <div class="card collapsible collapsed" id="webCard" data-sec="web">
           <h2>🕸️ 생각의 지도</h2>
           <p class="hint">일기·회고에 자주 쓴 단어를, 같은 날 함께 쓴 것끼리 이어 그린 연결망이에요.</p>
           <div id="wordWeb"></div>

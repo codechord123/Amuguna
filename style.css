@@ -533,6 +533,20 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .disc-chip { margin-top: var(--s3); display: inline-block; padding: var(--s2) var(--s4); border-radius: var(--r-pill); font-size: var(--t-sm); font-weight: var(--w-bold); color: rgba(22, 17, 12, 0.78); box-shadow: inset 0 1px 0 var(--card-hi); }
 .disc-toggle { width: 100%; margin: var(--s2) 0 var(--s4); padding: var(--s3); background: var(--bg-sunken); border: 1px dashed var(--line-strong); color: var(--ink-2); border-radius: var(--r-md); font-family: inherit; font-weight: var(--w-semi); font-size: var(--t-sm); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
 .disc-toggle:active { transform: scale(0.99); }
+/* 분석 맞춤 편집 */
+.stat-tools { display: flex; gap: var(--s2); align-items: stretch; margin: var(--s2) 0 var(--s4); }
+.stat-tools .disc-toggle { flex: 1; margin: 0; }
+.sec-edit-btn { flex: 0 0 auto; padding: var(--s3) var(--s4); background: var(--bg-sunken); border: 1px dashed var(--line-strong); color: var(--ink-2); border-radius: var(--r-md); font-family: inherit; font-weight: var(--w-semi); font-size: var(--t-sm); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.sec-edit-btn.on { background: var(--accent); color: #fff; border-style: solid; border-color: var(--accent); }
+.sec-edit-btn:active { transform: scale(0.97); }
+.sec-edit-hint { font-size: var(--t-xs); color: var(--ink-3); background: var(--bg-sunken); border-radius: var(--r-md); padding: var(--s3); margin: 0 0 var(--s4); line-height: 1.5; }
+.sec-hidden { display: none !important; }
+.sec-dim { opacity: 0.55; }
+.sec-ctrl { display: flex; align-items: center; gap: var(--s2); margin: calc(var(--s3) * -1) calc(var(--s3) * -1) var(--s3); padding: var(--s2) var(--s3); background: var(--bg-sunken); border-radius: var(--r-md) var(--r-md) 0 0; border-bottom: 1px solid var(--line); }
+.sec-ctrl-name { flex: 1; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); }
+.sec-btn { flex: 0 0 auto; min-width: 34px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--line-strong); border-radius: var(--r-sm); font-size: var(--t-sm); cursor: pointer; color: var(--ink-2); }
+.sec-btn:active { transform: scale(0.94); }
+.stat-editing .card.collapsible.collapsed > h2 { pointer-events: none; }
 .badge-cat { margin-bottom: var(--s4); }
 .badge-cat:last-child { margin-bottom: 0; }
 .badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }

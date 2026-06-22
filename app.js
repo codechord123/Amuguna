@@ -43,30 +43,32 @@ const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 �
    카테고리는 직관적으로 긍정·보통·부정(정서가)으로 묶고,
    각 감정의 en(에너지 1-5)은 기록에 함께 저장된다(정서 원형모형, Russell 1980).
    base = 통계·점수용 기존 7분류 */
+// v = 정서가(valence) 0~100 — 감정과 긍부정 점수를 일치시키는 기준값.
+//     감정을 고르면 다이얼 점수가 고른 감정들의 평균 v로 맞춰진다.
 const EMOTIONS = [
   // 긍정
-  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos" },
-  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos" },
-  { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos" },
-  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos" },
-  { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos" },
-  { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos" },
-  { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos" },
+  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos", v: 92 },
+  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos", v: 90 },
+  { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos", v: 90 },
+  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos", v: 84 },
+  { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos", v: 86 },
+  { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos", v: 78 },
+  { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos", v: 70 },
   // 보통
-  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu" },
-  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu" },
-  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu" },
+  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu", v: 50 },
+  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu", v: 46 },
+  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu", v: 42 },
   // 부정
-  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg" },
-  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg" },
-  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg" },
-  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg" },
-  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg" },
-  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg" },
-  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg" },
-  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg" },
-  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg" },
-  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg" },
+  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg", v: 26 },
+  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg", v: 22 },
+  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg", v: 24 },
+  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg", v: 28 },
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg", v: 30 },
+  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg", v: 24 },
+  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg", v: 42 },
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 14 },
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg", v: 14 },
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg", v: 18 },
 ];
 const EMO_BANDS = [
   { id: "pos", label: "🌟 긍정적인 마음" },
@@ -931,6 +933,7 @@ function renderStats() {
   renderRhythm(entries);
   renderGratitude(list);
   renderDist(list);
+  if (typeof applyStatLayout === "function") applyStatLayout(); // 사용자 맞춤 순서/숨김 반영
 }
 // 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
 function renderCapture(entries) {
@@ -1003,6 +1006,73 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
   box.hidden = !open; Sound.tap();
   _allAnalysisToggle.setAttribute("aria-expanded", open ? "true" : "false");
   _allAnalysisToggle.textContent = open ? "모든 분석 접기 ▴" : "모든 분석 자세히 보기 ▾";
+});
+
+/* 분석 카드 맞춤 — 사용자가 보고 싶은 분석을 위로 올리고/숨길 수 있게 (자유도) */
+const STAT_SEC_DEFAULT = ["rhythm", "matrix", "capture", "tags", "dist", "grat", "corr", "heat", "web"];
+const STAT_SEC_NAME = { rhythm: "마음 리듬", matrix: "감정 지도", capture: "기록 구성", tags: "자주 느낀 감정", dist: "기분 분포", grat: "잘한 일 모아보기", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
+let statEditing = false;
+function statOrder() {
+  const saved = (settings.statOrder || []).filter((id) => STAT_SEC_DEFAULT.includes(id));
+  const rest = STAT_SEC_DEFAULT.filter((id) => !saved.includes(id)); // 새 섹션은 뒤에 자동 추가
+  return saved.concat(rest);
+}
+function applyStatLayout() {
+  const box = document.getElementById("allAnalysis"); if (!box) return;
+  const hidden = settings.statHidden || [];
+  const order = statOrder();
+  // 순서대로 DOM 재배치 + 숨김/편집 컨트롤 갱신
+  order.forEach((id) => {
+    const card = box.querySelector(`[data-sec="${id}"]`); if (!card) return;
+    box.appendChild(card); // 순서대로 다시 붙이면 그 순서가 됨
+    const isHidden = hidden.includes(id);
+    card.classList.toggle("sec-hidden", isHidden && !statEditing);
+    card.classList.toggle("sec-dim", isHidden && statEditing);
+    // 편집 컨트롤 바
+    let bar = card.querySelector(".sec-ctrl");
+    if (statEditing) {
+      if (!bar) { bar = document.createElement("div"); bar.className = "sec-ctrl"; card.insertBefore(bar, card.firstChild); }
+      bar.innerHTML = `<span class="sec-ctrl-name">${STAT_SEC_NAME[id]}</span>`
+        + `<button class="sec-btn" data-act="up" data-secid="${id}" aria-label="위로">▲</button>`
+        + `<button class="sec-btn" data-act="down" data-secid="${id}" aria-label="아래로">▼</button>`
+        + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? "🚫" : "👁"}</button>`;
+    } else if (bar) { bar.remove(); }
+  });
+  box.classList.toggle("stat-editing", statEditing);
+}
+function moveStat(id, dir) {
+  const order = statOrder();
+  const i = order.indexOf(id); if (i < 0) return;
+  const j = i + dir; if (j < 0 || j >= order.length) return;
+  order.splice(i, 1); order.splice(j, 0, id);
+  settings.statOrder = order; saveSettingsObj(settings); applyStatLayout();
+}
+function toggleStatVis(id) {
+  const hidden = (settings.statHidden || []).slice();
+  const i = hidden.indexOf(id);
+  if (i >= 0) hidden.splice(i, 1); else hidden.push(id);
+  settings.statHidden = hidden; saveSettingsObj(settings); applyStatLayout();
+}
+const _statEditBtn = document.getElementById("statEditBtn");
+if (_statEditBtn) _statEditBtn.addEventListener("click", () => {
+  Sound.tap(); statEditing = !statEditing;
+  _statEditBtn.setAttribute("aria-pressed", statEditing ? "true" : "false");
+  _statEditBtn.classList.toggle("on", statEditing);
+  _statEditBtn.textContent = statEditing ? "✓ 완료" : "🔧 맞춤";
+  const hint = document.getElementById("statEditHint"); if (hint) hint.hidden = !statEditing;
+  // 편집 중에는 펼쳐서 모든 카드 헤더가 보이도록
+  const box = document.getElementById("allAnalysis");
+  if (statEditing && box && box.hidden) { box.hidden = false; _allAnalysisToggle.setAttribute("aria-expanded", "true"); _allAnalysisToggle.textContent = "모든 분석 접기 ▴"; }
+  applyStatLayout();
+});
+const _allAnalysisBox = document.getElementById("allAnalysis");
+if (_allAnalysisBox) _allAnalysisBox.addEventListener("click", (e) => {
+  const b = e.target.closest(".sec-btn"); if (!b) return;
+  e.stopPropagation(); Sound.tap();
+  const id = b.dataset.secid, act = b.dataset.act;
+  if (act === "up") moveStat(id, -1);
+  else if (act === "down") moveStat(id, 1);
+  else if (act === "vis") toggleStatVis(id);
 });
 // 첫 화면 통계 숫자 → 기록 탭 해당 뷰로 점프 (편의 연결)
 document.getElementById("todayStats").addEventListener("click", (e) => {
@@ -2701,7 +2771,7 @@ function renderDist(list) {
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0 },
+  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0, statOrder: null, statHidden: [] },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
@@ -2910,11 +2980,11 @@ function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const la
 function jSteps() {
   const editingPast = jData.date && jData.date !== todayKey(); // 지난 기록 수정은 간단 경로
   const s = ["feel"];
-  if (!editingPast) s.push("breathe"); // 호흡은 '지금' 행동이라 오늘만
   s.push("note", "praise");
   if (!editingPast && loadChs().length) s.push("habits");
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
   if (!editingPast) s.push("care"); // 한마디·미션도 오늘만
+  if (!editingPast) s.push("breathe"); // 명상(호흡)은 마음을 가라앉히는 마지막 마무리 단계로
   s.push("finish");
   return s;
 }
@@ -2955,7 +3025,7 @@ function stepHtml(id) {
       <p class="energy-out" id="jEnergyOut"></p>
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="reflect-toggle" id="jQuickSave">⚡ 여기까지만 빠르게 저장</button>' : ""}`;
   }
-  if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">잠깐, 숨 한 번 고르고 갈까요?</p>
+  if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
     <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">🌬️ 호흡 시작하기</button>
     <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
@@ -3013,7 +3083,7 @@ function renderStep() {
     function updateEnergyOut() {
       const o = jBody.querySelector("#jEnergyOut"); if (!o) return;
       const hasTags = (jData.tags || []).some((t) => emoByKey(t));
-      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "고른 감정의 활기 정도예요" : "감정을 고르면 더 정확해져요"}</span>`;
+      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "고른 감정에 맞춰 점수·활력이 정해져요" : "감정을 고르면 점수가 더 정확해져요"}</span>`;
     }
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
@@ -3051,7 +3121,11 @@ function renderStep() {
       if (i >= 0) jData.tags.splice(i, 1); else jData.tags.push(k);
       const on = jData.tags.includes(k);
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
-      jComputeEnergy(); updateEnergyOut(); saveJDraft();
+      // 감정 ↔ 긍부정 점수 일치: 고른 감정들의 평균 정서가(v)로 다이얼 점수를 맞춘다.
+      const vs = jData.tags.map((t) => { const em = emoByKey(t); return em && em.v != null ? em.v : null; }).filter((x) => x != null);
+      if (vs.length) setScore(Math.round(vs.reduce((a, c) => a + c, 0) / vs.length)); // setScore가 점수·기분·활력·표시 모두 갱신
+      else { jComputeEnergy(); updateEnergyOut(); }
+      saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
     if (qs) qs.addEventListener("click", () => { if (!jData.mood) { alert("지금 기분을 먼저 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록

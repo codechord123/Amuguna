@@ -53,7 +53,9 @@ try {
   q("#journeyStart").click();
   check("여정 시작(기분 다이얼)", !q("#journey").hasAttribute("hidden") && !!q("#jBody #jScore"));
   { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
-  q('#jBody .emo-tag[data-tag="평온해요"]').click();
+  check("점수만 설정 시 다이얼 반영", q("#jBody #jDialNum").textContent === "70");
+  q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 평온해요(v:78) → 점수가 78로 동기화
+  check("감정 선택 시 긍부정 점수 동기화", q("#jBody #jDialNum").textContent === "78");
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 10) {
     if (q("#jBody #jNote")) q("#jBody #jNote").value = "야근하고 지침";
@@ -66,7 +68,7 @@ try {
   check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
   const te = ls("entries_v2")[tk];
   check("오늘 기록 저장됨", !!te && te.mood === "괜찮아요");
-  check("100점 기분 저장", te.score === 70);
+  check("감정 동기화 점수 저장", te.score === 78);
   check("감정 태그 저장", (te.tags || []).includes("평온해요"));
   check("일기 저장", te.note === "야근하고 지침");
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
@@ -105,11 +107,17 @@ try {
   check("여정에 한마디·미션 단계 포함", foundCare);
   q("#jClose").click();
 
-  // 3c) 저기분 여정엔 호흡 단계 + 호흡 버튼 노출
+  // 3c) 호흡(명상)은 여정의 마지막 단계 + 호흡 버튼 노출
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  { const s = q("#jBody #jScore"); s.value = "25"; s.dispatchEvent(new window.Event("input")); } // 낮은 점수 → 저기분
-  q("#jNext").click(); // 기분→호흡
-  check("저기분 여정 호흡 단계 버튼", !!q("#jBody #jBreatheBtn"));
+  { const s = q("#jBody #jScore"); s.value = "25"; s.dispatchEvent(new window.Event("input")); }
+  let g3 = 0, foundBreathe = false, breatheLast = false;
+  while (q("#jNext").textContent.indexOf("저장") < 0 && g3++ < 12) {
+    if (q("#jBody #jBreatheBtn")) foundBreathe = true;
+    q("#jNext").click();
+    if (foundBreathe && q("#jNext").textContent.indexOf("저장") >= 0) breatheLast = true; // 호흡 바로 다음이 저장(마지막)
+  }
+  check("여정 호흡(명상) 단계 버튼", foundBreathe);
+  check("호흡(명상)이 마지막 단계", breatheLast);
   q("#jClose").click();
 
   // 3d) 여정 진행 임시저장(중간에 닫아도 이어서)
@@ -243,6 +251,18 @@ try {
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
+  // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
+  check("분석 맞춤 버튼 존재", !!q("#statEditBtn"));
+  q("#statEditBtn").click();
+  check("맞춤 편집 컨트롤 표시", d.querySelectorAll("#allAnalysis .sec-ctrl").length >= 8);
+  const secondSec = d.querySelectorAll("#allAnalysis > [data-sec]")[1].getAttribute("data-sec");
+  q(`#allAnalysis .sec-btn[data-act=up][data-secid="${secondSec}"]`).click();
+  check("분석 섹션 위로 이동", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === secondSec);
+  check("맞춤 순서 저장됨", (ls("settings_v2") || {}).statOrder && ls("settings_v2").statOrder[0] === secondSec);
+  q(`#allAnalysis .sec-btn[data-act=vis][data-secid="${secondSec}"]`).click();
+  check("분석 섹션 숨김 저장", ((ls("settings_v2") || {}).statHidden || []).includes(secondSec));
+  q("#statEditBtn").click(); // 완료
+  check("완료 후 숨긴 섹션 비표시", q(`#allAnalysis > [data-sec="${secondSec}"]`).classList.contains("sec-hidden"));
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));
