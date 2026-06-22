@@ -257,6 +257,10 @@ function updateTodayStats() {
   else if (week >= 5) cheer = "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
   else cheer = best >= 3 ? `오늘도 해냈어요 💛 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛";
   set("tsCheer", cheer);
+  // 주간 목표 진행(목표경사 효과) — 7일 중 며칠
+  const wf = document.getElementById("wkGoalFill");
+  if (wf) { wf.style.width = Math.round(week / 7 * 100) + "%"; wf.style.background = week >= 7 ? "var(--success)" : week >= 5 ? "var(--accent)" : "var(--accent-deep)"; }
+  set("wkGoalCap", week >= 7 ? "이번 주 목표 달성! 🎉" : `이번 주 목표 ${week}/7일`);
 }
 
 // 첫 화면(오늘의 여정) — 날짜·상태에 맞춰 주제 중심으로 안내
@@ -281,6 +285,9 @@ function updateJourneyHero() {
     set("journeyStart", "오늘의 여정 시작하기");
     set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
   }
+  // 첫 주 온보딩 미션 — 습관 형성 가속(작은 목표)
+  const total = sortedEntries(loadEntries()).length;
+  if (total < 3) set("journeySub", `🌱 첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`);
 }
 function detectCrisis(text) {
   if (!text) return false;
@@ -445,7 +452,7 @@ const BREATH_PHASES = [
 function makeBreather(circleEl, textEl, base, opts) {
   opts = opts || {};
   const isSleep = opts.sleep || (() => false);
-  let running = false, tick = null, pi = 0, remain = 0, cycles = 0;
+  let running = false, tick = null, pre = null, pi = 0, remain = 0, cycles = 0;
   function render() { textEl.innerHTML = `${BREATH_PHASES[pi].name}<br><b>${remain}</b>`; }
   function enter(i) {
     pi = i; const ph = BREATH_PHASES[i]; remain = ph.dur;
@@ -453,27 +460,38 @@ function makeBreather(circleEl, textEl, base, opts) {
     circleEl.style.transitionDuration = (ph.cls === "hold" ? 0.4 : ph.dur) + "s";
     Sound.breathCue(ph.cue, ph.dur); render();
   }
+  function loop() {
+    remain--;
+    if (remain <= 0) {
+      let next = pi + 1;
+      if (next >= BREATH_PHASES.length) {
+        next = 0; cycles++;
+        if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
+      }
+      enter(next);
+    } else { render(); Sound.tick(); }   // 숫자 + 카운트(둥근 사운드)
+  }
   const api = {
     isRunning: () => running,
     cycles: () => cycles,
     start() {
       if (running) return;
       try { settings.breathCount = (settings.breathCount || 0) + 1; saveSettingsObj(settings); } catch (e) {}
-      Sound.unlock(); Sound.breathStart(); running = true; cycles = 0; enter(0);
-      tick = setInterval(() => {
-        remain--;
-        if (remain <= 0) {
-          let next = pi + 1;
-          if (next >= BREATH_PHASES.length) {
-            next = 0; cycles++;
-            if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
-          }
-          enter(next);
-        } else { render(); Sound.tick(); }   // 숫자 + 카운트 틱 (모든 모드)
+      Sound.unlock(); running = true; cycles = 0;
+      // 시작 전 예비 카운트 3 · 2 · 1 (마음의 준비)
+      let n = 3;
+      circleEl.className = base + " ready"; circleEl.style.transitionDuration = "0.5s";
+      textEl.innerHTML = `곧 시작해요<br><b>${n}</b>`; Sound.countTick(n);
+      pre = setInterval(() => {
+        n--;
+        if (n <= 0) { clearInterval(pre); pre = null; Sound.breathStart(); enter(0); tick = setInterval(loop, 1000); }
+        else { textEl.innerHTML = `곧 시작해요<br><b>${n}</b>`; Sound.countTick(n); }
       }, 1000);
     },
     stop() {
-      running = false; if (tick) { clearInterval(tick); tick = null; }
+      running = false;
+      if (pre) { clearInterval(pre); pre = null; }
+      if (tick) { clearInterval(tick); tick = null; }
       Sound.breathStop();
       circleEl.className = base; circleEl.style.transitionDuration = "";
       textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
@@ -867,10 +885,17 @@ function confetti() {
 
 /* ===================== 기록 / 데이터 ===================== */
 function sortedEntries(entries) { return Object.values(entries).filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date)); }
+// 연속 기록 — '연속 보호'(주 1회): 기록 7일마다 보호 1개가 쌓이고, 빈 날 하루는 보호로 메워 연속을 지킨다
 function calcStreak(entries) {
-  let streak = 0, d = new Date();
-  if (!entries[todayKey(d)]) d.setDate(d.getDate() - 1);
-  while (entries[todayKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
+  let streak = 0, freezes = 0, d = new Date();
+  if (!entries[todayKey(d)]) d.setDate(d.getDate() - 1); // 오늘 아직이면 어제부터 센다(오늘은 위기, 아직 기회 있음)
+  while (true) {
+    const k = todayKey(d);
+    if (entries[k] && entries[k].mood) { streak++; if (streak % 7 === 0) freezes++; }
+    else if (streak > 0 && freezes > 0) { freezes--; }   // 빈 날 1일을 보호로 메움(주당 1회 수준)
+    else break;
+    d.setDate(d.getDate() - 1);
+  }
   return streak;
 }
 function dayOfWeekKo(key) { return ["일", "월", "화", "수", "목", "금", "토"][new Date(key + "T00:00:00").getDay()]; }
@@ -3154,6 +3179,13 @@ function comebackCheck() {
   const gap = daysSince(last);
   if (gap >= 4) setTimeout(() => toast(`${gap}일 만이네요. 다시 와줘서 반가워요 🌿 쉬어간 날들도 괜찮아요. 오늘은 기분 하나만 눌러도 충분해요.`), 1300);
 }
+// 알림 캐치업 — 설정 시각이 지났는데 오늘 미기록이면 앱 열 때 살며시 안내(웹 백그라운드 알림 한계 보완)
+function reminderCatchup() {
+  if (!settings.reminderOn || loadEntries()[todayKey()]) return;
+  const [hh, mm] = (settings.reminderTime || "21:00").split(":").map(Number);
+  const now = new Date();
+  if (now.getHours() > hh || (now.getHours() === hh && now.getMinutes() >= mm)) setTimeout(fireReminder, 1800);
+}
 
 /* 클라우드 동기화용 훅 (cloud.js가 사용) */
 window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), settings: loadSettings() });
@@ -3181,7 +3213,7 @@ loadToday();
 scheduleReminder();
 if (!settings.badges) { settings.badges = earnedBadgeIds(); saveSettingsObj(settings); } // 첫 실행은 조용히 시드(스팸 방지)
 if (!localStorage.getItem(DB.ONBOARD)) showOnboard();
-else { comebackCheck(); backupReminderCheck(); }
+else { comebackCheck(); backupReminderCheck(); reminderCatchup(); }
 
 /* 백업 권유 — 기록이 쌓였는데 한동안 백업이 없으면 가볍게 안내 (데이터 안전) */
 function backupReminderCheck() {

@@ -239,8 +239,10 @@
   }
   function chime() { if (!state.sfxOn || !ensure()) return; tone(660, 0.55, 0, "sine", 0.13, true); tone(990, 0.6, 0.1, "sine", 0.10, true); }
   function tap() { if (!state.sfxOn || !ensure()) return; tone(540, 0.16, 0, "sine", 0.07); }
-  // 호흡 카운트다운 틱 (호흡 가이드 소리 설정에 연동)
-  function tick() { if (!state.breathOn || !ensure()) return; tone(880, 0.09, 0, "triangle", 0.1, true); }
+  // 호흡 카운트 — 동그랗고 부드러운 사인음 + 잔향(심신 안정)
+  function tick() { if (!state.breathOn || !ensure()) return; tone(587.33, 0.26, 0, "sine", 0.085, true); tone(880, 0.18, 0.01, "sine", 0.03, true); }
+  // 시작 전 예비 카운트(3·2·1) — 기대를 끌어올리듯 살짝 상승하는 둥근 음
+  function countTick(n) { if (!state.breathOn || !ensure()) return; const f = 392 + (3 - (n || 3)) * 96; tone(f, 0.32, 0, "sine", 0.1, true); tone(f * 2, 0.22, 0.01, "sine", 0.03, true); }
   function success() {
     if (!state.sfxOn || !ensure()) return;
     tone(523, 0.45, 0, "sine", 0.12, true);
@@ -333,13 +335,13 @@
     const ramp = (param, to, time) => { param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(to, t + time); };
     if (phase === "inhale") { ramp(ng, 0.12, dur); ramp(bp, 1400, dur); bowl(523.25, 3.6, 0.18); }      // 숨 들어오며 밝아짐 + C5 볼
     else if (phase === "exhale") { ramp(ng, 0.0001, dur); ramp(bp, 350, dur); bowl(392.00, 4.6, 0.18); } // 숨 나가며 어두워짐 + G4 볼
-    else { ramp(ng, 0.05, Math.min(dur, 1.5)); }                                                        // 멈춤: 잔잔히 유지
+    else { ramp(ng, 0.05, Math.min(dur, 1.5)); bowl(659.25, 2.8, 0.12); }                                // 멈춤: 잔잔히 유지 + E5 볼(들숨·날숨과 구분)
   }
 
   window.Sound = {
     state, unlock: ensure,
     startAmbient, stopAmbient, setAmbientVolume,
-    chime, tap, tick, success, celebrate, breathCue, breathStart, breathStop,
+    chime, tap, tick, countTick, success, celebrate, breathCue, breathStart, breathStop,
     setSfx(v) { state.sfxOn = v; },
     setBreath(v) { state.breathOn = v; },
   };

@@ -268,6 +268,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 
 .breather { display: flex; justify-content: center; align-items: center; height: 200px; }
 .breath-circle { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: var(--w-bold); font-size: var(--t-md); box-shadow: 0 0 0 0 var(--ring); transition: transform 4s var(--ease-breath), box-shadow 4s var(--ease-breath); }
+.breath-circle.ready { transform: scale(1.12); box-shadow: 0 0 0 12px var(--ring); animation: ready-pulse 1s var(--ease-breath) infinite; }
+@keyframes ready-pulse { 0%,100% { transform: scale(1.08); } 50% { transform: scale(1.18); } }
 .breath-circle.inhale { transform: scale(1.5); box-shadow: 0 0 0 28px var(--ring); }
 .breath-circle.hold { transform: scale(1.5); }
 .breath-circle.exhale { transform: scale(1); box-shadow: 0 0 0 0 var(--ring); }
@@ -618,6 +620,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ts-num i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
 .ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
 .ts-cheer { margin: var(--s4) 0 0; padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
+.wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); }
+.wk-goal-bar { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
+.wk-goal-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: var(--accent-deep); transition: width 0.7s var(--ease-soft), background 0.4s; }
+.wk-goal-cap { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); }
 
 .journey-hero {
   text-align: center;
