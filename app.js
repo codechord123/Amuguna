@@ -1021,36 +1021,6 @@ function renderWeekly(entries) {
   weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
 
-function drawWeekCanvas() {
-  const c = document.getElementById("weekCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
-  const css = getComputedStyle(document.documentElement);
-  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--ink").trim();
-  const accent = css.getPropertyValue("--accent").trim(), soft = css.getPropertyValue("--soft").trim(), line = css.getPropertyValue("--line").trim();
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = accent; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "left";
-  ctx.fillText("오늘의 쉼 · 주간 리포트", 32, 52);
-  ctx.fillStyle = soft; ctx.font = "16px sans-serif"; ctx.fillText(weekData ? weekData.range : "", 32, 80);
-  const lines = [];
-  if (weekData) {
-    lines.push(`기록 ${weekData.daysLogged}일`);
-    if (weekData.avgMood != null) lines.push(`평균 기분 ${Math.round(weekData.avgMood)} / 100`);
-    if (weekData.avgEnergy != null) lines.push(`평균 에너지 ${weekData.avgEnergy.toFixed(1)} / 5`);
-    if (weekData.habTotal > 0) lines.push(`습관 ${weekData.habDone} / ${weekData.habTotal}`);
-  }
-  ctx.fillStyle = ink; ctx.font = "bold 20px sans-serif";
-  lines.forEach((t, i) => ctx.fillText(t, 32, 132 + i * 38));
-  if (weekData) {
-    const x0 = 320, y0 = 110, w = 248, h = 158;
-    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
-    const pts = weekData.moodSeries;
-    ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.beginPath(); let started = false;
-    pts.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / 6, y = y0 + h - (h * v / 100); if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); });
-    ctx.stroke(); ctx.fillStyle = accent;
-    pts.forEach((v, i) => { if (v == null) return; const x = x0 + w * i / 6, y = y0 + h - (h * v / 100); ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); });
-  }
-  ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("나를 돌본 한 주 🌿", 32, 318);
-  return c.toDataURL("image/png");
-}
 function dataURLtoBlob(d) { const [h, b] = d.split(","); const m = h.match(/:(.*?);/)[1]; const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: m }); }
 const _weekDetailBtn = document.getElementById("weekDetailBtn");
 if (_weekDetailBtn) _weekDetailBtn.addEventListener("click", () => { Sound.tap(); openReport("week"); });
@@ -1081,32 +1051,62 @@ function renderMonthly(entries) {
   if (!plain) parts.push("한 달을 차곡차곡 살아냈어요 💛");
   monthData = { label: `${y}년 ${m + 1}월`, summary: parts.join(" "), daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
-function drawMonthCanvas() {
-  const c = document.getElementById("monthCanvas"), ctx = c.getContext("2d"), W = 600, H = 340;
+// 전체 페이지 리포트 이미지 — 진단·처방·하이라이트까지 담은 세로 카드(높이 자동)
+function drawReportCanvas(kind) {
+  const entries = loadEntries();
+  let keys = [], prevKeys = [];
+  if (kind === "month") {
+    const now = new Date(), yy = now.getFullYear(), mm = now.getMonth(), dz = new Date(yy, mm + 1, 0).getDate();
+    for (let dd = 1; dd <= dz; dd++) keys.push(`${yy}-${String(mm + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`);
+    const pm = new Date(yy, mm - 1, 1), py = pm.getFullYear(), pmo = pm.getMonth(), pdz = new Date(py, pmo + 1, 0).getDate();
+    for (let dd = 1; dd <= pdz; dd++) prevKeys.push(`${py}-${String(pmo + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`);
+  } else {
+    for (let i = 6; i >= 0; i--) { const dt = new Date(); dt.setDate(dt.getDate() - i); keys.push(todayKey(dt)); }
+    for (let i = 13; i >= 7; i--) { const dt = new Date(); dt.setDate(dt.getDate() - i); prevKeys.push(todayKey(dt)); }
+  }
+  const cur = periodStats(keys, entries), prev = periodStats(prevKeys, entries);
+  const period = (kind === "month" ? (monthData && monthData.label) : (weekData && weekData.range)) || "";
+  const unit = kind === "month" ? "달" : "주";
+  let trend = "flat";
+  if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
+  const diag = richDiagnose(cur, entries, keys);
+  const rxKeys = (diag ? diag.rx : []).concat(trend === "down" ? ["selfcomp"] : []); const fk = []; rxKeys.forEach((k) => { if (RX[k] && !fk.includes(k)) fk.push(k); }); if (!fk.length) fk.push("labeling");
+  const seed = parseInt((keys[keys.length - 1] || todayKey()).replace(/-/g, ""), 10) || 0;
+  const sols = fk.slice(0, 3).map((k, i) => RX[k].s[(seed + i) % RX[k].s.length]);
+  const dMood = (cur.avgMood != null && prev.avgMood != null) ? Math.round(cur.avgMood - prev.avgMood) : null;
+  const headline = (dMood != null && Math.abs(dMood) >= 3) ? (dMood > 0 ? `지난 ${unit}보다 기분이 ▲${dMood}점 좋아졌어요` : `지난 ${unit}보다 ▼${-dMood}점 가라앉았어요`) : "";
+  const bestTxt = cur.best ? `🌟 가장 좋았던 날 ${cur.best.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.best.sc)}점` : "";
+  const worstTxt = (cur.worst && (!cur.best || cur.worst.e.date !== cur.best.e.date)) ? `🌧️ 가장 힘들었던 날 ${cur.worst.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.worst.sc)}점` : "";
   const css = getComputedStyle(document.documentElement);
-  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--ink").trim();
-  const accent = css.getPropertyValue("--accent").trim(), soft = css.getPropertyValue("--soft").trim(), line = css.getPropertyValue("--line").trim();
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = accent; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "left";
-  ctx.fillText("오늘의 쉼 · 월간 리포트", 32, 52);
-  ctx.fillStyle = soft; ctx.font = "16px sans-serif"; ctx.fillText(monthData ? monthData.label : "", 32, 80);
-  const lines = [];
-  if (monthData) {
-    lines.push(`기록 ${monthData.daysLogged}일`);
-    if (monthData.avgMood != null) lines.push(`평균 기분 ${Math.round(monthData.avgMood)} / 100`);
-    if (monthData.avgEnergy != null) lines.push(`평균 에너지 ${monthData.avgEnergy.toFixed(1)} / 5`);
-    if (monthData.habTotal > 0) lines.push(`습관 ${monthData.habDone} / ${monthData.habTotal}`);
-  }
-  ctx.fillStyle = ink; ctx.font = "bold 20px sans-serif";
-  lines.forEach((t, i) => ctx.fillText(t, 32, 132 + i * 38));
-  if (monthData) {
-    const x0 = 300, y0 = 110, w = 268, h = 158, n = monthData.series.length;
-    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, w, h);
-    ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.beginPath(); let started = false;
-    monthData.series.forEach((v, i) => { if (v == null) { started = false; return; } const x = x0 + w * i / (n - 1), yy = y0 + h - (h * v / 100); if (!started) { ctx.moveTo(x, yy); started = true; } else ctx.lineTo(x, yy); });
-    ctx.stroke();
-  }
-  ctx.fillStyle = soft; ctx.font = "14px sans-serif"; ctx.fillText("한 달의 마음 흐름 🌙", 32, 318);
+  const cardC = css.getPropertyValue("--card").trim() || "#fffefc", ink = css.getPropertyValue("--ink").trim() || "#322a25", ink2 = css.getPropertyValue("--ink-2").trim() || "#6a5c53", soft = css.getPropertyValue("--soft").trim() || "#877668", accentDeep = css.getPropertyValue("--accent-deep").trim() || "#cd5c41", line = css.getPropertyValue("--line").trim() || "#ece1d6";
+  const S = 2, W = 380, padX = 22, contentW = W - padX * 2;
+  const c = document.getElementById(kind === "month" ? "monthCanvas" : "weekCanvas");
+  const ctx = c.getContext("2d");
+  const wrap = (text, x, y, maxW, lh, render) => { let ln = ""; for (const ch of text) { if (ctx.measureText(ln + ch).width > maxW && ln) { if (render) ctx.fillText(ln, x, y); y += lh; ln = ch; } else ln += ch; } if (ln) { if (render) ctx.fillText(ln, x, y); y += lh; } return y; };
+  const run = (render) => {
+    let y = 36; ctx.textAlign = "left";
+    ctx.font = "bold 21px sans-serif"; if (render) { ctx.fillStyle = accentDeep; ctx.fillText(`오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트`, padX, y); }
+    y += 20; ctx.font = "12px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText(period, padX, y); }
+    y += 26; ctx.font = "11px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("평균 기분", padX, y); }
+    y += 36; ctx.font = "bold 42px sans-serif"; const numStr = `${Math.round(cur.avgMood || 0)}`; if (render) { ctx.fillStyle = scoreColor(cur.avgMood || 0); ctx.fillText(numStr, padX, y); }
+    const numW = ctx.measureText(numStr).width; ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("/100", padX + numW + 5, y); }
+    if (dMood != null) { ctx.font = "bold 12px sans-serif"; if (render) { ctx.fillStyle = dMood > 0 ? accentDeep : soft; ctx.fillText(`${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(dMood)} 지난 ${unit}`, padX + numW + 44, y); } }
+    y += 22; const stats = [`기록 ${cur.days}일`]; if (cur.avgEnergy != null) stats.push(`활력 ${cur.avgEnergy.toFixed(1)}/5`); if (cur.habPct != null) stats.push(`습관 ${cur.habPct}%`);
+    ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(stats.join("    ·    "), padX, y); }
+    y += 22; if (render) { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 24;
+    if (headline) { ctx.font = "bold 13px sans-serif"; if (render) ctx.fillStyle = accentDeep; y = wrap("💡 " + headline, padX, y, contentW, 19, render); y += 14; }
+    if (diag) { ctx.font = "bold 15px sans-serif"; if (render) ctx.fillStyle = ink; y = wrap(`🩺 ${diag.label}`, padX, y, contentW, 21, render); y += 5; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap(diag.dx, padX, y, contentW, 20, render); y += 18; }
+    ctx.font = "bold 15px sans-serif"; if (render) { ctx.fillStyle = ink; ctx.fillText("💊 맞춤 처방", padX, y); } y += 24;
+    sols.forEach((s) => { ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap("•  " + s, padX, y, contentW, 20, render); y += 10; });
+    if (bestTxt || worstTxt) { y += 6; if (render) { ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 22; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; if (bestTxt) { if (render) ctx.fillText(bestTxt, padX, y); y += 21; } if (worstTxt) { if (render) ctx.fillText(worstTxt, padX, y); y += 21; } }
+    y += 10; ctx.font = "11px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("오늘의 쉼 · 나를 돌본 기록 🌿", padX, y); } y += 24;
+    return y;
+  };
+  const totalH = Math.ceil(run(false));
+  c.width = W * S; c.height = totalH * S;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.scale(S, S);
+  ctx.fillStyle = cardC; ctx.fillRect(0, 0, W, totalH);
+  run(true);
   return c.toDataURL("image/png");
 }
 document.getElementById("monthDetailBtn").addEventListener("click", () => { Sound.tap(); openReport("month"); });
@@ -2062,7 +2062,7 @@ function reportDetailHtml(kind) {
 }
 // 리포트 이미지 미리보기 — iOS/PWA에서 강제 다운로드가 막혀도 '길게 눌러 저장'이 되도록 실제 이미지를 띄운다
 function showImagePreview(kind) {
-  const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
+  const url = drawReportCanvas(kind);
   let ov = document.getElementById("imgPreview");
   if (!ov) { ov = document.createElement("div"); ov.id = "imgPreview"; ov.className = "img-preview"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); document.body.appendChild(ov); }
   const label = kind === "month" ? "월간" : "주간";
@@ -2086,7 +2086,7 @@ function showImagePreview(kind) {
   };
 }
 async function shareReport(kind) {
-  const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
+  const url = drawReportCanvas(kind);
   const d = kind === "month" ? monthData : weekData;
   const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${Math.round(d.avgMood)}/100` : ""} 🌿` : "오늘의 쉼 리포트";
   try {
