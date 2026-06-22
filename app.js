@@ -1012,7 +1012,7 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
   _allAnalysisToggle.textContent = open ? "모든 분석 접기 ▴" : "모든 분석 자세히 보기 ▾";
 });
 
-/* 분석 카드 맞춤 — 사용자가 보고 싶은 분석을 위로 올리고/숨길 수 있게 (자유도) */
+/* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
 const STAT_SEC_DEFAULT = ["rhythm", "matrix", "capture", "tags", "dist", "grat", "corr", "heat", "web"];
 const STAT_SEC_NAME = { rhythm: "마음 리듬", matrix: "감정 지도", capture: "기록 구성", tags: "자주 느낀 감정", dist: "기분 분포", grat: "잘한 일 모아보기", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
 let statEditing = false;
@@ -1021,28 +1021,37 @@ function statOrder() {
   const rest = STAT_SEC_DEFAULT.filter((id) => !saved.includes(id)); // 새 섹션은 뒤에 자동 추가
   return saved.concat(rest);
 }
+function findSecCard(id) { return document.querySelector(`#statPinned > [data-sec="${id}"], #allAnalysis > [data-sec="${id}"]`); }
 function applyStatLayout() {
-  const box = document.getElementById("allAnalysis"); if (!box) return;
-  const hidden = settings.statHidden || [];
+  const drawer = document.getElementById("allAnalysis"), pinBox = document.getElementById("statPinned");
+  if (!drawer || !pinBox) return;
+  const hidden = settings.statHidden || [], pinned = settings.statPinned || [];
   const order = statOrder();
-  // 순서대로 DOM 재배치 + 숨김/편집 컨트롤 갱신
   order.forEach((id) => {
-    const card = box.querySelector(`[data-sec="${id}"]`); if (!card) return;
-    box.appendChild(card); // 순서대로 다시 붙이면 그 순서가 됨
-    const isHidden = hidden.includes(id);
+    const card = findSecCard(id); if (!card) return;
+    const isHidden = hidden.includes(id), isPinned = pinned.includes(id) && !isHidden;
+    // 컨테이너 배치: 메인 고정 → statPinned, 그 외 → 드로어(allAnalysis). 순서대로 append.
+    (isPinned ? pinBox : drawer).appendChild(card);
+    // 고정 카드는 펼쳐서 바로 보이게, 드로어로 내려가면 다시 접음
+    if (card.classList.contains("collapsible")) card.classList.toggle("collapsed", !isPinned);
     card.classList.toggle("sec-hidden", isHidden && !statEditing);
     card.classList.toggle("sec-dim", isHidden && statEditing);
-    // 편집 컨트롤 바
-    let bar = card.querySelector(".sec-ctrl");
+    card.classList.toggle("sec-pinned", isPinned);
+    // 편집 컨트롤 바 (카드 맨 위)
+    let bar = card.querySelector(":scope > .sec-ctrl");
     if (statEditing) {
-      if (!bar) { bar = document.createElement("div"); bar.className = "sec-ctrl"; card.insertBefore(bar, card.firstChild); }
+      if (!bar) { bar = document.createElement("div"); bar.className = "sec-ctrl"; }
+      card.insertBefore(bar, card.firstChild);
       bar.innerHTML = `<span class="sec-ctrl-name">${STAT_SEC_NAME[id]}</span>`
+        + `<button class="sec-btn ${isPinned ? "on" : ""}" data-act="pin" data-secid="${id}" aria-pressed="${isPinned}" aria-label="메인에 올리기">📌</button>`
         + `<button class="sec-btn" data-act="up" data-secid="${id}" aria-label="위로">▲</button>`
         + `<button class="sec-btn" data-act="down" data-secid="${id}" aria-label="아래로">▼</button>`
         + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? "🚫" : "👁"}</button>`;
     } else if (bar) { bar.remove(); }
   });
-  box.classList.toggle("stat-editing", statEditing);
+  drawer.classList.toggle("stat-editing", statEditing);
+  pinBox.classList.toggle("stat-editing", statEditing);
+  // 고정된 게 하나도 없으면 안내(편집 중에만)
 }
 function moveStat(id, dir) {
   const order = statOrder();
@@ -1057,6 +1066,13 @@ function toggleStatVis(id) {
   if (i >= 0) hidden.splice(i, 1); else hidden.push(id);
   settings.statHidden = hidden; saveSettingsObj(settings); applyStatLayout();
 }
+function toggleStatPin(id) {
+  const pinned = (settings.statPinned || []).slice();
+  const i = pinned.indexOf(id);
+  if (i >= 0) pinned.splice(i, 1); else { pinned.push(id); // 메인에 올리면 숨김은 해제
+    settings.statHidden = (settings.statHidden || []).filter((x) => x !== id); }
+  settings.statPinned = pinned; saveSettingsObj(settings); applyStatLayout();
+}
 const _statEditBtn = document.getElementById("statEditBtn");
 if (_statEditBtn) _statEditBtn.addEventListener("click", () => {
   Sound.tap(); statEditing = !statEditing;
@@ -1064,17 +1080,19 @@ if (_statEditBtn) _statEditBtn.addEventListener("click", () => {
   _statEditBtn.classList.toggle("on", statEditing);
   _statEditBtn.textContent = statEditing ? "✓ 완료" : "🔧 맞춤";
   const hint = document.getElementById("statEditHint"); if (hint) hint.hidden = !statEditing;
-  // 편집 중에는 펼쳐서 모든 카드 헤더가 보이도록
+  // 편집 중에는 드로어를 펼쳐서 모든 카드 헤더가 보이도록
   const box = document.getElementById("allAnalysis");
   if (statEditing && box && box.hidden) { box.hidden = false; _allAnalysisToggle.setAttribute("aria-expanded", "true"); _allAnalysisToggle.textContent = "모든 분석 접기 ▴"; }
   applyStatLayout();
 });
-const _allAnalysisBox = document.getElementById("allAnalysis");
-if (_allAnalysisBox) _allAnalysisBox.addEventListener("click", (e) => {
+// 편집 컨트롤 클릭 — 고정 영역·드로어 둘 다 커버하려고 그래프 패널에 위임
+const _statGraphPanel = document.querySelector('.stats-panel[data-panel="graph"]');
+if (_statGraphPanel) _statGraphPanel.addEventListener("click", (e) => {
   const b = e.target.closest(".sec-btn"); if (!b) return;
   e.stopPropagation(); Sound.tap();
   const id = b.dataset.secid, act = b.dataset.act;
-  if (act === "up") moveStat(id, -1);
+  if (act === "pin") toggleStatPin(id);
+  else if (act === "up") moveStat(id, -1);
   else if (act === "down") moveStat(id, 1);
   else if (act === "vis") toggleStatVis(id);
 });
@@ -2775,7 +2793,7 @@ function renderDist(list) {
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0, statOrder: null, statHidden: [] },
+  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0, statOrder: null, statHidden: [], statPinned: [] },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;

@@ -264,16 +264,29 @@ try {
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
   check("분석 맞춤 버튼 존재", !!q("#statEditBtn"));
-  q("#statEditBtn").click();
-  check("맞춤 편집 컨트롤 표시", d.querySelectorAll("#allAnalysis .sec-ctrl").length >= 8);
+  q("#statEditBtn").click(); // 편집 진입
+  check("맞춤 편집 컨트롤 표시", d.querySelectorAll("#allAnalysis .sec-ctrl").length >= 7);
   const secondSec = d.querySelectorAll("#allAnalysis > [data-sec]")[1].getAttribute("data-sec");
-  q(`#allAnalysis .sec-btn[data-act=up][data-secid="${secondSec}"]`).click();
+  q(`.sec-btn[data-act=up][data-secid="${secondSec}"]`).click();
   check("분석 섹션 위로 이동", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === secondSec);
   check("맞춤 순서 저장됨", (ls("settings_v2") || {}).statOrder && ls("settings_v2").statOrder[0] === secondSec);
-  q(`#allAnalysis .sec-btn[data-act=vis][data-secid="${secondSec}"]`).click();
+  // 메인에 올리기(고정) → 고정 영역으로 이동
+  q(`.sec-btn[data-act=pin][data-secid="${secondSec}"]`).click();
+  check("메인에 올린 분석이 고정영역으로", !!q(`#statPinned > [data-sec="${secondSec}"]`));
+  check("메인 고정 저장됨", ((ls("settings_v2") || {}).statPinned || []).includes(secondSec));
+  // 다시 내리면 드로어로 복귀 + 접힘 상태
+  q(`.sec-btn[data-act=pin][data-secid="${secondSec}"]`).click();
+  check("고정 해제 시 드로어로 복귀", !!q(`#allAnalysis > [data-sec="${secondSec}"]`));
+  // 숨김
+  q(`.sec-btn[data-act=vis][data-secid="${secondSec}"]`).click();
   check("분석 섹션 숨김 저장", ((ls("settings_v2") || {}).statHidden || []).includes(secondSec));
   q("#statEditBtn").click(); // 완료
   check("완료 후 숨긴 섹션 비표시", q(`#allAnalysis > [data-sec="${secondSec}"]`).classList.contains("sec-hidden"));
+  // 버그 회귀: 완료 후 접기/펴기(collapsed) 토글이 정상 동작해야 함
+  const colCard = q('#allAnalysis > .card.collapsible:not(.sec-hidden)');
+  const wasCollapsed = colCard.classList.contains("collapsed");
+  colCard.querySelector(":scope > h2").click();
+  check("완료 후 카드 접기/펴기 동작", colCard.classList.contains("collapsed") !== wasCollapsed);
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));
