@@ -914,7 +914,9 @@ function renderCapture(entries) {
 // 잘한 일(감사) 모아보기 — 여정의 감사 데이터를 한곳에(분석/회고)
 function renderGratitude(list) {
   const el = document.getElementById("gratList"); if (!el) return;
-  const items = list.filter((e) => e.praise && e.praise.trim()).reverse();
+  const seen = new Set();
+  const items = list.filter((e) => e.praise && e.praise.trim()).reverse()
+    .filter((e) => { const key = e.praise.trim(); if (seen.has(key)) return false; seen.add(key); return true; }); // 같은 문구 중복 제거
   if (!items.length) { el.innerHTML = '<p class="empty">여정에서 \'잘한 일\'을 적으면 여기에 모여요 🌱</p>'; return; }
   el.innerHTML = items.slice(0, 10).map((e) => { const p = e.date.split("-"); return `<div class="grat-item"><span class="grat-date">${+p[1]}/${+p[2]}</span><span class="grat-text">${escapeHtml(e.praise)}</span></div>`; }).join("");
 }
@@ -1342,15 +1344,15 @@ const DX_THEMES = {
 };
 // 일기 키워드 → 맥락 테마 (세분화)
 const KEYWORD_THEME = {
-  work:     ["일", "직장", "회사", "업무", "야근", "상사", "마감", "프로젝트", "출근", "퇴근"],
-  study:    ["시험", "공부", "학교", "성적", "과제", "발표", "논문", "수업"],
-  rel:      ["관계", "친구", "가족", "엄마", "아빠", "부모", "연인", "남편", "아내", "이별", "싸웠", "사람들"],
-  sleep:    ["잠", "수면", "불면", "피곤", "졸려", "새벽", "못 잤"],
-  health:   ["아프", "몸살", "병원", "두통", "아픔", "건강", "통증", "체력"],
-  selfcrit: ["자책", "못나", "부족", "실패", "한심", "비교", "내 탓"],
-  money:    ["돈", "월급", "빚", "대출", "경제", "생활비", "지출"],
-  future:   ["미래", "진로", "앞으로", "불확실", "막막", "취업"],
-  parenting:["육아", "아기", "아이", "돌보", "재우"],
+  work:     ["직장", "회사", "업무", "야근", "상사", "마감", "프로젝트", "출근", "퇴근", "업무량"],
+  study:    ["시험", "공부", "학교", "성적", "과제", "발표", "논문", "수업", "학업"],
+  rel:      ["관계", "친구", "가족", "엄마", "아빠", "부모", "연인", "남편", "아내", "이별", "다툼", "사람들", "애인"],
+  sleep:    ["수면", "불면", "피곤", "졸려", "새벽", "잠"],
+  health:   ["몸살", "병원", "두통", "건강", "통증", "체력", "아픔"],
+  selfcrit: ["자책", "한심", "실패", "부족함", "열등감"],
+  money:    ["월급", "대출", "경제", "생활비", "지출", "빚"],
+  future:   ["미래", "진로", "불확실", "막막", "취업"],
+  parenting:["육아", "아기", "아이", "아이들", "돌봄", "재우"],
 };
 const KW_RX = { work: "boundary", study: "plan", rel: "connect", sleep: "sleep", health: "help", selfcrit: "selfcomp", money: "plan", future: "plan", parenting: "rest" };
 const KW_LABEL = { work: "요즘 ‘일·직장’ 부담이 자주 보여요", study: "‘학업·시험’ 압박이 비쳐요", rel: "‘관계’가 마음에 자주 올라와요", sleep: "‘수면·피로’ 언급이 잦아요", health: "‘몸·건강’ 이야기가 보여요", selfcrit: "스스로를 탓하는 표현이 보여요", money: "‘경제적 부담’이 비쳐요", future: "‘미래·진로’ 고민이 보여요", parenting: "‘육아·돌봄’의 무게가 느껴져요" };
@@ -1361,9 +1363,19 @@ function dominantEmoTheme(tagCounts) {
   return bv > 0 ? best : null;
 }
 function keywordThemes(entries, keys) {
-  const text = keys.map((k) => entries[k]).filter(Boolean).map((e) => `${e.note || ""} ${e.praise || ""} ${e.reflection ? (e.reflection.good || "") + " " + (e.reflection.hard || "") : ""}`).join(" ").toLowerCase();
-  const hits = []; Object.entries(KEYWORD_THEME).forEach(([theme, words]) => { if (words.some((w) => text.includes(w))) hits.push(theme); });
-  return hits;
+  // 맥락은 사용자가 '쓴' 부담에서만 — 일기(note)와 힘들었던 순간(reflection.hard)만. 잘한 일/좋았던 순간(긍정)은 제외
+  const toks = new Set();
+  keys.map((k) => entries[k]).filter(Boolean).forEach((e) => {
+    const txt = [e.note, e.reflection && e.reflection.hard].filter(Boolean).join(" ");
+    if (txt.trim()) tokenizeKo(txt).forEach((t) => toks.add(t));
+  });
+  const cnt = {};
+  Object.entries(KEYWORD_THEME).forEach(([theme, words]) => {
+    let c = 0;
+    toks.forEach((tok) => { if (words.some((w) => tok === w || (tok.startsWith(w) && tok.length - w.length <= 1) || (w.startsWith(tok) && w.length - tok.length <= 1))) c++; });
+    if (c) cnt[theme] = c;
+  });
+  return Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
 }
 // 세분 진단 — 기분 구간(심각도) × 감정 테마 × 일기 키워드 맥락 → 진단 + 처방
 function richDiagnose(cur, entries, keys) {
@@ -1376,12 +1388,14 @@ function richDiagnose(cur, entries, keys) {
   if (band.key === "crisis") parts.push("특히 낮은 시기라 무리하지 않는 게 가장 중요해요.");
   if (cur.sd != null && cur.sd >= 22) parts.push("기복도 큰 편이에요.");
   const kws = keywordThemes(entries, keys);
-  kws.forEach((k) => { if (KW_LABEL[k]) parts.push(KW_LABEL[k] + "."); });
+  const negBand = band.key === "crisis" || band.key === "low" || band.key === "mid";
+  const topKw = negBand ? kws[0] : null;                       // 힘든 구간에서만, 가장 강한 맥락 1개만
+  if (topKw && KW_LABEL[topKw]) parts.push(KW_LABEL[topKw] + ".");
   const baseRx = base ? base.rx : band.rx;
   const rx = [];
   if (band.key === "crisis") rx.push("help");                 // 위기 최우선
   if (baseRx[0]) rx.push(baseRx[0]);                          // 감정/구간 핵심 처방 1
-  kws.forEach((k) => { if (KW_RX[k]) rx.push(KW_RX[k]); });   // 일기 맥락 처방(상위 보장)
+  if (topKw && KW_RX[topKw]) rx.push(KW_RX[topKw]);           // 일기 맥락 처방(상위 보장, 1개)
   baseRx.slice(1).forEach((k) => rx.push(k));                 // 나머지 기본 처방
   if (cur.avgEnergy != null && cur.avgEnergy < 2.6) rx.push("breath"); // 데이터 신호
   if (cur.habPct != null && cur.habPct < 50) rx.push("ii");
@@ -1722,7 +1736,7 @@ function renderCorrelation(entries) {
 }
 // 습관 실천 매트릭스 — 최근 14일 × 습관별 실천 히트맵 (옵시디언/깃 잔디 기법)
 // 생각의 지도 — 일기·회고 단어 연결망(옵시디언식). 토크나이즈 + 동시출현 + 포스 레이아웃 (실시간 AI 불필요)
-const KO_STOP = new Set(["그냥", "너무", "정말", "진짜", "오늘", "내일", "어제", "그리고", "그래서", "하지만", "근데", "그런데", "조금", "약간", "매우", "아주", "그게", "거의", "계속", "자꾸", "왠지", "뭔가", "이런", "저런", "그런", "어떤", "무슨", "많이", "조금씩", "하루", "사람", "생각", "마음", "기분", "느낌", "그래", "역시", "되게", "엄청", "진짜로", "그치만", "이제", "아직", "벌써", "다시", "내가", "나는", "나도", "너무너무", "그냥저냥"]);
+const KO_STOP = new Set(["그냥", "너무", "정말", "진짜", "오늘", "내일", "어제", "그리고", "그래서", "하지만", "근데", "그런데", "조금", "약간", "매우", "아주", "그게", "거의", "계속", "자꾸", "왠지", "뭔가", "이런", "저런", "그런", "어떤", "무슨", "많이", "조금씩", "하루", "사람", "생각", "마음", "기분", "느낌", "그래", "역시", "되게", "엄청", "진짜로", "그치만", "이제", "아직", "벌써", "다시", "내가", "나는", "나도", "너무너무", "그냥저냥", "열심히", "이번", "그때", "한번", "조금더", "정도", "여러", "이거", "저거", "그거", "우리", "너희", "약간씩", "어차피", "혹시", "아무", "위해", "통해", "대해"]);
 function stripJosa(w) {
   if (w.length <= 2) return w;
   const j = ["으로서", "으로써", "에서는", "에게서", "이라는", "에서도", "으로", "에게", "한테", "에서", "까지", "부터", "보다", "처럼", "만큼", "라고", "이라고", "은", "는", "이", "가", "을", "를", "에", "의", "도", "만", "와", "과", "로"];
@@ -1732,34 +1746,36 @@ function stripJosa(w) {
 function tokenizeKo(txt) {
   return txt.toLowerCase().replace(/[^가-힣a-z0-9\s]/g, " ").split(/\s+/)
     .map(stripJosa).map((w) => w.trim())
-    .filter((w) => w.length >= 2 && !KO_STOP.has(w) && !/^\d+$/.test(w) && !/^[a-z]$/.test(w));
+    // 동사·형용사 활용형 조각 제거(어미로 끝나는 토큰) → 명사 위주로
+    .filter((w) => w.length >= 2 && !KO_STOP.has(w) && !/^\d+$/.test(w) && !/^[a-z]$/.test(w) && !/[다요서게고죠네음임며좀]$/.test(w));
 }
 function layoutGraph(nodes, edges, W, H) {
   const n = nodes.length; if (!n) return;
-  const k = Math.sqrt((W * H) / n) * 0.62;
-  nodes.forEach((nd, i) => { const a = 2 * Math.PI * i / n; nd.x = W / 2 + Math.cos(a) * W * 0.26; nd.y = H / 2 + Math.sin(a) * H * 0.26; });
-  let temp = W * 0.09;
-  for (let it = 0; it < 220; it++) {
+  const k = Math.sqrt((W * H) / n);                 // 이상 거리(노드 간 간격)
+  nodes.forEach((nd, i) => { const a = 2 * Math.PI * i / n; nd.x = W / 2 + Math.cos(a) * W * 0.34; nd.y = H / 2 + Math.sin(a) * H * 0.34; });
+  let temp = W * 0.16;
+  for (let it = 0; it < 340; it++) {
     nodes.forEach((v) => { v.dx = 0; v.dy = 0; });
-    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-      if (i === j) continue; const v = nodes[i], u = nodes[j];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {   // 반발(강하게) — 뭉침 방지
+      const v = nodes[i], u = nodes[j];
       let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
-      const f = k * k / dist; v.dx += dx / dist * f; v.dy += dy / dist * f;
+      const f = k * k / dist * 2.0, fx = dx / dist * f, fy = dy / dist * f;
+      v.dx += fx; v.dy += fy; u.dx -= fx; u.dy -= fy;
     }
-    edges.forEach((e) => {
+    edges.forEach((e) => {                                          // 인력(약하게) — 가깝지만 겹치지 않게
       const v = nodes[e.a], u = nodes[e.b];
       let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
-      const f = dist * dist / k * (0.5 + Math.min(3, e.w) * 0.25);
+      const f = dist * dist / k * (0.14 + Math.min(2, e.w) * 0.05);
       const fx = dx / dist * f, fy = dy / dist * f;
       v.dx -= fx; v.dy -= fy; u.dx += fx; u.dy += fy;
     });
     nodes.forEach((v) => {
       let d = Math.hypot(v.dx, v.dy) || 0.01;
       v.x += v.dx / d * Math.min(d, temp); v.y += v.dy / d * Math.min(d, temp);
-      v.x += (W / 2 - v.x) * 0.012; v.y += (H / 2 - v.y) * 0.012;
-      v.x = Math.max(18, Math.min(W - 18, v.x)); v.y = Math.max(16, Math.min(H - 22, v.y));
+      v.x += (W / 2 - v.x) * 0.005; v.y += (H / 2 - v.y) * 0.005;   // 약한 중심 중력
+      v.x = Math.max(22, Math.min(W - 22, v.x)); v.y = Math.max(20, Math.min(H - 26, v.y));
     });
-    temp *= 0.975;
+    temp *= 0.985;
   }
 }
 function renderWordWeb(entries) {
@@ -1774,16 +1790,17 @@ function renderWordWeb(entries) {
   if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; return; }
   const freq = {}, mSum = {}, mN = {};
   docs.forEach((d) => d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } }));
-  const top = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 22);
+  const top = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 16);
   if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; return; }
   const idx = {}; top.forEach((w, i) => idx[w] = i);
   const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
   const ew = {};
   docs.forEach((d) => { const us = d.words.filter((w) => idx[w] != null); for (let i = 0; i < us.length; i++) for (let j = i + 1; j < us.length; j++) { const a = idx[us[i]], b = idx[us[j]], key = a < b ? a + "-" + b : b + "-" + a; ew[key] = (ew[key] || 0) + 1; } });
-  const edges = Object.entries(ew).map(([key, w]) => { const [a, b] = key.split("-").map(Number); return { a, b, w }; });
-  const W = 320, H = 264; layoutGraph(nodes, edges, W, H);
-  const maxF = Math.max(...nodes.map((nd) => nd.f)), maxW = Math.max(1, ...edges.map((e) => e.w));
-  const edgeSvg = edges.map((e) => `<line class="ww-edge" data-a="${e.a}" data-b="${e.b}" x1="${nodes[e.a].x.toFixed(1)}" y1="${nodes[e.a].y.toFixed(1)}" x2="${nodes[e.b].x.toFixed(1)}" y2="${nodes[e.b].y.toFixed(1)}" stroke-width="${(0.6 + e.w / maxW * 2.2).toFixed(1)}"/>`).join("");
+  let edges = Object.entries(ew).map(([key, w]) => { const [a, b] = key.split("-").map(Number); return { a, b, w }; });
+  edges.sort((a, b) => b.w - a.w); const drawEdges = edges.slice(0, 26); // 레이아웃은 전체, 표시는 강한 연결 위주로 정리
+  const W = 320, H = 300; layoutGraph(nodes, edges, W, H);
+  const maxF = Math.max(...nodes.map((nd) => nd.f)), maxW = Math.max(1, ...drawEdges.map((e) => e.w));
+  const edgeSvg = drawEdges.map((e) => `<line class="ww-edge" data-a="${e.a}" data-b="${e.b}" x1="${nodes[e.a].x.toFixed(1)}" y1="${nodes[e.a].y.toFixed(1)}" x2="${nodes[e.b].x.toFixed(1)}" y2="${nodes[e.b].y.toFixed(1)}" stroke-width="${(0.6 + e.w / maxW * 2.2).toFixed(1)}"/>`).join("");
   const nodeSvg = nodes.map((nd, i) => { const r = (6 + nd.f / maxF * 12).toFixed(1), fs = (8.5 + nd.f / maxF * 4.5).toFixed(1); return `<g class="ww-node" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r}" fill="${scoreColor(nd.score)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + (+r) + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`; }).join("");
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg><p class="hint" style="margin-top:8px">원=자주 쓴 단어(클수록 자주)·색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 단어를 누르면 연결이 강조돼요.</p>`;
   const svg = el.querySelector(".ww-svg");

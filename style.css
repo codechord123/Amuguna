@@ -812,7 +812,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 [data-theme="dark"] .rh-cell { color: rgba(18, 16, 22, 0.82); }
 
 /* 생각의 지도 — 단어 연결망 */
-.ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 264; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; }
+.ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 300; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; }
 .ww-edge { stroke: var(--line-strong); opacity: 0.5; transition: opacity 0.2s, stroke 0.2s; }
 .ww-node circle { stroke: var(--card); stroke-width: 1.5; box-shadow: inset 0 1px 0 var(--card-hi); cursor: pointer; transition: opacity 0.2s; }
 .ww-label { fill: var(--ink-2); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; }
