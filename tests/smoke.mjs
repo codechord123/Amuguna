@@ -144,6 +144,9 @@ try {
   check("배지 다음 목표 표시", q("#badgeNext").textContent.trim().length > 0);
   q("[data-tab=today]").click();
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
+  q('#todayStats [data-jump="calendar"]').click();
+  check("홈 연속→달력 탭 점프", !q("#tab-calendar").hasAttribute("hidden"));
+  q("[data-tab=today]").click();
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
   // 6) 달력 탭 (통합 마음 달력)

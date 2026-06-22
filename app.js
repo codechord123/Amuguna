@@ -240,6 +240,8 @@ function updateTodayStats() {
   const entries = loadEntries(), tk = todayKey();
   const list = sortedEntries(entries);
   const streak = calcStreak(entries);
+  const prevBest = syncBestStreak(streak);   // 신기록이면 직전 최고값(>=0) 반환
+  const best = settings.bestStreak || 0;
   const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   const week = keys.filter((k) => entries[k] && entries[k].mood).length;
   const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
@@ -249,10 +251,11 @@ function updateTodayStats() {
   const doneToday = !!(entries[tk] && entries[tk].mood);
   let cheer;
   if (list.length === 0) cheer = "환영해요! 오늘 첫 마음을 남겨볼까요? 🌱";
-  else if (!doneToday) cheer = streak >= 1 ? `${streak}일 연속 기록 중! 오늘도 이어가 봐요 🔥` : "오늘 마음을 남기고 다시 시작해 봐요 💛";
+  else if (doneToday && prevBest >= 0 && streak >= 3) { cheer = `🏆 신기록! ${streak}일 연속 — 지금까지 중 가장 길어요!`; if (typeof confetti === "function") setTimeout(confetti, 200); }
+  else if (!doneToday) cheer = streak >= 1 ? `🔥 ${streak}일 연속 중! 오늘 기록하면 ${streak + 1}일로 이어져요` : (best >= 3 ? `최고 ${best}일까지 해냈던 당신! 오늘 다시 시작해 신기록에 도전해요 💪` : "오늘 마음을 남기고 다시 시작해 봐요 💛");
   else if (streak >= 7) cheer = `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요 👑`;
   else if (week >= 5) cheer = "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
-  else cheer = "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛";
+  else cheer = best >= 3 ? `오늘도 해냈어요 💛 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛";
   set("tsCheer", cheer);
 }
 
@@ -871,12 +874,19 @@ function calcStreak(entries) {
   return streak;
 }
 function dayOfWeekKo(key) { return ["일", "월", "화", "수", "목", "금", "토"][new Date(key + "T00:00:00").getDay()]; }
+// 최고 연속 기록 — 연속이 끊겨도 '최고 기록'은 남아 성취가 사라지지 않음(손실회피). 신기록이면 직전값 반환
+function syncBestStreak(streak) {
+  const prev = settings.bestStreak || 0;
+  if (streak > prev) { settings.bestStreak = streak; saveSettingsObj(settings); return prev; }
+  return -1;
+}
 
 // 기분 점수(0-100) — 여정 다이얼 값 우선, 없으면 분류에서 환산
 function entryScore(e) { return e && e.score != null ? e.score : (e && e.mood ? moodToScore(e.mood) : null); }
 function renderStats() {
   const entries = loadEntries(), list = sortedEntries(entries);
-  document.getElementById("streakNum").textContent = calcStreak(entries);
+  const _st = calcStreak(entries); syncBestStreak(_st);
+  document.getElementById("streakNum").textContent = _st;
   document.getElementById("totalNum").textContent = list.length;
   const sb = document.getElementById("statBadge");
   if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
@@ -972,10 +982,11 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 // 첫 화면 통계 숫자 → 기록 탭 해당 뷰로 점프 (편의 연결)
 document.getElementById("todayStats").addEventListener("click", (e) => {
   const it = e.target.closest("[data-jump]"); if (!it) return;
-  Sound.tap(); activateTab("stats");
+  Sound.tap();
   const j = it.dataset.jump;
-  if (j === "weekreport") { showStatsSeg("summary"); openReport("week"); }
-  else showStatsSeg(j);
+  if (j === "weekreport") { activateTab("stats"); showStatsSeg("summary"); openReport("week"); }
+  else if (j === "calendar" || j === "log") { activateTab("calendar"); }   // 달력은 별도 탭으로
+  else { activateTab("stats"); showStatsSeg(j); }
 });
 // 인사이트 → 바로 행동(호흡·미션·위로)으로 이동 (연결성)
 const _insightActions = document.getElementById("insightActions");
@@ -2665,7 +2676,7 @@ function renderDist(list) {
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0 },
+  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0 },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
@@ -2721,8 +2732,9 @@ function fireReminder() {
   const done = !!loadEntries()[tk];
   // 오늘 아직 안 한 습관을 함께 안내 (맥락 알림)
   const undone = loadChs().filter((h) => tk >= h.startDate && !h.done[tk]);
+  const streak = calcStreak(loadEntries());
   let body;
-  if (!done) body = "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요 💛";
+  if (!done) body = streak >= 2 ? `🔥 ${streak}일 연속 중이에요! 오늘 한 줄이면 ${streak + 1}일로 이어져요 💛` : "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요 💛";
   else if (undone.length) {
     const h = undone[0];
     body = `오늘 기록 고마워요 🌿 ${h.emoji} ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
