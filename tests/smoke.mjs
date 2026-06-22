@@ -64,6 +64,12 @@ try {
   q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 초조해요(v:30)
   check("부정 감정 라벨 정확(초조해요)", q("#jBody #jDialLabel").textContent === "초조해요" && q("#jBody #jDialNum").textContent === "30");
   q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 해제
+  // 양방향 일치: 감정 고른 뒤 다이얼을 멀리 끌면 모순 감정 자동 해제 ('슬퍼요인데 100점' 차단)
+  q('#jBody .emo-tag[data-tag="슬퍼요"]').click(); // 슬퍼요(v:15) → 점수 15로 하향 동기화
+  check("감정→점수 하향 동기화", q("#jBody #jDialNum").textContent === "15");
+  { const s = q("#jBody #jScore"); s.value = "100"; s.dispatchEvent(new window.Event("input")); }
+  check("다이얼 상향 시 모순 감정 자동 해제", q('#jBody .emo-tag[data-tag="슬퍼요"]').getAttribute("aria-pressed") === "false");
+  check("모순 라벨 차단(슬퍼요≠100)", q("#jBody #jDialLabel").textContent !== "슬퍼요" && q("#jBody #jDialNum").textContent === "100");
   q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 원래 시나리오 복구(평온해요)
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 10) {

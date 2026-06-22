@@ -3129,6 +3129,16 @@ function renderStep() {
       jBody.querySelector("#jDialLabel").textContent = dialLabel(v, jData.tags);
       updateEnergyOut();
     }
+    // 다이얼을 직접 옮겨 점수가 고른 감정과 크게 어긋나면(>25점) 그 감정을 자동 해제 —
+    // '슬퍼요인데 100점' 같은 모순/잘못된 라벨을 원천 차단(양방향 일치).
+    function reconcileTagsToScore(v) {
+      if (!jData.tags || !jData.tags.length) return;
+      const keep = [], removed = [];
+      jData.tags.forEach((t) => { const em = emoByKey(t); if (em && em.v != null && Math.abs(em.v - v) > 25) removed.push(t); else keep.push(t); });
+      if (!removed.length) return;
+      jData.tags = keep;
+      removed.forEach((t) => { const btn = jBody.querySelector(`.emo-tag[data-tag="${t}"]`); if (btn) { btn.classList.remove("selected"); btn.setAttribute("aria-pressed", "false"); } });
+    }
     function fromPointer(ev) {
       const r = dial.getBoundingClientRect();
       const cx = ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] && ev.touches[0].clientX);
@@ -3138,14 +3148,14 @@ function renderStep() {
       let a = (Math.atan2(y, x) * 180 / Math.PI - 135 + 360) % 360; // 0 = 시작점
       if (a > 270) a = (a - 270 < 360 - a) ? 270 : 0; // 하단 빈 구간은 가까운 끝으로
       let sc = a / 2.7; if (sc < 3) sc = 0; else if (sc > 97) sc = 100; // 양 끝(0·100)에 손가락으로 닿기 쉽게 스냅
-      setScore(sc); saveJDraft();
+      reconcileTagsToScore(Math.round(sc)); setScore(sc); saveJDraft();
     }
     let dragging = false;
     dial.addEventListener("pointerdown", (e) => { dragging = true; try { dial.setPointerCapture(e.pointerId); } catch (x) {} fromPointer(e); });
     dial.addEventListener("pointermove", (e) => { if (dragging) fromPointer(e); });
     dial.addEventListener("pointerup", () => { dragging = false; Sound.tap(); });
     dial.addEventListener("pointercancel", () => { dragging = false; });
-    range.addEventListener("input", () => { setScore(Number(range.value)); saveJDraft(); });
+    range.addEventListener("input", () => { const v = Number(range.value); reconcileTagsToScore(v); setScore(v); saveJDraft(); });
     jBody.querySelector("#jEmoTags").addEventListener("click", (e) => {
       const b = e.target.closest(".emo-tag"); if (!b) return; Sound.tap();
       jData.tags = jData.tags || [];
