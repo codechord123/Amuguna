@@ -793,6 +793,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ----- confetti ----- */
 .confetti { position: fixed; top: -40px; z-index: 60; pointer-events: none; animation: fall 2.3s linear forwards; }
 @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
+/* 반짝임 버스트 (anim.js) — 한 점에서 사방으로 퍼지며 사라짐 */
+.spk { position: fixed; z-index: 120; pointer-events: none; transform: translate(-50%, -50%); will-change: transform, opacity; animation: spkBurst 1s var(--ease-soft) forwards; }
+@keyframes spkBurst { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(35deg); opacity: 0; } }
 
 /* ============================================================
    통계

@@ -24,4 +24,12 @@ window.ONEUL_CONFIG = {
   // 비워두면 완전히 비활성 — 외부로 아무것도 전송하지 않아요.
   // ⚠️ 개인정보 보호: 일기·기록·로컬 데이터는 절대 전송하지 않고, 오류 메시지/스택만 보냅니다.
   SENTRY_DSN: "",  // 예: "https://abc123@o456.ingest.sentry.io/789"
+
+  // (선택) Lottie 벡터 애니메이션. lottiefiles.com 등에서 받은 .json을 ./vendor/anim/ 에 넣고
+  // 아래에 경로를 적으면, 해당 연출이 합성 반짝임 대신 그 애니메이션으로 재생돼요.
+  // 비워두면 가벼운 내장 '반짝임'이 쓰입니다. 플레이어는 필요할 때만 자동 로드돼요.
+  LOTTIE: {
+    // celebrate: "./vendor/anim/celebrate.json",  // 기록 완료 축하
+    // breathe:   "./vendor/anim/breathe.json",    // 호흡 가이드
+  },
 };

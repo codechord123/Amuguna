@@ -38,7 +38,7 @@ window.HTMLCanvasElement.prototype.toDataURL = () => "data:image/png;base64,iVBO
 window.onerror = (m) => errors.push("onerror: " + m);
 
 // --- 앱 로드 (config → sound → app → cloud, index.html과 동일 순서) ---
-try { window.eval(read("config.js") + "\n" + read("sound.js") + "\n" + read("app.js") + "\n" + read("cloud.js")); }
+try { window.eval(read("config.js") + "\n" + read("sound.js") + "\n" + read("anim.js") + "\n" + read("app.js") + "\n" + read("cloud.js")); }
 catch (e) { console.error("FATAL: 앱 로드 실패\n", e); process.exit(1); }
 try { window.document.dispatchEvent(new window.Event("DOMContentLoaded")); } catch (e) {}
 
@@ -332,6 +332,12 @@ try {
   window.Monitor.capture(new Error("테스트오류"));
   check("모니터: 오류를 envelope로 전송", _fetchCalls.some((c) => /ingest\.sentry\.io\/api\/2\/envelope/.test(c.url) && /테스트오류/.test(String(c.opts && c.opts.body))));
   check("모니터: 개인정보(일기·기록) 미전송", !_fetchCalls.some((c) => /entries_v2|journey_draft|"note"|"praise"/.test(String(c.opts && c.opts.body))));
+
+  // 14) 아기자기 연출 — 반짝임 버스트(라이브러리 없이) + Lottie 폴백
+  check("Anim 사용 가능", window.Anim && typeof window.Anim.sparkle === "function" && typeof window.Anim.celebrate === "function");
+  window.Anim.sparkle(null, { x: 20, y: 20, count: 6 });
+  check("반짝임 파티클 생성", d.querySelectorAll(".spk").length >= 6);
+  check("Lottie 에셋 없으면 sparkle 폴백(반짝임 추가 생성)", (window.Anim.celebrate(null), d.querySelectorAll(".spk").length >= 12));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

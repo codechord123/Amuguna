@@ -3275,6 +3275,9 @@ function renderStep() {
       btn.classList.toggle("done", h.done[k]); btn.setAttribute("aria-pressed", !!h.done[k]); btn.querySelector("b").textContent = h.done[k] ? "✓" : "○";
       h.done[k] ? Sound.success() : Sound.tap();
     }));
+  } else if (curId === "finish") {
+    const em = jBody.querySelector(".js-emoji"); // 마무리 화면에 잔잔한 반짝임(아기자기)
+    if (em && window.Anim) setTimeout(() => Anim.sparkle(em, { count: 12, spread: 78 }), 240);
   }
   jBody.scrollTop = 0;
   saveJDraft(); // 단계마다 진행상황 임시저장
