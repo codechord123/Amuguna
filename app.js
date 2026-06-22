@@ -2554,7 +2554,7 @@ function renderWordWebCy(el) {
   const dt = el._wwData; if (!dt || !window.cytoscape) { renderWordWebSvg(el); return; }
   const { nodes, drawEdges, deg, maxF, maxDeg } = dt;
   if (el._cy) { try { el._cy.destroy(); } catch (e) {} el._cy = null; }
-  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · 색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 드래그·확대해서 살펴보고, 단어를 누르면 연결이 또렷해져요.</p>`;
+  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · 색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 드래그·확대하고, 단어를 누르면 <b>관련된 단어만</b> 선으로 이어 보여줘요. 빈 곳을 누르면 전체로 돌아가요.</p>`;
   const host = el.querySelector("#wwCy");
   const cs = getComputedStyle(document.documentElement);
   const ink = (cs.getPropertyValue("--ink") || "#4a4a42").trim();
@@ -2568,9 +2568,10 @@ function renderWordWebCy(el) {
     container: host, elements: els,
     style: [
       { selector: "node", style: { "background-color": "data(col)", "width": "data(size)", "height": "data(size)", "label": "data(label)", "font-size": 11, "font-family": "inherit", "color": ink, "text-valign": "bottom", "text-margin-y": 3, "text-outline-width": 2, "text-outline-color": bg, "min-zoomed-font-size": 6, "transition-property": "opacity, background-color", "transition-duration": "0.2s" } },
-      { selector: "edge", style: { "width": "data(w)", "line-color": edgeCol, "curve-style": "bezier", "opacity": 0.5 } },
-      { selector: ".ww-faded", style: { "opacity": 0.12, "text-opacity": 0.12 } },
-      { selector: ".ww-hl", style: { "line-color": accent, "opacity": 0.95 } },
+      { selector: "edge", style: { "width": "data(w)", "line-color": edgeCol, "curve-style": "bezier", "opacity": 0.5, "transition-property": "opacity, line-color, width", "transition-duration": "0.25s" } },
+      { selector: "node.ww-faded", style: { "opacity": 0.1, "text-opacity": 0.1 } },
+      { selector: "edge.ww-hide", style: { "opacity": 0, "events": "no" } },     // 그룹핑 아닌 선은 완전히 숨김
+      { selector: "edge.ww-hl", style: { "line-color": accent, "opacity": 0.95, "width": 3 } }, // 그룹핑 선만 강조
       { selector: "node.ww-pick", style: { "border-width": 3, "border-color": accent } },
     ],
     layout: { name: "cose", animate: false, padding: 16, nodeRepulsion: 9000, idealEdgeLength: 70, gravity: 0.35, numIter: 700 },
@@ -2578,12 +2579,25 @@ function renderWordWebCy(el) {
   });
   el._cy = cy;
   cy.on("tap", "node", (ev) => {
-    const n = ev.target, nb = n.closedNeighborhood();
-    cy.elements().addClass("ww-faded"); nb.removeClass("ww-faded");
-    nb.connectedEdges().addClass("ww-hl"); cy.nodes().removeClass("ww-pick"); n.addClass("ww-pick");
+    const n = ev.target;
+    const incident = n.connectedEdges();          // 누른 단어에 직접 이어진 선 = '그룹핑'
+    const group = n.closedNeighborhood().nodes();  // 누른 단어 + 직접 연결된 단어들
+    cy.batch(() => {
+      cy.nodes().addClass("ww-faded"); group.removeClass("ww-faded");
+      cy.edges().addClass("ww-hide").removeClass("ww-hl"); // 일단 모든 선 숨김
+      incident.removeClass("ww-hide").addClass("ww-hl");   // 그룹핑 선만 다시 표시·강조
+      cy.nodes().removeClass("ww-pick"); n.addClass("ww-pick");
+    });
+    // 인터랙티브 감성: 선택한 그룹으로 부드럽게 포커스 + 노드 펄스
+    try { cy.animate({ fit: { eles: n.closedNeighborhood(), padding: 48 } }, { duration: 420, easing: "ease-in-out-cubic" }); } catch (e) {}
+    try { n.animate({ style: { "border-width": 9 } }, { duration: 170 }).animate({ style: { "border-width": 3 } }, { duration: 320 }); } catch (e) {}
     if (window.Sound) Sound.tap();
   });
-  cy.on("tap", (ev) => { if (ev.target === cy) { cy.elements().removeClass("ww-faded ww-hl ww-pick"); } });
+  cy.on("tap", (ev) => {
+    if (ev.target !== cy) return;
+    cy.batch(() => { cy.nodes().removeClass("ww-faded ww-pick"); cy.edges().removeClass("ww-hide ww-hl"); });
+    try { cy.animate({ fit: { eles: cy.elements(), padding: 18 } }, { duration: 380, easing: "ease-in-out-cubic" }); } catch (e) {}
+  });
   // 접힌 카드/숨은 패널에서 0크기로 초기화될 수 있어, 보일 때 크기를 다시 잡는다
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(() => { if (host.offsetWidth > 4 && host.offsetHeight > 4) { try { cy.resize(); cy.fit(undefined, 18); } catch (e) {} } });
