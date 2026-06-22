@@ -889,6 +889,7 @@ function renderStats() {
   renderMoodMatrix(entries);
   renderCorrelation(entries);
   renderHabitHeatmap();
+  renderWordWeb(entries);
   renderTagInsight(entries);
   renderRhythm(entries);
   renderGratitude(list);
@@ -1720,6 +1721,83 @@ function renderCorrelation(entries) {
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
 }
 // 습관 실천 매트릭스 — 최근 14일 × 습관별 실천 히트맵 (옵시디언/깃 잔디 기법)
+// 생각의 지도 — 일기·회고 단어 연결망(옵시디언식). 토크나이즈 + 동시출현 + 포스 레이아웃 (실시간 AI 불필요)
+const KO_STOP = new Set(["그냥", "너무", "정말", "진짜", "오늘", "내일", "어제", "그리고", "그래서", "하지만", "근데", "그런데", "조금", "약간", "매우", "아주", "그게", "거의", "계속", "자꾸", "왠지", "뭔가", "이런", "저런", "그런", "어떤", "무슨", "많이", "조금씩", "하루", "사람", "생각", "마음", "기분", "느낌", "그래", "역시", "되게", "엄청", "진짜로", "그치만", "이제", "아직", "벌써", "다시", "내가", "나는", "나도", "너무너무", "그냥저냥"]);
+function stripJosa(w) {
+  if (w.length <= 2) return w;
+  const j = ["으로서", "으로써", "에서는", "에게서", "이라는", "에서도", "으로", "에게", "한테", "에서", "까지", "부터", "보다", "처럼", "만큼", "라고", "이라고", "은", "는", "이", "가", "을", "를", "에", "의", "도", "만", "와", "과", "로"];
+  for (const s of j) { if (w.length - s.length >= 2 && w.endsWith(s)) return w.slice(0, -s.length); }
+  return w;
+}
+function tokenizeKo(txt) {
+  return txt.toLowerCase().replace(/[^가-힣a-z0-9\s]/g, " ").split(/\s+/)
+    .map(stripJosa).map((w) => w.trim())
+    .filter((w) => w.length >= 2 && !KO_STOP.has(w) && !/^\d+$/.test(w) && !/^[a-z]$/.test(w));
+}
+function layoutGraph(nodes, edges, W, H) {
+  const n = nodes.length; if (!n) return;
+  const k = Math.sqrt((W * H) / n) * 0.62;
+  nodes.forEach((nd, i) => { const a = 2 * Math.PI * i / n; nd.x = W / 2 + Math.cos(a) * W * 0.26; nd.y = H / 2 + Math.sin(a) * H * 0.26; });
+  let temp = W * 0.09;
+  for (let it = 0; it < 220; it++) {
+    nodes.forEach((v) => { v.dx = 0; v.dy = 0; });
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      if (i === j) continue; const v = nodes[i], u = nodes[j];
+      let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
+      const f = k * k / dist; v.dx += dx / dist * f; v.dy += dy / dist * f;
+    }
+    edges.forEach((e) => {
+      const v = nodes[e.a], u = nodes[e.b];
+      let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
+      const f = dist * dist / k * (0.5 + Math.min(3, e.w) * 0.25);
+      const fx = dx / dist * f, fy = dy / dist * f;
+      v.dx -= fx; v.dy -= fy; u.dx += fx; u.dy += fy;
+    });
+    nodes.forEach((v) => {
+      let d = Math.hypot(v.dx, v.dy) || 0.01;
+      v.x += v.dx / d * Math.min(d, temp); v.y += v.dy / d * Math.min(d, temp);
+      v.x += (W / 2 - v.x) * 0.012; v.y += (H / 2 - v.y) * 0.012;
+      v.x = Math.max(18, Math.min(W - 18, v.x)); v.y = Math.max(16, Math.min(H - 22, v.y));
+    });
+    temp *= 0.975;
+  }
+}
+function renderWordWeb(entries) {
+  const el = document.getElementById("wordWeb"); if (!el) return;
+  const docs = [];
+  Object.values(entries).forEach((e) => {
+    const txt = [e.note, e.praise, e.reflection && e.reflection.good, e.reflection && e.reflection.hard].filter(Boolean).join(" ");
+    if (!txt.trim()) return;
+    const ws = [...new Set(tokenizeKo(txt))];
+    if (ws.length) docs.push({ words: ws, score: entryScore(e) });
+  });
+  if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; return; }
+  const freq = {}, mSum = {}, mN = {};
+  docs.forEach((d) => d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } }));
+  const top = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 22);
+  if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; return; }
+  const idx = {}; top.forEach((w, i) => idx[w] = i);
+  const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
+  const ew = {};
+  docs.forEach((d) => { const us = d.words.filter((w) => idx[w] != null); for (let i = 0; i < us.length; i++) for (let j = i + 1; j < us.length; j++) { const a = idx[us[i]], b = idx[us[j]], key = a < b ? a + "-" + b : b + "-" + a; ew[key] = (ew[key] || 0) + 1; } });
+  const edges = Object.entries(ew).map(([key, w]) => { const [a, b] = key.split("-").map(Number); return { a, b, w }; });
+  const W = 320, H = 264; layoutGraph(nodes, edges, W, H);
+  const maxF = Math.max(...nodes.map((nd) => nd.f)), maxW = Math.max(1, ...edges.map((e) => e.w));
+  const edgeSvg = edges.map((e) => `<line class="ww-edge" data-a="${e.a}" data-b="${e.b}" x1="${nodes[e.a].x.toFixed(1)}" y1="${nodes[e.a].y.toFixed(1)}" x2="${nodes[e.b].x.toFixed(1)}" y2="${nodes[e.b].y.toFixed(1)}" stroke-width="${(0.6 + e.w / maxW * 2.2).toFixed(1)}"/>`).join("");
+  const nodeSvg = nodes.map((nd, i) => { const r = (6 + nd.f / maxF * 12).toFixed(1), fs = (8.5 + nd.f / maxF * 4.5).toFixed(1); return `<g class="ww-node" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r}" fill="${scoreColor(nd.score)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + (+r) + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`; }).join("");
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg><p class="hint" style="margin-top:8px">원=자주 쓴 단어(클수록 자주)·색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 단어를 누르면 연결이 강조돼요.</p>`;
+  const svg = el.querySelector(".ww-svg");
+  svg.addEventListener("click", (ev) => {
+    const g = ev.target.closest(".ww-node");
+    if (!g) { svg.classList.remove("focused"); svg.querySelectorAll(".on").forEach((x) => x.classList.remove("on")); return; }
+    const wi = +g.dataset.wi, nb = new Set([wi]);
+    edges.forEach((e) => { if (e.a === wi) nb.add(e.b); if (e.b === wi) nb.add(e.a); });
+    svg.classList.add("focused");
+    svg.querySelectorAll(".ww-node").forEach((nn) => nn.classList.toggle("on", nb.has(+nn.dataset.wi)));
+    svg.querySelectorAll(".ww-edge").forEach((ee) => ee.classList.toggle("on", +ee.dataset.a === wi || +ee.dataset.b === wi));
+    Sound.tap();
+  });
+}
 function renderHabitHeatmap() {
   const el = document.getElementById("habitHeatmap"); if (!el) return;
   const chs = loadChs();

@@ -811,6 +811,16 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rh-marg { border-radius: 7px; opacity: 0.55; }
 [data-theme="dark"] .rh-cell { color: rgba(18, 16, 22, 0.82); }
 
+/* 생각의 지도 — 단어 연결망 */
+.ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 264; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; }
+.ww-edge { stroke: var(--line-strong); opacity: 0.5; transition: opacity 0.2s, stroke 0.2s; }
+.ww-node circle { stroke: var(--card); stroke-width: 1.5; box-shadow: inset 0 1px 0 var(--card-hi); cursor: pointer; transition: opacity 0.2s; }
+.ww-label { fill: var(--ink-2); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; }
+.ww-svg.focused .ww-node { opacity: 0.2; }
+.ww-svg.focused .ww-node.on { opacity: 1; }
+.ww-svg.focused .ww-edge { opacity: 0.06; }
+.ww-svg.focused .ww-edge.on { opacity: 0.9; stroke: var(--accent-deep); }
+
 /* 습관 실천 매트릭스 (히트맵) */
 .hm { display: flex; flex-direction: column; gap: var(--s2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .hm-row { display: flex; align-items: center; gap: var(--s2); }

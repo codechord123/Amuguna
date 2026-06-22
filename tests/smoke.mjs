@@ -266,6 +266,7 @@ try {
   check("진단: 슬픔 테마 반영", /가라앉/.test(q("#subBody .diag-label").textContent));
   check("진단: 일기 키워드 맥락 반영", /관계/.test(q("#subBody .diag-dx").textContent));
   check("처방: 문장형 생성", [...d.querySelectorAll("#subBody .sol .sol-b")].every((nn) => nn.textContent.trim().length > 12) && d.querySelectorAll("#subBody .sol .sol-b").length >= 2);
+  check("생각의 지도 단어 연결망", d.querySelectorAll("#wordWeb .ww-node").length >= 3 && d.querySelectorAll("#wordWeb .ww-edge").length >= 1);
   q("#subBack").click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
