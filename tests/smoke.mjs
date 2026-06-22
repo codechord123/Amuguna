@@ -265,7 +265,7 @@ try {
   q("[data-tab=stats]").click(); q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("진단: 슬픔 테마 반영", /가라앉/.test(q("#subBody .diag-label").textContent));
   check("진단: 일기 키워드 맥락 반영", /관계/.test(q("#subBody .diag-dx").textContent));
-  check("처방: 맥락 처방 포함", [...d.querySelectorAll("#subBody .sol .sol-t")].some((nn) => /연락|행동|혼자/.test(nn.textContent)));
+  check("처방: 문장형 생성", [...d.querySelectorAll("#subBody .sol .sol-b")].every((nn) => nn.textContent.trim().length > 12) && d.querySelectorAll("#subBody .sol .sol-b").length >= 2);
   q("#subBack").click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));

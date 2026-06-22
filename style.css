@@ -440,8 +440,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .sol-card .sol { padding: var(--s3) 0; border-bottom: 1px solid var(--line); }
 .sol-card .sol:last-child { border-bottom: none; padding-bottom: 0; }
 .sol-t { margin: 0 0 var(--s1); font-weight: var(--w-bold); font-size: var(--t-base); color: var(--ink); }
-.sol-b { margin: 0 0 var(--s2); font-size: var(--t-sm); line-height: 1.7; color: var(--ink-2); word-break: keep-all; }
-.sol-c { margin: 0; font-size: var(--t-xs); color: var(--soft); line-height: 1.5; }
+.sol-b { margin: 0 0 var(--s2); padding-left: var(--s4); position: relative; font-size: var(--t-base); line-height: 1.65; color: var(--ink); word-break: keep-all; }
+.sol-b::before { content: "💊"; position: absolute; left: 0; top: 0; font-size: 0.95rem; }
+.sol-c { margin: 0 0 0 var(--s4); font-size: var(--t-xs); color: var(--soft); line-height: 1.5; }
 
 /* ----- 리포트 상세 날짜별 ----- */
 .rpt-days summary { list-style: none; cursor: pointer; font-weight: var(--w-bold); font-size: var(--t-md); }

@@ -1193,21 +1193,83 @@ const DIAG_BANDS = [
   { max: 101, key: "great",  label: "활기찬 시기",    tone: "good", dx: "활력이 도는 좋은 시기예요. 이 기운을 나누고 음미해봐요.",         rx: ["savoring", "strength"] },
 ];
 // 처방 카탈로그 — 근거기반 추천(진단 구간/데이터 신호로 선택)
+// 처방 카탈로그 — 각 처방을 '문장형'으로, 여러 변형을 두어 매번 다르게 출력(반복 방지)
 const RX = {
-  help:     { t: "혼자 두지 말아요", b: "깊은 무기력·우울이 2주 이상 이어지면 가까운 사람이나 전문가(정신건강의학과·상담센터)와 이야기해보세요. 도움을 청하는 건 약함이 아니라 용기예요.", c: REPORT_PAPERS.help },
-  ba:       { t: "작은 행동부터 시작해요", b: "기분이 나아지길 기다리기보다 5분짜리 활동(산책·설거지·샤워)을 먼저 해보세요. ‘행동 → 기분’ 순서가 우울감을 줄여줘요.", c: REPORT_PAPERS.ba },
-  breath:   { t: "느린 호흡으로 회복", b: "날숨을 들숨보다 길게(4-7-8) 하루 5분. 부교감신경이 활성화돼 피로와 긴장이 풀려요. 쉼 탭의 호흡 명상을 써보세요.", c: REPORT_PAPERS.breath },
-  sleep:    { t: "잠부터 지켜요", b: "취침·기상 시각을 일정하게 맞추고 자기 전 화면을 줄여보세요. 수면이 회복되면 다음 날 기분의 바닥이 올라가요.", c: REPORT_PAPERS.sleep },
-  ii:       { t: "습관에 ‘신호’를 붙여요", b: "‘[기존 행동] 후에 [새 습관]’ 형식으로 시점을 정하면 실천율이 올라가요. 예: 양치 후 스트레칭 1분.", c: REPORT_PAPERS.ii },
-  gratitude:{ t: "하루 한 줄 감사", b: "잘된 일·고마운 일을 구체적으로 한 줄 적어보세요. 2주만 이어가도 안녕감이 높아져요.", c: REPORT_PAPERS.gratitude },
-  selfcomp: { t: "나에게 친절하게", b: "힘든 시기엔 자신을 다그치기보다 친구에게 하듯 다정하게 말해주세요. 자기자비는 회복탄력성을 높여줘요.", c: REPORT_PAPERS.selfcomp },
-  savoring: { t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring },
-  strength: { t: "강점을 써먹어요", b: "내가 잘하는 것·좋아하는 것을 오늘 한 가지 활용해보세요. 강점을 쓰는 날은 활력과 몰입이 올라가요.", c: REPORT_PAPERS.strength },
-  grounding:{ t: "지금-여기로 돌아오기", b: "불안이 올라오면 5-4-3-2-1(보이는 것 5·들리는 것 4…)로 감각에 주의를 옮겨보세요. 과각성이 빠르게 가라앉아요.", c: REPORT_PAPERS.grounding },
-  connect:  { t: "한 사람에게 연락해요", b: "괜찮은 사람에게 짧게 안부를 전해보세요. 외로움·우울감엔 작은 연결 한 번이 큰 완충이 돼요.", c: REPORT_PAPERS.connect },
-  rest:     { t: "‘아무것도 안 하기’도 일이에요", b: "소진된 날은 회복이 곧 생산성이에요. 죄책감 없이 10분 의도적으로 쉬어보세요.", c: REPORT_PAPERS.sleep },
-  boundary: { t: "일과 나 사이에 선을 그어요", b: "끝나는 시각을 정하고 알림을 끄는 등 ‘경계’를 하나 만들어보세요. 요구가 자원을 넘으면 소진돼요.", c: REPORT_PAPERS.boundary },
-  plan:     { t: "걱정을 ‘할 일’로 쪼개요", b: "막연한 걱정 하나를 골라 ‘다음 한 걸음’만 적어보세요. 통제 가능한 단위로 나누면 부담이 줄어요.", c: REPORT_PAPERS.plan },
+  help: { c: REPORT_PAPERS.help, s: [
+    "혼자 견디지 않아도 돼요 — 마음이 2주 넘게 무겁다면, 가까운 사람이나 전문가에게 한 번 이야기 꺼내보는 것부터 시작해요.",
+    "지금의 힘듦을 누군가에게 말하는 건 약함이 아니라 용기예요. 신뢰하는 한 사람에게 ‘요즘 좀 힘들다’ 한마디만 건네봐요.",
+    "혼자 감당하기 버거운 날엔 정신건강의학과나 상담센터의 문을 두드려도 괜찮아요 — 도움을 받는 것도 나를 돌보는 방법이에요.",
+  ] },
+  ba: { c: REPORT_PAPERS.ba, s: [
+    "기분이 나아지길 기다리기보다 5분짜리 작은 행동(샤워·짧은 산책) 하나를 먼저 해보면, 마음이 그 뒤를 따라와요.",
+    "오늘 ‘딱 하나’만 정해 몸을 움직여 보세요 — 설거지 한 칸, 창문 열기처럼 사소해도 충분해요.",
+    "무기력할수록 생각보다 행동이 먼저예요. 가장 쉬운 일 하나를 골라 ‘시작’ 버튼만 눌러봐요.",
+  ] },
+  breath: { c: REPORT_PAPERS.breath, s: [
+    "잠들기 전 4초 들이쉬고 7초 멈췄다 8초 내쉬기를 5분만 반복하면, 곤두선 신경이 한결 풀려요.",
+    "숨이 얕아진다 싶으면 배가 부풀도록 천천히 들이쉬고 더 길게 내쉬어 보세요 — 긴장이 서서히 내려가요.",
+    "딱 1분만 ‘내쉬는 숨’에 집중해 보세요. 길게 내쉬는 것만으로도 심박과 마음이 함께 느려져요.",
+  ] },
+  sleep: { c: REPORT_PAPERS.sleep, s: [
+    "취침·기상 시각을 일정하게 맞추고 자기 전 화면을 줄이면, 다음 날 기분의 바닥이 한 칸 올라가요.",
+    "잠이 안 와도 같은 시각에 눕고 같은 시각에 일어나 보세요 — 리듬이 잡히면 회복이 따라와요.",
+    "자기 한 시간 전부터 조명을 낮추고 화면을 멀리하면, 몸이 ‘이제 쉴 시간’이라고 알아차려요.",
+  ] },
+  ii: { c: REPORT_PAPERS.ii, s: [
+    "새 습관은 ‘[이미 하는 행동] 다음에 [새 행동]’으로 시점을 못 박아두면 실천율이 크게 올라가요 — 예: 양치 후 스트레칭 1분.",
+    "할까 말까 고민이 줄도록, 습관을 기존 일과에 ‘붙여’ 보세요. 커피 내린 뒤 물 한 컵처럼요.",
+    "‘언제·어디서 할지’를 미리 정해두면 의지력에 덜 기대게 돼요. 오늘 한 습관의 신호 행동을 정해봐요.",
+  ] },
+  gratitude: { c: REPORT_PAPERS.gratitude, s: [
+    "잠들기 전 오늘 고마웠던 일을 구체적으로 한 줄만 적어보세요 — 2주만 이어가도 마음의 기본값이 달라져요.",
+    "‘무엇이’ 좋았는지보다 ‘왜’ 좋았는지까지 한 줄 적으면, 그 감정이 더 오래 남아요.",
+    "아주 사소한 것 하나(따뜻한 커피, 맑은 하늘)라도 적어두면, 뇌가 좋은 것에 더 잘 머물게 돼요.",
+  ] },
+  selfcomp: { c: REPORT_PAPERS.selfcomp, s: [
+    "힘든 자신을 다그치기보다, 같은 일을 겪는 친구에게 하듯 다정하게 말해주세요 — 자기자비는 회복탄력성을 키워요.",
+    "‘이만하면 충분해’ 한마디를 스스로에게 건네봐요. 완벽하지 않아도 오늘의 나를 인정하는 게 회복의 시작이에요.",
+    "실수한 날일수록 ‘그럴 수 있어’라고 마음에 손을 얹어주세요 — 비난보다 따뜻함이 다음을 더 잘 살게 해요.",
+  ] },
+  savoring: { c: REPORT_PAPERS.savoring, s: [
+    "좋았던 순간을 떠올려 그때의 장면·소리·감정까지 적어두면, 그 기쁨이 훨씬 더 오래 머물러요.",
+    "기분 좋은 일이 생기면 잠깐 멈춰 ‘아, 좋다’ 하고 5초만 더 음미해 보세요 — 긍정 정서가 깊어져요.",
+    "오늘의 작은 행복 하나를 사진이나 한 줄로 남겨두면, 나중에 다시 꺼내 누릴 수 있어요.",
+  ] },
+  strength: { c: REPORT_PAPERS.strength, s: [
+    "내가 잘하는 것·좋아하는 것 하나를 오늘 일부러 써먹어 보세요 — 강점을 쓰는 날은 활력과 몰입이 올라가요.",
+    "‘나다운’ 일 한 가지를 오늘 일정에 넣어보세요. 잘하는 걸 할 때 에너지가 채워져요.",
+    "최근 뿌듯했던 순간을 떠올려, 그때 발휘한 강점을 오늘 한 번 더 꺼내 써봐요.",
+  ] },
+  grounding: { c: REPORT_PAPERS.grounding, s: [
+    "긴장이 올라올 땐 눈에 보이는 것 5개, 들리는 소리 4개를 천천히 세며 지금-여기로 돌아와 보세요 — 과각성이 빠르게 가라앉아요.",
+    "불안이 커질 때 발바닥이 바닥에 닿는 감각에 가만히 주의를 두면, 생각의 소용돌이에서 한 발 빠져나올 수 있어요.",
+    "손에 잡히는 물건 하나의 촉감·온도에 30초만 집중해 보세요 — 곤두선 마음이 의외로 빨리 누그러져요.",
+  ] },
+  connect: { c: REPORT_PAPERS.connect, s: [
+    "오늘 괜찮은 한 사람에게 짧게 안부를 건네보세요 — 외로움엔 작은 연결 한 번이 큰 완충이 돼요.",
+    "‘잘 지내?’ 한 줄 메시지면 충분해요. 마음이 가라앉을수록 사람과의 가는 끈 하나가 큰 힘이 돼요.",
+    "혼자 있는 시간이 길었다면, 잠깐 누군가와 같은 공간에 있어 보는 것만으로도 마음이 데워져요.",
+  ] },
+  rest: { c: REPORT_PAPERS.sleep, s: [
+    "소진된 날엔 쉬는 게 곧 회복이에요 — 죄책감 없이 딱 10분, 의도적으로 아무것도 하지 않아 보세요.",
+    "‘더 해야 한다’는 마음이 들 때일수록 멈춤이 필요해요. 오늘 한 가지 일을 의식적으로 내일로 미뤄봐요.",
+    "몸이 무거운 날은 게으름이 아니라 신호예요. 5분 눈 감고 숨만 쉬는 시간을 스스로에게 허락해요.",
+  ] },
+  boundary: { c: REPORT_PAPERS.boundary, s: [
+    "끝나는 시각을 정하고 그 뒤엔 업무 알림을 꺼두는 작은 ‘경계’ 하나가, 소진으로 번지는 걸 막아줘요.",
+    "일과 나 사이에 선을 하나 그어보세요 — 퇴근 후 ‘딱 한 가지’는 일 얘기를 하지 않기처럼요.",
+    "모든 요청에 ‘네’ 하지 않아도 돼요. 오늘 하나는 정중히 미루거나 거절해보면 숨 쉴 틈이 생겨요.",
+  ] },
+  plan: { c: REPORT_PAPERS.plan, s: [
+    "막연한 걱정 하나를 골라 ‘내가 할 수 있는 다음 한 걸음’만 적어보면, 통제할 수 없던 불안이 다룰 수 있는 일이 돼요.",
+    "머릿속 걱정을 종이에 다 꺼내 적고 ‘지금 할 수 있는 것/없는 것’으로 나눠보세요 — 부담이 절반으로 줄어요.",
+    "큰 문제일수록 잘게 쪼개요. 오늘은 ‘첫 5분 분량’만 해보기로 정해봐요.",
+  ] },
+  labeling: { c: REPORT_PAPERS.labeling, s: [
+    "지금 느끼는 감정에 정확한 이름을 붙여보는 것만으로도, 그 감정의 강도가 누그러져요.",
+    "‘나는 지금 ___해’라고 한 문장으로 적어보세요 — 감정에 이름이 생기면 다루기가 한결 쉬워져요.",
+    "기록하는 것 자체가 힘이에요. 오늘의 마음을 한 줄 남긴 당신은 이미 잘 돌보고 있어요.",
+  ] },
 };
 // 감정 태그 → 임상 테마 (정서가·각성 묶음)
 const EMO_TO_THEME = {
@@ -1259,10 +1321,12 @@ function richDiagnose(cur, entries, keys) {
   if (cur.sd != null && cur.sd >= 22) parts.push("기복도 큰 편이에요.");
   const kws = keywordThemes(entries, keys);
   kws.forEach((k) => { if (KW_LABEL[k]) parts.push(KW_LABEL[k] + "."); });
+  const baseRx = base ? base.rx : band.rx;
   const rx = [];
   if (band.key === "crisis") rx.push("help");                 // 위기 최우선
-  (base ? base.rx : band.rx).forEach((k) => rx.push(k));       // 테마(또는 구간) 기본 처방
-  kws.forEach((k) => { if (KW_RX[k]) rx.push(KW_RX[k]); });    // 키워드 맥락 처방
+  if (baseRx[0]) rx.push(baseRx[0]);                          // 감정/구간 핵심 처방 1
+  kws.forEach((k) => { if (KW_RX[k]) rx.push(KW_RX[k]); });   // 일기 맥락 처방(상위 보장)
+  baseRx.slice(1).forEach((k) => rx.push(k));                 // 나머지 기본 처방
   if (cur.avgEnergy != null && cur.avgEnergy < 2.6) rx.push("breath"); // 데이터 신호
   if (cur.habPct != null && cur.habPct < 50) rx.push("ii");
   if (cur.gratCount === 0 && cur.days >= 3) rx.push("gratitude");
@@ -1339,15 +1403,16 @@ function reportDetailHtml(kind) {
   // 추세 → 솔루션
   let trend = "flat";
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
-  cur.trend = trend;
   const diag = richDiagnose(cur, entries, keys);
   const rxKeys = (diag ? diag.rx : []).concat(trend === "down" ? ["selfcomp"] : []);
-  const sols = [];
-  rxKeys.forEach((k) => { const r = RX[k]; if (r && !sols.some((s) => s.k === k)) sols.push(Object.assign({ k }, r)); });
-  if (!sols.length) sols.push({ k: "labeling", t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling });
-  const finalSols = sols.slice(0, 3);
+  const finalKeys = [];
+  rxKeys.forEach((k) => { if (RX[k] && !finalKeys.includes(k)) finalKeys.push(k); });
+  if (!finalKeys.length) finalKeys.push("labeling");
+  // 변형 문장 선택 — 기간 끝 날짜를 시드로 회전시켜 매번 다르게(반복 방지)
+  const seed = parseInt((keys[keys.length - 1] || todayKey()).replace(/-/g, ""), 10) || 0;
+  const solItems = finalKeys.slice(0, 3).map((k, i) => { const r = RX[k]; return { txt: r.s[(seed + i) % r.s.length], c: r.c }; });
   const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
-  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${finalSols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
+  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";
