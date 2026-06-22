@@ -51,7 +51,9 @@ try {
   // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
   q("#journeyStart").click();
-  check("여정 시작(기분 다이얼)", !q("#journey").hasAttribute("hidden") && !!q("#jBody #jScore"));
+  check("여정 시작 시 '나를 위한 한마디' 먼저", !q("#journey").hasAttribute("hidden") && !!q("#jBody #jQuote"));
+  q("#jNext").click(); // 한마디 → 기분
+  check("두 번째 단계 기분 다이얼", !!q("#jBody #jScore"));
   { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
   check("점수만 설정 시 다이얼 반영", q("#jBody #jDialNum").textContent === "70");
   q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 평온해요(v:78) → 점수가 78로 동기화
@@ -97,9 +99,10 @@ try {
 
   // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  let g2 = 0, foundHabit = false, foundCare = !!q("#jBody #jMission"); // 첫 단계가 한마디·미션
+  q("#jNext").click(); // 한마디 → 기분
   check("여정 기분 다이얼 표시", !!q("#jBody #jScore"));
   { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
-  let g2 = 0, foundHabit = false, foundCare = false;
   while (q("#jNext").textContent.indexOf("저장") < 0 && g2++ < 12) { if (q("#jBody .j-habit")) foundHabit = true; if (q("#jBody #jMission")) foundCare = true; q("#jNext").click(); }
   if (q("#jBody .j-habit")) foundHabit = true;
   if (q("#jBody #jMission")) foundCare = true;
@@ -109,7 +112,6 @@ try {
 
   // 3c) 호흡(명상)은 여정의 마지막 단계 + 호흡 버튼 노출
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  { const s = q("#jBody #jScore"); s.value = "25"; s.dispatchEvent(new window.Event("input")); }
   let g3 = 0, foundBreathe = false, breatheLast = false;
   while (q("#jNext").textContent.indexOf("저장") < 0 && g3++ < 12) {
     if (q("#jBody #jBreatheBtn")) foundBreathe = true;
@@ -122,14 +124,16 @@ try {
 
   // 3d) 여정 진행 임시저장(중간에 닫아도 이어서)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q("#jNext").click(); // 한마디 → 기분(감정 선택 단계)
   q('#jBody .emo-tag[data-tag="복잡해요"]').click();
   q("#jClose").click();
   q("#journeyStart").click();
-  check("여정 진행 임시저장 복원", q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
+  check("여정 진행 임시저장 복원", !!q('#jBody .emo-tag[data-tag="복잡해요"]') && q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
   q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
   // 3e) 빠른 기록 (1화면 저장)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q("#jNext").click(); // 한마디 → 기분
   { const s = q("#jBody #jScore"); s.value = "82"; s.dispatchEvent(new window.Event("input")); }
   check("빠른 저장 버튼 노출", !!q("#jBody #jQuickSave"));
   q("#jBody #jQuickSave").click();

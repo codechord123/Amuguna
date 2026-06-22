@@ -2979,11 +2979,12 @@ function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 8
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
   const editingPast = jData.date && jData.date !== todayKey(); // 지난 기록 수정은 간단 경로
-  const s = ["feel"];
+  const s = [];
+  if (!editingPast) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
+  s.push("feel");
   s.push("note", "praise");
   if (!editingPast && loadChs().length) s.push("habits");
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
-  if (!editingPast) s.push("care"); // 한마디·미션도 오늘만
   if (!editingPast) s.push("breathe"); // 명상(호흡)은 마음을 가라앉히는 마지막 마무리 단계로
   s.push("finish");
   return s;
@@ -3042,7 +3043,7 @@ function stepHtml(id) {
   if (id === "care") {
     if (!jData.quote) jData.quote = pickQuote();
     if (!jData.mission) jData.mission = pickMission();
-    return `<div class="js-emoji">💌</div><p class="j-q">잠깐, 나를 위한 한마디</p>
+    return `<div class="js-emoji">💌</div><p class="j-q">시작하기 전, 나를 위한 한마디</p>
       <blockquote class="j-quote" id="jQuote">“${formatQuote(jData.quote)}”</blockquote>
       <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ↻</button>
       <p class="field-label" style="text-align:center;margin-top:22px">✨ 오늘의 작은 미션</p>
@@ -3173,7 +3174,7 @@ function openJourney(dateKey) {
   const draft = loadJDraft();
   let resumed = false;
   if (k === todayKey() && draft && draft.date === todayKey() && draft.data) { jData = draft.data; resumed = true; }
-  curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : "feel";
+  curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : jSteps()[0];
   journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
   if (resumed) toast("이어서 작성해요 ✍️");
 }
