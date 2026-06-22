@@ -45,30 +45,34 @@ const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 �
    base = 통계·점수용 기존 7분류 */
 // v = 정서가(valence) 0~100 — 감정과 긍부정 점수를 일치시키는 기준값.
 //     감정을 고르면 다이얼 점수가 고른 감정들의 평균 v로 맞춰진다.
+// v(정서가 0~100)는 정서 원형모형(Russell, 1980)의 '쾌–불쾌' 축이며,
+// 공개 규준치(ANEW: Bradley&Lang 1999, Warriner et al. 2013, 9점 척도)를
+// (x-1)/8*100 로 환산해 맞췄다. en(활력 1~5)은 직교하는 '각성' 축이라,
+// 정서가가 비슷한 감정(예: 불안·스트레스·화남)은 점수를 비슷하게 두고 활력으로 구분한다.
 const EMOTIONS = [
-  // 긍정 (정서가 68~96, 좋을수록 높게)
-  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos", v: 96 },
-  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos", v: 92 },
-  { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos", v: 90 },
-  { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos", v: 86 },
-  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos", v: 82 },
-  { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos", v: 78 },
-  { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos", v: 70 },
-  // 보통 (44~52)
-  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu", v: 52 },
-  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu", v: 48 },
-  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu", v: 44 },
-  // 부정 (12~40, 힘들수록 낮게 — 감정마다 촘촘히 구분)
-  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg", v: 40 },
-  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg", v: 34 },
-  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg", v: 32 },
-  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg", v: 30 },
-  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg", v: 27 },
-  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg", v: 25 },
-  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg", v: 22 },
-  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg", v: 19 },
-  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg", v: 15 },
-  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 12 },
+  // 긍정 — 쾌. 고각성(신남·설렘)부터 저각성(평온)까지
+  { k: "행복해요", e: "😄", base: "활기차요", en: 4, band: "pos", v: 92 }, // happy 8.4
+  { k: "신나요",   e: "🤩", base: "활기차요", en: 5, band: "pos", v: 90 }, // excited 8.0
+  { k: "뿌듯해요", e: "😏", base: "괜찮아요", en: 4, band: "pos", v: 86 }, // proud 8.0
+  { k: "설레요",   e: "😆", base: "활기차요", en: 5, band: "pos", v: 85 }, // thrilled 7.7
+  { k: "고마워요", e: "🥰", base: "괜찮아요", en: 4, band: "pos", v: 84 }, // grateful 7.9
+  { k: "평온해요", e: "😊", base: "괜찮아요", en: 3, band: "pos", v: 76 }, // calm/serene 7.0
+  { k: "괜찮아요", e: "🙂", base: "괜찮아요", en: 3, band: "pos", v: 66 }, // content/fine 6.3
+  // 보통 — 중립 부근
+  { k: "그럭저럭", e: "😐", base: "그럭저럭", en: 3, band: "neu", v: 52 }, // so-so 5.2
+  { k: "멍해요",   e: "😶", base: "그럭저럭", en: 2, band: "neu", v: 47 }, // dazed/blank 4.7
+  { k: "복잡해요", e: "🤔", base: "그럭저럭", en: 3, band: "neu", v: 44 }, // conflicted 4.5
+  // 부정 — 불쾌. 고각성(불안·분노) ≈ 비슷한 점수, 활력으로 구분 / 우울 권역이 가장 낮음
+  { k: "졸려요",     e: "😴",   base: "무기력해요", en: 1, band: "neg", v: 41 }, // sleepy 4.3 (저각성·약한 불쾌)
+  { k: "지쳤어요",   e: "😮‍💨", base: "지쳤어요",   en: 1, band: "neg", v: 33 }, // exhausted 3.6
+  { k: "초조해요",   e: "😣",   base: "불안해요",   en: 4, band: "neg", v: 30 }, // nervous 3.3
+  { k: "불안해요",   e: "😰",   base: "불안해요",   en: 4, band: "neg", v: 27 }, // anxious 3.0
+  { k: "스트레스",   e: "😫",   base: "불안해요",   en: 4, band: "neg", v: 26 }, // stressed 2.9
+  { k: "화나요",     e: "😤",   base: "불안해요",   en: 5, band: "neg", v: 26 }, // angry 2.8
+  { k: "무기력해요", e: "😶‍🌫️", base: "무기력해요", en: 1, band: "neg", v: 22 }, // helpless 2.4 (우울 권역 인접 → 불안보다 낮음)
+  { k: "외로워요",   e: "😔",   base: "우울해요",   en: 1, band: "neg", v: 19 }, // lonely 2.4
+  { k: "슬퍼요",     e: "😢",   base: "우울해요",   en: 1, band: "neg", v: 15 }, // sad 2.1
+  { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 12 }, // depressed 1.8
 ];
 const EMO_BANDS = [
   { id: "pos", label: "🌟 긍정적인 마음" },

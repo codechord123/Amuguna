@@ -56,13 +56,13 @@ try {
   check("두 번째 단계 기분 다이얼", !!q("#jBody #jScore"));
   { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
   check("점수만 설정 시 다이얼 반영", q("#jBody #jDialNum").textContent === "70");
-  q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 평온해요(v:78) → 점수가 78로 동기화
-  check("감정 선택 시 긍부정 점수 동기화", q("#jBody #jDialNum").textContent === "78");
+  q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 평온해요(v:76) → 점수가 76으로 동기화
+  check("감정 선택 시 긍부정 점수 동기화", q("#jBody #jDialNum").textContent === "76");
   check("다이얼 라벨이 고른 감정 반영", q("#jBody #jDialLabel").textContent === "평온해요");
   // 부정 감정도 점수대 기본('지쳐 있어요')이 아니라 그 감정 이름을 보여줘야 함
   q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 해제
-  q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 초조해요(v:32)
-  check("부정 감정 라벨 정확(초조해요)", q("#jBody #jDialLabel").textContent === "초조해요" && q("#jBody #jDialNum").textContent === "32");
+  q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 초조해요(v:30)
+  check("부정 감정 라벨 정확(초조해요)", q("#jBody #jDialLabel").textContent === "초조해요" && q("#jBody #jDialNum").textContent === "30");
   q('#jBody .emo-tag[data-tag="초조해요"]').click(); // 해제
   q('#jBody .emo-tag[data-tag="평온해요"]').click(); // 원래 시나리오 복구(평온해요)
   let jg = 0;
@@ -77,7 +77,7 @@ try {
   check("여정 저장 후 닫힘", !q("#journey").classList.contains("show"));
   const te = ls("entries_v2")[tk];
   check("오늘 기록 저장됨", !!te && te.mood === "괜찮아요");
-  check("감정 동기화 점수 저장", te.score === 78);
+  check("감정 동기화 점수 저장", te.score === 76);
   check("감정 태그 저장", (te.tags || []).includes("평온해요"));
   check("일기 저장", te.note === "야근하고 지침");
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
