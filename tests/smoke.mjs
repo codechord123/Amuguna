@@ -256,6 +256,7 @@ try {
   q("[data-tab=stats]").click();
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
+  check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
   q("#subBack").click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));

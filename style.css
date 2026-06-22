@@ -357,6 +357,25 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rpt-headline .rh-ico { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; }
 .rpt-headline p { margin: 0; font-size: var(--t-base); font-weight: var(--w-semi); color: var(--ink); line-height: 1.5; word-break: keep-all; }
 .rpt-headline b { color: var(--accent-deep); font-weight: var(--w-bold); }
+/* 진단 카드 (구간 기반) */
+.diag-card { display: flex; align-items: flex-start; gap: var(--s3); border-left: 4px solid var(--line-strong); }
+.diag-card.low { border-left-color: var(--danger); }
+.diag-card.mid { border-left-color: var(--energy); }
+.diag-card.good { border-left-color: var(--success); }
+.diag-ico { font-size: 1.5rem; line-height: 1.1; flex-shrink: 0; }
+.diag-label { margin: 0; font-size: var(--t-base); font-weight: var(--w-bold); color: var(--ink); }
+.diag-label b { color: var(--accent-deep); }
+.diag-dx { margin: 2px 0 0; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.5; word-break: keep-all; }
+/* 리포트 이미지 미리보기 오버레이 */
+.img-preview { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: var(--s5); }
+.img-preview.show { display: flex; animation: fade 0.25s var(--ease-soft) both; }
+.ip-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(2px); }
+.ip-sheet { position: relative; z-index: 1; width: 100%; max-width: 420px; max-height: 88dvh; overflow-y: auto; background: var(--card); border-radius: var(--r-xl); padding: var(--s5); box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-hi); text-align: center; }
+.ip-title { margin: 0 0 var(--s3); font-weight: var(--w-bold); font-size: var(--t-md); }
+.ip-img { width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--line); box-shadow: var(--shadow-sm); display: block; }
+.ip-hint { margin: var(--s3) 0 var(--s4); font-size: var(--t-sm); color: var(--soft); line-height: 1.5; }
+.ip-btns { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s3); }
+.ip-close { width: 100%; background: var(--bg-sunken); }
 
 /* ----- 리포트 KPI 타일 (2×2) ----- */
 /* 리포트 히어로 — 게이지 링 + 핵심 지표(공간 절약·데이터 밀도) */

@@ -783,7 +783,7 @@ subBody.addEventListener("click", (e) => {
     }
   } else if (subMode === "report") {
     const el = e.target.closest("[data-ract]"); if (!el) return;
-    if (el.dataset.ract === "img") { Sound.tap(); const url = el.dataset.kind === "month" ? drawMonthCanvas() : drawWeekCanvas(); const a = document.createElement("a"); a.href = url; a.download = `${el.dataset.kind === "month" ? "월간" : "주간"}리포트_${todayKey()}.png`; a.click(); }
+    if (el.dataset.ract === "img") { Sound.tap(); showImagePreview(el.dataset.kind); }
     else if (el.dataset.ract === "share") { Sound.tap(); shareReport(el.dataset.kind); }
   }
 });
@@ -1176,17 +1176,50 @@ const REPORT_PAPERS = {
   selfcomp: "자기자비 (Neff, 2003, Self and Identity)",
   savoring: "음미하기 (Bryant, 2003, Journal of Mental Health)",
   labeling: "정서 명명 (Lieberman et al., 2007, Psychological Science)",
+  sleep: "수면과 정서 (Baglioni et al., 2016, Sleep Medicine Reviews)",
+  help: "사회적 지지·도움 요청 (Cohen & Wills, 1985, Psychological Bulletin)",
+  strength: "강점 활용 (Seligman et al., 2005, American Psychologist)",
 };
-function reportSolutions(d) { // avgMood: 0-100
-  const out = [];
-  if (d.avgMood != null && d.avgMood < 50) out.push({ t: "작은 행동부터 시작해요", b: "기분이 나아지길 기다리기보다 5분짜리 활동(산책·설거지·샤워)을 먼저 해보세요. ‘행동 → 기분’ 순서가 우울감을 줄여줘요.", c: REPORT_PAPERS.ba });
-  if (d.avgEnergy != null && d.avgEnergy < 2.6) out.push({ t: "느린 호흡으로 회복", b: "날숨을 들숨보다 길게(4-7-8) 하루 5분. 부교감신경이 활성화돼 피로와 긴장이 풀려요. 쉼 탭의 호흡 명상을 써보세요.", c: REPORT_PAPERS.breath });
-  if (d.habPct != null && d.habPct < 50) out.push({ t: "습관에 ‘신호’를 붙여요", b: "‘[기존 행동] 후에 [새 습관]’ 형식으로 시점을 정하면 실천율이 올라가요. 예: 양치 후 스트레칭 1분.", c: REPORT_PAPERS.ii });
-  if (d.gratCount === 0 && d.days >= 3) out.push({ t: "하루 한 줄 감사", b: "잘된 일·고마운 일을 구체적으로 한 줄 적어보세요. 2주만 이어가도 안녕감이 높아져요.", c: REPORT_PAPERS.gratitude });
-  if (d.trend === "down") out.push({ t: "나에게 친절하게", b: "힘든 시기엔 자신을 다그치기보다 친구에게 하듯 다정하게 말해주세요. 자기자비는 회복탄력성을 높여줘요.", c: REPORT_PAPERS.selfcomp });
-  if (d.avgMood != null && d.avgMood >= 72) out.push({ t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring });
-  if (!out.length) out.push({ t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling });
-  return out.slice(0, 3);
+// 진단 구간 — 평균 기분(0-100)을 5단계로 구분. 각 구간의 진단(dx)·기본 처방(rx 키 목록)
+const DIAG_BANDS = [
+  { max: 20,  key: "crisis", label: "많이 힘든 시기", tone: "low",  dx: "마음이 오래 가라앉아 있어요. 혼자 견디지 않아도 괜찮아요.",       rx: ["help", "ba", "selfcomp"] },
+  { max: 40,  key: "low",    label: "지쳐 있는 시기", tone: "low",  dx: "에너지가 바닥에 가까워요. 회복을 가장 앞에 두어도 돼요.",         rx: ["ba", "breath", "sleep"] },
+  { max: 60,  key: "mid",    label: "그럭저럭 유지",  tone: "mid",  dx: "큰 기복 없이 잘 버티고 있어요. 작은 루틴이 흐름을 지켜줘요.",     rx: ["ii", "gratitude"] },
+  { max: 80,  key: "good",   label: "안정적인 시기",  tone: "good", dx: "마음이 비교적 안정적이에요. 지금의 좋은 흐름을 이어가요.",       rx: ["savoring", "ii"] },
+  { max: 101, key: "great",  label: "활기찬 시기",    tone: "good", dx: "활력이 도는 좋은 시기예요. 이 기운을 나누고 음미해봐요.",         rx: ["savoring", "strength"] },
+];
+// 처방 카탈로그 — 근거기반 추천(진단 구간/데이터 신호로 선택)
+const RX = {
+  help:     { t: "혼자 두지 말아요", b: "깊은 무기력·우울이 2주 이상 이어지면 가까운 사람이나 전문가(정신건강의학과·상담센터)와 이야기해보세요. 도움을 청하는 건 약함이 아니라 용기예요.", c: REPORT_PAPERS.help },
+  ba:       { t: "작은 행동부터 시작해요", b: "기분이 나아지길 기다리기보다 5분짜리 활동(산책·설거지·샤워)을 먼저 해보세요. ‘행동 → 기분’ 순서가 우울감을 줄여줘요.", c: REPORT_PAPERS.ba },
+  breath:   { t: "느린 호흡으로 회복", b: "날숨을 들숨보다 길게(4-7-8) 하루 5분. 부교감신경이 활성화돼 피로와 긴장이 풀려요. 쉼 탭의 호흡 명상을 써보세요.", c: REPORT_PAPERS.breath },
+  sleep:    { t: "잠부터 지켜요", b: "취침·기상 시각을 일정하게 맞추고 자기 전 화면을 줄여보세요. 수면이 회복되면 다음 날 기분의 바닥이 올라가요.", c: REPORT_PAPERS.sleep },
+  ii:       { t: "습관에 ‘신호’를 붙여요", b: "‘[기존 행동] 후에 [새 습관]’ 형식으로 시점을 정하면 실천율이 올라가요. 예: 양치 후 스트레칭 1분.", c: REPORT_PAPERS.ii },
+  gratitude:{ t: "하루 한 줄 감사", b: "잘된 일·고마운 일을 구체적으로 한 줄 적어보세요. 2주만 이어가도 안녕감이 높아져요.", c: REPORT_PAPERS.gratitude },
+  selfcomp: { t: "나에게 친절하게", b: "힘든 시기엔 자신을 다그치기보다 친구에게 하듯 다정하게 말해주세요. 자기자비는 회복탄력성을 높여줘요.", c: REPORT_PAPERS.selfcomp },
+  savoring: { t: "좋은 순간을 음미해요", b: "좋았던 순간을 떠올리고 자세히 적어 ‘음미(savoring)’하면 긍정 정서가 더 오래 남아요.", c: REPORT_PAPERS.savoring },
+  strength: { t: "강점을 써먹어요", b: "내가 잘하는 것·좋아하는 것을 오늘 한 가지 활용해보세요. 강점을 쓰는 날은 활력과 몰입이 올라가요.", c: REPORT_PAPERS.strength },
+};
+// 진단 — 평균 기분 구간 + 보조 신호(변동성·활력)로 한 줄 진단
+function diagnose(cur) {
+  if (cur.avgMood == null) return null;
+  const band = DIAG_BANDS.find((b) => cur.avgMood < b.max) || DIAG_BANDS[DIAG_BANDS.length - 1];
+  const extra = [];
+  if (cur.sd != null && cur.sd >= 22) extra.push("기복이 큰 편");
+  if (cur.avgEnergy != null && cur.avgEnergy < 2.4) extra.push("활력이 특히 낮음");
+  return { band, dx: band.dx + (extra.length ? ` (${extra.join(" · ")})` : "") };
+}
+function reportSolutions(d) { // avgMood: 0-100 — 진단 구간 기본 처방 + 데이터 신호 보조 처방
+  const picked = [];
+  const add = (k) => { if (k && RX[k] && !picked.some((p) => p.k === k)) picked.push(Object.assign({ k }, RX[k])); };
+  const band = (d.avgMood == null) ? DIAG_BANDS[2] : (DIAG_BANDS.find((b) => d.avgMood < b.max) || DIAG_BANDS[DIAG_BANDS.length - 1]);
+  band.rx.forEach(add);                                            // 1) 구간 기본 처방
+  if (d.avgEnergy != null && d.avgEnergy < 2.6) add("breath");     // 2) 데이터 신호 보조 처방
+  if (d.habPct != null && d.habPct < 50) add("ii");
+  if (d.gratCount === 0 && d.days >= 3) add("gratitude");
+  if (d.trend === "down") add("selfcomp");
+  if (!picked.length) picked.push(Object.assign({ k: "labeling" }, { t: "기록 자체가 힘이에요", b: "감정에 이름을 붙이고 기록하는 것만으로 정서 조절력이 자라요. 지금처럼 이어가면 충분해요.", c: REPORT_PAPERS.labeling }));
+  return picked.slice(0, 3);
 }
 // 기간 통계 — 리포트 알고리즘의 코어 (현재/직전 기간을 같은 방식으로 계산)
 function periodStats(keys, entries) {
@@ -1260,7 +1293,9 @@ function reportDetailHtml(kind) {
   let trend = "flat";
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
   const sols = reportSolutions({ avgMood: cur.avgMood, avgEnergy: cur.avgEnergy, habPct: cur.habPct, trend, gratCount: cur.gratCount, days: cur.days });
-  const solCard = `<div class="card sol-card"><h2>🧪 오늘의 쉼 솔루션</h2><p class="hint">이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
+  const diag = diagnose(cur);
+  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.band.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
+  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단 구간과 이 기간 데이터에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${sols.map((s) => `<div class="sol"><p class="sol-t">${s.t}</p><p class="sol-b">${s.b}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";
@@ -1293,9 +1328,35 @@ function reportDetailHtml(kind) {
     ${heroCard}
     ${chartCard}
     ${hlCard}
+    ${diagCard}
     ${solCard}
     ${moreCard}
     <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
+}
+// 리포트 이미지 미리보기 — iOS/PWA에서 강제 다운로드가 막혀도 '길게 눌러 저장'이 되도록 실제 이미지를 띄운다
+function showImagePreview(kind) {
+  const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
+  let ov = document.getElementById("imgPreview");
+  if (!ov) { ov = document.createElement("div"); ov.id = "imgPreview"; ov.className = "img-preview"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); document.body.appendChild(ov); }
+  const label = kind === "month" ? "월간" : "주간";
+  ov.innerHTML = `<div class="ip-backdrop" data-ipclose></div>
+    <div class="ip-sheet">
+      <p class="ip-title">${label} 리포트 미리보기</p>
+      <img class="ip-img" src="${url}" alt="${label} 리포트 이미지" />
+      <p class="ip-hint">이미지를 길게 눌러 ‘사진에 저장’하거나, 아래 버튼을 쓰세요.</p>
+      <div class="ip-btns">
+        <button class="btn primary" data-ipact="share">📤 공유</button>
+        <button class="btn" data-ipact="download">⬇️ 저장</button>
+      </div>
+      <button class="btn ip-close" data-ipclose>닫기</button>
+    </div>`;
+  ov.classList.add("show");
+  ov.onclick = (e) => {
+    if (e.target.closest("[data-ipclose]")) { ov.classList.remove("show"); return; }
+    const act = e.target.closest("[data-ipact]"); if (!act) return; Sound.tap();
+    if (act.dataset.ipact === "share") { shareReport(kind); }
+    else { const a = document.createElement("a"); a.href = url; a.download = `${label}리포트_${todayKey()}.png`; document.body.appendChild(a); a.click(); a.remove(); }
+  };
 }
 async function shareReport(kind) {
   const url = kind === "month" ? drawMonthCanvas() : drawWeekCanvas();
@@ -2111,7 +2172,8 @@ function renderStep() {
       const x = (cx - r.left) / r.width * 200 - 100, y = (cy - r.top) / r.height * 200 - 100;
       let a = (Math.atan2(y, x) * 180 / Math.PI - 135 + 360) % 360; // 0 = 시작점
       if (a > 270) a = (a - 270 < 360 - a) ? 270 : 0; // 하단 빈 구간은 가까운 끝으로
-      setScore(a / 2.7); saveJDraft();
+      let sc = a / 2.7; if (sc < 3) sc = 0; else if (sc > 97) sc = 100; // 양 끝(0·100)에 손가락으로 닿기 쉽게 스냅
+      setScore(sc); saveJDraft();
     }
     let dragging = false;
     dial.addEventListener("pointerdown", (e) => { dragging = true; try { dial.setPointerCapture(e.pointerId); } catch (x) {} fromPointer(e); });
