@@ -554,6 +554,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 #statPinned:not(:empty) { margin-bottom: var(--s2); }
 .card.sec-pinned { border: 1.5px solid var(--accent-soft, var(--line-strong)); }
 .card.sec-pinned > h2::before, .card.sec-pinned > .card-head h2::before { content: "📌 "; }
+.card.sec-pulse { animation: secPulse 0.6s var(--ease-soft); }
+@keyframes secPulse { 0% { box-shadow: 0 0 0 0 rgba(94,200,176,0.45); } 100% { box-shadow: 0 0 0 14px rgba(94,200,176,0); } }
 .badge-cat { margin-bottom: var(--s4); }
 .badge-cat:last-child { margin-bottom: 0; }
 .badge-cat-h { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink-2); margin: 0 0 var(--s2); }

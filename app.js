@@ -1058,20 +1058,48 @@ function moveStat(id, dir) {
   const i = order.indexOf(id); if (i < 0) return;
   const j = i + dir; if (j < 0 || j >= order.length) return;
   order.splice(i, 1); order.splice(j, 0, id);
+  const prev = captureStatRects();
   settings.statOrder = order; saveSettingsObj(settings); applyStatLayout();
+  playStatFlip(prev);
 }
 function toggleStatVis(id) {
   const hidden = (settings.statHidden || []).slice();
   const i = hidden.indexOf(id);
   if (i >= 0) hidden.splice(i, 1); else hidden.push(id);
+  const prev = captureStatRects();
   settings.statHidden = hidden; saveSettingsObj(settings); applyStatLayout();
+  playStatFlip(prev);
 }
 function toggleStatPin(id) {
   const pinned = (settings.statPinned || []).slice();
   const i = pinned.indexOf(id);
   if (i >= 0) pinned.splice(i, 1); else { pinned.push(id); // 메인에 올리면 숨김은 해제
     settings.statHidden = (settings.statHidden || []).filter((x) => x !== id); }
+  const prev = captureStatRects();
   settings.statPinned = pinned; saveSettingsObj(settings); applyStatLayout();
+  playStatFlip(prev);
+  const card = findSecCard(id); // 방금 올린/내린 카드에 살짝 강조 펄스
+  if (card) { card.classList.remove("sec-pulse"); void card.offsetWidth; card.classList.add("sec-pulse"); }
+}
+// FLIP 애니메이션 — 분석 카드가 자리를 옮길 때 '슬라이드'로 부드럽게 (라이브러리 없이)
+function captureStatRects() {
+  const m = {};
+  document.querySelectorAll("#statPinned > [data-sec], #allAnalysis > [data-sec]").forEach((c) => {
+    const id = c.getAttribute("data-sec"); try { m[id] = c.getBoundingClientRect(); } catch (e) {}
+  });
+  return m;
+}
+function playStatFlip(prev) {
+  if (!prev) return;
+  document.querySelectorAll("#statPinned > [data-sec], #allAnalysis > [data-sec]").forEach((c) => {
+    const id = c.getAttribute("data-sec"), a = prev[id]; if (!a) return;
+    let b; try { b = c.getBoundingClientRect(); } catch (e) { return; }
+    const dx = a.left - b.left, dy = a.top - b.top;
+    if (!dx && !dy) return;
+    c.style.transition = "none"; c.style.transform = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(() => { c.style.transition = "transform 0.34s cubic-bezier(0.22,0.61,0.36,1)"; c.style.transform = ""; });
+    setTimeout(() => { c.style.transition = ""; c.style.transform = ""; }, 400);
+  });
 }
 const _statEditBtn = document.getElementById("statEditBtn");
 if (_statEditBtn) _statEditBtn.addEventListener("click", () => {
