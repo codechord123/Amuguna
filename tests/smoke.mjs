@@ -300,6 +300,13 @@ try {
   const frBar = fr[0].querySelector(".dist-bar").getAttribute("style");
   // 불안(v27→#f0b07a)으로 칠해져야 하고, 그날 높은 점수(89 평균→초록 #5ec8b0)와 무관해야 함(2축 분리)
   check("감정 막대 색=감정 고유 정서가(점수와 독립)", frBar.includes("#f0b07a") && !frBar.includes("#5ec8b0"));
+
+  // 여정 감정태그에 '빈도' 배지 (점수 아님) — 위 entries로 평온해요 2회
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q("#jNext").click(); // 한마디 → 기분(feel)
+  const etag = q('#jBody .emo-tag[data-tag="평온해요"] .emo-freq');
+  check("여정 감정태그 빈도 배지 표시", !!etag && /·\d/.test(etag.textContent));
+  q("#jClose").click();
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));

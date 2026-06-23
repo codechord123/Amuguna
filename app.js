@@ -3137,6 +3137,10 @@ function stepHtml(id) {
   if (id === "feel") {
     const sc = jData.score != null ? jData.score : 50;
     const tagsSel = jData.tags || [];
+    // 감정 태그 빈도 — 최근 90일 동안 그 감정을 몇 번 느꼈는지(점수와 무관, 빈도만)
+    const tagFreq = {};
+    { const cut = new Date(); cut.setDate(cut.getDate() - 90); const ck = todayKey(cut);
+      Object.values(loadEntries()).forEach((e) => { if (!e.date || e.date < ck || e.date === jData.date) return; (e.tags || []).forEach((t) => tagFreq[t] = (tagFreq[t] || 0) + 1); }); }
     return `<p class="j-q">지금 마음, 몇 점인가요?</p>
       <p class="hint" style="text-align:center;margin:-10px 0 6px">동그라미를 돌리거나 아래 막대로 0~100점을 표현해요.</p>
       <div class="dial-wrap">
@@ -3149,7 +3153,7 @@ function stepHtml(id) {
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
-      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}</button>`; }).join("")}</div>
+      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
       <p class="energy-out" id="jEnergyOut"></p>
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="reflect-toggle" id="jQuickSave">⚡ 여기까지만 빠르게 저장</button>' : ""}`;
   }

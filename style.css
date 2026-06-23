@@ -727,6 +727,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .emo-tags { display: flex; flex-wrap: wrap; gap: var(--s2); justify-content: center; }
 .emo-tag { border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--ink); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .emo-tag.selected { border-color: var(--accent); background: var(--card); color: var(--accent-deep); }
+.emo-freq { font-style: normal; font-size: 0.78em; font-weight: var(--w-bold); color: var(--soft); margin-left: 3px; opacity: 0.85; }
+.emo-tag.selected .emo-freq { color: var(--accent-deep); }
 .energy-out { text-align: center; margin: var(--s4) 0 0; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.5; }
 .energy-out b { color: var(--accent-deep); font-weight: var(--w-bold); }
 .energy-out .opt { color: var(--soft); font-size: var(--t-xs); }
