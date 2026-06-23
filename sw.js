@@ -1,5 +1,7 @@
 // 오늘의 쉼 — 서비스워커 (오프라인 캐시)
-const CACHE = "oneul-shim-v100";
+const CACHE = "oneul-shim-v101";
+// 핵심 자산만 precache. 큰 라이브러리(cytoscape 등)는 런타임 캐시(처음 쓸 때 fetch가 저장)로 둬서
+// install이 무거워지거나 한 파일 실패로 업그레이드가 막히는 것을 방지.
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,13 +13,17 @@ const ASSETS = [
   "./monitor.js",
   "./anim.js",
   "./cloud.js",
-  "./vendor/cytoscape.min.js",
   "./manifest.json",
   "./icon.svg",
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // addAll은 하나만 실패해도 전체가 실패(업그레이드 차단). 개별 add로 바꿔 한 파일 실패가 막지 않도록.
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.allSettled(ASSETS.map((u) => c.add(u))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {

@@ -2499,12 +2499,17 @@ function renderWordWeb(entries) {
     const txt = [e.note, e.praise, e.reflection && e.reflection.good, e.reflection && e.reflection.hard].filter(Boolean).join(" ");
     if (!txt.trim()) return;
     const ws = [...new Set(tokenizeKo(txt))];
-    if (ws.length) docs.push({ words: ws, score: entryScore(e) });
+    if (ws.length) docs.push({ words: ws, score: entryScore(e), date: e.date || "" });
   });
   if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; el._wwData = null; return; }
-  const freq = {}, mSum = {}, mN = {};
-  docs.forEach((d) => d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } }));
-  const top = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 16);
+  docs.sort((a, b) => a.date < b.date ? -1 : 1); // 오래된 → 최근
+  // 노드 선정 = 빈도 + 최근 가중치. 새로 쓴 단어가 오래된 단어에 묻혀 안 보이는 문제를 막는다.
+  const freq = {}, mSum = {}, mN = {}, wt = {};
+  docs.forEach((d, i) => {
+    const rec = 1 + (docs.length > 1 ? i / (docs.length - 1) : 0); // 최근 글일수록 최대 2배 가중
+    d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; wt[w] = (wt[w] || 0) + rec; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } });
+  });
+  const top = Object.keys(wt).sort((a, b) => wt[b] - wt[a]).slice(0, 16);
   if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; el._wwData = null; return; }
   const idx = {}; top.forEach((w, i) => idx[w] = i);
   const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
@@ -2672,11 +2677,11 @@ function renderDiscoveries(entries, list) {
   });
   const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 2);
   if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "🗓️", title: `${days[di]}요일 ${bk}에 가장 평온해요`, sub: "이 시간을 나를 위해 비워두면 좋아요", viz: chip(`${days[di]} ${bk} · ⌀${Math.round(t.avg)}점`, t.avg), tone: "good" }); }
-  // 4) 으뜸 감정 (최근 30일)
+  // 4) 으뜸 감정 (최근 30일) — 감정은 점수와 분리, '빈도'만. 색은 감정 고유 정서가.
   const cut = new Date(); cut.setDate(cut.getDate() - 30); const tagC = {};
-  moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => { (tagC[t] = tagC[t] || { n: 0, s: 0 }); tagC[t].n++; tagC[t].s += entryScore(e); }); });
-  const tags = Object.entries(tagC).map(([t, v]) => ({ t, n: v.n, avg: v.s / v.n })).filter((x) => x.n >= 2);
-  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; cards.push({ sal: 25 + t.n, icon: "🏷️", title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 · 그때 평균 ${Math.round(t.avg)}점`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, t.avg), tone: "" }); }
+  moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => tagC[t] = (tagC[t] || 0) + 1); });
+  const tags = Object.entries(tagC).map(([t, n]) => ({ t, n })).filter((x) => x.n >= 2);
+  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; const em = emoByKey(t.t); const cv = em && em.v != null ? em.v : 50; cards.push({ sal: 25 + t.n, icon: "🏷️", title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 느꼈어요`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, cv), tone: "" }); }
   // 5) 꾸준함
   const streak = calcStreak(entries); if (streak >= 3) cards.push({ sal: 30 + streak, icon: "🔥", title: `${streak}일 연속 기록 중이에요`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
   cards.sort((a, b) => b.sal - a.sal);
