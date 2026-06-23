@@ -48,6 +48,10 @@ const ls = (k) => JSON.parse(window.localStorage.getItem(k) || "null");
 try {
   q("#obSkip").click();
 
+  // 0) 키워드 추출 — 의존명사+조사('곳이')는 제외, 내용어(회사·시험)는 보존
+  { const toks = window.tokenizeKo ? window.tokenizeKo("곳이 회사에서 시험을") : [];
+    check("키워드: '곳이' 제외·내용어 보존", !toks.includes("곳이") && toks.includes("회사") && toks.includes("시험")); }
+
   // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
   q("#journeyStart").click();
