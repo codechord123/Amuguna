@@ -2451,11 +2451,34 @@ function stripJosa(w) {
   for (const s of j) { if (w.length - s.length >= 2 && w.endsWith(s)) return w.slice(0, -s.length); }
   return w;
 }
+// 가벼운 동사/형용사(내용 적음) — 기본형으로 환원돼도 노드에선 제외
+const KO_LIGHT_VERB = new Set(["하다", "되다", "있다", "없다", "같다", "싶다", "그렇다", "이렇다", "저렇다", "어떻다", "드리다", "시키다", "버리다"]);
+// ㅆ받침 축약 과거(거의 항상 동사) → 어간 끝 음절 복원
+const VERB_CONTRACT = { "했": "하", "갔": "가", "왔": "오", "봤": "보", "됐": "되", "줬": "주", "썼": "쓰", "잤": "자", "났": "나", "탔": "타", "섰": "서", "켰": "켜", "폈": "펴", "쳤": "치", "셨": "시", "꼈": "끼" };
+// 동사·형용사 활용형을 기본형(어간+다)으로. 명사 훼손을 막으려 '과거(았/었/였)·축약과거'처럼
+// 명사가 절대 갖지 않는 형태만 환원한다(고정밀). 그 외(명사·현재형)는 건드리지 않음.
+function lemmaKo(w) {
+  if (w.length < 2) return w;
+  const m = w.match(/^(.+?)(았|었|였)(.*)$/);          // 명시적 과거 음절
+  if (m && m[1].length >= 1) return m[1] + "다";
+  const m2 = w.match(/^(.*)(했|갔|왔|봤|됐|줬|썼|잤|났|탔|섰|켰|폈|쳤|셨|꼈)(어요|어|다|지|고|네|는데|으니|어서)?$/); // 축약 과거
+  if (m2) return m2[1] + VERB_CONTRACT[m2[2]] + "다";
+  return w;
+}
 function tokenizeKo(txt) {
-  return txt.toLowerCase().replace(/[^가-힣a-z0-9\s]/g, " ").split(/\s+/)
-    .map(stripJosa).map((w) => w.trim())
-    // 동사·형용사 활용형 조각 제거(어미로 끝나는 토큰) → 명사 위주로
-    .filter((w) => w.length >= 2 && !KO_STOP.has(w) && !isBoundJosa(w) && !/^\d+$/.test(w) && !/^[a-z]$/.test(w) && !/[다요서게고죠네음임며좀]$/.test(w));
+  const raw = txt.toLowerCase().replace(/[^가-힣a-z0-9\s]/g, " ").split(/\s+/);
+  const out = [];
+  for (let t of raw) {
+    t = stripJosa(t.trim()); if (!t) continue;
+    const lem = lemmaKo(t);
+    if (lem !== t && lem.endsWith("다")) { // 동사/형용사 → 기본형으로 보존(가벼운 동사는 제외)
+      if (lem.length >= 2 && !KO_STOP.has(lem) && !KO_LIGHT_VERB.has(lem)) out.push(lem);
+      continue;
+    }
+    // 명사 등 일반 토큰: 어미 조각(요·서·게·고…로 끝남)·의존명사·숫자 제거
+    if (t.length >= 2 && !KO_STOP.has(t) && !isBoundJosa(t) && !/^\d+$/.test(t) && !/^[a-z]$/.test(t) && !/[다요서게고죠네음임며좀]$/.test(t)) out.push(t);
+  }
+  return out;
 }
 function layoutGraph(nodes, edges, W, H) {
   const n = nodes.length; if (!n) return;
@@ -2522,6 +2545,15 @@ function louvainCommunities(n, edges) {
 }
 const CLUSTER_COLORS = ["#6fc3ad", "#e8a87c", "#9ab0e0", "#e6c25a", "#c79ad6", "#86c98e", "#e8949f", "#8fd0d6", "#d8b48f", "#a0a8c8"];
 function clusterColor(c) { const L = CLUSTER_COLORS.length; return CLUSTER_COLORS[(((c || 0) % L) + L) % L]; }
+// 주제 묶음 범례 — 군집별 대표 단어(가장 자주 쓴 단어)를 색칩으로. 군집이 2개 이상일 때만.
+function wwClusterLegend(nodes) {
+  const by = {};
+  nodes.forEach((nd) => { (by[nd.comm] = by[nd.comm] || []).push(nd); });
+  const comms = Object.keys(by);
+  if (comms.length < 2) return "";
+  const chips = comms.map((c) => { const rep = by[c].slice().sort((a, b) => b.f - a.f)[0]; return `<span class="ww-cl"><i style="background:${clusterColor(+c)}"></i>${escapeHtml(rep.w)}</span>`; }).join("");
+  return `<div class="ww-clusters">${chips}</div>`;
+}
 // Cytoscape를 필요할 때만 로드(초기 로딩 가볍게 유지). SW가 precache하므로 오프라인도 OK.
 let _cyLoading = false;
 function ensureCytoscape(cb) {
@@ -2595,7 +2627,7 @@ function renderWordWebSvg(el) {
     const major = i < 8;
     return `<g class="ww-node${major ? " major" : ""}" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r.toFixed(1)}" fill="${clusterColor(nd.comm)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + r + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`;
   }).join("");
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(함께 쓰인 단어끼리 자동 군집) · 선=같은 날 함께 쓴 단어. 단어를 누르면 관련 단어만 또렷해져요.</p>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg>${wwClusterLegend(nodes)}<p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(함께 쓰인 단어끼리 자동 군집) · 선=같은 날 함께 쓴 단어. 단어를 누르면 관련 단어만 또렷해져요.</p>`;
   const svg = el.querySelector(".ww-svg");
   svg.addEventListener("click", (ev) => {
     const g = ev.target.closest(".ww-node");
@@ -2613,7 +2645,7 @@ function renderWordWebCy(el) {
   const dt = el._wwData; if (!dt || !window.cytoscape) { renderWordWebSvg(el); return; }
   const { nodes, drawEdges, deg, maxF, maxDeg } = dt;
   if (el._cy) { try { el._cy.destroy(); } catch (e) {} el._cy = null; }
-  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(자동 군집) · 선=같은 날 함께 쓴 단어. 드래그·확대하고, 단어를 누르면 <b>관련된 단어만</b> 선으로 이어 보여줘요. 빈 곳을 누르면 전체로.</p>`;
+  el.innerHTML = `<div class="ww-cy" id="wwCy"></div>${wwClusterLegend(nodes)}<p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(자동 군집) · 선=같은 날 함께 쓴 단어. 드래그·확대하고, 단어를 누르면 <b>관련된 단어만</b> 선으로 이어 보여줘요. 빈 곳을 누르면 전체로.</p>`;
   const host = el.querySelector("#wwCy");
   const cs = getComputedStyle(document.documentElement);
   const ink = (cs.getPropertyValue("--ink") || "#4a4a42").trim();

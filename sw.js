@@ -1,5 +1,5 @@
 // 오늘의 쉼 — 서비스워커 (오프라인 캐시)
-const CACHE = "oneul-shim-v104";
+const CACHE = "oneul-shim-v105";
 // 핵심 자산만 precache. 큰 라이브러리(cytoscape 등)는 런타임 캐시(처음 쓸 때 fetch가 저장)로 둬서
 // install이 무거워지거나 한 파일 실패로 업그레이드가 막히는 것을 방지.
 const ASSETS = [
