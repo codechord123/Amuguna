@@ -2486,6 +2486,42 @@ function layoutGraph(nodes, edges, W, H) {
     temp *= 0.985;
   }
 }
+// TextRank — 단어 동시출현 그래프에 PageRank. '연결이 많은 중심 단어'를 띄움(빈번한 핵심어를 죽이지 않음).
+function textRank(words, adjW) {
+  const N = words.length; if (!N) return {};
+  const idx = {}; words.forEach((w, i) => idx[w] = i);
+  const outw = words.map((w) => { let s = 0; const nb = adjW[w] || {}; for (const k in nb) s += nb[k]; return s; });
+  let pr = new Array(N).fill(1 / N); const d = 0.85;
+  for (let it = 0; it < 30; it++) {
+    const np = new Array(N).fill((1 - d) / N);
+    for (let i = 0; i < N; i++) { const nb = adjW[words[i]] || {}; if (outw[i] <= 0) continue; for (const k in nb) { const j = idx[k]; if (j != null) np[j] += d * pr[i] * nb[k] / outw[i]; } }
+    pr = np;
+  }
+  const res = {}; words.forEach((w, i) => res[w] = pr[i]); return res;
+}
+// Louvain(1차 지역이동) — 모듈러리티 최적화로 노드를 주제 묶음(커뮤니티)으로 군집화.
+function louvainCommunities(n, edges) {
+  if (!n) return [];
+  const deg = new Array(n).fill(0), nbr = Array.from({ length: n }, () => ({})); let m2 = 0;
+  edges.forEach(({ a, b, w }) => { const ww = w || 1; deg[a] += ww; deg[b] += ww; m2 += 2 * ww; nbr[a][b] = (nbr[a][b] || 0) + ww; nbr[b][a] = (nbr[b][a] || 0) + ww; });
+  const comm = new Array(n).fill(0).map((_, i) => i);
+  if (m2 === 0) return comm.map(() => 0);
+  const tot = deg.slice();
+  let improved = true, guard = 0;
+  while (improved && guard++ < 40) {
+    improved = false;
+    for (let i = 0; i < n; i++) {
+      const ci = comm[i]; tot[ci] -= deg[i];
+      const wTo = {}; for (const j in nbr[i]) { const cj = comm[j]; wTo[cj] = (wTo[cj] || 0) + nbr[i][j]; }
+      let best = ci, bestGain = (wTo[ci] || 0) - tot[ci] * deg[i] / m2;
+      for (const c in wTo) { const gain = wTo[c] - tot[c] * deg[i] / m2; if (gain > bestGain) { bestGain = gain; best = +c; } }
+      tot[best] += deg[i]; if (best !== ci) { comm[i] = best; improved = true; }
+    }
+  }
+  const map = {}; let k = 0; return comm.map((c) => { if (map[c] == null) map[c] = k++; return map[c]; });
+}
+const CLUSTER_COLORS = ["#6fc3ad", "#e8a87c", "#9ab0e0", "#e6c25a", "#c79ad6", "#86c98e", "#e8949f", "#8fd0d6", "#d8b48f", "#a0a8c8"];
+function clusterColor(c) { const L = CLUSTER_COLORS.length; return CLUSTER_COLORS[(((c || 0) % L) + L) % L]; }
 // Cytoscape를 필요할 때만 로드(초기 로딩 가볍게 유지). SW가 precache하므로 오프라인도 OK.
 let _cyLoading = false;
 function ensureCytoscape(cb) {
@@ -2509,12 +2545,22 @@ function renderWordWeb(entries) {
   if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; el._wwData = null; return; }
   docs.sort((a, b) => a.date < b.date ? -1 : 1); // 오래된 → 최근
   // 노드 선정 = 빈도 + 최근 가중치. 새로 쓴 단어가 오래된 단어에 묻혀 안 보이는 문제를 막는다.
-  const freq = {}, mSum = {}, mN = {}, wt = {};
+  const freq = {}, mSum = {}, mN = {}, wt = {}, adjW = {};
   docs.forEach((d, i) => {
     const rec = 1 + (docs.length > 1 ? i / (docs.length - 1) : 0); // 최근 글일수록 최대 2배 가중
     d.words.forEach((w) => { freq[w] = (freq[w] || 0) + 1; wt[w] = (wt[w] || 0) + rec; if (d.score != null) { mSum[w] = (mSum[w] || 0) + d.score; mN[w] = (mN[w] || 0) + 1; } });
+    // 전체 단어 동시출현(같은 글) → TextRank용 인접 가중치
+    const us = d.words;
+    for (let a = 0; a < us.length; a++) for (let b = a + 1; b < us.length; b++) {
+      (adjW[us[a]] = adjW[us[a]] || {})[us[b]] = (adjW[us[a]][us[b]] || 0) + 1;
+      (adjW[us[b]] = adjW[us[b]] || {})[us[a]] = (adjW[us[b]][us[a]] || 0) + 1;
+    }
   });
-  const top = Object.keys(wt).sort((a, b) => wt[b] - wt[a]).slice(0, 16);
+  // 노드 선정 = TextRank(중심성) × 최근 가중치. 흔하기만 한 단어 대신 '중심적인 단어'를 띄움.
+  const allWords = Object.keys(freq);
+  const pr = textRank(allWords, adjW);
+  const recF = (w) => (wt[w] / freq[w]); // 1~2 (최근일수록↑)
+  const top = allWords.sort((a, b) => (pr[b] * recF(b)) - (pr[a] * recF(a))).slice(0, 16);
   if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; el._wwData = null; return; }
   const idx = {}; top.forEach((w, i) => idx[w] = i);
   const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
@@ -2524,6 +2570,9 @@ function renderWordWeb(entries) {
   edges.sort((a, b) => b.w - a.w); const drawEdges = edges.slice(0, 28); // 레이아웃은 전체, 표시는 강한 연결 위주로 정리
   const deg = nodes.map(() => 0); drawEdges.forEach((e) => { deg[e.a]++; deg[e.b]++; }); const maxDeg = Math.max(1, ...deg);
   const maxF = Math.max(...nodes.map((nd) => nd.f));
+  // Louvain 군집 → 주제 묶음별 색. (표시 엣지 기준으로 묶어 화면과 일치)
+  const comm = louvainCommunities(nodes.length, drawEdges);
+  nodes.forEach((nd, i) => nd.comm = comm[i] || 0);
   el._wwData = { nodes, edges, drawEdges, deg, maxF, maxDeg };
   // 인터랙티브(Cytoscape)가 가능하면 그걸로, 아니면 SVG로 폴백(오프라인·테스트 안전)
   if (window.cytoscape) { renderWordWebCy(el); return; }
@@ -2544,9 +2593,9 @@ function renderWordWebSvg(el) {
   const nodeSvg = nodes.map((nd, i) => {
     const r = (6 + nd.f / maxF * 9 + deg[i] / maxDeg * 7), fs = (8.5 + nd.f / maxF * 4.5).toFixed(1);
     const major = i < 8;
-    return `<g class="ww-node${major ? " major" : ""}" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r.toFixed(1)}" fill="${scoreColor(nd.score)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + r + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`;
+    return `<g class="ww-node${major ? " major" : ""}" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r.toFixed(1)}" fill="${clusterColor(nd.comm)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + r + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`;
   }).join("");
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · 색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 단어를 누르면 연결만 또렷해지고 이웃 단어가 보여요.</p>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(함께 쓰인 단어끼리 자동 군집) · 선=같은 날 함께 쓴 단어. 단어를 누르면 관련 단어만 또렷해져요.</p>`;
   const svg = el.querySelector(".ww-svg");
   svg.addEventListener("click", (ev) => {
     const g = ev.target.closest(".ww-node");
@@ -2564,7 +2613,7 @@ function renderWordWebCy(el) {
   const dt = el._wwData; if (!dt || !window.cytoscape) { renderWordWebSvg(el); return; }
   const { nodes, drawEdges, deg, maxF, maxDeg } = dt;
   if (el._cy) { try { el._cy.destroy(); } catch (e) {} el._cy = null; }
-  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · 색=그때 평균 기분 · 선=같은 날 함께 쓴 단어. 드래그·확대하고, 단어를 누르면 <b>관련된 단어만</b> 선으로 이어 보여줘요. 빈 곳을 누르면 전체로 돌아가요.</p>`;
+  el.innerHTML = `<div class="ww-cy" id="wwCy"></div><p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(자동 군집) · 선=같은 날 함께 쓴 단어. 드래그·확대하고, 단어를 누르면 <b>관련된 단어만</b> 선으로 이어 보여줘요. 빈 곳을 누르면 전체로.</p>`;
   const host = el.querySelector("#wwCy");
   const cs = getComputedStyle(document.documentElement);
   const ink = (cs.getPropertyValue("--ink") || "#4a4a42").trim();
@@ -2572,7 +2621,7 @@ function renderWordWebCy(el) {
   const edgeCol = (cs.getPropertyValue("--line-strong") || "#cdd6cf").trim();
   const accent = (cs.getPropertyValue("--accent") || "#5ec8b0").trim();
   const maxW = Math.max(1, ...drawEdges.map((e) => e.w));
-  const els = nodes.map((nd, i) => ({ data: { id: "n" + i, label: nd.w, col: scoreColor(nd.score), size: Math.round(18 + nd.f / maxF * 24 + deg[i] / maxDeg * 16) } }))
+  const els = nodes.map((nd, i) => ({ data: { id: "n" + i, label: nd.w, col: clusterColor(nd.comm), size: Math.round(18 + nd.f / maxF * 24 + deg[i] / maxDeg * 16) } }))
     .concat(drawEdges.map((e, i) => ({ data: { id: "e" + i, source: "n" + e.a, target: "n" + e.b, w: (1 + e.w / maxW * 4) } })));
   const cy = window.cytoscape({
     container: host, elements: els,

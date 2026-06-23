@@ -338,6 +338,17 @@ try {
   check("진단: 일기 키워드 맥락 반영", /관계/.test(q("#subBody .diag-dx").textContent));
   check("처방: 문장형 생성", [...d.querySelectorAll("#subBody .sol .sol-b")].every((nn) => nn.textContent.trim().length > 12) && d.querySelectorAll("#subBody .sol .sol-b").length >= 2);
   check("생각의 지도 단어 연결망", d.querySelectorAll("#wordWeb .ww-node").length >= 3 && d.querySelectorAll("#wordWeb .ww-edge").length >= 1);
+  // 생각의 지도 자동 군집(Louvain) — 분리된 두 주제는 다른 색으로 묶임
+  window.localStorage.setItem("entries_v2", JSON.stringify({
+    "2026-06-01": { date: "2026-06-01", mood: "지쳤어요", note: "회사 야근 스트레스 회의", updatedAt: "2026-06-01T09:00:00" },
+    "2026-06-02": { date: "2026-06-02", mood: "지쳤어요", note: "회사 야근 스트레스 미팅", updatedAt: "2026-06-02T09:00:00" },
+    "2026-06-03": { date: "2026-06-03", mood: "행복해요", note: "가족 여행 사진 행복", updatedAt: "2026-06-03T09:00:00" },
+    "2026-06-04": { date: "2026-06-04", mood: "행복해요", note: "가족 여행 추억 행복", updatedAt: "2026-06-04T09:00:00" },
+  }));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  const wwCircles = [...d.querySelectorAll("#wordWeb .ww-node circle")];
+  check("생각의 지도 노드 4+ 표시", wwCircles.length >= 4);
+  check("생각의 지도 자동 군집(2색 이상)", new Set(wwCircles.map((c) => c.getAttribute("fill"))).size >= 2);
   check("처방 DB 500개 이상", (window.__rxCount || 0) >= 500);
   q("#subBack").click();
 
