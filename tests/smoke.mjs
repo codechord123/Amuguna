@@ -54,6 +54,13 @@ try {
   // 동사 기본형 변환 — '찾았'→'찾다', '갔다'→'가다' (명사 '회사'·'친구'는 보존)
   { const toks = window.tokenizeKo ? window.tokenizeKo("어제 친구를 찾았어 회사에 갔다") : [];
     check("동사 기본형 변환(찾았→찾다)", toks.includes("찾다") && toks.includes("가다") && !toks.includes("찾았") && toks.includes("친구")); }
+  // 중요 1글자 명사(돈) 살리기 + 1글자 동사 연결형('벌어'→'벌다')
+  { const toks = window.tokenizeKo ? window.tokenizeKo("돈이 없어서 돈을 벌어야 했다") : [];
+    check("1글자 명사 '돈' 추출", toks.includes("돈") && !toks.includes("돈이")); }
+  { const toks = window.tokenizeKo ? window.tokenizeKo("주말에 돈을 벌어 집에서 쉬었다") : [];
+    check("1글자 동사 '벌어→벌다'", toks.includes("벌다") && toks.includes("집")); }
+  { const toks = window.tokenizeKo ? window.tokenizeKo("언어와 단어를 배웠다") : [];
+    check("명사 보존(언어·단어 안 깨짐)", toks.includes("언어") && toks.includes("단어") && !toks.includes("언") && !toks.includes("단")); }
 
   // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
