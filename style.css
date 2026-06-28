@@ -295,12 +295,18 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .breath-overlay.sleep .breath-circle::after { border-color: rgba(120,110,160,0.4); }
 /* 명상하는 법 — 단계가 순서대로 부드럽게 떠오름 */
 .med-how { text-align: left; }
-/* 명상 시간 선택 칩 + 누적 통계 */
-.med-dur { display: flex; gap: var(--s2); margin-top: var(--s4); }
-.med-dur button { flex: 1; padding: var(--s3) 0; border: 1px solid var(--line); background: var(--bg-sunken); color: var(--ink-2); border-radius: var(--r-md); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s; }
-.med-dur button:active { transform: scale(0.95); }
-.med-dur button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* 명상 시간 직접 조절(스텝퍼) + 야간 모드 + 누적 통계 */
+.med-setup { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-top: var(--s4); flex-wrap: wrap; }
+.med-step { display: flex; align-items: center; gap: var(--s3); }
+.med-step-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-sunken); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.2s; }
+.med-step-btn:active { transform: scale(0.9); background: var(--line); }
+.med-step-val { min-width: 56px; text-align: center; font-size: var(--t-sm); color: var(--ink-2); }
+.med-step-val b { font-size: var(--t-lg); color: var(--ink); font-weight: var(--w-bold); }
+.med-night { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--ink-2); cursor: pointer; }
+.med-night input { width: 18px; height: 18px; accent-color: var(--accent); }
 .med-stat { margin: var(--s3) 0 0; font-size: var(--t-xs); color: var(--ink-2); text-align: center; }
+/* 명상 화면 위 남은 시간 카운트다운 */
+.med-clock { margin: 0; font-size: var(--t-lg); font-weight: var(--w-bold); letter-spacing: 0.06em; color: var(--med-text); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px var(--med-glow); }
 .med-guide { list-style: none; padding: 0; margin: var(--s2) 0 0; counter-reset: med; }
 .med-guide li { counter-increment: med; position: relative; padding: var(--s3) var(--s3) var(--s3) 46px; margin-bottom: var(--s2); background: var(--bg-sunken); border-radius: var(--r-md); opacity: 0; transform: translateY(10px); animation: medIn 0.5s var(--ease-soft) forwards; }
 .med-guide li::before { content: counter(med); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: var(--t-xs); font-weight: var(--w-bold); }

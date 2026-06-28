@@ -3203,7 +3203,7 @@ const medDots = document.getElementById("medDots"), medNextBtn = document.getEle
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
 const MED_CYCLE_SEC = 19; // 4-7-8 한 사이클 길이
-let medMinutes = (settings.medMinutes === 3 || settings.medMinutes === 10) ? settings.medMinutes : 5;
+let medMinutes = Math.min(60, Math.max(1, settings.medMinutes || 5));
 let medActive = false; // 호흡 세션이 실제로 시작됐는지(누적 기록 중복 방지)
 const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
 const medGlow = () => (document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,224,140,0.92)" : "rgba(120,142,205,0.95)");
@@ -3226,13 +3226,37 @@ function medRecord() {
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onPhase: (cls) => { if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // juice — 단계 전환 미세 햅틱(파티클은 완료 때만)
-  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
+  onAutoEnd: () => { medPhase = "done"; medClockStop(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
-const medDurEl = document.getElementById("medDur");
-function renderMedDur() { if (medDurEl) medDurEl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.min === medMinutes)); }
-if (medDurEl) medDurEl.addEventListener("click", (e) => { const b = e.target.closest("button[data-min]"); if (!b) return; Sound.tap(); medMinutes = +b.dataset.min; settings.medMinutes = medMinutes; saveSettingsObj(settings); renderMedDur(); });
-renderMedDur(); renderMedStat();
+// 시간 직접 조절(스텝퍼) + 야간 모드 + 남은 시간 카운트다운
+let medNight = !!settings.medNight;
+const medStepEl = document.getElementById("medStep");
+const medMinValEl = document.getElementById("medMinVal");
+const medNightToggle = document.getElementById("medNightToggle");
+const medClockEl = document.getElementById("medClock");
+let medClockTimer = null, medRemain = 0;
+function renderMedSetup() { if (medMinValEl) medMinValEl.textContent = medMinutes; if (medNightToggle) medNightToggle.checked = medNight; }
+if (medStepEl) medStepEl.addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-d]"); if (!b) return;
+  Sound.tap(); Haptic.tap();
+  medMinutes = Math.min(60, Math.max(1, medMinutes + (+b.dataset.d)));
+  settings.medMinutes = medMinutes; saveSettingsObj(settings); renderMedSetup();
+});
+if (medNightToggle) medNightToggle.addEventListener("change", (e) => {
+  medNight = e.target.checked; settings.medNight = medNight; saveSettingsObj(settings);
+  if (medOverlay) medOverlay.classList.toggle("sleep", medNight);
+});
+function fmtClock(s) { s = Math.max(0, s | 0); const m = (s / 60) | 0, ss = s % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
+function medClockStart() {
+  if (!medClockEl) return;
+  medRemain = medCycleTarget() * MED_CYCLE_SEC;
+  medClockEl.hidden = false; medClockEl.textContent = fmtClock(medRemain);
+  if (medClockTimer) clearInterval(medClockTimer);
+  medClockTimer = setInterval(() => { medRemain -= 1; if (medClockEl) medClockEl.textContent = fmtClock(medRemain); if (medRemain <= 0) { clearInterval(medClockTimer); medClockTimer = null; } }, 1000);
+}
+function medClockStop() { if (medClockTimer) { clearInterval(medClockTimer); medClockTimer = null; } if (medClockEl) medClockEl.hidden = true; }
+renderMedSetup(); renderMedStat();
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {
   medIdx = i; const s = MED_STEPS[i];
@@ -3260,19 +3284,23 @@ function medStartBreathing() {
   medCaption.classList.add("show");
   medCircle.classList.remove("med-idle");
   medOpts.maxCycles = medCycleTarget(); medActive = true; // 선택한 시간만큼 자동 종료
+  medClockStart(); // 화면에 남은 시간 카운트다운
   autoAmbient(); medBreather.start();
 }
 function openMedGuide() {
   if (!medOverlay) return;
   medOverlay.hidden = false; Sound.unlock();
+  medOverlay.classList.toggle("sleep", medNight); // 야간 모드 → 어두운 우주 팔레트
+  if (medNight) requestWake();                    // 화면 켜둠(야간 명상)
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
   medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
+  medClockStop();
   if (medSwipeHint) medSwipeHint.hidden = false;
   medShow(0); medResetTimer();
 }
 function closeMedGuide() {
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
-  medRecord(); // 진행한 만큼 누적 시간 기록(중복 방지 플래그 사용)
+  medClockStop(); medRecord(); releaseWake(); // 시계 정지 + 진행한 만큼 누적 기록(중복 방지) + 화면 잠금 복귀
   try { medBreather && medBreather.stop(); } catch (e) {}
   medPhase = "teach"; if (medOverlay) medOverlay.hidden = true;
 }

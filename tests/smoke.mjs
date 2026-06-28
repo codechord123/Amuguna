@@ -206,12 +206,17 @@ try {
   q("[data-tab=rest]").click();
   check("쉼 탭 명상 패널 기본 표시", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   check("명상하는 법 가이드(5단계)", d.querySelectorAll("#medGuide li").length === 5);
-  // 명상 시간 선택 칩 + 누적 통계
-  check("명상 시간 선택 칩(3·5·10분)", d.querySelectorAll("#medDur button").length === 3);
-  q("#medDur button[data-min='10']").click();
-  check("명상 시간 칩 선택 반영", q("#medDur button[data-min='10']").classList.contains("on") && ls("settings_v2").medMinutes === 10);
+  // 명상 시간 직접 조절(스텝퍼) + 야간 모드 + 누적 통계 + 화면 카운트다운
+  const _medMin0 = +q("#medMinVal").textContent;
+  q("#medStep button[data-d='1']").click();
+  check("명상 시간 +버튼 직접 조절", +q("#medMinVal").textContent === _medMin0 + 1 && ls("settings_v2").medMinutes === _medMin0 + 1);
+  q("#medStep button[data-d='-1']").click();
+  check("명상 시간 −버튼 직접 조절", +q("#medMinVal").textContent === _medMin0);
+  check("명상 화면 카운트다운 요소 존재", !!q("#medClock"));
+  q("#medNightToggle").click();
+  check("야간 모드 선택 저장+적용", ls("settings_v2").medNight === true && q("#medOverlay").classList.contains("sleep"));
+  q("#medNightToggle").click(); // 원복
   check("명상 누적 통계 표시", q("#medStat").textContent.length > 0);
-  q("#medDur button[data-min='5']").click(); // 기본값으로 되돌림
   // 명상 가이드 — 누르면 전체화면 전환 + 단계 애니메이션 → 호흡으로 연결
   q("#medStartBtn").click();
   check("명상 가이드 전체화면 열림", !q("#medOverlay").hasAttribute("hidden") && q("#medStepTitle").textContent.length > 0);

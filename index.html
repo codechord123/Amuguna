@@ -140,10 +140,13 @@
           <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
           <li><b>함께 호흡</b><span>아래 동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
         </ol>
-        <div class="med-dur" id="medDur" role="group" aria-label="명상 시간 선택">
-          <button type="button" data-min="3">3분</button>
-          <button type="button" data-min="5">5분</button>
-          <button type="button" data-min="10">10분</button>
+        <div class="med-setup">
+          <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
+            <button type="button" class="med-step-btn" data-d="-1" aria-label="1분 줄이기">−</button>
+            <span class="med-step-val"><b id="medMinVal">5</b>분</span>
+            <button type="button" class="med-step-btn" data-d="1" aria-label="1분 늘리기">+</button>
+          </div>
+          <label class="med-night"><input type="checkbox" id="medNightToggle" /> <span>🌙 야간 모드</span></label>
         </div>
         <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">▶ 따라하며 명상하기</button>
         <p class="med-stat" id="medStat"></p>
@@ -483,6 +486,7 @@
       <div class="cb-phase" aria-hidden="true"><span class="p p-ready">준비</span><span class="p p-in">들이쉬기 · INHALE</span><span class="p p-hold">멈춤 · HOLD</span><span class="p p-out">내쉬기 · EXHALE</span></div>
       <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
     </div>
+    <p class="med-clock" id="medClock" aria-live="polite" hidden></p>
     <div class="med-caption" id="medCaption"><b id="medStepTitle"></b><span id="medStepBody"></span></div>
     <div class="med-dots" id="medDots"></div>
     <p class="med-swipe-hint" id="medSwipeHint">← 넘기며 따라가요 →</p>
