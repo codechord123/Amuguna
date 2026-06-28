@@ -231,6 +231,7 @@ try {
   q("#restSeg button[data-rseg=meditate]").click();
   q("#safetyBreath").click(); // 위기 진정 → 호흡 오버레이 열기
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#qbText").innerHTML));
+  check("빠른 호흡도 코스믹 비주얼로 통일", !!q("#breathOverlay .cb-stage") && !!q("#breathOverlay .cb-orb") && !!q("#breathOverlay .cb-ring-shine"));
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
   check("Sound.breathStart/Stop 존재", typeof window.Sound.breathStart === "function" && typeof window.Sound.breathStop === "function");
   check("호흡명상 카드·우상단 FAB 제거됨", !q("#breathBtn") && !q("#quickBreathFab"));

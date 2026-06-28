@@ -500,7 +500,7 @@ function makeBreather(circleEl, textEl, base, opts) {
       if (pre) { clearInterval(pre); pre = null; }
       if (tick) { clearInterval(tick); tick = null; }
       Sound.breathStop();
-      circleEl.className = base; circleEl.style.transitionDuration = "";
+      circleEl.className = base + " med-idle"; circleEl.style.transitionDuration = ""; // med-idle: 종료 메시지가 보이도록(코스믹 비주얼)
       textEl.innerHTML = cycles > 0 ? `잘했어요<br><b>${cycles}회</b>` : "잘했어요";
       if (typeof checkBadges === "function") checkBadges(); // 호흡 배지 즉시 반영
     },
@@ -3158,10 +3158,16 @@ function releaseWake() { try { if (wakeLock) { wakeLock.release(); wakeLock = nu
 function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "🌙 수면 모드 켜짐 (자동 종료·화면 유지)" : "🌙 수면 모드 끔"; }
 updateSleepLabel();
 
-const qbBreather = makeBreather(document.getElementById("qbCircle"), document.getElementById("qbText"), "breath-circle big", {
+const qbCircleEl = document.getElementById("qbCircle");
+const qbViz = qbCircleEl ? qbCircleEl.querySelector(".cb-viz") : null;
+const qbBreather = makeBreather(qbCircleEl, document.getElementById("qbText"), "cb-stage", {
   sleep: () => sleepMode,
   maxCycles: 12,
-  onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
+  onPhase: (cls) => { // juice — 명상과 동일한 햅틱·빛수렴
+    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.converge(qbViz || qbCircleEl, { count: 16, spread: 120, glow: medGlow() }); }
+    else { Haptic.tap(); }
+  },
+  onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; if (!sleepMode) Sound.chime(); setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
 });
 function openBreath() {
   breathOverlay.hidden = false;

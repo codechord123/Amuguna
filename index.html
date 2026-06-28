@@ -439,9 +439,24 @@
     </footer>
   </main>
 
-  <div class="breath-overlay" id="breathOverlay" role="dialog" aria-modal="true" aria-label="호흡 명상" hidden>
+  <div class="breath-overlay med-overlay" id="breathOverlay" role="dialog" aria-modal="true" aria-label="호흡 명상" hidden>
+    <div class="cb-stars" aria-hidden="true"></div>
     <p class="qb-title">잠깐, 같이 숨 쉬어요</p>
-    <div class="breath-circle big" id="qbCircle"><span id="qbText">시작</span></div>
+    <div class="cb-stage med-idle" id="qbCircle">
+      <div class="cb-viz">
+        <div class="cb-glow" aria-hidden="true"></div>
+        <div class="cb-aura" aria-hidden="true"></div>
+        <div class="cb-pulse" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="cb-plane" aria-hidden="true">
+          <svg class="cb-ring" viewBox="0 0 200 200"><circle class="cb-ring-hi" cx="100" cy="100" r="96"/><circle class="cb-ring-track" cx="100" cy="100" r="92"/><circle class="cb-ring-lo" cx="100" cy="100" r="88"/><circle class="cb-ring-prog" cx="100" cy="100" r="92"/><circle class="cb-ring-shine" cx="100" cy="100" r="92"/></svg>
+          <div class="cb-dot-orbit"><span class="cb-dot"></span></div>
+        </div>
+        <div class="cb-orb"></div>
+        <span class="cb-count" id="qbText">시작</span>
+      </div>
+      <div class="cb-phase" aria-hidden="true"><span class="p p-ready">준비</span><span class="p p-in">들이쉬기 · INHALE</span><span class="p p-hold">멈춤 · HOLD</span><span class="p p-out">내쉬기 · EXHALE</span></div>
+      <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
+    </div>
     <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
     <button type="button" class="sleep-toggle" id="sleepToggle">🌙 수면 모드 끔</button>
     <button class="btn primary" id="qbClose">그만하기</button>

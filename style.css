@@ -322,8 +322,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   --med-on-ink: #ffffff; --med-on-bg: #54639c;
   gap: var(--s4); background: var(--med-bg); color: var(--med-text); overflow: hidden;
 }
-[data-theme="dark"] .med-overlay {
-  /* 다크모드: 깊은 우주 + 황금 발광 */
+[data-theme="dark"] .med-overlay, .med-overlay.sleep {
+  /* 다크모드(및 수면 모드): 깊은 우주 + 황금 발광 */
   --med-bg: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%);
   --med-fg: #f3d98a; --med-fg-soft: rgba(243,217,138,0.5);
   --med-track: rgba(243,217,138,0.14); --med-glow: rgba(243,217,138,0.85);
