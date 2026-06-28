@@ -210,6 +210,12 @@ try {
   q("#medStartBtn").click();
   check("명상 가이드 전체화면 열림", !q("#medOverlay").hasAttribute("hidden") && q("#medStepTitle").textContent.length > 0);
   check("명상 가이드 진행 점 5개", d.querySelectorAll("#medDots i").length === 5);
+  // 드래그(스와이프)로 다음 단계
+  const _medT1 = q("#medStepTitle").textContent;
+  q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerdown", { clientX: 220 }));
+  q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerup", { clientX: 110 }));
+  check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
+  check("선형 호흡 가이드(점·채움)", !!q("#medCircle .bl-dot") && !!q("#medCircle .bl-fill"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
   q("#medClose").click();

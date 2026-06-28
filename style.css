@@ -298,11 +298,24 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-guide li:nth-child(5) { animation-delay: 0.45s; }
 @keyframes medIn { to { opacity: 1; transform: none; } }
 /* 명상 가이드 전체화면 */
-.med-overlay { gap: var(--s5); }
+.med-overlay { gap: var(--s4); }
 .med-close { position: absolute; top: var(--s5); right: var(--s5); background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: var(--ink-2); cursor: pointer; padding: var(--s2); }
-.med-overlay .med-idle { animation: medIdle 5s var(--ease-breath) infinite; }
-.med-overlay .med-idle::before { opacity: 0.3; transform: scale(1.6); }
-@keyframes medIdle { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+/* 선(線)을 따라 오르내리는 호흡 가이드 — 점의 움직임을 따라 숨 쉬기 */
+.breath-line { position: relative; width: 12px; height: 200px; }
+.bl-track { position: absolute; inset: 0; background: var(--bg-sunken); border-radius: 99px; overflow: hidden; }
+.bl-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-radius: 99px; background: linear-gradient(to top, var(--accent), var(--accent-2)); transition-property: height; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.bl-dot { position: absolute; left: 50%; bottom: 0; width: 28px; height: 28px; margin-left: -14px; margin-bottom: -14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent)); box-shadow: 0 0 18px 3px var(--ring); transition-property: transform, box-shadow; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.breath-line.inhale .bl-fill, .breath-line.hold .bl-fill { height: 100%; }
+.breath-line.inhale .bl-dot, .breath-line.hold .bl-dot { transform: translateY(-176px); box-shadow: 0 0 30px 8px var(--ring); }
+.breath-line.exhale .bl-fill { height: 0; }
+.breath-line.exhale .bl-dot { transform: translateY(0); }
+.breath-line.ready .bl-dot { box-shadow: 0 0 26px 7px var(--ring); }
+.breath-line.med-idle .bl-dot { animation: blFloat 6s ease-in-out infinite; }
+.breath-line.med-idle .bl-fill { height: 45%; transition: none; }
+@keyframes blFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-88px); } }
+.breath-phase { text-align: center; font-weight: var(--w-bold); color: var(--ink); margin: 0; min-height: 2.4em; line-height: 1.3; font-size: 1.4rem; }
+.breath-phase b { display: block; font-size: 1.9rem; }
+.med-swipe-hint { font-size: var(--t-xs); color: var(--soft); margin: 0; }
 .med-caption { text-align: center; max-width: 320px; min-height: 84px; }
 .med-caption b { display: block; font-size: var(--t-lg); font-weight: var(--w-bold); color: var(--ink); margin-bottom: var(--s2); }
 .med-caption span { font-size: var(--t-base); color: var(--ink-2); line-height: 1.6; }

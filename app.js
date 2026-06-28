@@ -3203,8 +3203,9 @@ const medOverlay = document.getElementById("medOverlay");
 const medCircle = document.getElementById("medCircle"), medCircleText = document.getElementById("medCircleText");
 const medCaption = document.getElementById("medCaption"), medStepTitle = document.getElementById("medStepTitle"), medStepBody = document.getElementById("medStepBody");
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
+const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
-const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "breath-circle big", {
+const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "breath-line", {
   sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircleText.textContent = "🌿"; medNextBtn.textContent = "닫기"; },
 }) : null;
@@ -3215,26 +3216,34 @@ function medShow(i) {
   medStepTitle.textContent = s.t; medStepBody.textContent = s.b; medCircleText.textContent = s.e;
   medCaption.classList.add("show"); medRenderDots();
 }
+function medResetTimer() { if (medTimer) clearInterval(medTimer); medTimer = setInterval(medAdvance, MED_STEP_MS); }
 function medAdvance() { if (medIdx < MED_STEPS.length - 1) medShow(medIdx + 1); else medStartBreathing(); }
+// 드래그/탭으로 단계 이동 (원활하게 넘기기)
+function medGoto(i) {
+  if (medPhase !== "teach") return;
+  if (i >= MED_STEPS.length) { medStartBreathing(); return; }
+  medShow(Math.max(0, i)); medResetTimer();
+}
 function medStartBreathing() {
   if (medPhase === "breathe") return;
   medPhase = "breathe";
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
   if (medDots) medDots.innerHTML = "";
+  if (medSwipeHint) medSwipeHint.hidden = true;
   medNextBtn.textContent = "그만하기";
   medCaption.classList.remove("show"); void medCaption.offsetWidth;
-  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = "동그라미를 따라 4 · 7 · 8";
+  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = "점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요";
   medCaption.classList.add("show");
+  medCircle.classList.remove("med-idle");
   autoAmbient(); medBreather.start();
 }
 function openMedGuide() {
   if (!medOverlay) return;
   medOverlay.hidden = false; Sound.unlock();
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
-  medCircle.className = "breath-circle big med-idle"; medCircleText.textContent = "🧘";
-  medShow(0);
-  if (medTimer) clearInterval(medTimer);
-  medTimer = setInterval(medAdvance, MED_STEP_MS);
+  medCircle.className = "breath-line med-idle"; medCircleText.textContent = "🧘";
+  if (medSwipeHint) medSwipeHint.hidden = false;
+  medShow(0); medResetTimer();
 }
 function closeMedGuide() {
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
@@ -3246,6 +3255,18 @@ const _medClose = document.getElementById("medClose");
 if (_medClose) _medClose.addEventListener("click", () => { Sound.tap(); closeMedGuide(); });
 const _medStartBtn = document.getElementById("medStartBtn");
 if (_medStartBtn) _medStartBtn.addEventListener("click", () => { Sound.tap(); openMedGuide(); });
+// 드래그(스와이프)·탭으로 단계 넘기기 — 교육 단계에서만
+let _medDownX = null;
+if (medOverlay) {
+  medOverlay.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) { _medDownX = null; return; } _medDownX = e.clientX; });
+  medOverlay.addEventListener("pointerup", (e) => {
+    if (_medDownX == null || medPhase !== "teach") { _medDownX = null; return; }
+    const dx = e.clientX - _medDownX; _medDownX = null;
+    if (dx < -40) medGoto(medIdx + 1);
+    else if (dx > 40) medGoto(medIdx - 1);
+    else medGoto(medIdx + 1); // 가볍게 탭해도 다음
+  });
+}
 
 /* ===================== 오늘의 여정 (적응형 단계 기록) ===================== */
 const MOOD_ORDER = ["지쳤어요", "우울해요", "불안해요", "무기력해요", "그럭저럭", "괜찮아요", "활기차요"];
