@@ -361,7 +361,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.inhale .cb-viz, .cb-stage.hold .cb-viz { transform: scale(1.12); }
 .cb-stage.exhale .cb-viz { transform: scale(0.96); }
 /* 차오르는 진행 링 */
-.cb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+/* 위상 시간(4·7·8초)을 자식(진행 링)까지 전달하기 위해 inherit 사슬을 연결 */
+.cb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; transition-duration: inherit; }
 /* 공이 지나갈 경로(빈 채널) */
 .cb-ring-track { fill: none; stroke: var(--med-path); stroke-width: 7; opacity: 0.4; }
 /* 공이 지나간 자리 — 채널 위가 색으로 칠해짐(들숨) / 되돌아오며 지워짐(날숨) */
