@@ -3205,7 +3205,7 @@ const medCaption = document.getElementById("medCaption"), medStepTitle = documen
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
-const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "breath-line", {
+const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "breath-circle big", {
   sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircleText.textContent = "🌿"; medNextBtn.textContent = "닫기"; },
 }) : null;
@@ -3241,7 +3241,7 @@ function openMedGuide() {
   if (!medOverlay) return;
   medOverlay.hidden = false; Sound.unlock();
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
-  medCircle.className = "breath-line med-idle"; medCircleText.textContent = "🧘";
+  medCircle.className = "breath-circle big med-idle"; medCircleText.textContent = "🧘";
   if (medSwipeHint) medSwipeHint.hidden = false;
   medShow(0); medResetTimer();
 }

@@ -215,7 +215,7 @@ try {
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerdown", { clientX: 220 }));
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerup", { clientX: 110 }));
   check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
-  check("선형 호흡 가이드(점·채움)", !!q("#medCircle .bl-dot") && !!q("#medCircle .bl-fill"));
+  check("통합 호흡 비주얼(breath-circle)", q("#medCircle").classList.contains("breath-circle"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
   q("#medClose").click();
