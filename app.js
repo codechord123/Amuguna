@@ -266,7 +266,7 @@ function updateTodayStats() {
   // 주간 목표 진행(목표경사 효과) — 7일 중 며칠
   const wf = document.getElementById("wkGoalFill");
   if (wf) { wf.style.width = Math.round(week / 7 * 100) + "%"; wf.style.background = week >= 7 ? "var(--success)" : week >= 5 ? "var(--accent)" : "var(--accent-deep)"; }
-  set("wkGoalCap", week >= 7 ? "이번 주 목표 달성! 🎉" : `이번 주 목표 ${week}/7일`);
+  set("wkGoalCap", week >= 7 ? "목표 달성! 🎉" : `목표 ${week}/7`);
 }
 
 // 첫 화면(오늘의 여정) — 날짜·상태에 맞춰 주제 중심으로 안내

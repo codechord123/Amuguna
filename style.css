@@ -794,17 +794,17 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 
 /* ----- 여정 시작 카드 (오늘 탭의 단일 주제) ----- */
 /* ----- 첫 화면 통계 + 응원 ----- */
-.today-stats { padding: var(--s4) var(--s5); }
+.today-stats { padding: var(--s3) var(--s4); }
 .ts-row { display: flex; justify-content: space-around; text-align: center; gap: var(--s2); }
-.ts-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; border: none; background: transparent; font-family: inherit; cursor: pointer; border-radius: var(--r-sm); padding: var(--s2) var(--s1); transition: background 0.2s; }
+.ts-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; border: none; background: transparent; font-family: inherit; cursor: pointer; border-radius: var(--r-sm); padding: var(--s1) var(--s1); transition: background 0.2s; }
 .ts-item:hover { background: var(--bg-sunken); }
 .ts-item:active { transform: scale(0.96); }
-.ts-num { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
-.ts-num i { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
+.ts-num { font-size: var(--t-lg); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
+.ts-num i { font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
 .ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
-.ts-cheer { margin: var(--s4) 0 0; padding-top: var(--s3); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
-.wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); }
-.wk-goal-bar { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
+.ts-cheer { margin: var(--s3) 0 0; padding-top: var(--s2); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.5; word-break: keep-all; }
+.wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
+.wk-goal-bar { flex: 1; height: 6px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
 .wk-goal-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: var(--accent-deep); transition: width 0.7s var(--ease-soft), background 0.4s; }
 .wk-goal-cap { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); }
 
