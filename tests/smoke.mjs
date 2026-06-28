@@ -223,13 +223,13 @@ try {
   q("#restSeg button[data-rseg=comfort]").click();
   check("위로 패널로 전환", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   q("#restSeg button[data-rseg=meditate]").click();
-  q("#breathBtn").click();
-  check("호흡 시작 시 카운트 표시", /\d/.test(q("#breathText").innerHTML));
-  q("#breathBtn").click();
+  q("#safetyBreath").click(); // 위기 진정 → 호흡 오버레이 열기
+  check("호흡 시작 시 카운트 표시", /\d/.test(q("#qbText").innerHTML));
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
   check("Sound.breathStart/Stop 존재", typeof window.Sound.breathStart === "function" && typeof window.Sound.breathStop === "function");
+  check("호흡명상 카드·우상단 FAB 제거됨", !q("#breathBtn") && !q("#quickBreathFab"));
+  check("명상 따라가는 점(cb-dot) 존재", !!q("#medCircle .cb-dot"));
   // 수면 모드 토글
-  q("#quickBreathFab").click();
   q("#sleepToggle").click();
   check("수면 모드 저장", ls("settings_v2").sleepBreath === true);
   check("수면 모드 화면 클래스", d.querySelector("#breathOverlay").classList.contains("sleep"));

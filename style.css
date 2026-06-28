@@ -339,6 +339,12 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 50% 45%, #fff6d8 0%, #f6c45a 28%, rgba(217,150,40,0.45) 55%, transparent 72%); filter: blur(2px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { transform: scale(1.18); }
 .cb-stage.exhale .cb-orb { transform: scale(0.82); opacity: 0.8; }
+/* 따라가는 작은 빛 점 — 링을 한 바퀴 돌며 호흡 안내 */
+.cb-dot-orbit { position: absolute; inset: 0; transform: rotate(0deg); transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-stage.inhale .cb-dot-orbit, .cb-stage.hold .cb-dot-orbit { transform: rotate(360deg); }
+.cb-stage.exhale .cb-dot-orbit, .cb-stage.ready .cb-dot-orbit { transform: rotate(0deg); }
+.cb-stage.med-idle .cb-dot-orbit { opacity: 0; }
+.cb-dot { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #fffef5 0%, #ffe9a8 45%, #f3c24f 100%); box-shadow: 0 0 10px 3px rgba(255,224,140,0.9), 0 0 22px 7px rgba(243,194,79,0.45); transform: translateY(-115px); }
 .cb-count { position: relative; z-index: 1; color: #fff7e2; font-weight: 800; text-shadow: 0 0 18px rgba(255,225,150,0.9); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }

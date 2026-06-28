@@ -507,13 +507,6 @@ function makeBreather(circleEl, textEl, base, opts) {
   return api;
 }
 
-const restBreather = makeBreather(document.getElementById("breathCircle"), document.getElementById("breathText"), "breath-circle");
-const breathBtn = document.getElementById("breathBtn");
-breathBtn.addEventListener("click", () => {
-  if (restBreather.isRunning()) { restBreather.stop(); breathBtn.textContent = "호흡 시작"; }
-  else { autoAmbient(); restBreather.start(); breathBtn.textContent = "그만하기"; }
-});
-
 const missions = [
   "물 한 잔 천천히 마시기 💧", "창문 열고 바깥 공기 30초 느끼기 🌿", "어깨를 크게 한 바퀴 돌리기 🤸",
   "좋아하는 노래 딱 한 곡 듣기 🎧", "스마트폰 내려놓고 1분간 눈 감기 😌", "기지개를 시원하게 한 번 켜기 🙆",
@@ -3180,7 +3173,6 @@ function openBreath() {
   document.getElementById("qbClose").focus();
 }
 function closeBreath() { qbBreather.stop(); releaseWake(); breathOverlay.hidden = true; }
-document.getElementById("quickBreathFab").addEventListener("click", openBreath);
 document.getElementById("qbClose").addEventListener("click", closeBreath);
 sleepToggle.addEventListener("click", () => {
   Sound.tap();
