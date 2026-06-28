@@ -215,7 +215,8 @@ try {
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerdown", { clientX: 220 }));
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerup", { clientX: 110 }));
   check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
-  check("코스믹 호흡 비주얼(cb-stage·플라워·링)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-flower") && !!q("#medCircle .cb-ring-prog"));
+  check("코스믹 호흡 비주얼(cb-stage·만다라·링)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-flower") && !!q("#medCircle .cb-ring-prog"));
+  check("명상 기하 만다라·아우라 이펙트", !!q("#medOverlay .cb-geo") && !!q("#medOverlay .cb-aura"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
   q("#medClose").click();

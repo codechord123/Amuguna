@@ -306,11 +306,42 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-guide li:nth-child(4) { animation-delay: 0.35s; }
 .med-guide li:nth-child(5) { animation-delay: 0.45s; }
 @keyframes medIn { to { opacity: 1; transform: none; } }
-/* ===== 명상 가이드 — 어두운 우주 무드 + 황금 발광 + 신성기하학 ===== */
-.med-overlay { gap: var(--s4); background: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%); color: #f1e4c9; overflow: hidden; }
-.med-overlay .med-close { position: absolute; top: var(--s5); right: var(--s5); z-index: 3; background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: #cdbf9e; cursor: pointer; padding: var(--s2); }
-/* 별가루 배경 + 잔잔한 반짝임 */
+/* ===== 명상 가이드 — 밝은 새벽빛(기본) + 다크(우주) + 기하 만다라 ===== */
+.med-overlay {
+  /* 밝은 화면 대비를 위한 보석빛 인디고 팔레트 (라이트 기본) */
+  --med-bg: radial-gradient(135% 108% at 50% 20%, #f7f8ff 0%, #e9edfc 40%, #dde4f7 72%, #ccd6f0 100%);
+  --med-fg: #5546b8; --med-fg-soft: rgba(85,70,184,0.55);
+  --med-track: rgba(85,70,184,0.16); --med-glow: rgba(110,90,240,0.5);
+  --med-orb: radial-gradient(circle at 50% 42%, #ffffff 0%, #bcb2ff 26%, #7b6cf0 50%, rgba(123,108,240,0.28) 66%, transparent 78%);
+  --med-aura: radial-gradient(circle, rgba(140,120,255,0.4) 0%, rgba(120,160,255,0.18) 45%, transparent 72%);
+  --med-text: #2b2456; --med-text2: #564f86; --med-text3: #8884a6;
+  --med-dot: radial-gradient(circle at 50% 40%, #ffffff 0%, #c6beff 45%, #6a5bf0 100%);
+  --med-dot-glow: 0 0 10px 3px rgba(110,90,240,0.55), 0 0 22px 7px rgba(110,90,240,0.3);
+  --med-on-ink: #ffffff; --med-on-bg: #5546b8;
+  gap: var(--s4); background: var(--med-bg); color: var(--med-text); overflow: hidden;
+}
+[data-theme="dark"] .med-overlay {
+  /* 다크모드: 깊은 우주 + 황금 발광 */
+  --med-bg: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%);
+  --med-fg: #f3d98a; --med-fg-soft: rgba(243,217,138,0.5);
+  --med-track: rgba(243,217,138,0.14); --med-glow: rgba(243,217,138,0.85);
+  --med-orb: radial-gradient(circle at 50% 45%, #fff6d8 0%, #f6c45a 28%, rgba(217,150,40,0.45) 55%, transparent 72%);
+  --med-aura: radial-gradient(circle, rgba(246,196,90,0.42) 0%, rgba(217,150,40,0.16) 45%, transparent 72%);
+  --med-text: #f6ecd2; --med-text2: #c9bd9e; --med-text3: #8b8169;
+  --med-dot: radial-gradient(circle at 50% 40%, #fffef5 0%, #ffe9a8 45%, #f3c24f 100%);
+  --med-dot-glow: 0 0 10px 3px rgba(255,224,140,0.9), 0 0 22px 7px rgba(243,194,79,0.45);
+  --med-on-ink: #060509; --med-on-bg: #f3d98a;
+}
+.med-overlay .med-close { position: absolute; top: var(--s5); right: var(--s5); z-index: 3; background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: var(--med-text2); cursor: pointer; padding: var(--s2); }
+/* 배경 앰비언트 — 라이트: 부드러운 보케 드리프트 / 다크: 별가루 반짝임 */
 .cb-stars { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image:
+  radial-gradient(90px 90px at 16% 24%, rgba(150,130,255,0.16), transparent 70%),
+  radial-gradient(120px 120px at 82% 28%, rgba(120,170,255,0.14), transparent 70%),
+  radial-gradient(100px 100px at 72% 82%, rgba(180,140,255,0.13), transparent 70%),
+  radial-gradient(80px 80px at 24% 78%, rgba(140,160,255,0.13), transparent 70%);
+  animation: cbDrift 16s ease-in-out infinite alternate; }
+@keyframes cbDrift { from { transform: translate3d(0,0,0); } to { transform: translate3d(6px,-16px,0); } }
+[data-theme="dark"] .cb-stars { background-image:
   radial-gradient(1.2px 1.2px at 12% 18%, #fff9, transparent), radial-gradient(1px 1px at 28% 62%, #fff7, transparent),
   radial-gradient(1.4px 1.4px at 47% 12%, #ffe9b0, transparent), radial-gradient(1px 1px at 63% 38%, #fff6, transparent),
   radial-gradient(1.2px 1.2px at 78% 22%, #fff8, transparent), radial-gradient(1px 1px at 88% 64%, #fff6, transparent),
@@ -321,22 +352,28 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 @keyframes cbTwinkle { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
 .med-overlay > *:not(.cb-stars) { position: relative; z-index: 2; }
 /* 호흡 무대 */
-.cb-stage { display: flex; flex-direction: column; align-items: center; gap: var(--s4); color: #f3d98a; }
+.cb-stage { display: flex; flex-direction: column; align-items: center; gap: var(--s4); color: var(--med-fg); }
 .cb-viz { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-viz, .cb-stage.hold .cb-viz { transform: scale(1.12); }
 .cb-stage.exhale .cb-viz { transform: scale(0.96); }
 /* 차오르는 진행 링 */
 .cb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-.cb-ring-track { fill: none; stroke: rgba(243,217,138,0.14); stroke-width: 3; }
-.cb-ring-prog { fill: none; stroke: #f3d98a; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 6px rgba(243,217,138,0.8)); transition-property: stroke-dashoffset; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-ring-track { fill: none; stroke: var(--med-track); stroke-width: 3; }
+.cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 6px var(--med-glow)); transition-property: stroke-dashoffset; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog { stroke-dashoffset: 0; }
 .cb-stage.exhale .cb-ring-prog { stroke-dashoffset: 578; }
 .cb-stage.med-idle .cb-ring { opacity: 0; }
-/* 플라워 오브 라이프(신성기하학) */
-.cb-flower { position: absolute; width: 170px; height: 170px; color: rgba(243,217,138,0.45); filter: drop-shadow(0 0 5px rgba(243,217,138,0.4)); animation: cbSpin 60s linear infinite; }
+/* 발광 아우라 — 은은하게 호흡하는 빛무리 */
+.cb-aura { position: absolute; width: 232px; height: 232px; border-radius: 50%; background: var(--med-aura); filter: blur(16px); animation: cbAura 7s var(--ease-breath) infinite; }
+@keyframes cbAura { 0%,100% { transform: scale(0.9); opacity: 0.55; } 50% { transform: scale(1.1); opacity: 0.95; } }
+/* 기하 만다라 — 동심원 + 12점 헤일로(천천히 회전) */
+.cb-flower { position: absolute; width: 188px; height: 188px; color: var(--med-fg-soft); filter: drop-shadow(0 0 4px var(--med-glow)); animation: cbSpin 90s linear infinite; }
 @keyframes cbSpin { to { transform: rotate(360deg); } }
+/* 12각 다각형 — 반대로 천천히 회전(깊이감) */
+.cb-geo { position: absolute; width: 132px; height: 132px; color: var(--med-fg-soft); opacity: 0.7; animation: cbSpinR 80s linear infinite; }
+@keyframes cbSpinR { to { transform: rotate(-360deg); } }
 /* 중심 발광 오브 */
-.cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 50% 45%, #fff6d8 0%, #f6c45a 28%, rgba(217,150,40,0.45) 55%, transparent 72%); filter: blur(2px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { transform: scale(1.18); }
 .cb-stage.exhale .cb-orb { transform: scale(0.82); opacity: 0.8; }
 /* 따라가는 작은 빛 점 — 링을 한 바퀴 돌며 호흡 안내 */
@@ -344,30 +381,34 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.inhale .cb-dot-orbit, .cb-stage.hold .cb-dot-orbit { transform: rotate(360deg); }
 .cb-stage.exhale .cb-dot-orbit, .cb-stage.ready .cb-dot-orbit { transform: rotate(0deg); }
 .cb-stage.med-idle .cb-dot-orbit { opacity: 0; }
-.cb-dot { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #fffef5 0%, #ffe9a8 45%, #f3c24f 100%); box-shadow: 0 0 10px 3px rgba(255,224,140,0.9), 0 0 22px 7px rgba(243,194,79,0.45); transform: translateY(-115px); }
-.cb-count { position: relative; z-index: 1; color: #fff7e2; font-weight: 800; text-shadow: 0 0 18px rgba(255,225,150,0.9); font-size: 2.2rem; line-height: 1; }
+.cb-dot { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--med-dot); box-shadow: var(--med-dot-glow); transform: translateY(-115px); }
+.cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
 /* 단계 라벨 + 하단 단계 바 (호흡 중에만) */
-.cb-phase { min-height: 1.6em; font-size: var(--t-md); font-weight: var(--w-bold); letter-spacing: 0.04em; color: #f3d98a; text-shadow: 0 0 12px rgba(243,217,138,0.5); }
+.cb-phase { min-height: 1.6em; font-size: var(--t-md); font-weight: var(--w-bold); letter-spacing: 0.04em; color: var(--med-fg); text-shadow: 0 0 12px var(--med-glow); }
 .cb-phase .p { display: none; }
 .cb-stage.ready .cb-phase .p-ready, .cb-stage.inhale .cb-phase .p-in, .cb-stage.hold .cb-phase .p-hold, .cb-stage.exhale .cb-phase .p-out { display: block; animation: medCapIn 0.4s var(--ease-soft) both; }
 .cb-bar { display: flex; gap: 6px; }
-.cb-seg { font-size: var(--t-xs); color: #8b8169; padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid rgba(243,217,138,0.18); transition: color 0.3s, background 0.3s, border-color 0.3s; }
-.cb-stage.inhale .cb-seg.s-in, .cb-stage.hold .cb-seg.s-hold, .cb-stage.exhale .cb-seg.s-out { color: #060509; background: #f3d98a; border-color: #f3d98a; }
+.cb-seg { font-size: var(--t-xs); color: var(--med-text3); padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--med-track); transition: color 0.3s, background 0.3s, border-color 0.3s; }
+.cb-stage.inhale .cb-seg.s-in, .cb-stage.hold .cb-seg.s-hold, .cb-stage.exhale .cb-seg.s-out { color: var(--med-on-ink); background: var(--med-on-bg); border-color: var(--med-on-bg); }
 .cb-stage.med-idle .cb-phase, .cb-stage.med-idle .cb-bar { opacity: 0; }
 .cb-stage.med-idle .cb-orb { animation: med-idle-pulse 5.5s var(--ease-breath) infinite; }
-/* 가이드 캡션·점·힌트 (어두운 배경용) */
-.med-swipe-hint { font-size: var(--t-xs); color: #8b8169; margin: 0; }
+/* 가이드 캡션·점·힌트 (테마 토큰) */
+.med-swipe-hint { font-size: var(--t-xs); color: var(--med-text3); margin: 0; }
 .med-overlay .med-caption { text-align: center; max-width: 320px; min-height: 84px; }
-.med-overlay .med-caption b { display: block; font-size: var(--t-lg); font-weight: var(--w-bold); color: #f6ecd2; margin-bottom: var(--s2); }
-.med-overlay .med-caption span { font-size: var(--t-base); color: #c9bd9e; line-height: 1.6; }
+.med-overlay .med-caption b { display: block; font-size: var(--t-lg); font-weight: var(--w-bold); color: var(--med-text); margin-bottom: var(--s2); }
+.med-overlay .med-caption span { font-size: var(--t-base); color: var(--med-text2); line-height: 1.6; }
 .med-caption.show { animation: medCapIn 0.6s var(--ease-soft) both; }
 @keyframes medCapIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .med-dots { display: flex; gap: 8px; min-height: 8px; }
-.med-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(243,217,138,0.25); transition: background 0.3s, transform 0.3s; }
-.med-dots i.on { background: #f3d98a; transform: scale(1.35); }
-.med-overlay .btn.primary { background: #f3d98a; color: #1a1408; border: none; }
+.med-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--med-track); transition: background 0.3s, transform 0.3s; }
+.med-dots i.on { background: var(--med-on-bg); transform: scale(1.35); }
+.med-overlay .btn.primary { background: var(--med-on-bg); color: var(--med-on-ink); border: none; }
+/* 모션 최소화 선호 시 장식 애니메이션 정지 */
+@media (prefers-reduced-motion: reduce) {
+  .cb-flower, .cb-geo, .cb-aura, .cb-stars { animation: none; }
+}
 
 .mission { font-size: var(--t-md); font-weight: var(--w-semi); background: var(--bg-sunken); padding: var(--s4); border-radius: var(--r-sm); margin: 0 0 var(--s4); min-height: 1.6em; line-height: 1.55; }
 
