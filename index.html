@@ -140,6 +140,7 @@
           <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
           <li><b>함께 호흡</b><span>아래 동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
         </ol>
+        <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s4)">▶ 따라하며 명상하기</button>
       </div>
       <div class="card center">
         <h2>🌬️ 호흡 명상</h2>
@@ -454,6 +455,15 @@
     <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
     <button type="button" class="sleep-toggle" id="sleepToggle">🌙 수면 모드 끔</button>
     <button class="btn primary" id="qbClose">그만하기</button>
+  </div>
+
+  <!-- 명상 가이드 (전체화면 애니메이션) -->
+  <div class="breath-overlay med-overlay" id="medOverlay" role="dialog" aria-modal="true" aria-label="명상 가이드" hidden>
+    <button class="med-close" id="medClose" aria-label="닫기">✕</button>
+    <div class="breath-circle big med-idle" id="medCircle"><span id="medCircleText">🧘</span></div>
+    <div class="med-caption" id="medCaption"><b id="medStepTitle"></b><span id="medStepBody"></span></div>
+    <div class="med-dots" id="medDots"></div>
+    <button class="btn primary" id="medNext">건너뛰고 호흡 시작 →</button>
   </div>
 
   <!-- 오늘의 여정 (적응형 단계 기록) -->

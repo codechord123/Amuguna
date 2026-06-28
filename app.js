@@ -3190,6 +3190,63 @@ sleepToggle.addEventListener("click", () => {
 // 화면 복귀 시 wake lock 재획득
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !breathOverlay.hidden) requestWake(); });
 
+/* 명상 가이드 — 전체화면 전환 + 단계 애니메이션으로 따라하기 → 호흡으로 연결 */
+const MED_STEPS = [
+  { t: "편안한 자세", b: "의자나 바닥에 앉아 어깨의 힘을 스르륵 빼요.", e: "🪷" },
+  { t: "시선 내려놓기", b: "눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.", e: "😌" },
+  { t: "호흡 관찰", b: "코로 숨이 들어오고 나가는 감각을 그저 느껴요.", e: "🌬️" },
+  { t: "생각은 흘려보내기", b: "잡생각이 들면 '생각났네' 하고 다시 호흡으로.", e: "🍃" },
+  { t: "이제 함께 호흡", b: "동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.", e: "🫧" },
+];
+const MED_STEP_MS = 5500;
+const medOverlay = document.getElementById("medOverlay");
+const medCircle = document.getElementById("medCircle"), medCircleText = document.getElementById("medCircleText");
+const medCaption = document.getElementById("medCaption"), medStepTitle = document.getElementById("medStepTitle"), medStepBody = document.getElementById("medStepBody");
+const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
+let medIdx = 0, medTimer = null, medPhase = "teach";
+const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "breath-circle big", {
+  sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
+  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircleText.textContent = "🌿"; medNextBtn.textContent = "닫기"; },
+}) : null;
+function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
+function medShow(i) {
+  medIdx = i; const s = MED_STEPS[i];
+  medCaption.classList.remove("show"); void medCaption.offsetWidth; // 애니메이션 재생
+  medStepTitle.textContent = s.t; medStepBody.textContent = s.b; medCircleText.textContent = s.e;
+  medCaption.classList.add("show"); medRenderDots();
+}
+function medAdvance() { if (medIdx < MED_STEPS.length - 1) medShow(medIdx + 1); else medStartBreathing(); }
+function medStartBreathing() {
+  if (medPhase === "breathe") return;
+  medPhase = "breathe";
+  if (medTimer) { clearInterval(medTimer); medTimer = null; }
+  if (medDots) medDots.innerHTML = "";
+  medNextBtn.textContent = "그만하기";
+  medCaption.classList.remove("show"); void medCaption.offsetWidth;
+  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = "동그라미를 따라 4 · 7 · 8";
+  medCaption.classList.add("show");
+  autoAmbient(); medBreather.start();
+}
+function openMedGuide() {
+  if (!medOverlay) return;
+  medOverlay.hidden = false; Sound.unlock();
+  medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
+  medCircle.className = "breath-circle big med-idle"; medCircleText.textContent = "🧘";
+  medShow(0);
+  if (medTimer) clearInterval(medTimer);
+  medTimer = setInterval(medAdvance, MED_STEP_MS);
+}
+function closeMedGuide() {
+  if (medTimer) { clearInterval(medTimer); medTimer = null; }
+  try { medBreather && medBreather.stop(); } catch (e) {}
+  medPhase = "teach"; if (medOverlay) medOverlay.hidden = true;
+}
+if (medNextBtn) medNextBtn.addEventListener("click", () => { Sound.tap(); if (medPhase === "teach") medStartBreathing(); else closeMedGuide(); });
+const _medClose = document.getElementById("medClose");
+if (_medClose) _medClose.addEventListener("click", () => { Sound.tap(); closeMedGuide(); });
+const _medStartBtn = document.getElementById("medStartBtn");
+if (_medStartBtn) _medStartBtn.addEventListener("click", () => { Sound.tap(); openMedGuide(); });
+
 /* ===================== 오늘의 여정 (적응형 단계 기록) ===================== */
 const MOOD_ORDER = ["지쳤어요", "우울해요", "불안해요", "무기력해요", "그럭저럭", "괜찮아요", "활기차요"];
 const JTAGS = ["피곤", "불안", "보람", "외로움", "평온", "짜증", "설렘", "뿌듯"];

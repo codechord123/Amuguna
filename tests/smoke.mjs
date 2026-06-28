@@ -206,6 +206,14 @@ try {
   q("[data-tab=rest]").click();
   check("쉼 탭 명상 패널 기본 표시", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   check("명상하는 법 가이드(5단계)", d.querySelectorAll("#medGuide li").length === 5);
+  // 명상 가이드 — 누르면 전체화면 전환 + 단계 애니메이션 → 호흡으로 연결
+  q("#medStartBtn").click();
+  check("명상 가이드 전체화면 열림", !q("#medOverlay").hasAttribute("hidden") && q("#medStepTitle").textContent.length > 0);
+  check("명상 가이드 진행 점 5개", d.querySelectorAll("#medDots i").length === 5);
+  q("#medNext").click(); // 건너뛰고 호흡 시작
+  check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
+  q("#medClose").click();
+  check("명상 가이드 닫힘", q("#medOverlay").hasAttribute("hidden"));
   q("#restSeg button[data-rseg=comfort]").click();
   check("위로 패널로 전환", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   q("#restSeg button[data-rseg=meditate]").click();
