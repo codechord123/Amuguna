@@ -2608,10 +2608,22 @@ function renderWordWeb(entries) {
   const ew = {};
   docs.forEach((d) => { const us = d.words.filter((w) => idx[w] != null); for (let i = 0; i < us.length; i++) for (let j = i + 1; j < us.length; j++) { const a = idx[us[i]], b = idx[us[j]], key = a < b ? a + "-" + b : b + "-" + a; ew[key] = (ew[key] || 0) + 1; } });
   let edges = Object.entries(ew).map(([key, w]) => { const [a, b] = key.split("-").map(Number); return { a, b, w }; });
-  edges.sort((a, b) => b.w - a.w); const drawEdges = edges.slice(0, 28); // 레이아웃은 전체, 표시는 강한 연결 위주로 정리
+  edges.sort((a, b) => b.w - a.w); const drawDirect = edges.slice(0, 28); // 직접 동시출현(같은 날 함께 쓴 단어)
+  // 2차 연결(분포 유사도): 직접 동시출현이 없어도 '공통 이웃'이 많으면 의미상 관련 → 약한 점선 연결
+  // 예) '돈'과 '벌다'가 둘 다 '회사·야근'과 함께 쓰였다면, 서로 안 만났어도 이어줌.
+  const nbr = top.map((w) => new Set(adjW[w] ? Object.keys(adjW[w]) : []));
+  const directKey = new Set(drawDirect.map((e) => e.a + "-" + e.b));
+  const sim = [];
+  for (let i = 0; i < top.length; i++) for (let j = i + 1; j < top.length; j++) {
+    if (directKey.has(i + "-" + j)) continue;
+    let common = 0; nbr[j].forEach((w) => { if (nbr[i].has(w)) common++; });
+    if (common >= 2) sim.push({ a: i, b: j, w: common, sim: true });
+  }
+  sim.sort((a, b) => b.w - a.w);
+  const drawEdges = drawDirect.concat(sim.slice(0, 14)); // 직접 + 2차(상위 14)
   const deg = nodes.map(() => 0); drawEdges.forEach((e) => { deg[e.a]++; deg[e.b]++; }); const maxDeg = Math.max(1, ...deg);
   const maxF = Math.max(...nodes.map((nd) => nd.f));
-  // Louvain 군집 → 주제 묶음별 색. (표시 엣지 기준으로 묶어 화면과 일치)
+  // Louvain 군집 → 주제 묶음별 색. (직접+2차 연결 기준으로 묶어 관련 단어가 같은 색)
   const comm = louvainCommunities(nodes.length, drawEdges);
   nodes.forEach((nd, i) => nd.comm = comm[i] || 0);
   el._wwData = { nodes, edges, drawEdges, deg, maxF, maxDeg };
@@ -2629,20 +2641,20 @@ function renderWordWebSvg(el) {
     const a = nodes[e.a], b = nodes[e.b], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
     const nx = -(b.y - a.y), ny = (b.x - a.x), nl = Math.hypot(nx, ny) || 1, bend = Math.hypot(b.x - a.x, b.y - a.y) * 0.12;
     const cx = (mx + nx / nl * bend).toFixed(1), cy = (my + ny / nl * bend).toFixed(1);
-    return `<path class="ww-edge" data-a="${e.a}" data-b="${e.b}" d="M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${cx} ${cy} ${b.x.toFixed(1)} ${b.y.toFixed(1)}" stroke-width="${(0.5 + e.w / maxW * 2.4).toFixed(1)}" fill="none"/>`;
+    return `<path class="ww-edge${e.sim ? " ww-edge-sim" : ""}" data-a="${e.a}" data-b="${e.b}" d="M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${cx} ${cy} ${b.x.toFixed(1)} ${b.y.toFixed(1)}" stroke-width="${(0.5 + e.w / maxW * 2.4).toFixed(1)}" fill="none"/>`;
   }).join("");
   const nodeSvg = nodes.map((nd, i) => {
     const r = (6 + nd.f / maxF * 9 + deg[i] / maxDeg * 7), fs = (8.5 + nd.f / maxF * 4.5).toFixed(1);
     const major = i < 8;
     return `<g class="ww-node${major ? " major" : ""}" data-wi="${i}"><circle cx="${nd.x.toFixed(1)}" cy="${nd.y.toFixed(1)}" r="${r.toFixed(1)}" fill="${clusterColor(nd.comm)}"/><text x="${nd.x.toFixed(1)}" y="${(nd.y + r + 9).toFixed(1)}" class="ww-label" font-size="${fs}">${escapeHtml(nd.w)}</text></g>`;
   }).join("");
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg>${wwClusterLegend(nodes)}<p class="hint" style="margin-top:8px">원=단어(클수록 자주·연결 많음) · <b>색=주제 묶음</b>(함께 쓰인 단어끼리 자동 군집) · 선=같은 날 함께 쓴 단어. 단어를 누르면 관련 단어만 또렷해져요.</p>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="ww-svg" role="img" aria-label="일기 단어 연결망">${edgeSvg}${nodeSvg}</svg>${wwClusterLegend(nodes)}<p class="hint" style="margin-top:8px">원=단어 · <b>색=주제 묶음</b> · <b>실선</b>=함께 쓴 단어 · <b>점선</b>=비슷한 맥락(공통 이웃). 단어를 누르면 관련 단어만 또렷해져요.</p>`;
   const svg = el.querySelector(".ww-svg");
   svg.addEventListener("click", (ev) => {
     const g = ev.target.closest(".ww-node");
     if (!g) { svg.classList.remove("focused"); svg.querySelectorAll(".on").forEach((x) => x.classList.remove("on")); return; }
     const wi = +g.dataset.wi, nb = new Set([wi]);
-    edges.forEach((e) => { if (e.a === wi) nb.add(e.b); if (e.b === wi) nb.add(e.a); });
+    drawEdges.forEach((e) => { if (e.a === wi) nb.add(e.b); if (e.b === wi) nb.add(e.a); });
     svg.classList.add("focused");
     svg.querySelectorAll(".ww-node").forEach((nn) => nn.classList.toggle("on", nb.has(+nn.dataset.wi)));
     svg.querySelectorAll(".ww-edge").forEach((ee) => ee.classList.toggle("on", +ee.dataset.a === wi || +ee.dataset.b === wi));
@@ -2663,12 +2675,13 @@ function renderWordWebCy(el) {
   const accent = (cs.getPropertyValue("--accent") || "#5ec8b0").trim();
   const maxW = Math.max(1, ...drawEdges.map((e) => e.w));
   const els = nodes.map((nd, i) => ({ data: { id: "n" + i, label: nd.w, col: clusterColor(nd.comm), size: Math.round(18 + nd.f / maxF * 24 + deg[i] / maxDeg * 16) } }))
-    .concat(drawEdges.map((e, i) => ({ data: { id: "e" + i, source: "n" + e.a, target: "n" + e.b, w: (1 + e.w / maxW * 4) } })));
+    .concat(drawEdges.map((e, i) => ({ data: { id: "e" + i, source: "n" + e.a, target: "n" + e.b, w: (1 + e.w / maxW * 4), sim: e.sim ? 1 : 0 } })));
   const cy = window.cytoscape({
     container: host, elements: els,
     style: [
       { selector: "node", style: { "background-color": "data(col)", "width": "data(size)", "height": "data(size)", "label": "data(label)", "font-size": 11, "font-family": "inherit", "color": ink, "text-valign": "bottom", "text-margin-y": 3, "text-outline-width": 2, "text-outline-color": bg, "min-zoomed-font-size": 6, "transition-property": "opacity, background-color", "transition-duration": "0.2s" } },
       { selector: "edge", style: { "width": "data(w)", "line-color": edgeCol, "curve-style": "bezier", "opacity": 0.5, "transition-property": "opacity, line-color, width", "transition-duration": "0.25s" } },
+      { selector: "edge[sim = 1]", style: { "line-style": "dashed", "opacity": 0.32, "width": 1.5 } }, // 2차 연결(비슷한 맥락)은 점선
       { selector: "node.ww-faded", style: { "opacity": 0.1, "text-opacity": 0.1 } },
       { selector: "edge.ww-hide", style: { "opacity": 0, "events": "no" } },     // 그룹핑 아닌 선은 완전히 숨김
       { selector: "edge.ww-hl", style: { "line-color": accent, "opacity": 0.95, "width": 3 } }, // 그룹핑 선만 강조

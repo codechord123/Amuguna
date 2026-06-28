@@ -360,6 +360,16 @@ try {
   check("생각의 지도 노드 4+ 표시", wwCircles.length >= 4);
   check("생각의 지도 자동 군집(2색 이상)", new Set(wwCircles.map((c) => c.getAttribute("fill"))).size >= 2);
   check("생각의 지도 주제 묶음 범례", d.querySelectorAll("#wordWeb .ww-clusters .ww-cl").length >= 2);
+  // 2차 연결(분포 유사도): '돈'과 '벌다'는 서로 안 만났어도 공통 이웃(회사·야근)으로 이어짐
+  window.localStorage.setItem("entries_v2", JSON.stringify({
+    "2026-05-01": { date: "2026-05-01", mood: "지쳤어요", note: "돈 걱정 회사 야근", updatedAt: "2026-05-01T09:00:00" },
+    "2026-05-02": { date: "2026-05-02", mood: "지쳤어요", note: "벌어 회사 야근 통장", updatedAt: "2026-05-02T09:00:00" },
+  }));
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  { const lab = [...d.querySelectorAll("#wordWeb .ww-node")].map((g) => ({ wi: +g.dataset.wi, w: g.querySelector(".ww-label").textContent }));
+    const dn = lab.find((x) => x.w === "돈"), bl = lab.find((x) => x.w === "벌다");
+    const linked = !!dn && !!bl && [...d.querySelectorAll("#wordWeb .ww-edge")].some((e) => { const a = +e.dataset.a, b = +e.dataset.b; return (a === dn.wi && b === bl.wi) || (a === bl.wi && b === dn.wi); });
+    check("2차 연결: 돈↔벌다 (공통 이웃으로 연결)", linked); }
   check("처방 DB 500개 이상", (window.__rxCount || 0) >= 500);
   q("#subBack").click();
 
