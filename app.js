@@ -190,7 +190,7 @@ function activateTab(name, { scroll = true } = {}) {
   if (name === "stats") renderStats();
   if (name === "calendar") renderMoodCalendar(loadEntries());
   if (name === "challenge") renderChallenge();
-  if (name === "today") { updateJourneyHero(); updateTodayStats(); }
+  if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -237,7 +237,7 @@ function openEntryEditor(dateKey) {
 // 입력은 '오늘의 여정' 하나로 통일됨(옛 직접기록 폼 제거).
 function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
-function loadToday() { updateJourneyHero(); updateTodayStats(); }
+function loadToday() { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
 
 // 첫 화면 통계 + 응원 — 동기 부여
 function updateTodayStats() {
@@ -663,6 +663,7 @@ function renderChallenge() {
   const list = document.getElementById("challengeList");
   const summary = document.getElementById("chSummary");
   const chEmpty = document.getElementById("chEmpty");
+  if (typeof renderTodayHabitGlance === "function") { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
   if (chs.length === 0) {
     list.innerHTML = ""; summary.hidden = true; chEmpty.hidden = false; return;
   }
@@ -920,6 +921,7 @@ function renderStats() {
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
+  renderSummaryHabitGlance();
   renderCapture(entries);
   renderBadges();
   renderInsight(entries, list);
@@ -1223,6 +1225,15 @@ function drawReportCanvas(kind) {
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
   const diag = richDiagnose(cur, entries, keys);
   const sols = selectSolutions(diag, trend, keys[keys.length - 1]).map((s) => s.txt);
+  const ha = computeHabitAnalysis(keys, prevKeys, entries);
+  const habLines = ha ? ha.rows.slice(0, 3).map((r) => {
+    const bits = [`🔥${r.streak}`];
+    if (r.delta != null && Math.abs(r.delta) >= 1) bits.push(`${r.delta > 0 ? "▲" : "▼"}${Math.abs(r.delta)}`);
+    if (r.momentum != null && r.momentum >= 10) bits.push("📈");
+    else if (r.momentum != null && r.momentum <= -10) bits.push("📉");
+    return { name: `${r.h.emoji || "✅"} ${r.h.title}`, rate: `${r.rate}%`, sub: bits.join(" ") };
+  }) : [];
+  const habInsight = ha ? (habitInsightLines(ha, unit)[0] || "").replace(/<\/?b>/g, "") : "";
   const dMood = (cur.avgMood != null && prev.avgMood != null) ? Math.round(cur.avgMood - prev.avgMood) : null;
   const headline = (dMood != null && Math.abs(dMood) >= 3) ? (dMood > 0 ? `지난 ${unit}보다 기분이 ▲${dMood}점 좋아졌어요` : `지난 ${unit}보다 ▼${-dMood}점 가라앉았어요`) : "";
   const bestTxt = cur.best ? `🌟 가장 좋았던 날 ${cur.best.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.best.sc)}점` : "";
@@ -1249,6 +1260,16 @@ function drawReportCanvas(kind) {
     ctx.font = "bold 15px sans-serif"; if (render) { ctx.fillStyle = ink; ctx.fillText("💊 맞춤 처방", padX, y); } y += 24;
     sols.forEach((s) => { ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap("•  " + s, padX, y, contentW, 20, render); y += 10; });
     if (bestTxt || worstTxt) { y += 6; if (render) { ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 22; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; if (bestTxt) { if (render) ctx.fillText(bestTxt, padX, y); y += 21; } if (worstTxt) { if (render) ctx.fillText(worstTxt, padX, y); y += 21; } }
+    if (habLines.length) {
+      y += 6; if (render) { ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 22;
+      ctx.font = "bold 15px sans-serif"; const avgTxt = ha.avgDelta != null && Math.abs(ha.avgDelta) >= 1 ? `  (${ha.avgDelta > 0 ? "▲" : "▼"}${Math.abs(ha.avgDelta)})` : "";
+      if (render) { ctx.fillStyle = ink; ctx.fillText(`🎯 습관 분석 · 평균 ${ha.avgRate}%${avgTxt}`, padX, y); } y += 23;
+      habLines.forEach((hl) => {
+        ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(hl.name, padX, y); ctx.textAlign = "right"; ctx.fillStyle = soft; ctx.fillText(`${hl.rate}  ${hl.sub}`, W - padX, y); ctx.textAlign = "left"; } y += 20;
+      });
+      if (habInsight) { y += 2; ctx.font = "12px sans-serif"; if (render) ctx.fillStyle = soft; y = wrap("💡 " + habInsight, padX, y, contentW, 18, render); }
+      y += 8;
+    }
     y += 10; ctx.font = "11px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("오늘의 쉼 · 나를 돌본 기록 🌿", padX, y); } y += 24;
     return y;
   };
@@ -2125,6 +2146,89 @@ function selectSolutions(diag, trend, seedKey) {
   const rotated = head.concat(tail.slice(off), tail.slice(0, off));
   return rotated.slice(0, 3).map((k, i) => { const r = RX[k]; return { txt: r.s[(seed + i) % r.s.length], c: r.c, k }; });
 }
+// 습관 분석 코어 — 리포트(요약)용 심화 지표. 습관별로 달성률·지난 기간 대비 증감·현재 연속·
+// 후반 모멘텀(전반 대비)·가장 잘 지키는 요일·기분 연관(한 날 vs 안 한 날)을 한 번에 계산.
+function computeHabitAnalysis(keys, prevKeys, entries) {
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  if (!chs.length) return null;
+  const tk = todayKey();
+  const dowName = ["일", "월", "화", "수", "목", "금", "토"];
+  const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+  const moodBy = {}; keys.forEach((k) => { const e = entries[k]; if (e && e.mood) moodBy[k] = entryScore(e); });
+  const half = Math.floor(keys.length / 2);
+  const rows = chs.map((h) => {
+    let t = 0, dn = 0; const dow = [0, 0, 0, 0, 0, 0, 0], dowTot = [0, 0, 0, 0, 0, 0, 0];
+    let fhT = 0, fhD = 0, shT = 0, shD = 0;
+    keys.forEach((k, idx) => {
+      if (k < h.startDate || k > tk) return;
+      t++; const done = !!(h.done && h.done[k]);
+      const di = new Date(k + "T00:00:00").getDay();
+      dowTot[di]++; if (done) { dn++; dow[di]++; }
+      if (idx < half) { fhT++; if (done) fhD++; } else { shT++; if (done) shD++; }
+    });
+    if (t === 0) return null;
+    const rate = Math.round(dn / t * 100);
+    let pt = 0, pd = 0; prevKeys.forEach((k) => { if (k < h.startDate || k > tk) return; pt++; if (h.done && h.done[k]) pd++; });
+    const prevRate = pt ? Math.round(pd / pt * 100) : null;
+    const delta = prevRate != null ? rate - prevRate : null;
+    let streak = 0; for (let i = 0; ; i++) { const dd = new Date(); dd.setDate(dd.getDate() - i); const k = todayKey(dd); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
+    let bestDow = null, bestR = -1; for (let i = 0; i < 7; i++) { if (dowTot[i] >= 2) { const r = dow[i] / dowTot[i]; if (r > bestR) { bestR = r; bestDow = i; } } }
+    const fh = fhT >= 2 ? fhD / fhT : null, sh = shT >= 2 ? shD / shT : null;
+    const momentum = (fh != null && sh != null) ? Math.round((sh - fh) * 100) : null;
+    const dnM = [], ntM = []; keys.forEach((k) => { if (moodBy[k] == null || k < h.startDate) return; (h.done && h.done[k] ? dnM : ntM).push(moodBy[k]); });
+    const moodDiff = (dnM.length >= 3 && ntM.length >= 3) ? Math.round(avg(dnM) - avg(ntM)) : null;
+    return { h, t, dn, rate, prevRate, delta, streak, bestDow: bestDow != null ? dowName[bestDow] : null, momentum, moodDiff };
+  }).filter(Boolean);
+  if (!rows.length) return null;
+  rows.sort((a, b) => b.rate - a.rate);
+  const avgRate = Math.round(rows.reduce((s, r) => s + r.rate, 0) / rows.length);
+  const prevRows = rows.filter((r) => r.prevRate != null);
+  const prevAvgRate = prevRows.length ? Math.round(prevRows.reduce((s, r) => s + r.prevRate, 0) / prevRows.length) : null;
+  const avgDelta = prevAvgRate != null ? avgRate - prevAvgRate : null;
+  const byMomentum = rows.filter((r) => r.momentum != null);
+  const improved = byMomentum.slice().sort((a, b) => b.momentum - a.momentum)[0] || null;
+  const declined = byMomentum.slice().sort((a, b) => a.momentum - b.momentum)[0] || null;
+  const moodLinked = rows.filter((r) => r.moodDiff != null && r.moodDiff >= 5).sort((a, b) => b.moodDiff - a.moodDiff)[0] || null;
+  const perfect = rows.filter((r) => r.rate === 100);
+  return { rows, avgRate, prevAvgRate, avgDelta, mostConsistent: rows[0], improved, declined, moodLinked, perfect };
+}
+// 습관 분석 결론 문장들 — 가장 꾸준한 습관·살아나는/주춤하는 습관·기분과 이어진 습관·완벽 달성
+function habitInsightLines(ha, unit) {
+  if (!ha) return [];
+  const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
+  const periodTxt = unit === "달" ? "이번 달" : "이번 주";
+  const lines = [];
+  if (ha.mostConsistent) lines.push(`가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>예요.`);
+  if (ha.improved && ha.improved.momentum >= 15) lines.push(`${nm(ha.improved)}이(가) ${periodTxt} 후반 들어 살아나고 있어요 (▲${ha.improved.momentum}%).`);
+  else if (ha.declined && ha.declined.momentum <= -15) lines.push(`${nm(ha.declined)}은(는) 후반 들어 주춤했어요 (▼${-ha.declined.momentum}%) — 힘든 날엔 최소 버전부터 다시 시작해요.`);
+  if (ha.moodLinked) lines.push(`${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요.`);
+  if (ha.perfect.length) lines.push(`${ha.perfect.map(nm).join(", ")} ${ha.perfect.length > 1 ? "모두 " : ""}완벽하게 지켰어요 🎉`);
+  return lines;
+}
+// 습관 분석 카드(요약 리포트 본문) — 결론 문장 + 습관별 막대(증감·연속·모멘텀·요일·기분)
+function habitReportCard(ha, unit) {
+  if (!ha) return "";
+  const lines = habitInsightLines(ha, unit).slice(0, 3);
+  const insHtml = lines.length ? `<div class="hrep-ins">${lines.map((t) => `<p class="hrep-ins-row"><span>💡</span><span>${t}</span></p>`).join("")}</div>` : "";
+  const avgChip = ha.avgDelta != null && Math.abs(ha.avgDelta) >= 1 ? ` <span class="kpi-delta ${ha.avgDelta >= 1 ? "up" : "down"}">${ha.avgDelta > 0 ? "▲" : "▼"}${Math.abs(ha.avgDelta)} 지난 ${unit}</span>` : "";
+  const rowsHtml = ha.rows.map((r) => {
+    const dChip = (r.delta != null && Math.abs(r.delta) >= 1) ? `<i class="hrep-delta ${r.delta > 0 ? "up" : "down"}">${r.delta > 0 ? "▲" : "▼"}${Math.abs(r.delta)}</i>` : `<i class="hrep-delta flat"></i>`;
+    const sub = [];
+    sub.push(`🔥${r.streak}일`);
+    if (r.momentum != null && r.momentum >= 10) sub.push("📈 오름세");
+    else if (r.momentum != null && r.momentum <= -10) sub.push("📉 주춤");
+    if (r.bestDow) sub.push(`${r.bestDow}요일↑`);
+    if (r.moodDiff != null && r.moodDiff >= 5) sub.push(`기분 +${r.moodDiff}`);
+    return `<div class="hrep-row">`
+      + `<div class="hrep-line"><span class="hsum-name">${r.h.emoji || "✅"} ${escapeHtml(r.h.title)}</span>`
+      + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
+      + `<span class="hsum-rate">${r.rate}%</span>${dChip}</div>`
+      + `<p class="hrep-sub">${sub.join(" · ")}</p></div>`;
+  }).join("");
+  return `<div class="card hrep-card"><div class="card-head"><h2>🎯 습관 분석</h2><span class="hrep-avg">평균 ${ha.avgRate}%${avgChip}</span></div>`
+    + insHtml + rowsHtml
+    + `<p class="hint" style="margin-top:10px">막대=이번 ${unit} 달성률 · 칩=지난 ${unit} 대비 · 🔥=현재 연속 · 📈오름세/📉주춤=후반 흐름 · 기분=한 날이 안 한 날보다.</p></div>`;
+}
 function reportDetailHtml(kind) {
   const entries = loadEntries();
   let keys = [], prevKeys = [];
@@ -2177,6 +2281,8 @@ function reportDetailHtml(kind) {
   let trend = "flat";
   if (cur.scores.length >= 4) { const hh = Math.floor(cur.scores.length / 2); const a = cur.scores.slice(0, hh).reduce((s, v) => s + v, 0) / hh; const b = cur.scores.slice(hh).reduce((s, v) => s + v, 0) / (cur.scores.length - hh); trend = b - a >= 8 ? "up" : a - b >= 8 ? "down" : "flat"; }
   const diag = richDiagnose(cur, entries, keys);
+  const habAnalysis = computeHabitAnalysis(keys, prevKeys, entries);
+  const habCard = habitReportCard(habAnalysis, unit);
   const solItems = selectSolutions(diag, trend, keys[keys.length - 1]);
   const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
   const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
@@ -2191,10 +2297,9 @@ function reportDetailHtml(kind) {
     const wrows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
     if (wrows.length >= 2) weekBreakSec = `<div class="rpt-sec"><h3>📅 주차별 평균 기분</h3><div class="dist">${wrows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
   }
-  const habSec = cur.perHab.length ? `<div class="rpt-sec"><h3>🎯 습관별 달성</h3><div class="dist">${cur.perHab.map(({ h, t, d }) => `<div class="dist-row"><span class="cap-name">${h.emoji} ${escapeHtml(h.title)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(d / t * 100)}%"></div></div><span class="dist-count">${d}/${t}</span></div>`).join("")}</div></div>` : "";
   const drows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? mInfo(e.mood).emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
   const daysSec = `<div class="rpt-sec"><h3>🗓️ 날짜별 기록 (${cur.days}일)</h3><div class="rpt-list">${drows}</div></div>`;
-  const moreInner = stabSec + weekBreakSec + habSec + daysSec;
+  const moreInner = stabSec + weekBreakSec + daysSec;
   const moreCard = moreInner ? `<details class="card rpt-more"><summary>📂 자세히 보기</summary>${moreInner}</details>` : "";
 
   // 핵심 한 줄 — 추세 + 가장 영향 준 습관 (결론 먼저)
@@ -2212,6 +2317,7 @@ function reportDetailHtml(kind) {
     ${heroCard}
     ${chartCard}
     ${hlCard}
+    ${habCard}
     ${diagCard}
     ${solCard}
     ${moreCard}
@@ -2827,12 +2933,78 @@ function renderWeekGlance(entries) {
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
   const en = recs.filter((e) => e.energy);
   const avgEn = en.length ? (en.reduce((s, e) => s + e.energy, 0) / en.length).toFixed(1) : "—";
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  let ht = 0, hd = 0; chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate) { ht++; if (h.done && h.done[k]) hd++; } }));
+  const habPct = ht ? Math.round(hd / ht * 100) : null;
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
   el.innerHTML = `<div class="rpt-hero" style="margin:0">
     <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
-    <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(mInfo(top).emoji, "대표")}${hs(avgEn, "활력")}</div></div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(avgEn, "활력")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(mInfo(top).emoji, "대표")}</div></div>
   </div>`;
 }
+// 습관 분석 한 줄 — 한눈에 카드/홈에서 가장 의미 있는 인사이트 1개 (기분 연관 > 모멘텀 > 꾸준함)
+function topHabitInsight(ha) {
+  if (!ha) return "";
+  const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
+  if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요`;
+  if (ha.improved && ha.improved.momentum >= 15) return `${nm(ha.improved)} 요즘 더 살아나고 있어요 (▲${ha.improved.momentum}%)`;
+  if (ha.declined && ha.declined.momentum <= -15) return `${nm(ha.declined)} 요즘 주춤해요 — 힘든 날엔 최소 버전부터`;
+  if (ha.perfect && ha.perfect.length) return `${ha.perfect.map(nm).join(", ")} 최근 ${ha.perfect.length > 1 ? "모두 " : ""}꾸준히 지키고 있어요 🎉`;
+  if (ha.mostConsistent) return `가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>`;
+  return "";
+}
+// 최근 N일(현재)·직전 N일(비교) 키 배열 — 글랜스 인사이트용 분석 윈도
+function recentWindowKeys(n) {
+  const keys = [], prevKeys = [];
+  for (let i = n - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  for (let i = 2 * n - 1; i >= n; i--) { const d = new Date(); d.setDate(d.getDate() - i); prevKeys.push(todayKey(d)); }
+  return { keys, prevKeys };
+}
+// 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료 체크 + 진행/연속 + 습관 분석 인사이트 한 줄.
+function renderHabitGlanceInto(listId, countId) {
+  const list = document.getElementById(listId); if (!list) return false;
+  const card = list.closest(".card");
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  if (!chs.length) { if (card) card.hidden = true; return false; }
+  if (card) card.hidden = false;
+  const tk = todayKey();
+  const doneToday = chs.filter((h) => h.done && h.done[tk]).length;
+  const cnt = document.getElementById(countId);
+  if (cnt) cnt.textContent = `오늘 ${doneToday}/${chs.length}${doneToday === chs.length ? " 🎉" : ""}`;
+  // 분석 인사이트 — 최근 14일 데이터로 가장 의미 있는 한 줄
+  const w = recentWindowKeys(14);
+  const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
+  const insTxt = topHabitInsight(ha);
+  const insHtml = insTxt ? `<p class="hg-insight">💡 ${insTxt}</p>` : "";
+  list.innerHTML = insHtml + chs.map((h) => {
+    const doneCount = Object.values(h.done || {}).filter(Boolean).length;
+    const todayDone = !!(h.done && h.done[tk]);
+    let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
+    const pct = Math.min(100, Math.round(doneCount / CH_TARGET * 100));
+    return `<div class="hg-row">`
+      + `<button class="hg-check ${todayDone ? "done" : ""}" data-hgcheck="${h.id}" aria-pressed="${todayDone}" aria-label="${escapeHtml(h.title)} 오늘 완료 ${todayDone ? "취소" : "체크"}">${todayDone ? "✓" : "○"}</button>`
+      + `<div class="hg-info" data-hgopen="${h.id}" role="button" tabindex="0" aria-label="${escapeHtml(h.title)} 상세 보기">`
+      + `<div class="hg-title">${h.emoji || "✅"} ${escapeHtml(h.title)}</div>`
+      + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
+      + `<span class="hg-meta">🔥${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
+  }).join("");
+  return true;
+}
+function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount"); }
+function renderSummaryHabitGlance() { renderHabitGlanceInto("summaryHabitList", "summaryHabitCount"); }
+function refreshHabitGlances() { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
+// 습관 한눈에 카드 동작 — 오늘 완료 토글(어느 화면에서든) · 이름 누르면 상세
+document.addEventListener("click", (e) => {
+  const chk = e.target.closest("[data-hgcheck]");
+  if (chk) { applyHabitAction("check", chk.dataset.hgcheck); return; }
+  const open = e.target.closest("[data-hgopen]");
+  if (open) { Sound.tap(); openHabitDetail(open.dataset.hgopen); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const open = e.target.closest("[data-hgopen]");
+  if (open) { e.preventDefault(); Sound.tap(); openHabitDetail(open.dataset.hgopen); }
+});
 // 습관 요약 — 습관별 실천률(최근 30일) · 현재 연속 · 가장 잘 지키는 요일 (실천 패턴 분석)
 function renderHabitSummary() {
   const el = document.getElementById("habitSummary"); if (!el) return;
