@@ -217,6 +217,18 @@ try {
   check("야간 모드 선택 저장+적용", ls("settings_v2").medNight === true && q("#medOverlay").classList.contains("sleep"));
   q("#medNightToggle").click(); // 원복
   check("명상 누적 통계 표시", q("#medStat").textContent.length > 0);
+  // 호흡 패턴(4·7·8) 직접 조절 + 오버레이 사운드(볼륨·배경음 on/off)
+  check("호흡 패턴·볼륨·배경음 컨트롤 존재", !!q("#medPattern") && !!q("#medVol") && !!q("#medAmbBtn"));
+  const _brIn0 = +q("#patIn").textContent;
+  q("#medPattern button[data-p='in'][data-d='1']").click();
+  check("호흡 패턴(478) 직접 조절+반영", +q("#patIn").textContent === _brIn0 + 1 && ls("settings_v2").brIn === _brIn0 + 1 && q("#medOverlay .cb-seg.s-in").textContent.includes(String(_brIn0 + 1)));
+  q("#medPattern button[data-p='in'][data-d='-1']").click(); // 원복
+  q("#medAmbBtn").click();
+  check("명상 화면에서 배경음 켜기", ls("settings_v2").ambientType === "rain");
+  q("#medAmbBtn").click();
+  check("명상 화면에서 배경음 끄기", ls("settings_v2").ambientType === "off");
+  q("#medVol").value = "30"; q("#medVol").dispatchEvent(new window.Event("input")); q("#medVol").dispatchEvent(new window.Event("change"));
+  check("명상 화면 볼륨 조절 저장", ls("settings_v2").ambientVol === 30);
   // 명상 가이드 — 누르면 전체화면 전환 + 단계 애니메이션 → 호흡으로 연결
   q("#medStartBtn").click();
   check("명상 가이드 전체화면 열림", !q("#medOverlay").hasAttribute("hidden") && q("#medStepTitle").textContent.length > 0);

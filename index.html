@@ -153,6 +153,14 @@
           </div>
           <label class="med-night"><input type="checkbox" id="medNightToggle" /> <span>🌙 야간 모드</span></label>
         </div>
+        <details class="med-adv">
+          <summary>⚙️ 호흡 패턴 직접 조절 (4·7·8)</summary>
+          <div class="med-pattern" id="medPattern">
+            <div class="med-pat-row"><span class="med-pat-label">들숨</span><button type="button" class="med-step-btn sm" data-p="in" data-d="-1" aria-label="들숨 줄이기">−</button><b id="patIn">4</b><button type="button" class="med-step-btn sm" data-p="in" data-d="1" aria-label="들숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
+            <div class="med-pat-row"><span class="med-pat-label">멈춤</span><button type="button" class="med-step-btn sm" data-p="hold" data-d="-1" aria-label="멈춤 줄이기">−</button><b id="patHold">7</b><button type="button" class="med-step-btn sm" data-p="hold" data-d="1" aria-label="멈춤 늘리기">+</button><span class="med-pat-unit">초</span></div>
+            <div class="med-pat-row"><span class="med-pat-label">날숨</span><button type="button" class="med-step-btn sm" data-p="ex" data-d="-1" aria-label="날숨 줄이기">−</button><b id="patEx">8</b><button type="button" class="med-step-btn sm" data-p="ex" data-d="1" aria-label="날숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
+          </div>
+        </details>
         <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">▶ 따라하며 명상하기</button>
         <p class="med-stat" id="medStat"></p>
       </div>
@@ -501,6 +509,10 @@
     <div class="med-dots" id="medDots"></div>
     <p class="med-swipe-hint" id="medSwipeHint">← 넘기며 따라가요 →</p>
     <button class="btn primary" id="medNext">건너뛰고 호흡 시작 →</button>
+    <div class="med-sound" id="medSound">
+      <button type="button" class="med-snd-btn" id="medAmbBtn" aria-label="배경음 켜기/끄기">🔈</button>
+      <input type="range" class="med-vol" id="medVol" min="0" max="100" value="55" aria-label="배경음 음량" />
+    </div>
   </div>
 
   <!-- 오늘의 여정 (적응형 단계 기록) -->

@@ -549,8 +549,9 @@ soundGrid.addEventListener("click", (e) => {
     b.classList.toggle("active", on);
     b.setAttribute("aria-pressed", on ? "true" : "false");
   });
-  if (type === "off") Sound.stopAmbient(); else Sound.startAmbient(type);
+  if (type === "off") Sound.stopAmbient(); else { Sound.startAmbient(type); settings.lastAmbient = type; }
   settings.ambientType = type; saveSettingsObj(settings); // 선택 기억 → 다음에 자동 재생
+  if (typeof medSyncAmbIcon === "function") medSyncAmbIcon();
 });
 document.getElementById("ambientVol").addEventListener("input", (e) => Sound.setAmbientVolume(e.target.value / 100));
 // 선택해 둔 배경음을 자동 재생 (명상 진입·호흡 시작 등 사용자 제스처 내에서)
@@ -3374,12 +3375,12 @@ const medCaption = document.getElementById("medCaption"), medStepTitle = documen
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
-const MED_CYCLE_SEC = 19; // 4-7-8 한 사이클 길이
+function breathCycleSec() { return BREATH_PHASES[0].dur + BREATH_PHASES[1].dur + BREATH_PHASES[2].dur; } // 사용자 패턴 반영
 let medMinutes = Math.min(60, Math.max(1, settings.medMinutes || 5));
 let medActive = false; // 호흡 세션이 실제로 시작됐는지(누적 기록 중복 방지)
 const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
 const medGlow = () => (document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,224,140,0.92)" : "rgba(120,142,205,0.95)");
-function medCycleTarget() { return Math.max(2, Math.round(medMinutes * 60 / MED_CYCLE_SEC)); }
+function medCycleTarget() { return Math.max(2, Math.round(medMinutes * 60 / breathCycleSec())); }
 function renderMedStat() {
   const el = document.getElementById("medStat"); if (!el) return;
   const mins = Math.round((settings.medSeconds || 0) / 60), sess = settings.medSessions || 0;
@@ -3390,7 +3391,7 @@ function medRecord() {
   medActive = false;
   const c = medBreather.cycles ? medBreather.cycles() : 0;
   if (c <= 0) return;
-  settings.medSeconds = (settings.medSeconds || 0) + c * MED_CYCLE_SEC;
+  settings.medSeconds = (settings.medSeconds || 0) + c * breathCycleSec();
   settings.medSessions = (settings.medSessions || 0) + 1;
   saveSettingsObj(settings); renderMedStat();
   if (typeof checkBadges === "function") checkBadges();
@@ -3422,13 +3423,56 @@ if (medNightToggle) medNightToggle.addEventListener("change", (e) => {
 function fmtClock(s) { s = Math.max(0, s | 0); const m = (s / 60) | 0, ss = s % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
 function medClockStart() {
   if (!medClockEl) return;
-  medRemain = medCycleTarget() * MED_CYCLE_SEC;
+  medRemain = medCycleTarget() * breathCycleSec();
   medClockEl.hidden = false; medClockEl.textContent = fmtClock(medRemain);
   if (medClockTimer) clearInterval(medClockTimer);
   medClockTimer = setInterval(() => { medRemain -= 1; if (medClockEl) medClockEl.textContent = fmtClock(medRemain); if (medRemain <= 0) { clearInterval(medClockTimer); medClockTimer = null; } }, 1000);
 }
 function medClockStop() { if (medClockTimer) { clearInterval(medClockTimer); medClockTimer = null; } if (medClockEl) medClockEl.hidden = true; }
 renderMedSetup(); renderMedStat();
+
+// 호흡 패턴(4·7·8) 직접 조절 — BREATH_PHASES를 사용자 설정으로 갱신(명상·빠른호흡 공통)
+const BR_MIN = { in: 2, hold: 1, ex: 2 }, BR_MAX = 20;
+let brIn = Math.min(BR_MAX, Math.max(BR_MIN.in, settings.brIn || 4));
+let brHold = Math.min(BR_MAX, Math.max(BR_MIN.hold, settings.brHold || 7));
+let brEx = Math.min(BR_MAX, Math.max(BR_MIN.ex, settings.brEx || 8));
+function applyBreathPattern() {
+  BREATH_PHASES[0].dur = brIn; BREATH_PHASES[1].dur = brHold; BREATH_PHASES[2].dur = brEx;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("patIn", brIn); set("patHold", brHold); set("patEx", brEx);
+  document.querySelectorAll(".cb-seg.s-in").forEach((e) => (e.textContent = `들이쉬기 ${brIn}초`));
+  document.querySelectorAll(".cb-seg.s-hold").forEach((e) => (e.textContent = `멈춤 ${brHold}초`));
+  document.querySelectorAll(".cb-seg.s-out").forEach((e) => (e.textContent = `내쉬기 ${brEx}초`));
+  const qbh = document.getElementById("qbHint"); if (qbh) qbh.textContent = `동그라미를 따라 천천히 (${brIn}·${brHold}·${brEx})`;
+}
+const medPatternEl = document.getElementById("medPattern");
+if (medPatternEl) medPatternEl.addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-p]"); if (!b) return;
+  Sound.tap(); Haptic.tap();
+  const d = +b.dataset.d, p = b.dataset.p;
+  if (p === "in") brIn = Math.min(BR_MAX, Math.max(BR_MIN.in, brIn + d));
+  else if (p === "hold") brHold = Math.min(BR_MAX, Math.max(BR_MIN.hold, brHold + d));
+  else brEx = Math.min(BR_MAX, Math.max(BR_MIN.ex, brEx + d));
+  settings.brIn = brIn; settings.brHold = brHold; settings.brEx = brEx; saveSettingsObj(settings);
+  applyBreathPattern();
+});
+applyBreathPattern();
+
+// 명상 오버레이 하단 사운드 컨트롤(세션 중에도 배경음 on/off + 볼륨)
+const medAmbBtn = document.getElementById("medAmbBtn"), medVol = document.getElementById("medVol");
+function medSyncAmbIcon() { if (medAmbBtn) medAmbBtn.textContent = (Sound.state.ambientType && Sound.state.ambientType !== "off") ? "🔊" : "🔈"; }
+if (medAmbBtn) medAmbBtn.addEventListener("click", () => {
+  Sound.unlock();
+  if (Sound.state.ambientType && Sound.state.ambientType !== "off") { Sound.stopAmbient(); settings.ambientType = "off"; }
+  else { const t = (settings.lastAmbient && settings.lastAmbient !== "off") ? settings.lastAmbient : "rain"; Sound.startAmbient(t); settings.ambientType = t; settings.lastAmbient = t; }
+  saveSettingsObj(settings); medSyncAmbIcon();
+  document.querySelectorAll(".sound-btn").forEach((b) => { const on = b.dataset.sound === settings.ambientType; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
+});
+if (medVol) {
+  medVol.value = settings.ambientVol != null ? settings.ambientVol : 55;
+  medVol.addEventListener("input", (e) => { const v = Number(e.target.value); Sound.setAmbientVolume(v / 100); settings.ambientVol = v; const av = document.getElementById("ambientVol"); if (av) av.value = v; });
+  medVol.addEventListener("change", () => saveSettingsObj(settings));
+}
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {
   medIdx = i; const s = MED_STEPS[i];
@@ -3452,7 +3496,7 @@ function medStartBreathing() {
   if (medSwipeHint) medSwipeHint.hidden = true;
   medNextBtn.textContent = "그만하기";
   medCaption.classList.remove("show"); void medCaption.offsetWidth;
-  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = "점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요";
+  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = `${brIn}초 들이쉬고·${brHold}초 멈추고·${brEx}초 내쉬어요`;
   medCaption.classList.add("show");
   medCircle.classList.remove("med-idle");
   medOpts.maxCycles = medCycleTarget(); medActive = true; // 선택한 시간만큼 자동 종료
@@ -3467,6 +3511,8 @@ function openMedGuide() {
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
   medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
   medClockStop();
+  if (medVol) medVol.value = settings.ambientVol != null ? settings.ambientVol : 55;
+  medSyncAmbIcon();
   if (medSwipeHint) medSwipeHint.hidden = false;
   medShow(0); medResetTimer();
 }

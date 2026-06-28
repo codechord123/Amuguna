@@ -305,8 +305,22 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-night { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--ink-2); cursor: pointer; }
 .med-night input { width: 18px; height: 18px; accent-color: var(--accent); }
 .med-stat { margin: var(--s3) 0 0; font-size: var(--t-xs); color: var(--ink-2); text-align: center; }
+/* 호흡 패턴(4·7·8) 직접 조절 */
+.med-adv { margin-top: var(--s3); }
+.med-adv summary { font-size: var(--t-sm); color: var(--ink-2); cursor: pointer; padding: var(--s2) 0; }
+.med-pattern { display: flex; flex-direction: column; gap: var(--s2); padding: var(--s2) 0 0; }
+.med-pat-row { display: flex; align-items: center; gap: var(--s2); }
+.med-pat-label { width: 40px; font-size: var(--t-sm); color: var(--ink-2); }
+.med-pat-row b { min-width: 26px; text-align: center; font-size: var(--t-md); font-weight: var(--w-bold); color: var(--ink); }
+.med-pat-unit { font-size: var(--t-xs); color: var(--ink-2); }
+.med-step-btn.sm { width: 30px; height: 30px; font-size: 1.1rem; }
 /* 명상 화면 위 남은 시간 카운트다운 */
 .med-clock { margin: 0; font-size: var(--t-lg); font-weight: var(--w-bold); letter-spacing: 0.06em; color: var(--med-text); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px var(--med-glow); }
+/* 명상 오버레이 하단 사운드 컨트롤(세션 중에도 조절) */
+.med-sound { display: flex; align-items: center; gap: var(--s3); width: min(280px, 80%); opacity: 0.85; }
+.med-snd-btn { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--med-track); background: transparent; color: var(--med-text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
+.med-snd-btn:active { transform: scale(0.9); }
+.med-vol { flex: 1; accent-color: var(--med-on-bg); height: 4px; }
 .med-guide { list-style: none; padding: 0; margin: var(--s2) 0 0; counter-reset: med; }
 .med-guide li { counter-increment: med; position: relative; padding: var(--s3) var(--s3) var(--s3) 46px; margin-bottom: var(--s2); background: var(--bg-sunken); border-radius: var(--r-md); opacity: 0; transform: translateY(10px); animation: medIn 0.5s var(--ease-soft) forwards; }
 .med-guide li::before { content: counter(med); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: var(--t-xs); font-weight: var(--w-bold); }
