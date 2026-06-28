@@ -306,12 +306,14 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-guide li:nth-child(4) { animation-delay: 0.35s; }
 .med-guide li:nth-child(5) { animation-delay: 0.45s; }
 @keyframes medIn { to { opacity: 1; transform: none; } }
-/* ===== 명상 가이드 — 밝은 새벽빛(기본) + 다크(우주) + 기하 만다라 ===== */
+/* ===== 명상 가이드 — 밝은 새벽빛(기본) + 다크(우주) · 발광 구체 중심(장식 기하 없음) ===== */
 .med-overlay {
   /* 차분한 슬레이트-인디고 + 발광 구체 (라이트 기본) */
   --med-bg: linear-gradient(168deg, #eef3fc 0%, #e6edf8 44%, #dbe5f3 100%);
   --med-fg: #54639c; --med-fg-soft: rgba(84,99,156,0.4);
   --med-track: rgba(84,99,156,0.14); --med-glow: rgba(120,142,205,0.5);
+  --med-path: rgba(84,99,156,0.34);
+  --med-vignette: radial-gradient(125% 96% at 50% 42%, transparent 40%, rgba(58,78,134,0.2) 100%);
   --med-orb: radial-gradient(circle at 42% 36%, #ffffff 0%, #d8e2f5 26%, #9aabd8 56%, rgba(120,142,205,0.22) 72%, transparent 84%);
   --med-aura: radial-gradient(circle, rgba(150,172,228,0.38) 0%, rgba(150,172,228,0.13) 48%, transparent 72%);
   --med-text: #36406b; --med-text2: #5d668f; --med-text3: #9298b5;
@@ -325,6 +327,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   --med-bg: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%);
   --med-fg: #f3d98a; --med-fg-soft: rgba(243,217,138,0.5);
   --med-track: rgba(243,217,138,0.14); --med-glow: rgba(243,217,138,0.85);
+  --med-path: rgba(243,217,138,0.32);
+  --med-vignette: radial-gradient(125% 96% at 50% 42%, transparent 34%, rgba(0,0,0,0.62) 100%);
   --med-orb: radial-gradient(circle at 50% 45%, #fff6d8 0%, #f6c45a 28%, rgba(217,150,40,0.45) 55%, transparent 72%);
   --med-aura: radial-gradient(circle, rgba(246,196,90,0.42) 0%, rgba(217,150,40,0.16) 45%, transparent 72%);
   --med-text: #f6ecd2; --med-text2: #c9bd9e; --med-text3: #8b8169;
@@ -333,6 +337,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   --med-on-ink: #060509; --med-on-bg: #f3d98a;
 }
 .med-overlay .med-close { position: absolute; top: var(--s5); right: var(--s5); z-index: 3; background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: var(--med-text2); cursor: pointer; padding: var(--s2); }
+/* 가장자리를 어둡게 — 중앙 구체에 시선이 모이도록(깊이감·몰입) */
+.med-overlay::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: var(--med-vignette); }
 /* 배경 앰비언트 — 라이트: 부드러운 보케 드리프트 / 다크: 별가루 반짝임 */
 .cb-stars { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image:
   radial-gradient(160px 160px at 22% 16%, rgba(146,170,228,0.12), transparent 70%),
@@ -356,7 +362,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.exhale .cb-viz { transform: scale(0.96); }
 /* 차오르는 진행 링 */
 .cb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
-.cb-ring-track { fill: none; stroke: var(--med-track); stroke-width: 3; }
+/* 공이 지나갈 경로 — 점선 트랙으로 보이게 */
+.cb-ring-track { fill: none; stroke: var(--med-path); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 1 12; }
 .cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 6px var(--med-glow)); transition-property: stroke-dashoffset; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog { stroke-dashoffset: 0; }
 .cb-stage.exhale .cb-ring-prog { stroke-dashoffset: 578; }
@@ -375,7 +382,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.inhale .cb-dot-orbit, .cb-stage.hold .cb-dot-orbit { transform: rotate(360deg); }
 .cb-stage.exhale .cb-dot-orbit, .cb-stage.ready .cb-dot-orbit { transform: rotate(0deg); }
 .cb-stage.med-idle .cb-dot-orbit { opacity: 0; }
-.cb-dot { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--med-dot); box-shadow: var(--med-dot-glow); transform: translateY(-115px); }
+.cb-dot { position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--med-dot); box-shadow: var(--med-dot-glow); transform: translateY(-115px); }
 .cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }

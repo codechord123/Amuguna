@@ -3183,12 +3183,13 @@ sleepToggle.addEventListener("click", () => {
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !breathOverlay.hidden) requestWake(); });
 
 /* 명상 가이드 — 전체화면 전환 + 단계 애니메이션으로 따라하기 → 호흡으로 연결 */
+// 중앙은 발광 구체에 집중 — 단계마다 이모지(연꽃 등) 없이 비워 몰입감을 높임
 const MED_STEPS = [
-  { t: "편안한 자세", b: "의자나 바닥에 앉아 어깨의 힘을 스르륵 빼요.", e: "🪷" },
-  { t: "시선 내려놓기", b: "눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.", e: "😌" },
-  { t: "호흡 관찰", b: "코로 숨이 들어오고 나가는 감각을 그저 느껴요.", e: "🌬️" },
-  { t: "생각은 흘려보내기", b: "잡생각이 들면 '생각났네' 하고 다시 호흡으로.", e: "🍃" },
-  { t: "이제 함께 호흡", b: "동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.", e: "🫧" },
+  { t: "편안한 자세", b: "의자나 바닥에 앉아 어깨의 힘을 스르륵 빼요.", e: "" },
+  { t: "시선 내려놓기", b: "눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.", e: "" },
+  { t: "호흡 관찰", b: "코로 숨이 들어오고 나가는 감각을 그저 느껴요.", e: "" },
+  { t: "생각은 흘려보내기", b: "잡생각이 들면 '생각났네' 하고 다시 호흡으로.", e: "" },
+  { t: "이제 함께 호흡", b: "동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.", e: "" },
 ];
 const MED_STEP_MS = 5500;
 const medOverlay = document.getElementById("medOverlay");
@@ -3199,7 +3200,7 @@ const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", {
   sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
-  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "🌿"; medNextBtn.textContent = "닫기"; },
+  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; },
 }) : null;
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {
@@ -3233,7 +3234,7 @@ function openMedGuide() {
   if (!medOverlay) return;
   medOverlay.hidden = false; Sound.unlock();
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
-  medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "🧘";
+  medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
   if (medSwipeHint) medSwipeHint.hidden = false;
   medShow(0); medResetTimer();
 }
