@@ -457,10 +457,20 @@
     <button class="btn primary" id="qbClose">그만하기</button>
   </div>
 
-  <!-- 명상 가이드 (전체화면 애니메이션) -->
+  <!-- 명상 가이드 (전체화면 우주 무드) -->
   <div class="breath-overlay med-overlay" id="medOverlay" role="dialog" aria-modal="true" aria-label="명상 가이드" hidden>
+    <div class="cb-stars" aria-hidden="true"></div>
     <button class="med-close" id="medClose" aria-label="닫기">✕</button>
-    <div class="breath-circle big med-idle" id="medCircle"><span id="medCircleText">🧘</span></div>
+    <div class="cb-stage med-idle" id="medCircle">
+      <div class="cb-viz">
+        <svg class="cb-ring" viewBox="0 0 200 200" aria-hidden="true"><circle class="cb-ring-track" cx="100" cy="100" r="92"/><circle class="cb-ring-prog" cx="100" cy="100" r="92"/></svg>
+        <svg class="cb-flower" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="100" cy="100" r="34"/><circle cx="134" cy="100" r="34"/><circle cx="117" cy="129.4" r="34"/><circle cx="83" cy="129.4" r="34"/><circle cx="66" cy="100" r="34"/><circle cx="83" cy="70.6" r="34"/><circle cx="117" cy="70.6" r="34"/></g></svg>
+        <div class="cb-orb"></div>
+        <span class="cb-count" id="medCircleText">🧘</span>
+      </div>
+      <div class="cb-phase" aria-hidden="true"><span class="p p-ready">준비</span><span class="p p-in">들이쉬기 · INHALE</span><span class="p p-hold">멈춤 · HOLD</span><span class="p p-out">내쉬기 · EXHALE</span></div>
+      <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
+    </div>
     <div class="med-caption" id="medCaption"><b id="medStepTitle"></b><span id="medStepBody"></span></div>
     <div class="med-dots" id="medDots"></div>
     <p class="med-swipe-hint" id="medSwipeHint">← 넘기며 따라가요 →</p>
