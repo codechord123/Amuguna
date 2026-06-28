@@ -465,6 +465,7 @@ function makeBreather(circleEl, textEl, base, opts) {
     circleEl.className = base + " " + ph.cls;
     circleEl.style.transitionDuration = (ph.cls === "hold" ? 0.4 : ph.dur) + "s";
     Sound.breathCue(ph.cue, ph.dur); render();
+    if (opts.onPhase) { try { opts.onPhase(ph.cls, i); } catch (e) {} } // 단계 전환 훅(햅틱·파티클 등 juice)
   }
   function loop() {
     remain--;
@@ -3198,9 +3199,15 @@ const medCaption = document.getElementById("medCaption"), medStepTitle = documen
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
+const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", {
   sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
-  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; },
+  onPhase: (cls) => {
+    // juice — 단계 전환마다 미세 햅틱, 한 바퀴 다 칠해진 순간(멈춤)엔 반짝임 버스트
+    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 14, spread: 104 }); }
+    else { Haptic.tap(); }
+  },
+  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
 }) : null;
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {

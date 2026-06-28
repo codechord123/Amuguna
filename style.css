@@ -402,9 +402,17 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 공 둘레의 은은한 맥동 헤일로 */
 .cb-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: var(--med-dot); filter: blur(6px); opacity: 0.55; z-index: -1; animation: cbDotHalo 2.6s ease-in-out infinite; }
 @keyframes cbDotHalo { 0%,100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.55); opacity: 0.85; } }
+/* 공 꼬리(혜성 트레일) — 헤드 뒤로 작아지며 옅어지는 잔상 */
+.cb-dot.tr { box-shadow: none; animation: none; }
+.cb-dot.tr::after { display: none; }
+.cb-dot.t1 { width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; opacity: 0.5; transform: rotate(-6deg) translateY(-115px); }
+.cb-dot.t2 { width: 10px; height: 10px; margin: -5px 0 0 -5px; opacity: 0.28; transform: rotate(-12deg) translateY(-115px); }
+.cb-dot.t3 { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; opacity: 0.14; transform: rotate(-18deg) translateY(-115px); }
 .cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
-.cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
+/* 매 초 카운트가 바뀔 때마다 톡 튀는 팝(juice) */
+.cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; display: inline-block; animation: cbNumPop 0.45s var(--ease-soft) both; }
+@keyframes cbNumPop { 0% { transform: scale(0.55); opacity: 0.2; } 55% { transform: scale(1.14); opacity: 1; } 100% { transform: scale(1); } }
 /* 단계 라벨 + 하단 단계 바 (호흡 중에만) */
 .cb-phase { min-height: 1.6em; font-size: var(--t-md); font-weight: var(--w-bold); letter-spacing: 0.04em; color: var(--med-fg); text-shadow: 0 0 12px var(--med-glow); }
 .cb-phase .p { display: none; }
@@ -427,7 +435,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay .btn.primary { background: var(--med-on-bg); color: var(--med-on-ink); border: none; }
 /* 모션 최소화 선호 시 장식 애니메이션 정지 */
 @media (prefers-reduced-motion: reduce) {
-  .cb-aura, .cb-stars, .cb-pulse i, .cb-dot::after { animation: none; }
+  .cb-aura, .cb-stars, .cb-pulse i, .cb-dot::after, .cb-count b { animation: none; }
   .cb-pulse { opacity: 0; }
 }
 

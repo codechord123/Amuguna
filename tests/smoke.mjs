@@ -219,6 +219,7 @@ try {
   check("장식 기하(연꽃·만다라) 제거됨", !q("#medOverlay .cb-flower") && !q("#medOverlay .cb-geo"));
   check("명상 발광 아우라 이펙트 유지", !!q("#medOverlay .cb-aura"));
   check("호흡 조명·잔물결 이펙트(글로우·펄스)", !!q("#medOverlay .cb-glow") && !!q("#medOverlay .cb-pulse i"));
+  check("공 꼬리 트레일(혜성 잔상)", !!q("#medOverlay .cb-dot-orbit .cb-dot.tr"));
   check("공 이동 경로(점선 트랙) 표시", !!q("#medCircle .cb-ring-track") && !!q("#medCircle .cb-dot"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
