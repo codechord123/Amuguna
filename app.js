@@ -3205,17 +3205,41 @@ const medCaption = document.getElementById("medCaption"), medStepTitle = documen
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
+const MED_CYCLE_SEC = 19; // 4-7-8 한 사이클 길이
+let medMinutes = (settings.medMinutes === 3 || settings.medMinutes === 10) ? settings.medMinutes : 5;
+let medActive = false; // 호흡 세션이 실제로 시작됐는지(누적 기록 중복 방지)
 const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
 const medGlow = () => (document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,224,140,0.92)" : "rgba(120,142,205,0.95)");
-const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", {
-  sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
+function medCycleTarget() { return Math.max(2, Math.round(medMinutes * 60 / MED_CYCLE_SEC)); }
+function renderMedStat() {
+  const el = document.getElementById("medStat"); if (!el) return;
+  const mins = Math.round((settings.medSeconds || 0) / 60), sess = settings.medSessions || 0;
+  el.textContent = sess > 0 ? `🧘 지금까지 ${mins}분 · ${sess}회 명상했어요` : "오늘 첫 명상을 시작해보세요";
+}
+function medRecord() {
+  if (!medActive || !medBreather) return;
+  medActive = false;
+  const c = medBreather.cycles ? medBreather.cycles() : 0;
+  if (c <= 0) return;
+  settings.medSeconds = (settings.medSeconds || 0) + c * MED_CYCLE_SEC;
+  settings.medSessions = (settings.medSessions || 0) + 1;
+  saveSettingsObj(settings); renderMedStat();
+  if (typeof checkBadges === "function") checkBadges();
+}
+const medOpts = {
+  sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onPhase: (cls) => {
     // juice — 단계 전환마다 미세 햅틱, 들숨 끝(멈춤)엔 빛이 중심으로 수렴
     if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.converge(medViz || medCircle, { count: 18, spread: 124, glow: medGlow() }); }
     else { Haptic.tap(); }
   },
   onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
-}) : null;
+};
+const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
+const medDurEl = document.getElementById("medDur");
+function renderMedDur() { if (medDurEl) medDurEl.querySelectorAll("button").forEach((b) => b.classList.toggle("on", +b.dataset.min === medMinutes)); }
+if (medDurEl) medDurEl.addEventListener("click", (e) => { const b = e.target.closest("button[data-min]"); if (!b) return; Sound.tap(); medMinutes = +b.dataset.min; settings.medMinutes = medMinutes; saveSettingsObj(settings); renderMedDur(); });
+renderMedDur(); renderMedStat();
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {
   medIdx = i; const s = MED_STEPS[i];
@@ -3242,6 +3266,7 @@ function medStartBreathing() {
   medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = "점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요";
   medCaption.classList.add("show");
   medCircle.classList.remove("med-idle");
+  medOpts.maxCycles = medCycleTarget(); medActive = true; // 선택한 시간만큼 자동 종료
   autoAmbient(); medBreather.start();
 }
 function openMedGuide() {
@@ -3254,6 +3279,7 @@ function openMedGuide() {
 }
 function closeMedGuide() {
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
+  medRecord(); // 진행한 만큼 누적 시간 기록(중복 방지 플래그 사용)
   try { medBreather && medBreather.stop(); } catch (e) {}
   medPhase = "teach"; if (medOverlay) medOverlay.hidden = true;
 }
