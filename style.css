@@ -366,25 +366,42 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 공이 지나갈 경로(빈 채널) */
 .cb-ring-track { fill: none; stroke: var(--med-path); stroke-width: 7; opacity: 0.4; }
 /* 공이 지나간 자리 — 채널 위가 색으로 칠해짐(들숨) / 되돌아오며 지워짐(날숨) */
-.cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 9px var(--med-glow)) drop-shadow(0 0 3px var(--med-glow)); transition-property: stroke-dashoffset; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 9px var(--med-glow)) drop-shadow(0 0 3px var(--med-glow)); transition-property: stroke-dashoffset, filter; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog { stroke-dashoffset: 0; }
+/* 한 바퀴 다 칠해진 순간(멈춤) 더 환하게 피어남 */
+.cb-stage.hold .cb-ring-prog { filter: drop-shadow(0 0 16px var(--med-glow)) drop-shadow(0 0 6px var(--med-glow)); }
 .cb-stage.exhale .cb-ring-prog { stroke-dashoffset: 578; }
 .cb-stage.med-idle .cb-ring { opacity: 0; }
+/* 들숨 때 밝아졌다 날숨 때 어두워지는 장면 조명(호흡 연동) */
+.cb-glow { position: absolute; width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle, var(--med-glow) 0%, transparent 62%); filter: blur(22px); opacity: 0.16; transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-stage.inhale .cb-glow, .cb-stage.hold .cb-glow { transform: scale(1.14); opacity: 0.36; }
+.cb-stage.exhale .cb-glow { transform: scale(0.88); opacity: 0.12; }
+.cb-stage.med-idle .cb-glow { opacity: 0.1; }
 /* 발광 아우라 — 은은하게 호흡하는 빛무리 (장식 기하 없이 오브 중심) */
 .cb-aura { position: absolute; width: 240px; height: 240px; border-radius: 50%; background: var(--med-aura); filter: blur(18px); animation: cbAura 7s var(--ease-breath) infinite; }
 @keyframes cbAura { 0%,100% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.12); opacity: 0.92; } }
+/* 중심에서 퍼지는 잔물결 — 깊이감·생동감 */
+.cb-pulse { position: absolute; inset: 0; }
+.cb-pulse i { position: absolute; top: 50%; left: 50%; width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 50%; border: 1.5px solid var(--med-glow); opacity: 0; transform: scale(0.5); animation: cbPulse 6.6s var(--ease-breath) infinite; }
+.cb-pulse i:nth-child(2) { animation-delay: 2.2s; }
+.cb-pulse i:nth-child(3) { animation-delay: 4.4s; }
+@keyframes cbPulse { 0% { transform: scale(0.5); opacity: 0; } 18% { opacity: 0.45; } 100% { transform: scale(1.5); opacity: 0; } }
+.cb-stage.med-idle .cb-pulse { opacity: 0.6; }
 /* 중심 발광 오브 */
-.cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); box-shadow: 0 0 36px 4px var(--med-glow); transition-property: transform, opacity, box-shadow; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 /* 구체 윗부분 광택 하이라이트(입체감) */
 .cb-orb::before { content: ""; position: absolute; top: 16%; left: 22%; width: 36%; height: 30%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8), transparent 72%); filter: blur(2px); }
-.cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { transform: scale(1.18); }
-.cb-stage.exhale .cb-orb { transform: scale(0.82); opacity: 0.8; }
+.cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { transform: scale(1.18); box-shadow: 0 0 66px 12px var(--med-glow); }
+.cb-stage.exhale .cb-orb { transform: scale(0.82); opacity: 0.8; box-shadow: 0 0 28px 3px var(--med-glow); }
 /* 따라가는 작은 빛 점 — 링을 한 바퀴 돌며 호흡 안내 */
 .cb-dot-orbit { position: absolute; inset: 0; transform: rotate(0deg); transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-dot-orbit, .cb-stage.hold .cb-dot-orbit { transform: rotate(360deg); }
 .cb-stage.exhale .cb-dot-orbit, .cb-stage.ready .cb-dot-orbit { transform: rotate(0deg); }
 .cb-stage.med-idle .cb-dot-orbit { opacity: 0; }
 .cb-dot { position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--med-dot); box-shadow: var(--med-dot-glow); transform: translateY(-115px); }
+/* 공 둘레의 은은한 맥동 헤일로 */
+.cb-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: var(--med-dot); filter: blur(6px); opacity: 0.55; z-index: -1; animation: cbDotHalo 2.6s ease-in-out infinite; }
+@keyframes cbDotHalo { 0%,100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.55); opacity: 0.85; } }
 .cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
@@ -410,7 +427,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay .btn.primary { background: var(--med-on-bg); color: var(--med-on-ink); border: none; }
 /* 모션 최소화 선호 시 장식 애니메이션 정지 */
 @media (prefers-reduced-motion: reduce) {
-  .cb-flower, .cb-geo, .cb-aura, .cb-stars { animation: none; }
+  .cb-aura, .cb-stars, .cb-pulse i, .cb-dot::after { animation: none; }
+  .cb-pulse { opacity: 0; }
 }
 
 .mission { font-size: var(--t-md); font-weight: var(--w-semi); background: var(--bg-sunken); padding: var(--s4); border-radius: var(--r-sm); margin: 0 0 var(--s4); min-height: 1.6em; line-height: 1.55; }
