@@ -355,6 +355,8 @@ try {
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
+  check("리포트 습관 분석 카드 표시", !!q("#subBody .hrep-card") && d.querySelectorAll("#subBody .hrep-card .hrep-row").length >= 1);
+  check("리포트 습관 분석 결론·달성률 표시", !!q("#subBody .hrep-card .hrep-ins-row") && /%/.test(q("#subBody .hrep-card .hrep-avg").textContent) && /🔥/.test(q("#subBody .hrep-card").textContent));
   q("#subBack").click();
   // 세분 진단 — 슬픔 테마 + '관계' 키워드 맥락
   const sadE = {};

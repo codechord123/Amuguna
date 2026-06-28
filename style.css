@@ -903,6 +903,19 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hsum-bar { height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 0.6s var(--ease-soft); }
 .hsum-rate { flex: 0 0 34px; text-align: right; font-weight: var(--w-semi); color: var(--ink-2); }
 .hsum-meta { flex: 0 0 auto; font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
+/* 습관 분석 카드 (요약 리포트) */
+.hrep-card .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.hrep-avg { font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); white-space: nowrap; }
+.hrep-ins { margin: var(--s2) 0 var(--s3); padding: var(--s3); background: var(--bg-sunken); border-radius: var(--r-md); }
+.hrep-ins-row { display: flex; align-items: flex-start; gap: var(--s2); margin: 0 0 var(--s2); font-size: var(--t-sm); line-height: 1.55; color: var(--ink-2); word-break: keep-all; }
+.hrep-ins-row:last-child { margin-bottom: 0; }
+.hrep-ins-row b { color: var(--accent-deep); font-weight: var(--w-bold); }
+.hrep-row { margin-bottom: var(--s3); }
+.hrep-row:last-of-type { margin-bottom: 0; }
+.hrep-line { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); }
+.hrep-delta { flex: 0 0 30px; text-align: right; font-size: 0.62rem; font-weight: 800; }
+.hrep-delta.up { color: var(--success); } .hrep-delta.down { color: var(--danger); } .hrep-delta.flat { color: transparent; }
+.hrep-sub { margin: 3px 0 0 0; padding-left: 2px; font-size: var(--t-xs); color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ww-node circle { stroke: var(--card); stroke-width: 2; cursor: pointer; transition: opacity 0.25s, transform 0.15s var(--ease-soft); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
 .ww-node:active circle { transform: scale(0.9); }
 .ww-label { fill: var(--ink); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
