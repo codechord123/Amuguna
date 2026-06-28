@@ -266,6 +266,8 @@ try {
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("습관 실천 매트릭스 표시", d.querySelectorAll("#habitHeatmap .hm-row").length >= 2 && d.querySelectorAll("#habitHeatmap .hm-cell.hm-on").length >= 1);
+  check("습관 요약(실천률·연속) 표시", d.querySelectorAll("#habitSummary .hsum-row").length >= 1 && /%/.test(q("#habitSummary").textContent) && /🔥/.test(q("#habitSummary").textContent));
+  check("감정 지도 섹션 제거됨", !q("#moodMatrix") && !q('#allAnalysis [data-sec="matrix"]'));
   // 마음 리듬 (요일×시간대 히트맵) — updatedAt 시각 기준
   const rh = {};
   ["2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });

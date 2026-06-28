@@ -929,9 +929,9 @@ function renderStats() {
   renderCapture(entries);
   renderBadges();
   renderInsight(entries, list);
-  renderMoodMatrix(entries);
   renderCorrelation(entries);
   renderHabitHeatmap();
+  renderHabitSummary();
   renderWordWeb(entries);
   renderTagInsight(entries);
   renderRhythm(entries);
@@ -1013,8 +1013,8 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 });
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
-const STAT_SEC_DEFAULT = ["rhythm", "matrix", "capture", "tags", "dist", "grat", "corr", "heat", "web"];
-const STAT_SEC_NAME = { rhythm: "마음 리듬", matrix: "감정 지도", capture: "기록 구성", tags: "자주 느낀 감정", dist: "기분 분포", grat: "잘한 일 모아보기", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
+const STAT_SEC_DEFAULT = ["rhythm", "capture", "tags", "dist", "grat", "habitsum", "corr", "heat", "web"];
+const STAT_SEC_NAME = { rhythm: "마음 리듬", capture: "기록 구성", tags: "자주 느낀 감정", dist: "기분 분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
 let statEditing = false;
 function statOrder() {
   const saved = (settings.statOrder || []).filter((id) => STAT_SEC_DEFAULT.includes(id));
@@ -2839,26 +2839,28 @@ function renderWeekGlance(entries) {
     <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(mInfo(top).emoji, "대표")}${hs(avgEn, "활력")}</div></div>
   </div>`;
 }
-// 감정 지도 — 활력(가로) × 기분(세로) 2D 산점도 (정서 원형모형, Russell 1980)
-function renderMoodMatrix(entries) {
-  const el = document.getElementById("moodMatrix"); if (!el) return;
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-  const pts = Object.values(entries).filter((e) => e.date && e.mood && new Date(e.date + "T00:00:00") >= cutoff)
-    .sort((a, b) => a.date < b.date ? -1 : 1)
-    .map((e) => ({ x: (((e.energy || scoreToEnergy(entryScore(e))) - 1) / 4) * 100, y: entryScore(e) }));
-  if (pts.length < 2) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 감정 지도를 그려드려요.</p>'; return; }
-  const W = 300, H = 240, pad = 26;
-  const X = (v) => pad + (W - pad * 2) * v / 100, Y = (v) => H - pad - (H - pad * 2) * v / 100;
-  const mids = `<line x1="${X(50)}" y1="${pad}" x2="${X(50)}" y2="${H - pad}" class="mx-mid"/><line x1="${pad}" y1="${Y(50)}" x2="${W - pad}" y2="${Y(50)}" class="mx-mid"/>`;
-  const axis = `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" class="mx-axis"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" class="mx-axis"/>`;
-  const dots = pts.map((p, i) => { const op = (0.4 + 0.55 * (i / (pts.length - 1))).toFixed(2); const r = i === pts.length - 1 ? 6 : 5; return `<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${r}" fill="${scoreColor(p.y)}" opacity="${op}"${i === pts.length - 1 ? ' stroke="var(--card)" stroke-width="1.5"' : ""}/>`; }).join("");
-  const ql = `<text x="${W - pad - 2}" y="${pad + 9}" class="mx-q" text-anchor="end">😄 활기참</text>`
-    + `<text x="${pad + 2}" y="${pad + 9}" class="mx-q">😌 평온</text>`
-    + `<text x="${W - pad - 2}" y="${H - pad - 4}" class="mx-q" text-anchor="end">😣 긴장</text>`
-    + `<text x="${pad + 2}" y="${H - pad - 4}" class="mx-q">😮‍💨 지침</text>`;
-  const al = `<text x="${W / 2}" y="${H - 5}" class="mx-al" text-anchor="middle">활력 →</text>`
-    + `<text x="11" y="${H / 2}" class="mx-al" text-anchor="middle" transform="rotate(-90 11 ${H / 2})">기분 →</text>`;
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="mx-svg" role="img" aria-label="활력 가로축, 기분 세로축 감정 분포 지도">${mids}${axis}${dots}${ql}${al}</svg>`;
+// 습관 요약 — 습관별 실천률(최근 30일) · 현재 연속 · 가장 잘 지키는 요일 (실천 패턴 분석)
+function renderHabitSummary() {
+  const el = document.getElementById("habitSummary"); if (!el) return;
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천률·연속·요일 패턴을 정리해드려요.</p>'; return; }
+  const dowName = ["일", "월", "화", "수", "목", "금", "토"];
+  const rows = chs.map((h) => {
+    let total = 0, done = 0;
+    for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) continue; total++; if (h.done && h.done[k]) done++; }
+    const rate = total ? Math.round(done / total * 100) : 0;
+    let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
+    const dow = [0, 0, 0, 0, 0, 0, 0];
+    Object.keys(h.done || {}).forEach((k) => { if (h.done[k]) { const dt = new Date(k + "T00:00:00"); if (!isNaN(dt)) dow[dt.getDay()]++; } });
+    const bestDow = dow.some((x) => x > 0) ? dowName[dow.indexOf(Math.max(...dow))] : null;
+    return { h, rate, streak, bestDow };
+  });
+  rows.sort((a, b) => b.rate - a.rate);
+  el.innerHTML = rows.map((r) => `<div class="hsum-row"><span class="hsum-name">${r.h.emoji || "✅"} ${escapeHtml(r.h.title)}</span>`
+    + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
+    + `<span class="hsum-rate">${r.rate}%</span>`
+    + `<span class="hsum-meta">🔥${r.streak}${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
+    + `<p class="hint" style="margin-top:10px">실천률=최근 30일 · 🔥=현재 연속 · 요일↑=가장 잘 지키는 요일.</p>`;
 }
 // 마음 리듬 — 요일(7) × 시간대(4) 평균 기분 히트맵 (요일별·시간대별 막대를 한 그래픽으로 통합)
 // 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)

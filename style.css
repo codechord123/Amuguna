@@ -854,6 +854,13 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ww-svg { width: 100%; height: auto; aspect-ratio: 320 / 300; display: block; margin-top: var(--s2); overflow: visible; touch-action: manipulation; background: radial-gradient(120% 90% at 50% 40%, var(--bg-sunken), transparent 75%); border-radius: var(--r-lg); }
 .ww-edge { stroke: var(--line-strong); opacity: 0.45; transition: opacity 0.25s, stroke 0.25s; }
 .ww-edge-sim { stroke-dasharray: 3 3; opacity: 0.28; }
+/* 습관 요약 */
+.hsum-row { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); margin-bottom: var(--s2); }
+.hsum-name { flex: 0 0 92px; font-weight: var(--w-semi); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hsum-bar-wrap { flex: 1; background: var(--bg-sunken); border-radius: var(--r-pill); height: 14px; overflow: hidden; }
+.hsum-bar { height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 0.6s var(--ease-soft); }
+.hsum-rate { flex: 0 0 34px; text-align: right; font-weight: var(--w-semi); color: var(--ink-2); }
+.hsum-meta { flex: 0 0 auto; font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
 .ww-node circle { stroke: var(--card); stroke-width: 2; cursor: pointer; transition: opacity 0.25s, transform 0.15s var(--ease-soft); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
 .ww-node:active circle { transform: scale(0.9); }
 .ww-label { fill: var(--ink); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
