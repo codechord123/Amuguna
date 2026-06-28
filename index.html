@@ -78,6 +78,12 @@
           <p class="jh-sub" id="journeySub">3분이면 충분해요 · 한 번에 하나씩</p>
         </div>
       </div>
+
+      <div class="card habit-glance" id="todayHabitGlance" hidden>
+        <div class="card-head"><h2>🎯 오늘의 습관</h2><span class="hg-count" id="todayHabitCount"></span></div>
+        <div id="todayHabitList"></div>
+        <p class="hint">동그라미를 누르면 오늘 완료를 바로 체크할 수 있어요.</p>
+      </div>
     </section>
 
     <!-- ========== 탭: 달력 ========== -->
@@ -252,6 +258,11 @@
         <div class="card wg-card" id="weekGlanceCard">
           <div class="card-head"><h2>📅 이번 주 한눈에</h2><span class="today-date" id="wgRange"></span></div>
           <div id="wgBody"></div>
+        </div>
+        <div class="card habit-glance" id="summaryHabitGlance" hidden>
+          <div class="card-head"><h2>🎯 습관 한눈에</h2><span class="hg-count" id="summaryHabitCount"></span></div>
+          <div id="summaryHabitList"></div>
+          <p class="hint">동그라미를 누르면 오늘 완료를 체크하고, 이름을 누르면 상세를 볼 수 있어요.</p>
         </div>
         <div class="report-tiles">
           <button class="report-tile" id="weekReportBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>

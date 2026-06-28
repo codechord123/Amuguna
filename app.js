@@ -190,7 +190,7 @@ function activateTab(name, { scroll = true } = {}) {
   if (name === "stats") renderStats();
   if (name === "calendar") renderMoodCalendar(loadEntries());
   if (name === "challenge") renderChallenge();
-  if (name === "today") { updateJourneyHero(); updateTodayStats(); }
+  if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -237,7 +237,7 @@ function openEntryEditor(dateKey) {
 // 입력은 '오늘의 여정' 하나로 통일됨(옛 직접기록 폼 제거).
 function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
-function loadToday() { updateJourneyHero(); updateTodayStats(); }
+function loadToday() { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
 
 // 첫 화면 통계 + 응원 — 동기 부여
 function updateTodayStats() {
@@ -669,6 +669,7 @@ function renderChallenge() {
   const list = document.getElementById("challengeList");
   const summary = document.getElementById("chSummary");
   const chEmpty = document.getElementById("chEmpty");
+  if (typeof renderTodayHabitGlance === "function") { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
   if (chs.length === 0) {
     list.innerHTML = ""; summary.hidden = true; chEmpty.hidden = false; return;
   }
@@ -926,6 +927,7 @@ function renderStats() {
   renderWeekly(entries);
   renderMonthly(entries);
   renderWeekGlance(entries);
+  renderSummaryHabitGlance();
   renderCapture(entries);
   renderBadges();
   renderInsight(entries, list);
@@ -2943,6 +2945,46 @@ function renderWeekGlance(entries) {
     <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(mInfo(top).emoji, "대표")}${hs(avgEn, "활력")}</div></div>
   </div>`;
 }
+// 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료를 바로 체크하고 진행/연속을 한눈에.
+function renderHabitGlanceInto(listId, countId) {
+  const list = document.getElementById(listId); if (!list) return false;
+  const card = list.closest(".card");
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  if (!chs.length) { if (card) card.hidden = true; return false; }
+  if (card) card.hidden = false;
+  const tk = todayKey();
+  const doneToday = chs.filter((h) => h.done && h.done[tk]).length;
+  const cnt = document.getElementById(countId);
+  if (cnt) cnt.textContent = `오늘 ${doneToday}/${chs.length}${doneToday === chs.length ? " 🎉" : ""}`;
+  list.innerHTML = chs.map((h) => {
+    const doneCount = Object.values(h.done || {}).filter(Boolean).length;
+    const todayDone = !!(h.done && h.done[tk]);
+    let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
+    const pct = Math.min(100, Math.round(doneCount / CH_TARGET * 100));
+    return `<div class="hg-row">`
+      + `<button class="hg-check ${todayDone ? "done" : ""}" data-hgcheck="${h.id}" aria-pressed="${todayDone}" aria-label="${escapeHtml(h.title)} 오늘 완료 ${todayDone ? "취소" : "체크"}">${todayDone ? "✓" : "○"}</button>`
+      + `<div class="hg-info" data-hgopen="${h.id}" role="button" tabindex="0" aria-label="${escapeHtml(h.title)} 상세 보기">`
+      + `<div class="hg-title">${h.emoji || "✅"} ${escapeHtml(h.title)}</div>`
+      + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
+      + `<span class="hg-meta">🔥${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
+  }).join("");
+  return true;
+}
+function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount"); }
+function renderSummaryHabitGlance() { renderHabitGlanceInto("summaryHabitList", "summaryHabitCount"); }
+function refreshHabitGlances() { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
+// 습관 한눈에 카드 동작 — 오늘 완료 토글(어느 화면에서든) · 이름 누르면 상세
+document.addEventListener("click", (e) => {
+  const chk = e.target.closest("[data-hgcheck]");
+  if (chk) { applyHabitAction("check", chk.dataset.hgcheck); return; }
+  const open = e.target.closest("[data-hgopen]");
+  if (open) { Sound.tap(); openHabitDetail(open.dataset.hgopen); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const open = e.target.closest("[data-hgopen]");
+  if (open) { e.preventDefault(); Sound.tap(); openHabitDetail(open.dataset.hgopen); }
+});
 // 습관 요약 — 습관별 실천률(최근 30일) · 현재 연속 · 가장 잘 지키는 요일 (실천 패턴 분석)
 function renderHabitSummary() {
   const el = document.getElementById("habitSummary"); if (!el) return;

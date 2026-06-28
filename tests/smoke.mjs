@@ -282,6 +282,16 @@ try {
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("습관 실천 매트릭스 표시", d.querySelectorAll("#habitHeatmap .hm-row").length >= 2 && d.querySelectorAll("#habitHeatmap .hm-cell.hm-on").length >= 1);
   check("습관 요약(실천률·연속) 표시", d.querySelectorAll("#habitSummary .hsum-row").length >= 1 && /%/.test(q("#habitSummary").textContent) && /🔥/.test(q("#habitSummary").textContent));
+  check("요약 서브탭 습관 한눈에 표시", !q("#summaryHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#summaryHabitList .hg-row").length >= 1 && /오늘 \d+\/\d+/.test(q("#summaryHabitCount").textContent));
+  // 메인(오늘) 화면에도 습관 노출 + 거기서 바로 오늘 완료 체크
+  q("[data-tab=today]").click();
+  check("오늘 화면 습관 한눈에 표시", !q("#todayHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#todayHabitList .hg-row").length >= 1);
+  check("오늘 화면 습관 오늘 완료 반영", !!q("#todayHabitList .hg-check.done"));
+  q("#todayHabitList .hg-check").click();
+  check("오늘 화면에서 습관 체크 해제(저장)", !q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === false);
+  q("#todayHabitList .hg-check").click(); // 원복
+  check("오늘 화면에서 습관 재체크(저장)", !!q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === true);
+  q("[data-tab=stats]").click();
   check("감정 지도 섹션 제거됨", !q("#moodMatrix") && !q('#allAnalysis [data-sec="matrix"]'));
   // 마음 리듬 (요일×시간대 히트맵) — updatedAt 시각 기준
   const rh = {};
