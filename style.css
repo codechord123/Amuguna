@@ -368,7 +368,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay:not([hidden]) .med-caption, .med-overlay:not([hidden]) .med-dots, .med-overlay:not([hidden]) #medNext { animation: medRise 0.7s var(--ease-soft) 0.18s both; }
 @keyframes medEnter { 0% { transform: scale(0.82); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); } }
 @keyframes medRise { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
-.cb-viz { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; }
+/* transition-duration: inherit — 위상 시간(4·7·8초)을 자식(떠오름·오브·조명)에 전달.
+   이게 없으면 0초로 계산돼 떠오름/가라앉음이 급변(스냅)함 */
+.cb-viz { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; transition-duration: inherit; }
 /* 떠오르는 빛 — 들숨에 위로 떠오르며 커지고, 날숨에 가라앉으며 작아짐.
    화면에서 시선을 잡는 '유일한 움직임'. 좌우 추적 없음 → 차분함 유지. */
 .cb-rise { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
