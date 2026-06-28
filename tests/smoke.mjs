@@ -224,6 +224,7 @@ try {
   check("호흡 비주얼(cb-stage·발광 구체·떠오름)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-orb") && !!q("#medCircle .cb-rise"));
   check("장식 기하(연꽃·만다라) 제거됨", !q("#medOverlay .cb-flower") && !q("#medOverlay .cb-geo"));
   check("발광 아우라 + 장면 조명 유지", !!q("#medOverlay .cb-aura") && !!q("#medOverlay .cb-glow"));
+  check("바닥 그림자(부유감) 추가", !!q("#medOverlay .cb-shadow") && !!q("#breathOverlay .cb-shadow"));
   check("기계적 궤도·공·3D 제거됨", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog"));
   check("카운트(빛 속 숫자) 떠오름 그룹 안에", !!q("#medOverlay .cb-rise #medCircleText"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
