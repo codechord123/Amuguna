@@ -221,13 +221,11 @@ try {
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerdown", { clientX: 220 }));
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerup", { clientX: 110 }));
   check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
-  check("호흡 비주얼(cb-stage·발광 구체·링)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-orb") && !!q("#medCircle .cb-ring-prog"));
+  check("호흡 비주얼(cb-stage·발광 구체·떠오름)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-orb") && !!q("#medCircle .cb-rise"));
   check("장식 기하(연꽃·만다라) 제거됨", !q("#medOverlay .cb-flower") && !q("#medOverlay .cb-geo"));
-  check("명상 발광 아우라 이펙트 유지", !!q("#medOverlay .cb-aura"));
-  check("호흡 조명·잔물결 이펙트(글로우·펄스)", !!q("#medOverlay .cb-glow") && !!q("#medOverlay .cb-pulse i"));
-  check("궤도 입체화(타원 평면·광택 라인)", !!q("#medOverlay .cb-plane") && !!q("#medOverlay .cb-ring-shine"));
-  check("공 꼬리(혜성 잔상) 제거됨", !q("#medOverlay .cb-dot.tr"));
-  check("공 이동 경로(점선 트랙) 표시", !!q("#medCircle .cb-ring-track") && !!q("#medCircle .cb-dot"));
+  check("발광 아우라 + 장면 조명 유지", !!q("#medOverlay .cb-aura") && !!q("#medOverlay .cb-glow"));
+  check("기계적 궤도·공·3D 제거됨", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog"));
+  check("카운트(빛 속 숫자) 떠오름 그룹 안에", !!q("#medOverlay .cb-rise #medCircleText"));
   q("#medNext").click(); // 건너뛰고 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
   q("#medClose").click();
@@ -237,11 +235,10 @@ try {
   q("#restSeg button[data-rseg=meditate]").click();
   q("#safetyBreath").click(); // 위기 진정 → 호흡 오버레이 열기
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#qbText").innerHTML));
-  check("빠른 호흡도 코스믹 비주얼로 통일", !!q("#breathOverlay .cb-stage") && !!q("#breathOverlay .cb-orb") && !!q("#breathOverlay .cb-ring-shine"));
+  check("빠른 호흡도 떠오르는 빛으로 통일", !!q("#breathOverlay .cb-stage") && !!q("#breathOverlay .cb-orb") && !!q("#breathOverlay .cb-rise"));
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
   check("Sound.breathStart/Stop 존재", typeof window.Sound.breathStart === "function" && typeof window.Sound.breathStop === "function");
   check("호흡명상 카드·우상단 FAB 제거됨", !q("#breathBtn") && !q("#quickBreathFab"));
-  check("명상 따라가는 점(cb-dot) 존재", !!q("#medCircle .cb-dot"));
   // 수면 모드 토글
   q("#sleepToggle").click();
   check("수면 모드 저장", ls("settings_v2").sleepBreath === true);

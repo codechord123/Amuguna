@@ -3163,10 +3163,7 @@ const qbViz = qbCircleEl ? qbCircleEl.querySelector(".cb-viz") : null;
 const qbBreather = makeBreather(qbCircleEl, document.getElementById("qbText"), "cb-stage", {
   sleep: () => sleepMode,
   maxCycles: 12,
-  onPhase: (cls) => { // juice — 명상과 동일한 햅틱·빛수렴
-    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.converge(qbViz || qbCircleEl, { count: 16, spread: 120, glow: medGlow() }); }
-    else { Haptic.tap(); }
-  },
+  onPhase: (cls) => { if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // juice — 단계 전환 미세 햅틱
   onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; if (!sleepMode) Sound.chime(); setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
 });
 function openBreath() {
@@ -3228,11 +3225,7 @@ function medRecord() {
 }
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
-  onPhase: (cls) => {
-    // juice — 단계 전환마다 미세 햅틱, 들숨 끝(멈춤)엔 빛이 중심으로 수렴
-    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.converge(medViz || medCircle, { count: 18, spread: 124, glow: medGlow() }); }
-    else { Haptic.tap(); }
-  },
+  onPhase: (cls) => { if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // juice — 단계 전환 미세 햅틱(파티클은 완료 때만)
   onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
