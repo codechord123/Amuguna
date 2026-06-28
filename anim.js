@@ -28,6 +28,33 @@
     } catch (e) {}
   }
 
+  // 빛 수렴 — 바깥에서 중심으로 빨려들어오며 모이는 작은 빛 입자
+  function converge(target, opts) {
+    opts = opts || {};
+    try {
+      let cx, cy;
+      if (target && target.getBoundingClientRect) { const r = target.getBoundingClientRect(); cx = r.left + r.width / 2; cy = r.top + r.height / 2; }
+      else { cx = (opts.x != null ? opts.x : window.innerWidth / 2); cy = (opts.y != null ? opts.y : window.innerHeight / 2); }
+      const n = opts.count || 16;
+      const spread = opts.spread || 120;
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement("span");
+        s.className = "lpt";
+        const ang = (Math.PI * 2 * i) / n + Math.random() * 0.4;
+        const dist = spread * (0.7 + Math.random() * 0.5);
+        s.style.left = cx + "px"; s.style.top = cy + "px";
+        s.style.setProperty("--dx", (Math.cos(ang) * dist).toFixed(1) + "px");
+        s.style.setProperty("--dy", (Math.sin(ang) * dist).toFixed(1) + "px");
+        if (opts.glow) s.style.setProperty("--lpt-glow", opts.glow);
+        const sz = (3 + Math.random() * 4).toFixed(1) + "px";
+        s.style.width = sz; s.style.height = sz;
+        s.style.animationDelay = (Math.random() * 0.1) + "s";
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 1000);
+      }
+    } catch (e) {}
+  }
+
   let _lottieLoading = false, _lottieFailed = false;
   function ensureLottie(cb) {
     if (window.lottie) return cb(true);
@@ -60,5 +87,5 @@
     sparkle(target, { count: 14, spread: 80 });
   }
 
-  window.Anim = { sparkle, lottie, celebrate };
+  window.Anim = { sparkle, converge, lottie, celebrate };
 })();

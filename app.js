@@ -3200,14 +3200,15 @@ const medDots = document.getElementById("medDots"), medNextBtn = document.getEle
 const medSwipeHint = document.getElementById("medSwipeHint");
 let medIdx = 0, medTimer = null, medPhase = "teach";
 const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
+const medGlow = () => (document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,224,140,0.92)" : "rgba(120,142,205,0.95)");
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", {
   sleep: () => true, maxCycles: 6, // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onPhase: (cls) => {
-    // juice — 단계 전환마다 미세 햅틱, 한 바퀴 다 칠해진 순간(멈춤)엔 반짝임 버스트
-    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 14, spread: 104 }); }
+    // juice — 단계 전환마다 미세 햅틱, 들숨 끝(멈춤)엔 빛이 중심으로 수렴
+    if (cls === "hold") { Haptic.success(); if (window.Anim) Anim.converge(medViz || medCircle, { count: 18, spread: 124, glow: medGlow() }); }
     else { Haptic.tap(); }
   },
-  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
+  onAutoEnd: () => { medPhase = "done"; medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
 }) : null;
 function medRenderDots() { if (medDots) medDots.innerHTML = MED_STEPS.map((_, i) => `<i class="${i === medIdx ? "on" : ""}"></i>`).join(""); }
 function medShow(i) {

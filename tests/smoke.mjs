@@ -409,6 +409,9 @@ try {
   check("Anim 사용 가능", window.Anim && typeof window.Anim.sparkle === "function" && typeof window.Anim.celebrate === "function");
   window.Anim.sparkle(null, { x: 20, y: 20, count: 6 });
   check("반짝임 파티클 생성", d.querySelectorAll(".spk").length >= 6);
+  check("빛 수렴(converge) 함수 존재", typeof window.Anim.converge === "function");
+  window.Anim.converge(null, { x: 20, y: 20, count: 8 });
+  check("빛 수렴 입자 생성", d.querySelectorAll(".lpt").length >= 8);
   check("Lottie 에셋 없으면 sparkle 폴백(반짝임 추가 생성)", (window.Anim.celebrate(null), d.querySelectorAll(".spk").length >= 12));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));

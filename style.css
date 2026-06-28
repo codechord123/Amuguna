@@ -357,6 +357,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay > *:not(.cb-stars) { position: relative; z-index: 2; }
 /* 호흡 무대 */
 .cb-stage { display: flex; flex-direction: column; align-items: center; gap: var(--s4); color: var(--med-fg); }
+/* 진입 트랜지션 — 명상 화면이 부드럽게 줌인되며 떠오름 */
+.med-overlay:not([hidden]) .cb-stage { animation: medEnter 0.8s var(--ease-soft) both; }
+.med-overlay:not([hidden]) .med-caption, .med-overlay:not([hidden]) .med-dots, .med-overlay:not([hidden]) #medNext { animation: medRise 0.7s var(--ease-soft) 0.18s both; }
+@keyframes medEnter { 0% { transform: scale(0.82); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); } }
+@keyframes medRise { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
 .cb-viz { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
 .cb-stage.inhale .cb-viz, .cb-stage.hold .cb-viz { transform: scale(1.12); }
 .cb-stage.exhale .cb-viz { transform: scale(0.96); }
@@ -435,7 +440,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay .btn.primary { background: var(--med-on-bg); color: var(--med-on-ink); border: none; }
 /* 모션 최소화 선호 시 장식 애니메이션 정지 */
 @media (prefers-reduced-motion: reduce) {
-  .cb-aura, .cb-stars, .cb-pulse i, .cb-dot::after, .cb-count b { animation: none; }
+  .cb-aura, .cb-stars, .cb-pulse i, .cb-dot::after, .cb-count b,
+  .med-overlay:not([hidden]) .cb-stage, .med-overlay:not([hidden]) .med-caption,
+  .med-overlay:not([hidden]) .med-dots, .med-overlay:not([hidden]) #medNext { animation: none; }
   .cb-pulse { opacity: 0; }
 }
 
@@ -959,6 +966,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 반짝임 버스트 (anim.js) — 한 점에서 사방으로 퍼지며 사라짐 */
 .spk { position: fixed; z-index: 120; pointer-events: none; transform: translate(-50%, -50%); will-change: transform, opacity; animation: spkBurst 1s var(--ease-soft) forwards; }
 @keyframes spkBurst { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(35deg); opacity: 0; } }
+/* 빛 수렴 입자 (anim.js converge) — 바깥에서 중심으로 빨려들어옴 */
+.lpt { position: fixed; z-index: 120; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.35) 60%, transparent 75%); box-shadow: 0 0 8px 2px var(--lpt-glow, rgba(255,230,160,0.85)); transform: translate(-50%, -50%); will-change: transform, opacity; animation: lptIn 0.9s var(--ease-soft) forwards; }
+@keyframes lptIn { 0% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; } }
 
 /* ============================================================
    통계
