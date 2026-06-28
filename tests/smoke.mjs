@@ -205,6 +205,7 @@ try {
   // 8) 호흡 카운터 + 빠른 호흡 + 명상 분리
   q("[data-tab=rest]").click();
   check("쉼 탭 명상 패널 기본 표시", !q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
+  check("명상하는 법 가이드(5단계)", d.querySelectorAll("#medGuide li").length === 5);
   q("#restSeg button[data-rseg=comfort]").click();
   check("위로 패널로 전환", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   q("#restSeg button[data-rseg=meditate]").click();

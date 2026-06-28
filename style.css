@@ -267,16 +267,36 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .h-reflect p { margin: var(--s1) 0; font-size: var(--t-sm); color: var(--ink-2); }
 
 .breather { display: flex; justify-content: center; align-items: center; height: 200px; }
-.breath-circle { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: var(--w-bold); font-size: var(--t-md); box-shadow: 0 0 0 0 var(--ring); transition: transform 4s var(--ease-breath), box-shadow 4s var(--ease-breath); }
+.breath-circle { position: relative; width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: var(--w-bold); font-size: var(--t-md); box-shadow: 0 0 0 0 var(--ring); transition: transform 4s var(--ease-breath), box-shadow 4s var(--ease-breath); }
+/* 들숨에 부드럽게 피어나는 빛 무리(아우라) — 몰입감 */
+.breath-circle::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, var(--accent-2), transparent 68%); opacity: 0; transform: scale(1); transition: opacity 4s var(--ease-breath), transform 4s var(--ease-breath); z-index: -1; pointer-events: none; }
 .breath-circle.ready { transform: scale(1.12); box-shadow: 0 0 0 12px var(--ring); animation: ready-pulse 1s var(--ease-breath) infinite; }
+.breath-circle.ready::before { opacity: 0.35; transform: scale(1.6); }
 @keyframes ready-pulse { 0%,100% { transform: scale(1.08); } 50% { transform: scale(1.18); } }
 .breath-circle.inhale { transform: scale(1.5); box-shadow: 0 0 0 28px var(--ring); }
+.breath-circle.inhale::before { opacity: 0.55; transform: scale(2.1); }
 .breath-circle.hold { transform: scale(1.5); }
+.breath-circle.hold::before { opacity: 0.45; transform: scale(2.1); }
 .breath-circle.exhale { transform: scale(1); box-shadow: 0 0 0 0 var(--ring); }
+.breath-circle.exhale::before { opacity: 0; transform: scale(1); }
 .breath-circle span { line-height: 1.25; text-align: center; }
 .breath-circle b { display: block; font-size: 1.7rem; font-weight: 800; }
 .breath-circle.big b { font-size: 2rem; }
 [data-theme="dark"] .breath-circle { color: #17161d; }
+.breath-overlay.sleep .breath-circle::before { background: radial-gradient(circle, rgba(120,110,160,0.5), transparent 68%); }
+/* 명상하는 법 — 단계가 순서대로 부드럽게 떠오름 */
+.med-how { text-align: left; }
+.med-guide { list-style: none; padding: 0; margin: var(--s2) 0 0; counter-reset: med; }
+.med-guide li { counter-increment: med; position: relative; padding: var(--s3) var(--s3) var(--s3) 46px; margin-bottom: var(--s2); background: var(--bg-sunken); border-radius: var(--r-md); opacity: 0; transform: translateY(10px); animation: medIn 0.5s var(--ease-soft) forwards; }
+.med-guide li::before { content: counter(med); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: var(--t-xs); font-weight: var(--w-bold); }
+.med-guide li b { display: block; font-size: var(--t-sm); color: var(--ink); margin-bottom: 1px; }
+.med-guide li span { font-size: var(--t-xs); color: var(--ink-2); line-height: 1.5; }
+.med-guide li:nth-child(1) { animation-delay: 0.05s; }
+.med-guide li:nth-child(2) { animation-delay: 0.15s; }
+.med-guide li:nth-child(3) { animation-delay: 0.25s; }
+.med-guide li:nth-child(4) { animation-delay: 0.35s; }
+.med-guide li:nth-child(5) { animation-delay: 0.45s; }
+@keyframes medIn { to { opacity: 1; transform: none; } }
 
 .mission { font-size: var(--t-md); font-weight: var(--w-semi); background: var(--bg-sunken); padding: var(--s4); border-radius: var(--r-sm); margin: 0 0 var(--s4); min-height: 1.6em; line-height: 1.55; }
 
