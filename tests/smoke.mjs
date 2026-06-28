@@ -286,6 +286,7 @@ try {
   // 메인(오늘) 화면에도 습관 노출 + 거기서 바로 오늘 완료 체크
   q("[data-tab=today]").click();
   check("오늘 화면 습관 한눈에 표시", !q("#todayHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#todayHabitList .hg-row").length >= 1);
+  check("오늘 화면 습관 분석 인사이트 한 줄 표시", !!q("#todayHabitList .hg-insight") && q("#todayHabitList .hg-insight").textContent.includes("산책"));
   check("오늘 화면 습관 오늘 완료 반영", !!q("#todayHabitList .hg-check.done"));
   q("#todayHabitList .hg-check").click();
   check("오늘 화면에서 습관 체크 해제(저장)", !q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === false);
@@ -352,7 +353,9 @@ try {
   const calToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("entries_v2", JSON.stringify({ [calToday]: { date: calToday, mood: "활기차요", energy: 4, note: "좋은 하루였어요", updatedAt: calToday + "T10:00:00" } }));
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2020-01-01", done: { [calToday]: true }, celebrated: [] }]));
-  q("[data-tab=today]").click(); q("[data-tab=calendar]").click();
+  q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+  check("이번 주 한눈에 습관 달성률 데이터 표시", /\d+%/.test(q("#wgBody").textContent) && /습관/.test(q("#wgBody").textContent));
+  q("[data-tab=calendar]").click();
   q("#calNext").click(); q("#calNext").click();
   check("마음 달력 기분 색 표시", !!d.querySelector(`#moodCal [data-cal="${calToday}"][class*="m"]`));
 

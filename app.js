@@ -2939,13 +2939,34 @@ function renderWeekGlance(entries) {
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
   const en = recs.filter((e) => e.energy);
   const avgEn = en.length ? (en.reduce((s, e) => s + e.energy, 0) / en.length).toFixed(1) : "—";
+  const chs = (typeof loadChs === "function") ? loadChs() : [];
+  let ht = 0, hd = 0; chs.forEach((h) => keys.forEach((k) => { if (k >= h.startDate) { ht++; if (h.done && h.done[k]) hd++; } }));
+  const habPct = ht ? Math.round(hd / ht * 100) : null;
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
   el.innerHTML = `<div class="rpt-hero" style="margin:0">
     <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
-    <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(mInfo(top).emoji, "대표")}${hs(avgEn, "활력")}</div></div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">이번 주 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(avgEn, "활력")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(mInfo(top).emoji, "대표")}</div></div>
   </div>`;
 }
-// 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료를 바로 체크하고 진행/연속을 한눈에.
+// 습관 분석 한 줄 — 한눈에 카드/홈에서 가장 의미 있는 인사이트 1개 (기분 연관 > 모멘텀 > 꾸준함)
+function topHabitInsight(ha) {
+  if (!ha) return "";
+  const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
+  if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요`;
+  if (ha.improved && ha.improved.momentum >= 15) return `${nm(ha.improved)} 요즘 더 살아나고 있어요 (▲${ha.improved.momentum}%)`;
+  if (ha.declined && ha.declined.momentum <= -15) return `${nm(ha.declined)} 요즘 주춤해요 — 힘든 날엔 최소 버전부터`;
+  if (ha.perfect && ha.perfect.length) return `${ha.perfect.map(nm).join(", ")} 최근 ${ha.perfect.length > 1 ? "모두 " : ""}꾸준히 지키고 있어요 🎉`;
+  if (ha.mostConsistent) return `가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>`;
+  return "";
+}
+// 최근 N일(현재)·직전 N일(비교) 키 배열 — 글랜스 인사이트용 분석 윈도
+function recentWindowKeys(n) {
+  const keys = [], prevKeys = [];
+  for (let i = n - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  for (let i = 2 * n - 1; i >= n; i--) { const d = new Date(); d.setDate(d.getDate() - i); prevKeys.push(todayKey(d)); }
+  return { keys, prevKeys };
+}
+// 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료 체크 + 진행/연속 + 습관 분석 인사이트 한 줄.
 function renderHabitGlanceInto(listId, countId) {
   const list = document.getElementById(listId); if (!list) return false;
   const card = list.closest(".card");
@@ -2956,7 +2977,12 @@ function renderHabitGlanceInto(listId, countId) {
   const doneToday = chs.filter((h) => h.done && h.done[tk]).length;
   const cnt = document.getElementById(countId);
   if (cnt) cnt.textContent = `오늘 ${doneToday}/${chs.length}${doneToday === chs.length ? " 🎉" : ""}`;
-  list.innerHTML = chs.map((h) => {
+  // 분석 인사이트 — 최근 14일 데이터로 가장 의미 있는 한 줄
+  const w = recentWindowKeys(14);
+  const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
+  const insTxt = topHabitInsight(ha);
+  const insHtml = insTxt ? `<p class="hg-insight">💡 ${insTxt}</p>` : "";
+  list.innerHTML = insHtml + chs.map((h) => {
     const doneCount = Object.values(h.done || {}).filter(Boolean).length;
     const todayDone = !!(h.done && h.done[tk]);
     let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
