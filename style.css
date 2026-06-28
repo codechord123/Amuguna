@@ -308,16 +308,16 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 @keyframes medIn { to { opacity: 1; transform: none; } }
 /* ===== 명상 가이드 — 밝은 새벽빛(기본) + 다크(우주) + 기하 만다라 ===== */
 .med-overlay {
-  /* 밝은 화면 대비를 위한 보석빛 인디고 팔레트 (라이트 기본) */
-  --med-bg: radial-gradient(135% 108% at 50% 20%, #f7f8ff 0%, #e9edfc 40%, #dde4f7 72%, #ccd6f0 100%);
-  --med-fg: #5546b8; --med-fg-soft: rgba(85,70,184,0.55);
-  --med-track: rgba(85,70,184,0.16); --med-glow: rgba(110,90,240,0.5);
-  --med-orb: radial-gradient(circle at 50% 42%, #ffffff 0%, #bcb2ff 26%, #7b6cf0 50%, rgba(123,108,240,0.28) 66%, transparent 78%);
-  --med-aura: radial-gradient(circle, rgba(140,120,255,0.4) 0%, rgba(120,160,255,0.18) 45%, transparent 72%);
-  --med-text: #2b2456; --med-text2: #564f86; --med-text3: #8884a6;
-  --med-dot: radial-gradient(circle at 50% 40%, #ffffff 0%, #c6beff 45%, #6a5bf0 100%);
-  --med-dot-glow: 0 0 10px 3px rgba(110,90,240,0.55), 0 0 22px 7px rgba(110,90,240,0.3);
-  --med-on-ink: #ffffff; --med-on-bg: #5546b8;
+  /* 차분한 슬레이트-인디고 + 발광 구체 (라이트 기본) */
+  --med-bg: linear-gradient(168deg, #eef3fc 0%, #e6edf8 44%, #dbe5f3 100%);
+  --med-fg: #54639c; --med-fg-soft: rgba(84,99,156,0.4);
+  --med-track: rgba(84,99,156,0.14); --med-glow: rgba(120,142,205,0.5);
+  --med-orb: radial-gradient(circle at 42% 36%, #ffffff 0%, #d8e2f5 26%, #9aabd8 56%, rgba(120,142,205,0.22) 72%, transparent 84%);
+  --med-aura: radial-gradient(circle, rgba(150,172,228,0.38) 0%, rgba(150,172,228,0.13) 48%, transparent 72%);
+  --med-text: #36406b; --med-text2: #5d668f; --med-text3: #9298b5;
+  --med-dot: radial-gradient(circle at 42% 38%, #ffffff 0%, #c7d3f0 50%, #7e90c8 100%);
+  --med-dot-glow: 0 0 10px 3px rgba(150,172,228,0.6), 0 0 22px 8px rgba(150,172,228,0.32);
+  --med-on-ink: #ffffff; --med-on-bg: #54639c;
   gap: var(--s4); background: var(--med-bg); color: var(--med-text); overflow: hidden;
 }
 [data-theme="dark"] .med-overlay {
@@ -335,12 +335,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay .med-close { position: absolute; top: var(--s5); right: var(--s5); z-index: 3; background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: var(--med-text2); cursor: pointer; padding: var(--s2); }
 /* 배경 앰비언트 — 라이트: 부드러운 보케 드리프트 / 다크: 별가루 반짝임 */
 .cb-stars { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image:
-  radial-gradient(90px 90px at 16% 24%, rgba(150,130,255,0.16), transparent 70%),
-  radial-gradient(120px 120px at 82% 28%, rgba(120,170,255,0.14), transparent 70%),
-  radial-gradient(100px 100px at 72% 82%, rgba(180,140,255,0.13), transparent 70%),
-  radial-gradient(80px 80px at 24% 78%, rgba(140,160,255,0.13), transparent 70%);
-  animation: cbDrift 16s ease-in-out infinite alternate; }
-@keyframes cbDrift { from { transform: translate3d(0,0,0); } to { transform: translate3d(6px,-16px,0); } }
+  radial-gradient(160px 160px at 22% 16%, rgba(146,170,228,0.12), transparent 70%),
+  radial-gradient(180px 180px at 80% 84%, rgba(158,150,218,0.1), transparent 70%);
+  animation: cbDrift 18s ease-in-out infinite alternate; }
+@keyframes cbDrift { from { transform: translate3d(0,0,0); } to { transform: translate3d(5px,-14px,0); } }
 [data-theme="dark"] .cb-stars { background-image:
   radial-gradient(1.2px 1.2px at 12% 18%, #fff9, transparent), radial-gradient(1px 1px at 28% 62%, #fff7, transparent),
   radial-gradient(1.4px 1.4px at 47% 12%, #ffe9b0, transparent), radial-gradient(1px 1px at 63% 38%, #fff6, transparent),
@@ -363,17 +361,13 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog { stroke-dashoffset: 0; }
 .cb-stage.exhale .cb-ring-prog { stroke-dashoffset: 578; }
 .cb-stage.med-idle .cb-ring { opacity: 0; }
-/* 발광 아우라 — 은은하게 호흡하는 빛무리 */
-.cb-aura { position: absolute; width: 232px; height: 232px; border-radius: 50%; background: var(--med-aura); filter: blur(16px); animation: cbAura 7s var(--ease-breath) infinite; }
-@keyframes cbAura { 0%,100% { transform: scale(0.9); opacity: 0.55; } 50% { transform: scale(1.1); opacity: 0.95; } }
-/* 기하 만다라 — 동심원 + 12점 헤일로(천천히 회전) */
-.cb-flower { position: absolute; width: 188px; height: 188px; color: var(--med-fg-soft); filter: drop-shadow(0 0 4px var(--med-glow)); animation: cbSpin 90s linear infinite; }
-@keyframes cbSpin { to { transform: rotate(360deg); } }
-/* 12각 다각형 — 반대로 천천히 회전(깊이감) */
-.cb-geo { position: absolute; width: 132px; height: 132px; color: var(--med-fg-soft); opacity: 0.7; animation: cbSpinR 80s linear infinite; }
-@keyframes cbSpinR { to { transform: rotate(-360deg); } }
+/* 발광 아우라 — 은은하게 호흡하는 빛무리 (장식 기하 없이 오브 중심) */
+.cb-aura { position: absolute; width: 240px; height: 240px; border-radius: 50%; background: var(--med-aura); filter: blur(18px); animation: cbAura 7s var(--ease-breath) infinite; }
+@keyframes cbAura { 0%,100% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.12); opacity: 0.92; } }
 /* 중심 발광 오브 */
 .cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+/* 구체 윗부분 광택 하이라이트(입체감) */
+.cb-orb::before { content: ""; position: absolute; top: 16%; left: 22%; width: 36%; height: 30%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8), transparent 72%); filter: blur(2px); }
 .cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { transform: scale(1.18); }
 .cb-stage.exhale .cb-orb { transform: scale(0.82); opacity: 0.8; }
 /* 따라가는 작은 빛 점 — 링을 한 바퀴 돌며 호흡 안내 */
