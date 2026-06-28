@@ -366,16 +366,21 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.inhale .cb-viz, .cb-stage.hold .cb-viz { transform: scale(1.12); }
 .cb-stage.exhale .cb-viz { transform: scale(0.96); }
 /* 차오르는 진행 링 */
-/* 위상 시간(4·7·8초)을 자식(진행 링)까지 전달하기 위해 inherit 사슬을 연결 */
+/* 궤도 평면 — 살짝 눕혀(타원) 입체감. 위상 시간(4·7·8초) inherit 사슬도 연결 */
+.cb-plane { position: absolute; inset: 0; transform: scaleY(0.78); transition-duration: inherit; }
 .cb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; transition-duration: inherit; }
-/* 공이 지나갈 경로(빈 채널) */
-.cb-ring-track { fill: none; stroke: var(--med-path); stroke-width: 7; opacity: 0.4; }
+/* 궤도 홈 — 바깥 하이라이트 / 채널 / 안쪽 그림자로 입체 베벨 */
+.cb-ring-hi { fill: none; stroke: rgba(255,255,255,0.42); stroke-width: 1.4; }
+.cb-ring-track { fill: none; stroke: var(--med-path); stroke-width: 8; opacity: 0.45; }
+.cb-ring-lo { fill: none; stroke: rgba(18,20,42,0.22); stroke-width: 1.4; }
 /* 공이 지나간 자리 — 채널 위가 색으로 칠해짐(들숨) / 되돌아오며 지워짐(날숨) */
-.cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 9px var(--med-glow)) drop-shadow(0 0 3px var(--med-glow)); transition-property: stroke-dashoffset, filter; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
-.cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog { stroke-dashoffset: 0; }
+.cb-ring-prog { fill: none; stroke: var(--med-fg); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; filter: drop-shadow(0 0 9px var(--med-glow)) drop-shadow(0 0 3px var(--med-glow)); transition-property: stroke-dashoffset, filter; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+/* 칠해진 빛 위의 광택 하이라이트 라인 — 둥근 튜브 같은 입체감 */
+.cb-ring-shine { fill: none; stroke: rgba(255,255,255,0.7); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; transition-property: stroke-dashoffset; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.cb-stage.inhale .cb-ring-prog, .cb-stage.hold .cb-ring-prog, .cb-stage.inhale .cb-ring-shine, .cb-stage.hold .cb-ring-shine { stroke-dashoffset: 0; }
 /* 한 바퀴 다 칠해진 순간(멈춤) 더 환하게 피어남 */
 .cb-stage.hold .cb-ring-prog { filter: drop-shadow(0 0 16px var(--med-glow)) drop-shadow(0 0 6px var(--med-glow)); }
-.cb-stage.exhale .cb-ring-prog { stroke-dashoffset: 578; }
+.cb-stage.exhale .cb-ring-prog, .cb-stage.exhale .cb-ring-shine { stroke-dashoffset: 578; }
 .cb-stage.med-idle .cb-ring { opacity: 0; }
 /* 들숨 때 밝아졌다 날숨 때 어두워지는 장면 조명(호흡 연동) */
 .cb-glow { position: absolute; width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle, var(--med-glow) 0%, transparent 62%); filter: blur(22px); opacity: 0.16; transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
@@ -407,12 +412,6 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 공 둘레의 은은한 맥동 헤일로 */
 .cb-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: var(--med-dot); filter: blur(6px); opacity: 0.55; z-index: -1; animation: cbDotHalo 2.6s ease-in-out infinite; }
 @keyframes cbDotHalo { 0%,100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.55); opacity: 0.85; } }
-/* 공 꼬리(혜성 트레일) — 헤드 뒤로 작아지며 옅어지는 잔상 */
-.cb-dot.tr { box-shadow: none; animation: none; }
-.cb-dot.tr::after { display: none; }
-.cb-dot.t1 { width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; opacity: 0.5; transform: rotate(-6deg) translateY(-115px); }
-.cb-dot.t2 { width: 10px; height: 10px; margin: -5px 0 0 -5px; opacity: 0.28; transform: rotate(-12deg) translateY(-115px); }
-.cb-dot.t3 { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; opacity: 0.14; transform: rotate(-18deg) translateY(-115px); }
 .cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 /* 매 초 카운트가 바뀔 때마다 톡 튀는 팝(juice) */
