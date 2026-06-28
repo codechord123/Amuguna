@@ -65,6 +65,10 @@
           <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label">🌿 전체</span></button>
         </div>
         <div class="wk-goal"><div class="wk-goal-bar"><i id="wkGoalFill"></i></div><span class="wk-goal-cap" id="wkGoalCap"></span></div>
+        <div class="ts-habits" id="todayHabitGlance" hidden data-hg-wrap>
+          <div class="ts-habits-head"><span class="ts-habits-title">🎯 오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
+          <div id="todayHabitList"></div>
+        </div>
         <p class="ts-cheer" id="tsCheer">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
       </div>
 
@@ -79,11 +83,6 @@
         </div>
       </div>
 
-      <div class="card habit-glance" id="todayHabitGlance" hidden>
-        <div class="card-head"><h2>🎯 오늘의 습관</h2><span class="hg-count" id="todayHabitCount"></span></div>
-        <div id="todayHabitList"></div>
-        <p class="hint">동그라미를 누르면 오늘 완료를 바로 체크할 수 있어요.</p>
-      </div>
     </section>
 
     <!-- ========== 탭: 달력 ========== -->
@@ -259,7 +258,7 @@
           <div class="card-head"><h2>📅 이번 주 한눈에</h2><span class="today-date" id="wgRange"></span></div>
           <div id="wgBody"></div>
         </div>
-        <div class="card habit-glance" id="summaryHabitGlance" hidden>
+        <div class="card habit-glance" id="summaryHabitGlance" hidden data-hg-wrap>
           <div class="card-head"><h2>🎯 습관 한눈에</h2><span class="hg-count" id="summaryHabitCount"></span></div>
           <div id="summaryHabitList"></div>
           <p class="hint">동그라미를 누르면 오늘 완료를 체크하고, 이름을 누르면 상세를 볼 수 있어요.</p>

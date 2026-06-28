@@ -2963,10 +2963,10 @@ function recentWindowKeys(n) {
 // 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료 체크 + 진행/연속 + 습관 분석 인사이트 한 줄.
 function renderHabitGlanceInto(listId, countId) {
   const list = document.getElementById(listId); if (!list) return false;
-  const card = list.closest(".card");
+  const wrap = list.closest("[data-hg-wrap]") || list.closest(".card");
   const chs = (typeof loadChs === "function") ? loadChs() : [];
-  if (!chs.length) { if (card) card.hidden = true; return false; }
-  if (card) card.hidden = false;
+  if (!chs.length) { if (wrap) wrap.hidden = true; return false; }
+  if (wrap) wrap.hidden = false;
   const tk = todayKey();
   const doneToday = chs.filter((h) => h.done && h.done[tk]).length;
   const cnt = document.getElementById(countId);

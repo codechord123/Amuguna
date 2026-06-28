@@ -807,6 +807,13 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .wk-goal-bar { flex: 1; height: 6px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
 .wk-goal-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: var(--accent-deep); transition: width 0.7s var(--ease-soft), background 0.4s; }
 .wk-goal-cap { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); }
+/* 오늘 통계 카드에 합친 습관 섹션 */
+.ts-habits { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); text-align: left; }
+.ts-habits-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s1); }
+.ts-habits-title { font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink); }
+.ts-habits .hg-count { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); white-space: nowrap; }
+.ts-habits .hg-row { padding: var(--s1) 0; }
+.ts-habits .hg-insight { margin-bottom: var(--s2); }
 
 .journey-hero {
   text-align: center;
