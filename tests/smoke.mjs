@@ -291,6 +291,27 @@ try {
   check("병합: 원격 전용 일기 보존", !!merged.entries.b);
   check("병합: 습관 완료 합집합", merged.challenges[0].done.d1 && merged.challenges[0].done.d2);
   check("병합: 설정은 로컬 우선+원격 보완", merged.settings.tone === "plain" && merged.settings.theme === "dark");
+  // 동기화 안전화(레드팀 그룹2): 삭제 묘비·해제 최신성
+  const m2 = window.Cloud._merge(
+    { entries: {}, challenges: [], settings: {}, tombstones: { entries: { "2026-06-01": "2026-06-10T00:00:00Z" }, habits: {} } },
+    { entries: { "2026-06-01": { updatedAt: "2026-06-01T00:00:00Z", mood: "지쳤어요" } }, challenges: [], settings: {} }
+  );
+  check("병합: 삭제한 일기가 부활하지 않음(tombstone)", !m2.entries["2026-06-01"]);
+  const m3 = window.Cloud._merge(
+    { entries: {}, challenges: [], settings: {}, tombstones: { entries: { "2026-06-01": "2026-06-01T00:00:00Z" }, habits: {} } },
+    { entries: { "2026-06-01": { updatedAt: "2026-06-09T00:00:00Z", mood: "괜찮아요" } }, challenges: [], settings: {} }
+  );
+  check("병합: 삭제 후 더 최신 편집은 보존", !!m3.entries["2026-06-01"]);
+  const m4 = window.Cloud._merge(
+    { entries: {}, challenges: [{ id: "h", done: {}, doneAt: { "2026-06-05": "2026-06-06T00:00:00Z" }, celebrated: [] }], settings: {} },
+    { entries: {}, challenges: [{ id: "h", done: { "2026-06-05": true }, doneAt: { "2026-06-05": "2026-06-05T00:00:00Z" }, celebrated: [] }], settings: {} }
+  );
+  check("병합: 더 최신 '해제'가 완료를 덮음(부활 방지)", !m4.challenges[0].done["2026-06-05"]);
+  const m5 = window.Cloud._merge(
+    { entries: {}, challenges: [], settings: {}, tombstones: { entries: {}, habits: { h: "2026-06-10T00:00:00Z" } } },
+    { entries: {}, challenges: [{ id: "h", done: {}, celebrated: [] }], settings: {} }
+  );
+  check("병합: 그만둔 습관이 부활하지 않음", !m5.challenges.some((h) => h && h.id === "h"));
 
   // 11) 습관↔기분 상관관계 (데이터 주입 후 검증)
   const corr = {}, doneDays = ["2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06"];
@@ -317,7 +338,7 @@ try {
   check("오늘 화면 습관 분석 인사이트 한 줄 표시", !!q("#todayHabitList .hg-insight") && q("#todayHabitList .hg-insight").textContent.includes("산책"));
   check("오늘 화면 습관 오늘 완료 반영", !!q("#todayHabitList .hg-check.done"));
   q("#todayHabitList .hg-check").click();
-  check("오늘 화면에서 습관 체크 해제(저장)", !q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === false);
+  check("오늘 화면에서 습관 체크 해제(저장)", !q("#todayHabitList .hg-check.done") && !ls("challenges_v2")[0].done[hmToday]);
   q("#todayHabitList .hg-check").click(); // 원복
   check("오늘 화면에서 습관 재체크(저장)", !!q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === true);
   q("[data-tab=stats]").click();

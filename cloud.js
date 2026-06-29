@@ -5,13 +5,14 @@
   let sb = null, currentUser = null, pushTimer = null, ready = false;
 
   /* ---------- 병합 로직 (순수 함수, 테스트 가능) ---------- */
+  // 안전 타임스탬프 파서 — 값이 없으면 0. (주의: Date.parse(0)는 0이 아니라 "0"→2000년이 되므로 직접 0 처리)
+  const ts = (v) => (v ? (Date.parse(v) || 0) : 0);
   function mergeEntries(a, b) {
     const out = Object.assign({}, a || {});
     const rb = b || {};
     for (const k in rb) {
       if (!out[k]) { out[k] = rb[k]; continue; }
-      const ta = Date.parse(out[k].updatedAt || 0) || 0, tb = Date.parse(rb[k].updatedAt || 0) || 0;
-      if (tb > ta) out[k] = rb[k];
+      if (ts(rb[k].updatedAt) > ts(out[k].updatedAt)) out[k] = rb[k];
     }
     return out;
   }
@@ -22,22 +23,40 @@
     return Object.values(map);
   }
   function mergeHabit(local, remote) {
+    // 완료는 날짜별 토글 시각(doneAt)으로 최신성 병합 — 한쪽의 '해제'가 다른 쪽 '완료'에 덮이지 않게.
+    const ld = local.done || {}, rd = remote.done || {}, la = local.doneAt || {}, ra = remote.doneAt || {};
+    const done = {}, doneAt = {};
+    const keys = new Set([].concat(Object.keys(ld), Object.keys(rd), Object.keys(la), Object.keys(ra)));
+    keys.forEach((k) => {
+      const lt = ts(la[k]), rt = ts(ra[k]);
+      const pickLocal = (lt || rt) ? (lt >= rt) : (!!ld[k] || !rd[k]); // 시각 있으면 최신, 없으면 완료(true) 우선(구버전 합집합)
+      const pd = pickLocal ? ld : rd, pa = pickLocal ? la : ra;
+      if (pd[k]) done[k] = true;
+      if (pa[k]) doneAt[k] = pa[k];
+    });
     return Object.assign({}, remote, local, {
-      done: Object.assign({}, remote.done || {}, local.done || {}),       // 완료 표시는 합집합(둘 중 하나라도 했으면 유지)
+      done, doneAt,
       celebrated: Array.from(new Set([...(local.celebrated || []), ...(remote.celebrated || [])])),
     });
   }
-  function mergeProject(local, remote) {
-    const ld = (local.tasks || []).filter((t) => t.done).length;
-    const rd = (remote.tasks || []).filter((t) => t.done).length;
-    return rd > ld ? remote : local; // 더 많이 진행된 쪽을 채택
+  function mergeTomb(a, b) { // 삭제 묘비: 키별로 가장 늦은 삭제 시각 채택
+    const out = Object.assign({}, a || {}), rb = b || {};
+    for (const k in rb) { if (!out[k] || ts(rb[k]) > ts(out[k])) out[k] = rb[k]; }
+    return out;
+  }
+  function applyEntryTombstones(entries, tEntries) { // 삭제 시각이 기록 수정 시각 이후면 삭제 유지
+    const t = tEntries || {};
+    for (const k in t) { const e = entries[k]; if (e && ts(t[k]) >= ts(e.updatedAt)) delete entries[k]; }
+    return entries;
   }
   function mergeData(local, remote) {
-    if (!remote) return local;
+    if (!remote) remote = {};
+    const lt = local.tombstones || {}, rt = remote.tombstones || {};
+    const tomb = { entries: mergeTomb(lt.entries, rt.entries), habits: mergeTomb(lt.habits, rt.habits) };
+    const entries = applyEntryTombstones(mergeEntries(local.entries, remote.entries), tomb.entries);
+    const challenges = mergeById(local.challenges, remote.challenges, mergeHabit).filter((h) => !tomb.habits[h.id]); // 묘비 처리된 습관은 제외
     return {
-      entries: mergeEntries(local.entries, remote.entries),
-      challenges: mergeById(local.challenges, remote.challenges, mergeHabit),
-      projects: mergeById(local.projects, remote.projects, mergeProject),
+      entries, challenges, tombstones: tomb,
       settings: Object.assign({}, remote.settings || {}, local.settings || {}), // 로컬(이 기기) 우선
     };
   }
@@ -121,12 +140,8 @@
     if (!sb || !currentUser) return;
     if (!navigator.onLine) { pendingPush = true; status("오프라인 — 변경사항은 연결되면 저장돼요."); return; }
     if (pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(async () => {
-      try {
-        const local = window.__getLocalData ? window.__getLocalData() : null;
-        if (local) { await push(local); pendingPush = false; status("저장됨: " + new Date().toLocaleTimeString()); }
-      } catch (e) { pendingPush = true; status("저장 실패(오프라인일 수 있어요): 연결되면 다시 시도돼요."); }
-    }, 2500);
+    // 원격을 먼저 받아 병합 후 올린다(blind overwrite 방지) — 다른 기기 편집 손실 차단
+    pushTimer = setTimeout(() => { syncNow(false); }, 2500);
   }
   // 온라인 복귀 시 자동 재동기화
   window.addEventListener("online", () => { if (currentUser && pendingPush) syncNow(true); });

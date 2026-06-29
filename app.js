@@ -4,7 +4,7 @@
 // 실행의도(Gollwitzer 1999), 정서명명(Lieberman 2007), SDT(Deci & Ryan), 감사(Emmons 2003).
 
 /* ===================== 저장소 ===================== */
-const DB = { ENTRIES: "entries_v2", SETTINGS: "settings_v2", CH: "challenges_v2", ONBOARD: "onboarded_v1", JDRAFT: "journey_draft_v1" };
+const DB = { ENTRIES: "entries_v2", SETTINGS: "settings_v2", CH: "challenges_v2", ONBOARD: "onboarded_v1", JDRAFT: "journey_draft_v1", TOMB: "tombstones_v1" };
 const CH_TARGET = 90;
 
 // 기분 → 점수(1~5) + 태그 (Russell 정동 원형 모형 기반, 점수만이 아니라 라벨로 분기)
@@ -110,20 +110,26 @@ function cleanHabit(h) {
   if (!h || typeof h !== "object") return null;
   const id = (typeof h.id === "string" ? h.id.replace(/[^A-Za-z0-9_-]/g, "") : "") || ("c" + Date.now());
   const emoji = ((typeof h.emoji === "string" ? h.emoji : "🎯").replace(/[<>&"'`]/g, "").slice(0, 8)) || "🎯";
-  const done = {};
-  if (h.done && typeof h.done === "object") for (const k in h.done) { if (/^\d{4}-\d{2}-\d{2}$/.test(k)) done[k] = !!h.done[k]; }
+  const done = {}, doneAt = {};
+  if (h.done && typeof h.done === "object") for (const k in h.done) { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && h.done[k]) done[k] = true; } // 완료(true)만 보존, 구버전 false는 정리
+  if (h.doneAt && typeof h.doneAt === "object") for (const k in h.doneAt) { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof h.doneAt[k] === "string") doneAt[k] = h.doneAt[k].slice(0, 40); } // 완료 토글 시각(기기 간 최신성 병합용)
   return {
     id, emoji,
     title: (typeof h.title === "string" ? h.title : "").slice(0, 120),
     cue: (typeof h.cue === "string" ? h.cue : "").slice(0, 200),
     minVersion: (typeof h.minVersion === "string" ? h.minVersion : "").slice(0, 200),
     startDate: (typeof h.startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(h.startDate)) ? h.startDate : todayKey(),
-    done,
+    done, doneAt,
     celebrated: Array.isArray(h.celebrated) ? h.celebrated.filter((n) => typeof n === "number") : [],
   };
 }
 function loadChs() { try { const a = JSON.parse(localStorage.getItem(DB.CH)); return Array.isArray(a) ? a.map(cleanHabit).filter((h) => h && h.title) : []; } catch { return []; } }
 function saveChs(a) { return safeSet(DB.CH, JSON.stringify(a)); }
+// 삭제 묘비(tombstone) — 기기 간 동기화 시 '삭제'가 부활하지 않도록 삭제 시각을 기록
+function loadTomb() { try { const t = JSON.parse(localStorage.getItem(DB.TOMB)) || {}; return { entries: t.entries || {}, habits: t.habits || {} }; } catch { return { entries: {}, habits: {} }; } }
+function saveTomb(t) { return safeSet(DB.TOMB, JSON.stringify(t)); }
+function tombstoneEntry(k) { const t = loadTomb(); t.entries[k] = new Date().toISOString(); saveTomb(t); }
+function tombstoneHabit(id) { const t = loadTomb(); t.habits[id] = new Date().toISOString(); saveTomb(t); }
 
 function todayKey(d) {
   d = d || new Date();
@@ -821,7 +827,8 @@ subBody.addEventListener("click", (e) => {
     if (el.dataset.eact === "edit") { closeSubpage(); openEntryEditor(subEntryDate); }
     else if (el.dataset.eact === "del") {
       if (!confirm("이 기록을 지울까요?")) return;
-      const entries = loadEntries(); delete entries[subEntryDate]; saveEntries(entries);
+      const entries = loadEntries(); delete entries[subEntryDate]; saveEntries(entries); tombstoneEntry(subEntryDate);
+      if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
       Sound.tap(); closeSubpage(); renderStats();
     }
   } else if (subMode === "report") {
@@ -836,14 +843,16 @@ function applyHabitAction(act, id, scopeEl) {
   const chs = loadChs(); const h = chs.find((x) => x.id === id); if (!h) return;
   if (act === "check") {
     const k = todayKey();
-    h.done[k] = !h.done[k];
-    const after = Object.values(h.done).filter(Boolean).length;
+    const willBeDone = !h.done[k];
+    h.doneAt = h.doneAt || {}; h.doneAt[k] = new Date().toISOString(); // 토글 시각 기록(기기 간 최신성 병합)
+    if (willBeDone) h.done[k] = true; else delete h.done[k];           // 해제는 키 삭제(union 병합에 의한 부활 방지)
+    const after = Object.keys(h.done).length;
     let celebrated = false;
-    if (h.done[k] && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
+    if (willBeDone && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
     saveChs(chs);
-    if (h.done[k]) { if (celebrated) { Sound.celebrate(); confetti(); Haptic.success(); } else { Sound.success(); Haptic.tap(); } } else Sound.tap();
+    if (willBeDone) { if (celebrated) { Sound.celebrate(); confetti(); Haptic.success(); } else { Sound.success(); Haptic.tap(); } } else Sound.tap();
     renderChallenge(); refreshHabitDetail(id);
-    if (h.done[k]) { const grid = document.querySelector(`[data-grid="${id}"]`); const idx = daysSince(h.startDate); if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done"); }
+    if (willBeDone) { const grid = document.querySelector(`[data-grid="${id}"]`); const idx = daysSince(h.startDate); if (grid && grid.children[idx]) grid.children[idx].classList.add("just-done"); }
     checkBadges();
   } else if (act === "edit") {
     const f = scopeEl.querySelector("[data-edit]"); if (f) { f.hidden = !f.hidden; Sound.tap(); }
@@ -861,7 +870,9 @@ function applyHabitAction(act, id, scopeEl) {
     Sound.tap(); shareHabit(h);
   } else if (act === "giveup") {
     if (!confirm("이 습관을 그만둘까요? 기록은 사라져요.\n그만둬도 괜찮아요 — 쉬어가는 것도 용기예요.")) return;
-    saveChs(chs.filter((x) => x.id !== id)); Sound.tap(); closeSubpage(); renderChallenge();
+    saveChs(chs.filter((x) => x.id !== id)); tombstoneHabit(id);
+    if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
+    Sound.tap(); closeSubpage(); renderChallenge();
   }
 }
 
@@ -3874,7 +3885,7 @@ function reminderCatchup() {
 }
 
 /* 클라우드 동기화용 훅 (cloud.js가 사용) */
-window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), settings: loadSettings() });
+window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), settings: loadSettings(), tombstones: loadTomb() });
 function refreshAll() {
   loadToday();
   if (!document.getElementById("tab-challenge").hidden) renderChallenge();
@@ -3885,6 +3896,7 @@ window.__applyData = (data) => {
   try {
     if (data.entries) localStorage.setItem(DB.ENTRIES, JSON.stringify(data.entries));
     if (data.challenges) localStorage.setItem(DB.CH, JSON.stringify(data.challenges));
+    if (data.tombstones) localStorage.setItem(DB.TOMB, JSON.stringify(data.tombstones));
     if (data.settings) { Object.assign(settings, data.settings); localStorage.setItem(DB.SETTINGS, JSON.stringify(settings)); applySettings(); }
   } catch (e) {}
   refreshAll();
