@@ -104,7 +104,25 @@ function loadEntries() { try { return JSON.parse(localStorage.getItem(DB.ENTRIES
 function saveEntries(o) { return safeSet(DB.ENTRIES, JSON.stringify(o)); }
 function loadSettings() { try { return JSON.parse(localStorage.getItem(DB.SETTINGS)) || {}; } catch { return {}; } }
 function saveSettingsObj(o) { return safeSet(DB.SETTINGS, JSON.stringify(o)); }
-function loadChs() { try { return JSON.parse(localStorage.getItem(DB.CH)) || []; } catch { return []; } }
+// 습관 객체 정화 — 가져오기/클라우드/구버전 등 외부 출처 데이터의 XSS·오염 차단.
+// emoji·id는 escape 없이 innerHTML/속성에 들어가므로 위험 문자를 제거하고, 문자열 길이를 제한.
+function cleanHabit(h) {
+  if (!h || typeof h !== "object") return null;
+  const id = (typeof h.id === "string" ? h.id.replace(/[^A-Za-z0-9_-]/g, "") : "") || ("c" + Date.now());
+  const emoji = ((typeof h.emoji === "string" ? h.emoji : "🎯").replace(/[<>&"'`]/g, "").slice(0, 8)) || "🎯";
+  const done = {};
+  if (h.done && typeof h.done === "object") for (const k in h.done) { if (/^\d{4}-\d{2}-\d{2}$/.test(k)) done[k] = !!h.done[k]; }
+  return {
+    id, emoji,
+    title: (typeof h.title === "string" ? h.title : "").slice(0, 120),
+    cue: (typeof h.cue === "string" ? h.cue : "").slice(0, 200),
+    minVersion: (typeof h.minVersion === "string" ? h.minVersion : "").slice(0, 200),
+    startDate: (typeof h.startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(h.startDate)) ? h.startDate : todayKey(),
+    done,
+    celebrated: Array.isArray(h.celebrated) ? h.celebrated.filter((n) => typeof n === "number") : [],
+  };
+}
+function loadChs() { try { const a = JSON.parse(localStorage.getItem(DB.CH)); return Array.isArray(a) ? a.map(cleanHabit).filter((h) => h && h.title) : []; } catch { return []; } }
 function saveChs(a) { return safeSet(DB.CH, JSON.stringify(a)); }
 
 function todayKey(d) {
@@ -1234,7 +1252,7 @@ function drawReportCanvas(kind) {
     else if (r.momentum != null && r.momentum <= -10) bits.push("📉");
     return { name: `${r.h.emoji || "✅"} ${r.h.title}`, rate: `${r.rate}%`, sub: bits.join(" ") };
   }) : [];
-  const habInsight = ha ? (habitInsightLines(ha, unit)[0] || "").replace(/<\/?b>/g, "") : "";
+  const habInsight = ha ? (habitInsightLines(ha, unit)[0] || "").replace(/<[^>]+>/g, "") : "";
   const dMood = (cur.avgMood != null && prev.avgMood != null) ? Math.round(cur.avgMood - prev.avgMood) : null;
   const headline = (dMood != null && Math.abs(dMood) >= 3) ? (dMood > 0 ? `지난 ${unit}보다 기분이 ▲${dMood}점 좋아졌어요` : `지난 ${unit}보다 ▼${-dMood}점 가라앉았어요`) : "";
   const bestTxt = cur.best ? `🌟 가장 좋았던 날 ${cur.best.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.best.sc)}점` : "";
@@ -1577,7 +1595,7 @@ const RX = {
 const RX_MORE = {
   help: [
     "‘이 정도는 견뎌야지’ 하며 미루지 말아요 — 마음이 보내는 신호를 나누는 것도 회복이에요.",
-    "당장 전문가가 부담되면, 1393(자살예방)·129(보건복지)처럼 익명 상담부터 시작해도 돼요.",
+    "당장 전문가가 부담되면, 109(자살예방·24시간)·129(보건복지)처럼 익명 상담부터 시작해도 돼요.",
     "가까운 사람에게 ‘해결은 안 해줘도 돼, 그냥 들어줘’라고 부탁해봐요.",
     "힘듦을 입 밖에 꺼내는 순간 무게의 절반이 덜어져요. 오늘 한 사람에게 말해봐요.",
     "도움받는 건 의존이 아니라 회복의 기술이에요. 잘 받는 사람이 오래 버텨요.",
@@ -2177,7 +2195,7 @@ function computeHabitAnalysis(keys, prevKeys, entries) {
     const fh = fhT >= 2 ? fhD / fhT : null, sh = shT >= 2 ? shD / shT : null;
     const momentum = (fh != null && sh != null) ? Math.round((sh - fh) * 100) : null;
     const dnM = [], ntM = []; keys.forEach((k) => { if (moodBy[k] == null || k < h.startDate) return; (h.done && h.done[k] ? dnM : ntM).push(moodBy[k]); });
-    const moodDiff = (dnM.length >= 3 && ntM.length >= 3) ? Math.round(avg(dnM) - avg(ntM)) : null;
+    const moodDiff = (dnM.length >= 5 && ntM.length >= 5) ? Math.round(avg(dnM) - avg(ntM)) : null;
     return { h, t, dn, rate, prevRate, delta, streak, bestDow: bestDow != null ? dowName[bestDow] : null, momentum, moodDiff };
   }).filter(Boolean);
   if (!rows.length) return null;
@@ -2202,7 +2220,7 @@ function habitInsightLines(ha, unit) {
   if (ha.mostConsistent) lines.push(`가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>예요.`);
   if (ha.improved && ha.improved.momentum >= 15) lines.push(`${nm(ha.improved)}이(가) ${periodTxt} 후반 들어 살아나고 있어요 (▲${ha.improved.momentum}%).`);
   else if (ha.declined && ha.declined.momentum <= -15) lines.push(`${nm(ha.declined)}은(는) 후반 들어 주춤했어요 (▼${-ha.declined.momentum}%) — 힘든 날엔 최소 버전부터 다시 시작해요.`);
-  if (ha.moodLinked) lines.push(`${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요.`);
+  if (ha.moodLinked) lines.push(`${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요. <small class="ins-caveat">(관찰된 상관일 뿐, 인과는 아니에요)</small>`);
   if (ha.perfect.length) lines.push(`${ha.perfect.map(nm).join(", ")} ${ha.perfect.length > 1 ? "모두 " : ""}완벽하게 지켰어요 🎉`);
   return lines;
 }
@@ -2947,7 +2965,7 @@ function renderWeekGlance(entries) {
 function topHabitInsight(ha) {
   if (!ha) return "";
   const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
-  if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요`;
+  if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요 <small class="ins-caveat">(상관일 뿐, 인과 아님)</small>`;
   if (ha.improved && ha.improved.momentum >= 15) return `${nm(ha.improved)} 요즘 더 살아나고 있어요 (▲${ha.improved.momentum}%)`;
   if (ha.declined && ha.declined.momentum <= -15) return `${nm(ha.declined)} 요즘 주춤해요 — 힘든 날엔 최소 버전부터`;
   if (ha.perfect && ha.perfect.length) return `${ha.perfect.map(nm).join(", ")} 최근 ${ha.perfect.length > 1 ? "모두 " : ""}꾸준히 지키고 있어요 🎉`;
@@ -3105,7 +3123,7 @@ function renderInsight(entries, list) {
     return;
   }
   // 위기 신호 — 최우선 (이 화면에서만 안전 카드 노출)
-  const recentNotes = list.slice(-5).map((e) => e.note || "").join(" ");
+  const recentNotes = list.slice(-5).map((e) => [e.note, e.reflection && e.reflection.hard, e.reflection && e.reflection.good, e.praise].filter(Boolean).join(" ")).join(" ");
   if (detectCrisis(recentNotes)) showSafety();
   const msgs = computeInsightMsgs(entries, list);
   el.textContent = msgs.length ? msgs.slice(0, 2).join(" ") : "꾸준히 기록하고 있어요. 이 자체가 자신을 돌보는 멋진 일이에요. 💛";
@@ -3293,7 +3311,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
     }
     if (Array.isArray(data.challenges)) {
       const chs = loadChs(); const ids = new Set(chs.map((c) => c.id));
-      data.challenges.forEach((c) => { if (c && typeof c === "object" && c.id && c.title && !ids.has(c.id)) { c.done = c.done && typeof c.done === "object" ? c.done : {}; chs.push(c); nCh++; } });
+      data.challenges.forEach((c) => { const h = cleanHabit(c); if (h && h.title && !ids.has(h.id)) { chs.push(h); ids.add(h.id); nCh++; } });
       saveChs(chs);
     }
     if (!nEntry && !nCh) throw new Error("복원할 기록이 없어요");
@@ -3789,7 +3807,7 @@ function saveJourney() {
   const loggedIn = !!(window.Cloud && window.Cloud.getUser && window.Cloud.getUser());
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
   closeJourney(); loadToday(); renderStats(); checkBadges(); // 달력·기록 즉시 동기화
-  if (detectCrisis(jData.note)) showSafety();
+  if (detectCrisis([jData.note, jData.hard, jData.good, jData.praise].filter(Boolean).join(" "))) showSafety();
   toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)

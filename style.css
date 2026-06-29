@@ -1073,6 +1073,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hg-insight { margin: 0 0 var(--s3); padding: var(--s2) var(--s3); background: linear-gradient(160deg, var(--accent-2), var(--card) 85%); border: 1px solid var(--line); border-radius: var(--r-md); font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); word-break: keep-all; }
 [data-theme="dark"] .hg-insight { background: var(--bg-sunken); }
 .hg-insight b { color: var(--accent-deep); font-weight: var(--w-bold); }
+.ins-caveat { color: var(--soft); font-weight: var(--w-reg); font-size: 0.82em; }
 .ww-node circle { stroke: var(--card); stroke-width: 2; cursor: pointer; transition: opacity 0.25s, transform 0.15s var(--ease-soft); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
 .ww-node:active circle { transform: scale(0.9); }
 .ww-label { fill: var(--ink); font-family: inherit; font-weight: var(--w-semi); text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
