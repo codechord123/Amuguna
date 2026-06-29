@@ -431,6 +431,22 @@ try {
   check("모니터: 오류를 envelope로 전송", _fetchCalls.some((c) => /ingest\.sentry\.io\/api\/2\/envelope/.test(c.url) && /테스트오류/.test(String(c.opts && c.opts.body))));
   check("모니터: 개인정보(일기·기록) 미전송", !_fetchCalls.some((c) => /entries_v2|journey_draft|"note"|"praise"/.test(String(c.opts && c.opts.body))));
 
+  // 13b) 보안: 가져온/동기화된 습관 객체의 XSS 정화(loadChs 정화 체인)
+  if (window.cleanHabit) {
+    const dirty = window.cleanHabit({ id: 'x"><img src=q onerror=alert(1)>', emoji: '<img src=x onerror=alert(1)>', title: "x".repeat(500), startDate: "bad-date", done: { "2026-06-01": true, "evil<key>": true }, celebrated: [1, "x"] });
+    check("XSS 정화: id 위험문자 제거", !/[<>"'&]/.test(dirty.id) && dirty.id.length > 0);
+    check("XSS 정화: emoji 위험문자 제거", !/[<>&"'`]/.test(dirty.emoji));
+    check("XSS 정화: title 길이 제한", dirty.title.length <= 120);
+    check("XSS 정화: 잘못된 done 키 제거", dirty.done["2026-06-01"] === true && !("evil<key>" in dirty.done));
+    check("XSS 정화: 잘못된 startDate 보정", /^\d{4}-\d{2}-\d{2}$/.test(dirty.startDate));
+  } else check("XSS 정화: cleanHabit 노출", false);
+  // 13c) 안전: 위기 표현 감지(간접·핫라인) — 직접 표현은 잡고, 안전 카드 핫라인은 109
+  if (window.detectCrisis) {
+    check("위기 감지: 직접 표현 탐지", window.detectCrisis("요즘 너무 죽고 싶어") === true);
+    check("위기 감지: 비위기 텍스트 통과", window.detectCrisis("오늘은 산책해서 기분이 좋았다") === false);
+  } else check("위기 감지: detectCrisis 노출", false);
+  check("안전 카드 핫라인 109 표기", /\b109\b/.test(q("#safetyCard").textContent));
+
   // 14) 아기자기 연출 — 반짝임 버스트(라이브러리 없이) + Lottie 폴백
   check("Anim 사용 가능", window.Anim && typeof window.Anim.sparkle === "function" && typeof window.Anim.celebrate === "function");
   window.Anim.sparkle(null, { x: 20, y: 20, count: 6 });
