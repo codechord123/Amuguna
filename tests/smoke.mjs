@@ -417,6 +417,7 @@ try {
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
+  check("리포트 처방에 의료 면책 문구", !!q("#subBody .sol-disclaimer") && /진단·치료가 아니/.test(q("#subBody .sol-disclaimer").textContent));
   check("리포트 습관 분석 카드 표시", !!q("#subBody .hrep-card") && d.querySelectorAll("#subBody .hrep-card .hrep-row").length >= 1);
   check("리포트 습관 분석 결론·달성률 표시", !!q("#subBody .hrep-card .hrep-ins-row") && /%/.test(q("#subBody .hrep-card .hrep-avg").textContent) && /🔥/.test(q("#subBody .hrep-card").textContent));
   q("#subBack").click();
@@ -490,6 +491,19 @@ try {
   check("접근성: 활성 탭 aria-selected 갱신", q('#tabbar [data-tab="stats"]').getAttribute("aria-selected") === "true" && q('#tabbar [data-tab="today"]').getAttribute("aria-selected") === "false");
   check("접근성: 응원문구 aria-live", q("#tsCheer").getAttribute("aria-live") === "polite");
   check("하드닝: CSP 메타 + script-src 'self'", !!q('meta[http-equiv="Content-Security-Policy"]') && /script-src 'self'/.test(q('meta[http-equiv="Content-Security-Policy"]').getAttribute("content")));
+
+  // 13e) 후속: 상시 도움 링크 · 안전 카드 tel · 담백 모드 축하 억제
+  check("안전: 상시 도움받기 카드 + 109 tel 링크", !!q("#helpAlways") && !!q('#helpAlways a[href="tel:109"]'));
+  check("안전: 안전 카드 번호 tel 링크화", !!q('#safetyCard a[href="tel:119"]'));
+  if (window.confetti) {
+    d.querySelectorAll(".confetti").forEach((n) => n.remove());
+    q("[data-tab=settings]").click();
+    q('#toneSeg button[data-tone=plain]').click(); window.confetti();
+    check("다크패턴: 담백 모드에서 축하 연출 생략", d.querySelectorAll(".confetti").length === 0);
+    q('#toneSeg button[data-tone=warm]').click(); window.confetti();
+    check("다크패턴: 기본 모드에선 축하 연출 표시", d.querySelectorAll(".confetti").length > 0);
+    d.querySelectorAll(".confetti").forEach((n) => n.remove());
+  }
   q("[data-tab=today]").click();
 
   // 14) 아기자기 연출 — 반짝임 버스트(라이브러리 없이) + Lottie 폴백

@@ -294,13 +294,19 @@ function updateTodayStats() {
   set("tsWeek", `${week}<i>/7</i>`);
   set("tsTotal", list.length);
   const doneToday = !!(entries[tk] && entries[tk].mood);
+  const plain = settings.tone === "plain"; // 담백 모드: 손실 프레이밍·기록경쟁·축하 압박을 덜어낸 담담한 문구
   let cheer;
-  if (list.length === 0) cheer = "환영해요! 오늘 첫 마음을 남겨볼까요? 🌱";
-  else if (doneToday && prevBest >= 0 && streak >= 3) { cheer = `🏆 신기록! ${streak}일 연속 — 지금까지 중 가장 길어요!`; if (typeof confetti === "function") setTimeout(confetti, 200); }
-  else if (!doneToday) cheer = streak >= 1 ? `🔥 ${streak}일 연속 중! 오늘 기록하면 ${streak + 1}일로 이어져요` : (best >= 3 ? `최고 ${best}일까지 해냈던 당신! 오늘 다시 시작해 신기록에 도전해요 💪` : "오늘 마음을 남기고 다시 시작해 봐요 💛");
-  else if (streak >= 7) cheer = `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요 👑`;
-  else if (week >= 5) cheer = "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
-  else cheer = best >= 3 ? `오늘도 해냈어요 💛 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛";
+  if (list.length === 0) cheer = plain ? "오늘 첫 기록을 남겨보세요." : "환영해요! 오늘 첫 마음을 남겨볼까요? 🌱";
+  else if (doneToday && prevBest >= 0 && streak >= 3) {
+    cheer = plain ? `오늘까지 ${streak}일째 기록했어요.` : `🏆 신기록! ${streak}일 연속 — 지금까지 중 가장 길어요!`;
+    if (!plain && typeof confetti === "function") setTimeout(confetti, 200);
+  }
+  else if (!doneToday) cheer = plain
+    ? (streak >= 1 ? `${streak}일째 기록 중이에요. 오늘도 편할 때 남겨보세요.` : "오늘 기분을 기록해보세요.")
+    : (streak >= 1 ? `🔥 ${streak}일 연속 중! 오늘 기록하면 ${streak + 1}일로 이어져요` : (best >= 3 ? `최고 ${best}일까지 해냈던 당신! 오늘 다시 시작해 신기록에 도전해요 💪` : "오늘 마음을 남기고 다시 시작해 봐요 💛"));
+  else if (streak >= 7) cheer = plain ? `${streak}일째 꾸준히 기록 중이에요.` : `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요 👑`;
+  else if (week >= 5) cheer = plain ? "이번 주 자주 기록했어요." : "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
+  else cheer = plain ? "오늘 기록했어요." : (best >= 3 ? `오늘도 해냈어요 💛 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛");
   set("tsCheer", cheer);
   // 주간 목표 진행(목표경사 효과) — 7일 중 며칠
   const wf = document.getElementById("wkGoalFill");
@@ -928,6 +934,7 @@ async function shareHabit(h) {
 }
 
 function confetti() {
+  if (settings && settings.tone === "plain") return; // 담백 모드: 축하 연출 생략(압박감 완화)
   const emojis = ["🎉", "✨", "💛", "🌟", "🎊", "🌸"];
   for (let i = 0; i < 28; i++) {
     const s = document.createElement("span");
@@ -2339,7 +2346,7 @@ function reportDetailHtml(kind) {
   const habCard = habitReportCard(habAnalysis, unit);
   const solItems = selectSolutions(diag, trend, keys[keys.length - 1]);
   const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🩺</span><div class="diag-body"><p class="diag-label">이번 ${unit} 진단 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
-  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}</div>`;
+  const solCard = `<div class="card sol-card"><h2>💊 맞춤 처방</h2><p class="hint">위 진단(기분 구간 × 감정 × 일기 맥락)에 맞춘 추천이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}<p class="sol-disclaimer">ℹ️ ‘진단·처방’은 이해를 돕는 비유적 표현이에요. 의료적 진단·치료가 아니라 셀프케어 참고용이며, 힘들 땐 전문가의 도움을 받아요.</p></div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";
@@ -3808,7 +3815,7 @@ function clearJDraft() { try { localStorage.removeItem(DB.JDRAFT); } catch (e) {
 function openJourney(dateKey) {
   Sound.unlock();
   const k = (dateKey && dateKey <= todayKey()) ? dateKey : todayKey();
-  jData = { date: k, tags: [] };
+  jData = { date: k, backfill: !!(dateKey && dateKey < todayKey()), tags: [] };
   const t = loadEntries()[k];
   if (t) {
     jData.score = (t.score != null) ? t.score : moodToScore(t.mood);
@@ -3826,7 +3833,8 @@ function openJourney(dateKey) {
 }
 function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; }, 300); }
 function saveJourney() {
-  const entries = loadEntries(), k = jData.date || todayKey();
+  // 백필이 아니면 항상 '오늘'로 저장 — 자정을 넘겨 저장돼도 어제로 새지 않게(스트릭 깨짐 방지)
+  const entries = loadEntries(), k = jData.backfill ? (jData.date || todayKey()) : todayKey();
   const prev = entries[k] || {};
   entries[k] = {
     date: k, mood: jData.mood, energy: Number(jData.energy || 3),
@@ -3836,8 +3844,13 @@ function saveJourney() {
     updatedAt: new Date().toISOString(),
   };
   const isToday = k === todayKey();
-  if (isToday) { settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings); }
-  saveEntries(entries); if (isToday) clearJDraft(); Sound.success(); Haptic.success();
+  if (!saveEntries(entries)) { // 저장공간 부족 등으로 실패 시: 진행분 보존 + 안내, 닫지 않음(데이터 소실 방지)
+    saveJDraft(); Sound.tap();
+    if (typeof toast === "function") toast("저장공간이 부족해 기록을 저장하지 못했어요. 설정 › 데이터에서 백업/정리 후 다시 시도해주세요.");
+    return;
+  }
+  if (isToday) { settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings); clearJDraft(); }
+  Sound.success(); Haptic.success();
   // 클라우드 동기화 (로그인 시) — 마친 즉시 반영
   const loggedIn = !!(window.Cloud && window.Cloud.getUser && window.Cloud.getUser());
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
