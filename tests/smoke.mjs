@@ -476,9 +476,21 @@ try {
   // 13c) 안전: 위기 표현 감지(간접·핫라인) — 직접 표현은 잡고, 안전 카드 핫라인은 109
   if (window.detectCrisis) {
     check("위기 감지: 직접 표현 탐지", window.detectCrisis("요즘 너무 죽고 싶어") === true);
+    check("위기 감지: 띄어쓰기 변형 포착", window.detectCrisis("자꾸 죽 고 싶 어") === true);
+    check("위기 감지: 간접 표현 포착", window.detectCrisis("그냥 다 사라지고 싶다") === true);
+    check("위기 감지: 영어 표현 포착", window.detectCrisis("i want to die") === true);
+    check("위기 감지: 부정문 오탐 방지", window.detectCrisis("요즘은 죽고 싶지 않아서 다행이야") === false);
     check("위기 감지: 비위기 텍스트 통과", window.detectCrisis("오늘은 산책해서 기분이 좋았다") === false);
   } else check("위기 감지: detectCrisis 노출", false);
   check("안전 카드 핫라인 109 표기", /\b109\b/.test(q("#safetyCard").textContent));
+
+  // 13d) 접근성/하드닝: 탭 ARIA · aria-live · CSP
+  check("접근성: 탭바 tablist 역할 + tab 6개", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 6);
+  q("[data-tab=stats]").click();
+  check("접근성: 활성 탭 aria-selected 갱신", q('#tabbar [data-tab="stats"]').getAttribute("aria-selected") === "true" && q('#tabbar [data-tab="today"]').getAttribute("aria-selected") === "false");
+  check("접근성: 응원문구 aria-live", q("#tsCheer").getAttribute("aria-live") === "polite");
+  check("하드닝: CSP 메타 + script-src 'self'", !!q('meta[http-equiv="Content-Security-Policy"]') && /script-src 'self'/.test(q('meta[http-equiv="Content-Security-Policy"]').getAttribute("content")));
+  q("[data-tab=today]").click();
 
   // 14) 아기자기 연출 — 반짝임 버스트(라이브러리 없이) + Lottie 폴백
   check("Anim 사용 가능", window.Anim && typeof window.Anim.sparkle === "function" && typeof window.Anim.celebrate === "function");

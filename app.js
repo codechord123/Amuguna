@@ -80,7 +80,22 @@ const EMO_BANDS = [
   { id: "neg", label: "🌧️ 힘든 마음" },
 ];
 function emoByKey(k) { return EMOTIONS.find((x) => x.k === k); }
-const CRISIS_WORDS = ["죽고 싶", "죽고싶", "자살", "사라지고 싶", "사라지고싶", "없어지고 싶", "없어지고싶", "죽어버", "살기 싫", "살기싫", "자해", "목숨을"];
+// 위기 신호 어휘 — 공백 제거·소문자화 후 부분일치로 비교(아래 detectCrisis). 재현율(놓치지 않음) 우선.
+// 직접 표현뿐 아니라 간접·완곡 표현, 영어까지 포함. 부정문("죽고 싶지 않아")은 detectCrisis에서 제외.
+const CRISIS_WORDS = [
+  // 직접
+  "죽고싶", "죽고파", "죽어버리", "죽어야겠", "죽는게나", "확죽", "콱죽",
+  "자살", "자살충동", "목숨을끊", "목숨끊", "스스로목숨",
+  // 삶을 멈추고 싶은 마음(간접)
+  "살기싫", "살고싶지않", "더이상살", "더는못살", "그만살고싶", "살이유가없", "살의미가없",
+  "사라지고싶", "없어지고싶", "사라져버리고싶", "없어져버리고싶",
+  "태어나지말", "안태어났으면", "태어나지않았으면", "세상에없었으면", "이세상에없",
+  "깨지않았으면", "안깨어났으면", "영원히잠들",
+  // 자해/수단
+  "자해", "긋고싶", "손목긋", "손목을긋", "유서", "목매달", "목맬",
+  // 영어
+  "killmyself", "iwanttodie", "wanttodie", "endmylife", "enditall", "suicide", "suicidal", "selfharm",
+];
 
 /* 햅틱(진동) — 웹 vibrate. iOS Safari는 무시하므로 네이티브(Capacitor Haptics)로 대체 가능 */
 const Haptic = {
@@ -209,7 +224,7 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 const tabbar = document.getElementById("tabbar");
 const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
-  document.querySelectorAll(".tabbtn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
   if (name === "calendar") renderMoodCalendar(loadEntries());
@@ -319,10 +334,19 @@ function updateJourneyHero() {
   const total = sortedEntries(loadEntries()).length;
   if (total < 3) set("journeySub", `🌱 첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`);
 }
+// 위기 신호 직후의 부정 표현 — "죽고 싶지 않아", "자해 안 해" 등은 위기로 보지 않음
+const CRISIS_NEG = /^(지않|진않|지는않|지말|지마|하지않|안[하해했할함]|은아니|는아니|아니)/;
 function detectCrisis(text) {
   if (!text) return false;
-  const low = text.toLowerCase();
-  return CRISIS_WORDS.some((w) => low.includes(w));
+  const norm = String(text).toLowerCase().replace(/\s+/g, ""); // 공백 제거로 띄어쓰기 변형도 포착
+  for (const w of CRISIS_WORDS) {
+    let i = norm.indexOf(w);
+    while (i !== -1) {
+      if (!CRISIS_NEG.test(norm.slice(i + w.length))) return true; // 부정문이 아니면 위기로 판단
+      i = norm.indexOf(w, i + 1);
+    }
+  }
+  return false;
 }
 function showSafety() {
   const c = document.getElementById("safetyCard");

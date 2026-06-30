@@ -2,6 +2,7 @@
 <html lang="ko" data-theme="warm">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#f3987a" />
   <meta name="description" content="매일 마음을 기록하고, 데이터로 나를 이해하고, 위로받는 셀프케어 앱" />
@@ -69,7 +70,7 @@
           <div class="ts-habits-head"><span class="ts-habits-title">🎯 오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
           <div id="todayHabitList"></div>
         </div>
-        <p class="ts-cheer" id="tsCheer">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
+        <p class="ts-cheer" id="tsCheer" aria-live="polite">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
       </div>
 
       <div class="card journey-hero" id="journeyStartCard">
@@ -77,7 +78,7 @@
           <div class="js-emoji" id="journeyEmoji">✨</div>
           <p class="jh-eyebrow" id="journeyEyebrow"></p>
           <h2>오늘의 여정</h2>
-          <p class="hint" id="journeyStartHint">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+          <p class="hint" id="journeyStartHint" aria-live="polite">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
           <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
           <p class="jh-sub" id="journeySub">3분이면 충분해요 · 한 번에 하나씩</p>
         </div>
@@ -537,13 +538,13 @@
     <div class="subpage-body" id="subBody"></div>
   </div>
 
-  <nav class="tabbar" id="tabbar">
-    <button class="tabbtn active" data-tab="today">📔<span>오늘</span></button>
-    <button class="tabbtn" data-tab="calendar">🗓️<span>달력</span></button>
-    <button class="tabbtn" data-tab="rest">🌿<span>쉼</span></button>
-    <button class="tabbtn" data-tab="challenge">🎯<span>챌린지</span></button>
-    <button class="tabbtn" data-tab="stats">📊<span>기록</span></button>
-    <button class="tabbtn" data-tab="settings">⚙️<span>설정</span></button>
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
+    <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today">📔<span>오늘</span></button>
+    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar">🗓️<span>달력</span></button>
+    <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest">🌿<span>쉼</span></button>
+    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge">🎯<span>챌린지</span></button>
+    <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats">📊<span>기록</span></button>
+    <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings">⚙️<span>설정</span></button>
   </nav>
 
   <script src="config.js"></script>
