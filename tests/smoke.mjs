@@ -62,6 +62,12 @@ try {
   { const toks = window.tokenizeKo ? window.tokenizeKo("언어와 단어를 배웠다") : [];
     check("명사 보존(언어·단어 안 깨짐)", toks.includes("언어") && toks.includes("단어") && !toks.includes("언") && !toks.includes("단")); }
 
+  // 0b) 첫 사용자 — 기록 0개일 때 기록 탭은 잠긴 지표 대신 안내+CTA
+  q("[data-tab=stats]").click();
+  check("빈 기록 탭 첫 사용자 안내 표시", !q("#statsEmptyHero").hasAttribute("hidden"));
+  q("[data-tab=today]").click();
+  check("탭바 aria-current 갱신", q('.tabbtn[data-tab="today"]').getAttribute("aria-current") === "page");
+
   // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
   q("#journeyStart").click();
@@ -161,6 +167,7 @@ try {
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("리포트 진입 표시", !!q("#weekReportBtn") && !!q("#monthDetailBtn"));
+  check("기록 생기면 빈 안내 숨김", q("#statsEmptyHero").hasAttribute("hidden"));
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   q("#statsSeg button[data-seg=summary]").click();
@@ -244,10 +251,16 @@ try {
   check("바닥 그림자(부유감) 추가", !!q("#medOverlay .cb-shadow") && !!q("#breathOverlay .cb-shadow"));
   check("기계적 궤도·공·3D 제거됨", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog"));
   check("카운트(빛 속 숫자) 떠오름 그룹 안에", !!q("#medOverlay .cb-rise #medCircleText"));
-  q("#medNext").click(); // 건너뛰고 호흡 시작
+  check("진행 버튼 라벨(스킵 오해 방지)", q("#medNext").textContent.includes("다음"));
+  { let g = 0; while (!q("#medCircle").className.includes("ready") && g++ < 8) q("#medNext").click(); } // 마지막 슬라이드 → 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
   q("#medClose").click();
   check("명상 가이드 닫힘", q("#medOverlay").hasAttribute("hidden"));
+  // 키보드 접근성 — Esc로 명상 가이드 탈출
+  q("#medStartBtn").click();
+  check("오버레이 열림 시 배경 inert", q("main.app").hasAttribute("inert"));
+  d.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  check("명상 가이드 Esc로 닫힘", q("#medOverlay").hasAttribute("hidden") && !q("main.app").hasAttribute("inert"));
   q("#restSeg button[data-rseg=comfort]").click();
   check("위로 패널로 전환", !q('.rest-panel[data-rpanel="comfort"]').hasAttribute("hidden") && q('.rest-panel[data-rpanel="meditate"]').hasAttribute("hidden"));
   q("#restSeg button[data-rseg=meditate]").click();
@@ -514,6 +527,13 @@ try {
   window.Anim.converge(null, { x: 20, y: 20, count: 8 });
   check("빛 수렴 입자 생성", d.querySelectorAll(".lpt").length >= 8);
   check("Lottie 에셋 없으면 sparkle 폴백(반짝임 추가 생성)", (window.Anim.celebrate(null), d.querySelectorAll(".spk").length >= 12));
+
+  // 12) PWA 출시 준비 (아이콘·메타 정합성)
+  const manifest = JSON.parse(read("manifest.json"));
+  check("PWA: PNG 아이콘(any+maskable)·id·카테고리", !!manifest.id && (manifest.categories || []).length > 0 && manifest.icons.filter((i) => i.type === "image/png").length >= 4 && fs.existsSync(path.join(root, "icon-512.png")) && fs.existsSync(path.join(root, "icon-maskable-512.png")));
+  check("PWA: 테마색 meta·manifest 일치", read("index.html").includes(`content="${manifest.theme_color}"`)); // 런타임엔 테마별로 동적 변경되므로 정적 소스 기준
+  check("PWA: 애플 터치 아이콘 PNG", (d.querySelector('link[rel="apple-touch-icon"]').getAttribute("href") || "").endsWith(".png") && fs.existsSync(path.join(root, "apple-touch-icon.png")));
+  check("버전 표기(meta+설정 화면)", !!d.querySelector('meta[name="app-version"]') && q("#appVer").textContent.includes("v"));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

@@ -5,8 +5,10 @@
 //    플레이어는 필요할 때만 지연 로드 — 에셋이 없으면 자동으로 sparkle로 폴백.
 (function () {
   const SPK = ["✨", "🌸", "💛", "🌟", "🫧"];
+  function reduced() { try { return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } }
   function sparkle(target, opts) {
     opts = opts || {};
+    if (reduced()) return; // 모션 최소화 선호 시 파티클 생략
     try {
       let cx, cy;
       if (target && target.getBoundingClientRect) { const r = target.getBoundingClientRect(); cx = r.left + r.width / 2; cy = r.top + r.height / 2; }
@@ -31,6 +33,7 @@
   // 빛 수렴 — 바깥에서 중심으로 빨려들어오며 모이는 작은 빛 입자
   function converge(target, opts) {
     opts = opts || {};
+    if (reduced()) return;
     try {
       let cx, cy;
       if (target && target.getBoundingClientRect) { const r = target.getBoundingClientRect(); cx = r.left + r.width / 2; cy = r.top + r.height / 2; }

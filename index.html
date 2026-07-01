@@ -10,8 +10,9 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
+  <meta name="app-version" content="v131" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -122,7 +123,7 @@
         <details class="comfort-add">
           <summary>✍️ 나만의 문구 추가</summary>
           <div class="quote-add">
-            <input type="text" id="myQuoteInput" class="text-input" placeholder="나에게 해주고 싶은 말" maxlength="100" />
+            <input type="text" id="myQuoteInput" class="text-input" placeholder="나에게 해주고 싶은 말" maxlength="100" aria-label="나만의 문구" />
             <button class="btn" id="myQuoteAdd">추가</button>
           </div>
         </details>
@@ -230,7 +231,7 @@
           <button class="preset" data-h="자기 전 휴대폰 멀리 두기" data-e="📵">📵 자기 전 폰 멀리</button>
           <button class="preset" data-h="한 줄 일기 쓰기" data-e="📔">📔 한 줄 일기</button>
         </div>
-        <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요 (무엇을 할까요?)" maxlength="40" />
+        <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요 (무엇을 할까요?)" maxlength="40" aria-label="습관 이름" />
 
         <p class="field-label">언제 할까요? <span class="opt">(기존 습관에 붙이면 더 잘 지켜져요)</span></p>
         <div class="cue-grid" id="cueGrid">
@@ -243,7 +244,7 @@
         </div>
 
         <p class="field-label">컨디션 낮은 날 '최소 버전' <span class="opt">(선택 · 2분이면 돼요)</span></p>
-        <input type="text" id="challengeMin" class="text-input" placeholder="예: 운동화 신고 현관 나가기" maxlength="40" />
+        <input type="text" id="challengeMin" class="text-input" placeholder="예: 운동화 신고 현관 나가기" maxlength="40" aria-label="습관 최소 버전" />
 
         <p class="intention-preview" id="intentionPreview"></p>
         <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
@@ -252,6 +253,11 @@
 
     <!-- ========== 탭: 기록 ========== -->
     <section class="tab" id="tab-stats" hidden>
+      <div class="card center" id="statsEmptyHero" hidden>
+        <h2>🌱 아직 기록이 없어요</h2>
+        <p class="hint">첫 기록을 남기면 이곳이 나만의 마음 분석으로 채워져요.<br />연속·감정 흐름·습관 상관관계까지 자동으로 정리해드려요.</p>
+        <button class="btn primary" id="statsEmptyCta">오늘의 여정 시작하기</button>
+      </div>
       <div class="card stat-row">
         <div class="stat">
           <span class="stat-num" id="streakNum">0</span>
@@ -376,8 +382,8 @@
         </div>
         <div id="cloudLoggedOut" hidden>
           <p class="hint">로그인하면 기록이 기기 간에 자동으로 동기화돼요.</p>
-          <input id="authEmail" class="text-input" type="email" placeholder="이메일" autocomplete="email" />
-          <input id="authPw" class="text-input" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="margin-top:8px" />
+          <input id="authEmail" class="text-input" type="email" placeholder="이메일" autocomplete="email" aria-label="이메일" />
+          <input id="authPw" class="text-input" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="margin-top:8px" aria-label="비밀번호" />
           <div class="data-btns" style="margin-top:10px">
             <button class="btn primary" id="authLogin">로그인</button>
             <button class="btn" id="authSignup">회원가입</button>
@@ -435,8 +441,8 @@
       <div class="card collapsible collapsed">
         <h2>🔔 매일 기록 알림</h2>
         <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
-        <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" /></label>
-        <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" /></label>
+        <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" aria-label="매일 기록 알림 켜기" /></label>
+        <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" aria-label="알림 시간" /></label>
         <p class="save-msg" id="reminderMsg" role="status" aria-live="polite" hidden></p>
       </div>
 
@@ -466,7 +472,7 @@
           <button class="btn danger" id="clearBtn">전체 기록 지우기</button>
         </div>
         <p class="hint" style="margin-top:12px">☁️ <strong>기기 간 이동:</strong> 기존 기기에서 "내보내기" → 새 기기에서 "복원".</p>
-        <p class="hint"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">🔒 개인정보 처리방침</a></p>
+        <p class="hint"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">🔒 개인정보 처리방침</a> · <span id="appVer"></span></p>
       </div>
       </div>
     </section>
@@ -530,7 +536,7 @@
   <div class="journey" id="journey" role="dialog" aria-modal="true" aria-label="오늘의 여정" hidden>
     <header class="journey-head">
       <button class="subback" id="jClose" aria-label="닫기">✕</button>
-      <div class="journey-progress"><i id="jBar"></i></div>
+      <div class="journey-progress" role="progressbar" aria-label="여정 진행도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="jProgress"><i id="jBar"></i></div>
     </header>
     <div class="journey-body" id="jBody"></div>
     <footer class="journey-foot">

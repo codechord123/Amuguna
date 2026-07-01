@@ -155,7 +155,7 @@ function daysSince(startKey) {
   const a = new Date(startKey + "T00:00:00"), b = new Date(todayKey() + "T00:00:00");
   return Math.round((b - a) / 86400000);
 }
-function escapeHtml(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); } // 손상 데이터(비문자열)에도 안전
 
 /* 구버전 데이터 1회 이전 */
 (function migrate() {
@@ -224,7 +224,7 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 const tabbar = document.getElementById("tabbar");
 const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
-  document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
+  document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
   if (name === "calendar") renderMoodCalendar(loadEntries());
@@ -730,9 +730,15 @@ function renderChallenge() {
   chEmpty.hidden = true;
 }
 
+// 달성일 집계 — 90일 창(startDate~+89) 안의 완료만 센다(창 밖 잔여 키로 인한 통계 왜곡 방지)
+function habitDoneCount(h) {
+  const d = new Date(h.startDate + "T00:00:00"); let c = 0;
+  for (let i = 0; i < CH_TARGET; i++) { if (h.done[todayKey(d)]) c++; d.setDate(d.getDate() + 1); }
+  return c;
+}
 function habitCardHtml(h) {
   const dayNum = Math.min(daysSince(h.startDate) + 1, CH_TARGET);
-  const doneCount = Object.values(h.done).filter(Boolean).length;
+  const doneCount = habitDoneCount(h);
   const streak = challengeStreak(h);
   const todayDone = !!h.done[todayKey()];
   return `
@@ -744,20 +750,20 @@ function habitCardHtml(h) {
       </div>
       <button class="habit-check ${todayDone ? "done" : ""}" data-act="check" aria-label="오늘 완료 체크">${todayDone ? "✓" : "○"}</button>
     </div>
-    <div class="habit-mini-bar"><i style="width:${(doneCount / CH_TARGET) * 100}%"></i></div>
+    <div class="habit-mini-bar"><i style="width:${Math.min(100, (doneCount / CH_TARGET) * 100)}%"></i></div>
   </div>`;
 }
 
 function detailHabitHtml(h) {
   const dayNum = Math.min(daysSince(h.startDate) + 1, CH_TARGET);
-  const doneCount = Object.values(h.done).filter(Boolean).length;
+  const doneCount = habitDoneCount(h);
   const streak = challengeStreak(h);
   const todayDone = !!h.done[todayKey()];
   const reached = Object.keys(MILESTONES).map(Number).filter((m) => doneCount >= m);
   const ms = reached.length ? MILESTONES[Math.max(...reached)] : "";
   return `
     <p class="detail-stat">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일 · 남은 ${Math.max(CH_TARGET - doneCount, 0)}일</p>
-    <div class="ch-progress"><div class="ch-bar" style="width:${(doneCount / CH_TARGET) * 100}%"></div></div>
+    <div class="ch-progress"><div class="ch-bar" style="width:${Math.min(100, (doneCount / CH_TARGET) * 100)}%"></div></div>
     <button class="btn ${todayDone ? "" : "primary"} block" data-act="check">${todayDone ? "오늘 완료함 ✓ (취소하려면 누르기)" : "오늘 완료 체크 ✓"}</button>
     ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
     ${h.cue ? `<p class="habit-cue">⏰ ${escapeHtml(h.cue)}에 하기</p>` : ""}
@@ -876,7 +882,7 @@ function applyHabitAction(act, id, scopeEl) {
     const willBeDone = !h.done[k];
     h.doneAt = h.doneAt || {}; h.doneAt[k] = new Date().toISOString(); // 토글 시각 기록(기기 간 최신성 병합)
     if (willBeDone) h.done[k] = true; else delete h.done[k];           // 해제는 키 삭제(union 병합에 의한 부활 방지)
-    const after = Object.keys(h.done).length;
+    const after = habitDoneCount(h);                                    // 90일 창 기준 집계(창 밖 키 왜곡 방지)
     let celebrated = false;
     if (willBeDone && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
     saveChs(chs);
@@ -925,7 +931,7 @@ function exportHabitIcs(h) {
   URL.revokeObjectURL(url);
 }
 async function shareHabit(h) {
-  const doneCount = Object.values(h.done).filter(Boolean).length;
+  const doneCount = habitDoneCount(h);
   const text = `오늘의 쉼 ${h.emoji} '${h.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요 💪`;
   try {
     if (navigator.share) await navigator.share({ title: "오늘의 쉼 챌린지", text });
@@ -935,6 +941,7 @@ async function shareHabit(h) {
 
 function confetti() {
   if (settings && settings.tone === "plain") return; // 담백 모드: 축하 연출 생략(압박감 완화)
+  try { if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch (e) {} // 모션 최소화 존중
   const emojis = ["🎉", "✨", "💛", "🌟", "🎊", "🌸"];
   for (let i = 0; i < 28; i++) {
     const s = document.createElement("span");
@@ -947,14 +954,17 @@ function confetti() {
 
 /* ===================== 기록 / 데이터 ===================== */
 function sortedEntries(entries) { return Object.values(entries).filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date)); }
-// 연속 기록 — '연속 보호'(주 1회): 기록 7일마다 보호 1개가 쌓이고, 빈 날 하루는 보호로 메워 연속을 지킨다
+// 연속 기록 — '연속 보호'(주 1회): 최근 30일 기록 7일당 보호 1개(최대 2)를 선적립해,
+// 가장 최근의 공백(어제 하루 결석)도 보호로 메워져 성실한 사용자의 연속이 억울하게 끊기지 않는다
 function calcStreak(entries) {
-  let streak = 0, freezes = 0, d = new Date();
+  let streak = 0, d = new Date();
+  let recent = 0; { const t = new Date(); for (let i = 0; i < 30; i++) { const kk = todayKey(t); if (entries[kk] && entries[kk].mood) recent++; t.setDate(t.getDate() - 1); } }
+  let freezes = Math.min(2, Math.floor(recent / 7));
   if (!entries[todayKey(d)]) d.setDate(d.getDate() - 1); // 오늘 아직이면 어제부터 센다(오늘은 위기, 아직 기회 있음)
   while (true) {
     const k = todayKey(d);
-    if (entries[k] && entries[k].mood) { streak++; if (streak % 7 === 0) freezes++; }
-    else if (streak > 0 && freezes > 0) { freezes--; }   // 빈 날 1일을 보호로 메움(주당 1회 수준)
+    if (entries[k] && entries[k].mood) { streak++; }
+    else if (streak > 0 && freezes > 0) { freezes--; }   // 빈 날 1일을 보호로 메움
     else break;
     d.setDate(d.getDate() - 1);
   }
@@ -972,6 +982,9 @@ function syncBestStreak(streak) {
 function entryScore(e) { return e && e.score != null ? e.score : (e && e.mood ? moodToScore(e.mood) : null); }
 function renderStats() {
   const entries = loadEntries(), list = sortedEntries(entries);
+  // 첫 사용자 빈 화면 안내 — 기록 0개면 잠긴 지표 대신 안내+CTA 하나만
+  const hero = document.getElementById("statsEmptyHero");
+  if (hero) hero.hidden = list.length > 0;
   const _st = calcStreak(entries); syncBestStreak(_st);
   document.getElementById("streakNum").textContent = _st;
   document.getElementById("totalNum").textContent = list.length;
@@ -3407,9 +3420,10 @@ function openBreath() {
   requestWake();                 // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
   if (qbBreather.isRunning()) qbBreather.stop(); // 이전 세션이 남아있으면 정리 후 새로 시작
   qbBreather.start();
+  syncAppInert();
   document.getElementById("qbClose").focus();
 }
-function closeBreath() { qbBreather.stop(); releaseWake(); breathOverlay.hidden = true; }
+function closeBreath() { qbBreather.stop(); releaseWake(); breathOverlay.hidden = true; syncAppInert(); }
 document.getElementById("qbClose").addEventListener("click", closeBreath);
 sleepToggle.addEventListener("click", () => {
   Sound.tap();
@@ -3539,6 +3553,8 @@ function medShow(i) {
   medCaption.classList.remove("show"); void medCaption.offsetWidth; // 애니메이션 재생
   medStepTitle.textContent = s.t; medStepBody.textContent = s.b; medCircleText.textContent = s.e;
   medCaption.classList.add("show"); medRenderDots();
+  // 진행 버튼이 '스킵'으로 오해되지 않게 — 마지막 슬라이드에서만 호흡 시작 라벨
+  medNextBtn.textContent = i < MED_STEPS.length - 1 ? "다음 →" : "호흡 시작 →";
 }
 function medResetTimer() { if (medTimer) clearInterval(medTimer); medTimer = setInterval(medAdvance, MED_STEP_MS); }
 function medAdvance() { if (medIdx < MED_STEPS.length - 1) medShow(medIdx + 1); else medStartBreathing(); }
@@ -3575,14 +3591,16 @@ function openMedGuide() {
   medSyncAmbIcon();
   if (medSwipeHint) medSwipeHint.hidden = false;
   medShow(0); medResetTimer();
+  syncAppInert(); const mc = document.getElementById("medClose"); if (mc) mc.focus();
 }
 function closeMedGuide() {
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
   medClockStop(); medRecord(); releaseWake(); // 시계 정지 + 진행한 만큼 누적 기록(중복 방지) + 화면 잠금 복귀
   try { medBreather && medBreather.stop(); } catch (e) {}
   medPhase = "teach"; if (medOverlay) medOverlay.hidden = true;
+  syncAppInert();
 }
-if (medNextBtn) medNextBtn.addEventListener("click", () => { Sound.tap(); if (medPhase === "teach") medStartBreathing(); else closeMedGuide(); });
+if (medNextBtn) medNextBtn.addEventListener("click", () => { Sound.tap(); if (medPhase === "teach") medGoto(medIdx + 1); else closeMedGuide(); }); // 단계별 진행 → 마지막에 호흡 시작
 const _medClose = document.getElementById("medClose");
 if (_medClose) _medClose.addEventListener("click", () => { Sound.tap(); closeMedGuide(); });
 const _medStartBtn = document.getElementById("medStartBtn");
@@ -3724,7 +3742,9 @@ function journeyFinishStatsHtml() {
 }
 function renderStep() {
   const arr = jSteps(), i = Math.max(0, arr.indexOf(curId));
-  jBar.style.width = `${(i / (arr.length - 1)) * 100}%`;
+  const pct = Math.round((i / (arr.length - 1)) * 100);
+  jBar.style.width = pct + "%";
+  const jp = document.getElementById("jProgress"); if (jp) jp.setAttribute("aria-valuenow", pct);
   jPrev.hidden = i <= 0;
   jNext.textContent = curId === "finish" ? "기록 저장하기 💾" : "다음";
   jBody.innerHTML = stepHtml(curId);
@@ -3759,14 +3779,14 @@ function renderStep() {
       let a = (Math.atan2(y, x) * 180 / Math.PI - 135 + 360) % 360; // 0 = 시작점
       if (a > 270) a = (a - 270 < 360 - a) ? 270 : 0; // 하단 빈 구간은 가까운 끝으로
       let sc = a / 2.7; if (sc < 3) sc = 0; else if (sc > 97) sc = 100; // 양 끝(0·100)에 손가락으로 닿기 쉽게 스냅
-      setScore(sc); saveJDraft();
+      jData.touched = true; setScore(sc); saveJDraft();
     }
     let dragging = false;
     dial.addEventListener("pointerdown", (e) => { dragging = true; try { dial.setPointerCapture(e.pointerId); } catch (x) {} fromPointer(e); });
     dial.addEventListener("pointermove", (e) => { if (dragging) fromPointer(e); });
     dial.addEventListener("pointerup", () => { dragging = false; Sound.tap(); });
     dial.addEventListener("pointercancel", () => { dragging = false; });
-    range.addEventListener("input", () => { setScore(Number(range.value)); saveJDraft(); });
+    range.addEventListener("input", () => { jData.touched = true; setScore(Number(range.value)); saveJDraft(); });
     jBody.querySelector("#jEmoTags").addEventListener("click", (e) => {
       const b = e.target.closest(".emo-tag"); if (!b) return; Sound.tap();
       jData.tags = jData.tags || [];
@@ -3779,7 +3799,7 @@ function renderStep() {
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
-    if (qs) qs.addEventListener("click", () => { if (!jData.mood) { alert("지금 기분을 먼저 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
+    if (qs) qs.addEventListener("click", () => { if (!jData.touched) { alert("먼저 다이얼로 지금 기분을 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
@@ -3792,7 +3812,7 @@ function renderStep() {
   } else if (curId === "habits") {
     jBody.querySelectorAll(".j-habit").forEach((btn) => btn.addEventListener("click", () => {
       const chs = loadChs(); const h = chs.find((x) => x.id === btn.dataset.hid); if (!h) return;
-      const k = todayKey(); h.done[k] = !h.done[k]; saveChs(chs);
+      const k = jData.date || todayKey(); h.done[k] = !h.done[k]; saveChs(chs); // 자정 넘김에도 여정 날짜로 기록
       btn.classList.toggle("done", h.done[k]); btn.setAttribute("aria-pressed", !!h.done[k]); btn.querySelector("b").textContent = h.done[k] ? "✓" : "○";
       h.done[k] ? Sound.success() : Sound.tap();
     }));
@@ -3822,16 +3842,25 @@ function openJourney(dateKey) {
     jData.mood = t.mood || scoreToMood(jData.score); jData.energy = t.energy;
     jData.note = t.note; jData.praise = t.praise; jData.tags = t.tags || [];
     if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; }
+    jData.touched = true; // 기존 기록 편집은 점수 확인 불필요
   }
-  // 중간에 닫았던 진행분이 있으면 이어서 (오늘 작성에 한함)
+  // 중간에 닫았던 진행분이 있으면 이어서 (과거 날짜 편집도 유실 없이 복원)
   const draft = loadJDraft();
   let resumed = false;
-  if (k === todayKey() && draft && draft.date === todayKey() && draft.data) { jData = draft.data; resumed = true; }
+  if (draft && draft.date === k && draft.data) { jData = Object.assign({}, jData, draft.data); resumed = true; }
   curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : jSteps()[0];
-  journey.hidden = false; requestAnimationFrame(() => journey.classList.add("show")); renderStep();
+  journey.hidden = false; requestAnimationFrame(() => { journey.classList.add("show"); syncAppInert(); }); renderStep();
+  const jc = document.getElementById("jClose"); if (jc) jc.focus();
   if (resumed) toast("이어서 작성해요 ✍️");
 }
-function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; }, 300); }
+function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; syncAppInert(); }, 300); }
+// 오버레이(여정·명상·호흡)가 하나라도 열려 있으면 배경(main·탭바)을 보조기기·포커스에서 제외
+function syncAppInert() {
+  try {
+    const open = (!journey.hidden && journey.classList.contains("show")) || (typeof medOverlay !== "undefined" && medOverlay && !medOverlay.hidden) || (typeof breathOverlay !== "undefined" && breathOverlay && !breathOverlay.hidden); // 여정은 닫힘 애니메이션(300ms) 동안 hidden이 늦게 걸려 show 클래스로 판단
+    [document.querySelector("main.app"), document.querySelector(".tabbar")].forEach((el) => { if (!el) return; if (open) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
+  } catch (e) {}
+}
 function saveJourney() {
   // 백필이 아니면 항상 '오늘'로 저장 — 자정을 넘겨 저장돼도 어제로 새지 않게(스트릭 깨짐 방지)
   const entries = loadEntries(), k = jData.backfill ? (jData.date || todayKey()) : todayKey();
@@ -3839,7 +3868,7 @@ function saveJourney() {
   entries[k] = {
     date: k, mood: jData.mood, energy: Number(jData.energy || 3),
     score: jData.score != null ? jData.score : moodToScore(jData.mood),
-    note: (jData.note || "").trim(), praise: (jData.praise || "").trim(),
+    note: (jData.note || "").trim().slice(0, 4000), praise: (jData.praise || "").trim().slice(0, 1000), // 백업 가져오기 한도와 일치(왕복 무손실)
     tags: jData.tags || prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
     updatedAt: new Date().toISOString(),
   };
@@ -3849,22 +3878,28 @@ function saveJourney() {
     if (typeof toast === "function") toast("저장공간이 부족해 기록을 저장하지 못했어요. 설정 › 데이터에서 백업/정리 후 다시 시도해주세요.");
     return;
   }
-  if (isToday) { settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings); clearJDraft(); }
+  if (isToday && !prev.mood) { settings.journeyCount = (settings.journeyCount || 0) + 1; saveSettingsObj(settings); } // 재편집은 중복 카운트 안 함
+  { const dr = loadJDraft(); if (dr && dr.date === k) clearJDraft(); } // 자정 넘김 저장도 고아 draft 없이 정리
   Sound.success(); Haptic.success();
   // 클라우드 동기화 (로그인 시) — 마친 즉시 반영
   const loggedIn = !!(window.Cloud && window.Cloud.getUser && window.Cloud.getUser());
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
-  closeJourney(); loadToday(); renderStats(); checkBadges(); // 달력·기록 즉시 동기화
+  closeJourney(); loadToday(); checkBadges();
+  if (!document.getElementById("tab-stats").hidden) renderStats(); // 기록 탭 진입 시 어차피 렌더 — 저장 직후 무거운 전체 분석(워드웹 등) 재계산 생략
+  if (!document.getElementById("tab-calendar").hidden) renderMoodCalendar(loadEntries()); // 달력 보고 있을 때만 즉시 갱신
   if (detectCrisis([jData.note, jData.hard, jData.good, jData.praise].filter(Boolean).join(" "))) showSafety();
   toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)
-function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); }
+function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요 ✍️"); }
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {
   collectStep();
-  if (curId === "feel" && !jData.mood) { alert("지금 느껴지는 감정을 하나 골라주세요 🙂"); return; }
+  if (curId === "feel" && !jData.touched) { // 기본값 50이 몰래 저장되지 않게 — 실제로 조작했는지 확인
+    if (!confirm("아직 기분 점수를 정하지 않았어요.\n'보통(50)'으로 두고 계속할까요?")) return;
+    jData.touched = true;
+  }
   if (curId === "finish") { saveJourney(); return; }
   const arr = jSteps(), i = arr.indexOf(curId);
   curId = arr[Math.min(i + 1, arr.length - 1)]; Sound.tap(); renderStep();
@@ -3878,8 +3913,10 @@ jPrev.addEventListener("click", () => {
 // Esc로 오버레이/카드 닫기 (접근성)
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (!journey.hidden) pauseJourney();
-  else if (!breathOverlay.hidden) closeBreath();
+  // 위에 떠 있는 순서대로 닫기: 호흡(여정 위에도 뜸) → 명상 → 여정 → 서브페이지
+  if (!breathOverlay.hidden) closeBreath();
+  else if (medOverlay && !medOverlay.hidden) closeMedGuide(); // 명상 가이드도 키보드로 탈출
+  else if (!journey.hidden && journey.classList.contains("show")) pauseJourney();
   else if (!subpage.hidden) closeSubpage();
   else if (!onboard.hidden) { finishOnboard(); }
   else { const sc = document.getElementById("safetyCard"); if (!sc.hidden) sc.hidden = true; }
@@ -3888,8 +3925,26 @@ document.addEventListener("keydown", (e) => {
 /* 첫 제스처에 오디오 unlock */
 window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
 
-/* 서비스워커 */
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+/* 서비스워커 — 새 버전 감지 시 안내(예고 없는 교체 대신 부드러운 업데이트 인지) */
+if ("serviceWorker" in navigator) window.addEventListener("load", () => {
+  navigator.serviceWorker.register("sw.js").then((reg) => {
+    reg.addEventListener("updatefound", () => {
+      const nw = reg.installing; if (!nw) return;
+      nw.addEventListener("statechange", () => {
+        if (nw.state === "activated" && navigator.serviceWorker.controller) toast("새 버전으로 업데이트했어요 ✨");
+      });
+    });
+  }).catch(() => {});
+});
+
+/* 두 탭(창) 동시 사용 시 설정 유실 방지 — 다른 탭이 저장하면 메모리 설정을 최신으로 갱신 */
+window.addEventListener("storage", (e) => {
+  if (e.key === DB.SETTINGS) { try { Object.assign(settings, loadSettings()); } catch (x) {} }
+});
+
+/* 설정 화면 버전 표기 (head meta와 동기) */
+{ const v = document.querySelector('meta[name="app-version"]'), el = document.getElementById("appVer"); if (v && el) el.textContent = "오늘의 쉼 " + v.content; }
+{ const cta = document.getElementById("statsEmptyCta"); if (cta) cta.addEventListener("click", () => { Sound.tap(); activateTab("today"); }); }
 
 /* 토스트 + 복귀 격려 (리텐션) */
 // 토스트 — 한 번에 하나씩 순차 표시(겹침 방지)

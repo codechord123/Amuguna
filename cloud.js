@@ -140,8 +140,8 @@
     if (!sb || !currentUser) return;
     if (!navigator.onLine) { pendingPush = true; status("오프라인 — 변경사항은 연결되면 저장돼요."); return; }
     if (pushTimer) clearTimeout(pushTimer);
-    // 원격을 먼저 받아 병합 후 올린다(blind overwrite 방지) — 다른 기기 편집 손실 차단
-    pushTimer = setTimeout(() => { syncNow(false); }, 2500);
+    // 로컬만 push하면 다른 기기가 올린 원격 기록을 덮어쓸 수 있어, 항상 pull→merge→push(syncNow) 경로 사용
+    pushTimer = setTimeout(() => syncNow(false), 2500);
   }
   // 온라인 복귀 시 자동 재동기화
   window.addEventListener("online", () => { if (currentUser && pendingPush) syncNow(true); });
