@@ -736,6 +736,14 @@ function renderChallenge() {
   chEmpty.hidden = true;
 }
 
+// 가장 잘 지키는 요일 — keys(대상일) 범위의 요일별 '실천률'(총 대상일 2일+ 요일만). 요약·습관분석 공용(이중 구현 방지)
+function habitBestDowIdx(h, keys) {
+  const tk = todayKey(), dn = [0, 0, 0, 0, 0, 0, 0], tt = [0, 0, 0, 0, 0, 0, 0];
+  keys.forEach((k) => { if (k < h.startDate || k > tk) return; const di = new Date(k + "T00:00:00").getDay(); tt[di]++; if (h.done && h.done[k]) dn[di]++; });
+  let best = null, bestR = 0;
+  for (let i = 0; i < 7; i++) if (tt[i] >= 2) { const r = dn[i] / tt[i]; if (r > bestR) { bestR = r; best = i; } }
+  return bestR > 0 ? best : null;
+}
 // 달성일 집계 — 90일 창(startDate~+89) 안의 완료만 센다(창 밖 잔여 키로 인한 통계 왜곡 방지)
 function habitDoneCount(h) {
   const d = new Date(h.startDate + "T00:00:00"); let c = 0;
@@ -2245,15 +2253,14 @@ function computeHabitAnalysis(keys, prevKeys, entries) {
   const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
   const moodBy = {}; keys.forEach((k) => { const e = entries[k]; if (e && e.mood) moodBy[k] = entryScore(e); });
   const rows = chs.map((h) => {
-    let t = 0, dn = 0; const dow = [0, 0, 0, 0, 0, 0, 0], dowTot = [0, 0, 0, 0, 0, 0, 0];
+    let t = 0, dn = 0;
     let fhT = 0, fhD = 0, shT = 0, shD = 0;
     // 모멘텀 반분점은 달력 중점이 아니라 '이 습관의 활성일' 중점 — 기간 중간에 시작한 습관도 전/후반 비교 가능
     const act = keys.filter((k) => k >= h.startDate && k <= tk);
     const half = Math.floor(act.length / 2);
     act.forEach((k, idx) => {
       t++; const done = !!(h.done && h.done[k]);
-      const di = new Date(k + "T00:00:00").getDay();
-      dowTot[di]++; if (done) { dn++; dow[di]++; }
+      if (done) dn++;
       if (idx < half) { fhT++; if (done) fhD++; } else { shT++; if (done) shD++; }
     });
     if (t === 0) return null;
@@ -2262,7 +2269,7 @@ function computeHabitAnalysis(keys, prevKeys, entries) {
     const prevRate = pt ? Math.round(pd / pt * 100) : null;
     const delta = prevRate != null ? rate - prevRate : null;
     let streak = 0; for (let i = 0; ; i++) { const dd = new Date(); dd.setDate(dd.getDate() - i); const k = todayKey(dd); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
-    let bestDow = null, bestR = -1; for (let i = 0; i < 7; i++) { if (dowTot[i] >= 2) { const r = dow[i] / dowTot[i]; if (r > bestR) { bestR = r; bestDow = i; } } }
+    const bestDow = habitBestDowIdx(h, act); // 요약 카드와 동일 규칙(공용 헬퍼)
     const fh = fhT >= 2 ? fhD / fhT : null, sh = shT >= 2 ? shD / shT : null;
     const momentum = (fh != null && sh != null) ? Math.round((sh - fh) * 100) : null;
     const dnM = [], ntM = []; keys.forEach((k) => { if (moodBy[k] == null || k < h.startDate) return; (h.done && h.done[k] ? dnM : ntM).push(moodBy[k]); });
@@ -2586,19 +2593,21 @@ document.getElementById("badgeGrid").addEventListener("click", (e) => {
   if (d) { d.innerHTML = `<b>${b.e} ${b.t}</b> <span class="${got ? "bd-got" : "bd-no"}">${got ? "획득 ✓" : "아직"}</span> — ${b.d}`; d.classList.remove("pulse"); void d.offsetWidth; d.classList.add("pulse"); }
 });
 /* 습관 ↔ 기분 상관관계 */
+// 습관별 한 날/안 한 날 기분 배열 — 발견 카드·상관 카드가 같은 규칙(시작일~오늘·표본 5+/5+)을 공유하는 단일 엔진
+function habitMoodArrays(h, moodByDate) {
+  const tk = todayKey(), done = [], not = [];
+  Object.keys(moodByDate).forEach((dt) => { if (dt < h.startDate || dt > tk) return; (h.done && h.done[dt] ? done : not).push(moodByDate[dt]); });
+  return { done, not };
+}
 function renderCorrelation(entries) {
   const body = document.getElementById("corrBody");
   const moodByDate = {};
   Object.values(entries).forEach((e) => { if (e.date && e.mood) moodByDate[e.date] = entryScore(e); }); // 0-100
   const chs = loadChs();
   if (!chs.length) { body.innerHTML = '<p class="empty">습관을 만들면 기분과의 관계를 분석해드려요.</p>'; return; }
-  const today = todayKey(), rows = [];
+  const rows = [];
   chs.forEach((h) => {
-    const done = [], not = [];
-    Object.keys(moodByDate).forEach((d) => {
-      if (d < h.startDate || d > today) return;
-      (h.done[d] ? done : not).push(moodByDate[d]);
-    });
+    const { done, not } = habitMoodArrays(h, moodByDate);
     if (done.length >= 5 && not.length >= 5) {  // 표본 5+/5+ 이상에서만 (과소표본 과잉해석 방지)
       const ad = done.reduce((s, v) => s + v, 0) / done.length;
       const an = not.reduce((s, v) => s + v, 0) / not.length;
@@ -2624,7 +2633,7 @@ function renderCorrelation(entries) {
     return `<div class="corr-row">
       <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
       <div class="corr-detail">한 날 ⌀${Math.round(ad)} · 안 한 날 ⌀${Math.round(an)} — ${msg}</div>
-      <div class="corr-meta">표본 n=${n} · 효과크기(Cohen's d) ${d.toFixed(2)} (${effectLabel(d)})</div>
+      <div class="corr-meta">표본 n=${n} · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)} — 표본이 작을수록 불확실)</div>
     </div>`;
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
@@ -2954,8 +2963,7 @@ function renderDiscoveries(entries, list) {
   const moodByDate = {}; moods.forEach((e) => moodByDate[e.date] = entryScore(e));
   const chs = (typeof loadChs === "function") ? loadChs() : [];
   chs.forEach((hh) => {
-    const done = [], not = [];
-    Object.keys(moodByDate).forEach((dt) => { if (dt < hh.startDate || dt > tk) return; (hh.done && hh.done[dt] ? done : not).push(moodByDate[dt]); });
+    const { done, not } = habitMoodArrays(hh, moodByDate); // 상관 카드와 동일 엔진(규칙 분기 방지)
     if (done.length >= 5 && not.length >= 5) {
       const ad = done.reduce((s, v) => s + v, 0) / done.length, an = not.reduce((s, v) => s + v, 0) / not.length, diff = ad - an;
       if (diff >= 6) cards.push({ sal: 70 + diff, icon: hh.emoji || "✅", title: `${escapeHtml(hh.title)} 한 날, 기분이 더 높았어요`, sub: `한 날 평균 ${Math.round(ad)}점 · 안 한 날 ${Math.round(an)}점 · 관찰된 상관일 뿐 인과는 아니에요`, viz: barPair("안 한 날", an, "한 날", ad), tone: "good" });
@@ -2991,9 +2999,8 @@ function renderDiscoveries(entries, list) {
 function renderAnalyzeKpis(entries, list) {
   const el = document.getElementById("analyzeKpis"); if (!el) return;
   const moods = list.filter((e) => e.mood);
-  const wk = [], pv = [];
+  const wk = [];
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
-  for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); pv.push(todayKey(d)); }
   const avg = (ks) => { const v = ks.map((k) => entries[k] && entries[k].mood ? entryScore(entries[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
   const a = avg(wk);
   const moodVal = a != null ? `<span style="color:${scoreColor(a)}">${Math.round(a)}</span>` : "—";
@@ -3019,7 +3026,7 @@ function renderWeekGlance(entries) {
   const moods = recs.filter((e) => e.mood);
   const rng = document.getElementById("wgRange");
   if (rng) { const a = keys[0].split("-"), b = keys[6].split("-"); rng.textContent = `${+a[1]}/${+a[2]} ~ ${+b[1]}/${+b[2]}`; }
-  if (!moods.length) { el.innerHTML = '<p class="empty">이번 주 기록이 쌓이면 한눈에 요약해드려요 🌱</p>'; return; }
+  if (!moods.length) { el.innerHTML = '<p class="empty">최근 7일 기록이 쌓이면 한눈에 요약해드려요 🌱</p>'; return; }
   const avg = moods.reduce((s, e) => s + entryScore(e), 0) / moods.length;
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
@@ -3103,17 +3110,15 @@ function renderHabitSummary() {
   const chs = (typeof loadChs === "function") ? loadChs() : [];
   if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천률·연속·요일 패턴을 정리해드려요.</p>'; return; }
   const dowName = ["일", "월", "화", "수", "목", "금", "토"];
+  const keys30 = []; for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); keys30.push(todayKey(d)); }
   const rows = chs.map((h) => {
     let total = 0, done = 0;
-    for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) continue; total++; if (h.done && h.done[k]) done++; }
+    keys30.forEach((k) => { if (k < h.startDate) return; total++; if (h.done && h.done[k]) done++; });
     const rate = total ? Math.round(done / total * 100) : 0;
     let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
-    // 가장 잘 지키는 요일 = 요일별 '실천률'(해당 요일 대상일 대비) — 원시 횟수는 달력에 많이 등장한 요일이 이겨 왜곡됨
-    const dowDone = [0, 0, 0, 0, 0, 0, 0], dowTot = [0, 0, 0, 0, 0, 0, 0];
-    for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) continue; const di = d.getDay(); dowTot[di]++; if (h.done && h.done[k]) dowDone[di]++; }
-    let bestDow = null, bestRate = 0;
-    for (let di = 0; di < 7; di++) { if (dowTot[di] >= 2) { const r = dowDone[di] / dowTot[di]; if (r > bestRate) { bestRate = r; bestDow = dowName[di]; } } }
-    if (bestRate <= 0) bestDow = null;
+    // 가장 잘 지키는 요일 = 요일별 '실천률' — 공용 헬퍼(습관 분석과 동일 규칙, 30일 창)
+    const bi = habitBestDowIdx(h, keys30);
+    const bestDow = bi != null ? dowName[bi] : null;
     return { h, rate, streak, bestDow };
   });
   rows.sort((a, b) => b.rate - a.rate);
@@ -3392,6 +3397,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
           praise: typeof v.praise === "string" ? v.praise.slice(0, 500) : "",
           tags: Array.isArray(v.tags) ? v.tags.filter((t) => typeof t === "string").slice(0, 30) : [],
           reflection: (v.reflection && typeof v.reflection === "object") ? { good: String(v.reflection.good || "").slice(0, 500), hard: String(v.reflection.hard || "").slice(0, 500) } : { good: "", hard: "" },
+          createdAt: typeof v.createdAt === "string" ? v.createdAt : (typeof v.updatedAt === "string" ? v.updatedAt : undefined), // 시간대 분석용 작성 시각 보존(백업 왕복 무손실)
           updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : new Date().toISOString(),
         };
         nEntry++;
