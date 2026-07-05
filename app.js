@@ -1084,7 +1084,7 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
 const STAT_SEC_DEFAULT = ["rhythm", "capture", "tags", "dist", "grat", "habitsum", "corr", "heat", "web"];
-const STAT_SEC_NAME = { rhythm: "마음 리듬", capture: "기록 구성", tags: "자주 느낀 감정", dist: "기분 분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
+const STAT_SEC_NAME = { rhythm: "마음 리듬", capture: "기록 구성", tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
 let statEditing = false;
 function statOrder() {
   const saved = (settings.statOrder || []).filter((id) => STAT_SEC_DEFAULT.includes(id));
@@ -1371,8 +1371,7 @@ function moodGaugeSvg(v) {
 // 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
 function reportChartSvg(keys, entries) {
   const n = keys.length;
-  const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null);       // 0-100
-  const energy = keys.map((k) => entries[k] && entries[k].energy ? entries[k].energy * 20 : null); // 0-100
+  const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null);       // 0-100 (기분 한 축만 — 활력선은 노이즈라 제거)
   if (!mood.some((v) => v != null)) return "";
   const W = 340, H = 178, padL = 22, padR = 16, padT = 20, padB = 30;
   const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -1392,9 +1391,8 @@ function reportChartSvg(keys, entries) {
     }
     return d;
   };
-  const moodSegs = segsOf(mood), energySegs = segsOf(energy);
+  const moodSegs = segsOf(mood);
   const moodLine = moodSegs.map(curve).join(" ");
-  const energyLine = energySegs.map(curve).join(" ");
   const baseY = (padT + plotH).toFixed(1);
   const area = moodSegs.filter((p) => p.length > 1).map((p) => `${curve(p)} L${p[p.length - 1].x.toFixed(1)} ${baseY} L${p[0].x.toFixed(1)} ${baseY} Z`).join(" ");
   // 옅은 점선 가로 그리드 + 작은 눈금
@@ -1413,7 +1411,7 @@ function reportChartSvg(keys, entries) {
   let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 5);
   keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 10}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
   const defs = `<defs><linearGradient id="rcArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-area-top"/><stop offset="100%" class="rc-area-bot"/></linearGradient><linearGradient id="rcStroke" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-stroke-top"/><stop offset="100%" class="rc-stroke-bot"/></linearGradient></defs>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea)" stroke="none"/>` : ""}${energyLine ? `<path d="${energyLine}" class="rc-energy" fill="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke)" fill="none"/>${pts}${labels}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea)" stroke="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke)" fill="none"/>${pts}${labels}</svg>`;
 }
 // 리포트 솔루션 — 데이터에 맞춘 과학 논문 기반 추천 (근거 DB: docs/SCIENCE.md)
 const REPORT_PAPERS = {
@@ -2345,7 +2343,7 @@ function reportDetailHtml(kind) {
   </div>`;
 
   const chart = reportChartSvg(keys, entries);
-  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}<div class="rpt-legend"><span><i class="rl-mood"></i>기분</span><span><i class="rl-energy"></i>활력</span></div><p class="hint" style="margin:10px 0 0">⚡ <b>활력</b>은 그날 고른 감정의 활기 정도예요(신남·설렘 높음 · 무기력·지침 낮음).</p></div>` : "";
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}</div>` : "";
 
   // 하이라이트 — 가장 좋았던/힘들었던 날
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
@@ -3232,18 +3230,23 @@ function quickInsight() {
   return msgs.length ? msgs[0] : null;
 }
 
+// 마음 흐름·분포 — 점수 축 하나의 이야기: 최근 30일 흐름(시간) + 그 날들이 채워진 비율(분포)
+// (감정 축은 '자주 느낀 감정' 카드가 담당 — 두 카드가 겹치지 않게 역할 분리)
 function renderDist(list) {
   const wrap = document.getElementById("dist");
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
   const recent = list.filter((e) => e.mood && new Date(e.date + "T00:00:00") >= cutoff);
   if (!recent.length) { wrap.innerHTML = '<p class="empty">아직 기분 기록이 없어요.</p>'; return; }
+  const entries = loadEntries();
+  const keys = []; for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
+  const chart = reportChartSvg(keys, entries);
   const counts = {}; recent.forEach((e) => { counts[e.mood] = (counts[e.mood] || 0) + 1; });
   const total = recent.length;
   const order = Object.keys(moodMeta).filter((m) => counts[m]);
   const col = (m) => scoreColor((mInfo(m).score - 1) / 4 * 100);
   const seg = order.map((m) => `<div class="db-seg" style="width:${(counts[m] / total) * 100}%;background:${col(m)}" title="${m} ${Math.round(counts[m] / total * 100)}%"></div>`).join("");
   const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${mInfo(m).emoji} ${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
-  wrap.innerHTML = `<div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
+  wrap.innerHTML = `${chart}<p class="fd-cap">위 흐름의 ${total}일이 이렇게 채워졌어요</p><div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
 }
 
 /* ===================== 설정 ===================== */

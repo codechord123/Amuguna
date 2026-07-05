@@ -590,15 +590,12 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rc-stroke-bot { stop-color: var(--accent); }
 .rc-mood { stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .rc-glow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: 0.16; filter: blur(4px); }
-.rc-energy { stroke: var(--energy); stroke-width: 1.4; stroke-dasharray: 1.5 4.5; stroke-linecap: round; opacity: 0.45; }
 .rc-pt { fill: var(--card); stroke: var(--accent-deep); stroke-width: 2; }
 .rc-ptlab { fill: var(--ink-2); font-size: 8.5px; font-weight: 800; text-anchor: middle; font-family: inherit; }
 .rc-xlabel { fill: var(--soft); font-size: 8.5px; text-anchor: middle; font-family: inherit; }
 .rc-ylabel { fill: var(--soft); font-size: 8px; text-anchor: end; font-family: inherit; opacity: 0.8; }
-.rpt-legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
-.rpt-legend i { display: inline-block; width: 14px; height: 3px; border-radius: var(--r-pill); margin-right: var(--s1); vertical-align: middle; }
-.rpt-legend .rl-mood { background: var(--accent); }
-.rpt-legend .rl-energy { background: var(--energy); }
+/* 흐름 그래프 아래 분포 스트립 연결 캡션 */
+.fd-cap { margin: var(--s3) 0 var(--s2); font-size: var(--t-xs); color: var(--soft); text-align: center; }
 
 /* ----- 리포트: 비교·하이라이트·태그·KPI 델타 ----- */
 .kpi-delta { font-size: 0.62rem; font-weight: 800; vertical-align: middle; }

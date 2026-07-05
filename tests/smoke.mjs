@@ -406,6 +406,9 @@ try {
   const frBar = fr[0].querySelector(".dist-bar").getAttribute("style");
   // 불안(v27→#f0b07a)으로 칠해져야 하고, 그날 높은 점수(89 평균→초록 #5ec8b0)와 무관해야 함(2축 분리)
   check("감정 막대 색=감정 고유 정서가(점수와 독립)", frBar.includes("#f0b07a") && !frBar.includes("#5ec8b0"));
+  // 점수 축 카드 — 흐름(그래프)과 분포(스트립)가 한 카드로 연결, 활력선은 제거
+  check("마음 흐름·분포 통합 카드", !!q("#dist .rc-svg") && !!q("#dist .dist-stack") && !!q("#dist .fd-cap"));
+  check("마음 흐름 활력선 제거", !d.querySelector(".rc-energy") && !d.querySelector(".rl-energy"));
 
   // 여정 감정태그에 '빈도' 배지 (점수 아님) — 위 entries로 평온해요 2회
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
