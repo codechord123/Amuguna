@@ -122,7 +122,9 @@ try {
   q("#subBack").click();
   check("상세 페이지 닫기 동작", !d.querySelector("#subpage").classList.contains("show"));
 
-  // 3b) 여정에 습관 단계 포함 (습관이 있을 때)
+  // 3b) 여정에 습관 단계 포함 (습관이 있을 때) — 새 날(기록 없음) 시뮬레이션으로 전체 경로 검증
+  const _entBak = JSON.stringify(ls("entries_v2"));
+  { const en = ls("entries_v2"); delete en[tk]; window.localStorage.setItem("entries_v2", JSON.stringify(en)); }
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
   let g2 = 0, foundHabit = false, foundCare = !!q("#jBody #jMission"); // 첫 단계가 한마디·미션
   q("#jNext").click(); // 한마디 → 기분
@@ -146,19 +148,19 @@ try {
   check("여정 호흡(명상) 단계 버튼", foundBreathe);
   check("호흡(명상)이 마지막 단계", breatheLast);
   q("#jClose").click();
+  window.localStorage.setItem("entries_v2", _entBak); // 오늘 기록 복원(이후 테스트는 '재편집' 상태)
 
-  // 3d) 여정 진행 임시저장(중간에 닫아도 이어서)
+  // 3d) 여정 진행 임시저장(중간에 닫아도 이어서) — 오늘 재편집은 축약 경로라 기분 단계부터 시작
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  q("#jNext").click(); // 한마디 → 기분(감정 선택 단계)
+  check("오늘 재편집은 축약 경로(기분부터 바로)", !!q("#jBody #jScore"));
   q('#jBody .emo-tag[data-tag="복잡해요"]').click();
   q("#jClose").click();
   q("#journeyStart").click();
   check("여정 진행 임시저장 복원", !!q('#jBody .emo-tag[data-tag="복잡해요"]') && q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
   q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
-  // 3e) 빠른 기록 (1화면 저장)
+  // 3e) 빠른 기록 (1화면 저장) — 재편집 축약 경로에선 첫 화면이 곧 기분
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  q("#jNext").click(); // 한마디 → 기분
   { const s = q("#jBody #jScore"); s.value = "82"; s.dispatchEvent(new window.Event("input")); }
   check("빠른 저장 버튼 노출", !!q("#jBody #jQuickSave"));
   q("#jBody #jQuickSave").click();
@@ -534,6 +536,8 @@ try {
   check("PWA: 테마색 meta·manifest 일치", read("index.html").includes(`content="${manifest.theme_color}"`)); // 런타임엔 테마별로 동적 변경되므로 정적 소스 기준
   check("PWA: 애플 터치 아이콘 PNG", (d.querySelector('link[rel="apple-touch-icon"]').getAttribute("href") || "").endsWith(".png") && fs.existsSync(path.join(root, "apple-touch-icon.png")));
   check("버전 표기(meta+설정 화면)", !!d.querySelector('meta[name="app-version"]') && q("#appVer").textContent.includes("v"));
+  check("이용약관 페이지 + 설정 링크", fs.existsSync(path.join(root, "terms.html")) && read("terms.html").includes("의료") && !!q('a[href="terms.html"]'));
+  check("manifest 스크린샷 등록 + 파일 존재", (manifest.screenshots || []).length >= 3 && manifest.screenshots.every((s) => fs.existsSync(path.join(root, s.src))));
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

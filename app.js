@@ -3643,7 +3643,7 @@ function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
 function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 80 * Math.cos(a)).toFixed(1), (100 + 80 * Math.sin(a)).toFixed(1)]; }
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
-  const editingPast = jData.date && jData.date !== todayKey(); // 지난 기록 수정은 간단 경로
+  const editingPast = (jData.date && jData.date !== todayKey()) || jData.editLite; // 지난 기록/오늘 재편집은 간단 경로(8단계 반복 마찰 제거)
   const s = [];
   if (!editingPast) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
   s.push("feel");
@@ -3843,6 +3843,7 @@ function openJourney(dateKey) {
     jData.note = t.note; jData.praise = t.praise; jData.tags = t.tags || [];
     if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; }
     jData.touched = true; // 기존 기록 편집은 점수 확인 불필요
+    if (k === todayKey() && t.mood) jData.editLite = true; // 오늘 재편집은 축약 경로(기분부터 바로)
   }
   // 중간에 닫았던 진행분이 있으면 이어서 (과거 날짜 편집도 유실 없이 복원)
   const draft = loadJDraft();

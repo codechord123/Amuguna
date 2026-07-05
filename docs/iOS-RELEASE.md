@@ -44,18 +44,24 @@ npx cap open ios
   ```
 - **햅틱** — 현재 `navigator.vibrate`(iOS Safari 무시). 네이티브는 `@capacitor/haptics`의 `Haptics.impact()`로 교체(앱 `Haptic` 객체만 바꾸면 됨).
 
-### 출시 전 체크리스트
-- [ ] **앱 아이콘 PNG 세트** — `tools/icon-export.html` 을 브라우저로 열어 180/192/256/512/1024 PNG를 받아 `AppIcon`에 추가.
+### 출시 전 체크리스트 (2026-07-05 갱신 — 코드 측 완료 상태 반영)
+- [x] **앱 아이콘 PNG 세트** — `icon-192/512.png`, `icon-maskable-192/512.png`, `apple-touch-icon.png`(180) 저장소에 생성 완료. Xcode `AppIcon`에는 `icon-512.png`(+1024 필요 시 확대 아님 재생성: `tools/icon-export.html`) 사용.
 - [x] **개인정보 처리방침** — `privacy.html` (배포 URL: `/privacy.html`). App Store 제출 시 이 URL 사용.
+- [x] **이용약관 + 의료 면책** — `terms.html` (의료 서비스 아님 고지, 위기 자원, 유료 기능 도입 시 정책). 설정 화면에 링크됨.
+- [x] **스토어 스크린샷 초안** — `docs/store/shot-*.png` (390×844@2x, 데모 데이터). App Store엔 6.7"(1290×2796) 필요 → 시뮬레이터에서 같은 화면 재캡처 권장.
+- [x] **manifest 완결** — id·categories·PNG 아이콘(any/maskable)·screenshots·테마색 일치.
+- [x] **버전 관리** — `meta[app-version]` + 설정 화면 표기 + SW 캐시 버전 동기, 새 버전 활성화 시 토스트.
 - [x] **햅틱** — 웹 `navigator.vibrate` 적용(설정에서 on/off). iOS 네이티브는 `@capacitor/haptics`로 교체 권장.
-- [ ] **스플래시 스크린** 설정.
-- [ ] `viewport-fit=cover` + safe-area 패딩 — 이미 적용됨(노치 대응).
-- [ ] **개인정보 처리방침 URL** — 데이터는 기기 저장(+선택적 Supabase). App Store 필수.
+- [x] `viewport-fit=cover` + safe-area 패딩(상·하단 모두).
+- [x] 햅틱/사운드 사용자 설정으로 끄기 제공.
+- [x] 위기 자원(상담 전화 tel: 링크) 상시 노출 — 정신건강 앱 심사 안전 요건.
+- [x] 접근성 — Esc/포커스/inert, 터치 타깃 44px, WCAG AA 대비, reduced-motion.
+- [x] 데이터 보호 — 내보내기/가져오기(왕복 무손실), 쿼터 초과 대응, 멀티탭/자정 경계, 동기화 병합(pull→merge→push).
+- [ ] **스플래시 스크린** — Capacitor `@capacitor/splash-screen`으로 설정(네이티브 단계).
 - [ ] 오디오: 무음 스위치/배경 재생 정책 확인. 필요 시 `AVAudioSession` 카테고리 조정(네이티브 플러그인).
-- [ ] 외부 앰비언트 오디오를 쓴다면 **라이선스(CC0 등)** 확인하고 앱에 포함.
-- [ ] 클라우드 동기화를 켤 경우 로그인/계정 삭제 흐름 — Apple의 "계정 삭제 제공" 요건 충족.
-- [ ] 햅틱/사운드는 사용자 설정으로 끌 수 있어야 함(이미 제공).
-- [ ] 위기 자원(상담 전화) 노출 — 정신건강 앱 심사 시 가점/안전 요건.
+- [ ] 클라우드 동기화를 켤 경우 로그인/**계정 삭제** 흐름 — Apple 요건(네이티브 제출 전 Supabase 삭제 API 연결).
+- [ ] Apple Developer 계정($99/년) + macOS/Xcode(또는 Codemagic CI) — 외부 준비물.
+- [ ] 유료(구독) 도입 시 RevenueCat + App Store Connect 상품 등록(ROADMAP 참고).
 
 ### 권장
 - 첫 출시는 **기능 동결 + 안정화**(이 저장소의 `npm test` 통과 유지).

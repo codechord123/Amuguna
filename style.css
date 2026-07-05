@@ -337,8 +337,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-guide li:nth-child(5) { animation-delay: 0.45s; }
 @keyframes medIn { to { opacity: 1; transform: none; } }
 /* ===== 명상 가이드 — 밝은 새벽빛(기본) + 다크(우주) · 발광 구체 중심(장식 기하 없음) ===== */
-.med-overlay {
-  /* 차분한 슬레이트-인디고 + 발광 구체 (라이트 기본) */
+.breath-overlay.med-overlay {
+  /* 차분한 슬레이트-인디고 + 발광 구체 (라이트 기본)
+     주의: 특이도 (0,2,0) — 파일 뒤쪽 .breath-overlay(배경)보다 우선해야 라이트 팔레트가 산다 */
   --med-bg: linear-gradient(168deg, #eef3fc 0%, #e6edf8 44%, #dbe5f3 100%);
   --med-fg: #54639c; --med-fg-soft: rgba(84,99,156,0.4);
   --med-track: rgba(84,99,156,0.14); --med-glow: rgba(120,142,205,0.5);
@@ -353,7 +354,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   --med-on-ink: #ffffff; --med-on-bg: #54639c;
   gap: var(--s4); background: var(--med-bg); color: var(--med-text); overflow: hidden;
 }
-[data-theme="dark"] .med-overlay, .med-overlay.sleep {
+[data-theme="dark"] .breath-overlay.med-overlay, .breath-overlay.med-overlay.sleep {
   /* 다크모드(및 수면 모드): 깊은 우주 + 황금 발광 */
   --med-bg: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%);
   --med-fg: #f3d98a; --med-fg-soft: rgba(243,217,138,0.5);
@@ -386,7 +387,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   radial-gradient(1px 1px at 8% 48%, #fff5, transparent), radial-gradient(1px 1px at 55% 70%, #fff6, transparent);
   animation: cbTwinkle 6s ease-in-out infinite; }
 @keyframes cbTwinkle { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
-.med-overlay > *:not(.cb-stars) { position: relative; z-index: 2; }
+.med-overlay > *:not(.cb-stars):not(.med-close) { position: relative; z-index: 2; } /* ✕는 absolute 유지(우상단 고정) */
 /* 호흡 무대 */
 .cb-stage { display: flex; flex-direction: column; align-items: center; gap: var(--s4); color: var(--med-fg); }
 /* 진입 트랜지션 — 명상 화면이 부드럽게 줌인되며 떠오름 */

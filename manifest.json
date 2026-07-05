@@ -11,6 +11,11 @@
   "background_color": "#fff7f0",
   "theme_color": "#f3987a",
   "categories": ["health", "lifestyle"],
+  "screenshots": [
+    { "src": "docs/store/shot-today.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "오늘의 여정 — 연속·주간 목표·습관 한눈에" },
+    { "src": "docs/store/shot-stats.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "기록 분석 — 주간 요약과 습관 통계" },
+    { "src": "docs/store/shot-meditate.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "호흡 명상 — 떠오르는 빛을 따라 4-7-8" }
+  ],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
