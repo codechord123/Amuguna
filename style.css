@@ -1028,6 +1028,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rh-tl.rh-ml { color: var(--soft); }
 .rh-cell { aspect-ratio: 1; min-height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 800; color: rgba(22, 17, 12, 0.72); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28); transition: transform 0.12s var(--ease-soft); }
 .rh-cell:active { transform: scale(0.92); }
+.rh-cell.rh-dim { background: var(--bg-sunken); color: var(--soft); font-weight: 600; } /* 표본 1회 셀 — 패턴처럼 색칠하지 않음 */
 .rh-empty { background: var(--bg-sunken); box-shadow: none; }
 .rh-marg { border-radius: 7px; opacity: 0.55; }
 [data-theme="dark"] .rh-cell { color: rgba(18, 16, 22, 0.82); }

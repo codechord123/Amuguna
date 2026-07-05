@@ -341,6 +341,7 @@ try {
   check("상관관계 방향(상승) 표시", !!d.querySelector("#corrBody .corr-diff.up"));
   check("상관관계 과학 근거 표기", !!d.querySelector("#corrBody .sci-note") && /Cohen/.test(d.querySelector("#corrBody .corr-meta").textContent));
   check("발견: 도움된 습관 카드", [...d.querySelectorAll("#discoveries .disc .disc-title")].some((n) => /산책/.test(n.textContent)));
+  check("발견 습관 카드 = 관찰 서술 + 인과 아님 명시", [...d.querySelectorAll("#discoveries .disc")].some((n) => /더 높았어요/.test(n.textContent) && /인과는 아니에요/.test(n.textContent)));
   const hmToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
@@ -358,12 +359,13 @@ try {
   check("오늘 화면에서 습관 재체크(저장)", !!q("#todayHabitList .hg-check.done") && ls("challenges_v2")[0].done[hmToday] === true);
   q("[data-tab=stats]").click();
   check("감정 지도 섹션 제거됨", !q("#moodMatrix") && !q('#allAnalysis [data-sec="matrix"]'));
-  // 마음 리듬 (요일×시간대 히트맵) — updatedAt 시각 기준
+  // 마음 리듬 (요일×시간대 히트맵) — 작성 시각(createdAt|updatedAt, 그날 작성분만) 기준
   const rh = {};
   ["2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });
   window.localStorage.setItem("entries_v2", JSON.stringify(rh));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
+  check("리듬 표본1회 셀은 경향처럼 색칠 안 함", d.querySelectorAll("#rhythmGrid .rh-dim").length >= 1);
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
@@ -409,6 +411,33 @@ try {
   // 점수 축 카드 — 흐름(그래프)과 분포(스트립)가 한 카드로 연결, 활력선은 제거
   check("마음 흐름·분포 통합 카드", !!q("#dist .rc-svg") && !!q("#dist .dist-stack") && !!q("#dist .fd-cap"));
   check("마음 흐름 활력선 제거", !d.querySelector(".rc-energy") && !d.querySelector(".rl-energy"));
+  check("KPI 라벨에 기간 명시(7일·30일)", /7일/.test(q("#analyzeKpis").textContent) && /30일/.test(q("#analyzeKpis").textContent));
+
+  // 11c) 통계 무결성 — 표본 게이트·연속 보호 표기·손상 tags 방어 (알고리즘 감사 반영)
+  { // weekTrend: 1건 vs 1건이면 판단 보류(null) — 허위 ▲▼ 차단. 3건 vs 3건이면 델타 산출
+    const tt = {}, mk = (i) => { const d = new Date(); d.setDate(d.getDate() - i); return window.todayKey(d); };
+    tt[mk(0)] = { date: mk(0), mood: "활기차요", score: 80 };
+    tt[mk(8)] = { date: mk(8), mood: "지쳤어요", score: 40 };
+    check("주간 추세: 1건vs1건은 판단 보류", window.weekTrend(tt) === null);
+    [1, 2].forEach((i) => tt[mk(i)] = { date: mk(i), score: 80 });
+    [9, 10].forEach((i) => tt[mk(i)] = { date: mk(i), score: 40 });
+    const tr2 = window.weekTrend(tt);
+    check("주간 추세: 3건vs3건이면 델타 산출", !!tr2 && tr2.delta === 40);
+  }
+  { // 연속 보호 — 하루 공백은 보호로 메워지되 사용 횟수가 표기용으로 보고됨
+    const st = {}, mk = (i) => { const d = new Date(); d.setDate(d.getDate() - i); return window.todayKey(d); };
+    [0, 2, 3, 4, 5, 6, 7, 8].forEach((i) => st[mk(i)] = { date: mk(i), mood: "괜찮아요" });
+    const si = window.calcStreakInfo(st);
+    check("연속 보호: 공백 메움 + 사용횟수 보고", si.streak === 8 && si.freezesUsed === 1);
+  }
+  { // 손상 데이터: tags가 문자열이어도 크래시 없이 배열로 정규화되어 렌더
+    const curEn = JSON.parse(window.localStorage.getItem("entries_v2"));
+    curEn["2026-06-09"] = { date: "2026-06-09", mood: "괜찮아요", tags: "불안해요", updatedAt: "2026-06-09T09:00:00" };
+    window.localStorage.setItem("entries_v2", JSON.stringify(curEn));
+    check("손상 tags(문자열) 배열 정규화", Array.isArray(window.loadEntries()["2026-06-09"].tags));
+    q("[data-tab=today]").click(); q("[data-tab=stats]").click();
+    check("손상 tags에도 감정 빈도 렌더", d.querySelectorAll("#tagInsight .freq .dist-row").length >= 3);
+  }
 
   // 여정 감정태그에 '빈도' 배지 (점수 아님) — 위 entries로 평온해요 2회
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
@@ -435,7 +464,8 @@ try {
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
   check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
-  check("리포트 처방에 의료 면책 문구", !!q("#subBody .sol-disclaimer") && /진단·치료가 아니/.test(q("#subBody .sol-disclaimer").textContent));
+  check("리포트 처방에 의료 면책 문구", !!q("#subBody .sol-disclaimer") && /의료적/.test(q("#subBody .sol-disclaimer").textContent) && /전문가/.test(q("#subBody .sol-disclaimer").textContent));
+  check("의료 프레이밍 회피(살펴보기·제안)", /살펴보기/.test(q("#subBody .diag-label").textContent) && /맞춤 제안/.test(q("#subBody .sol-card h2").textContent));
   check("리포트 습관 분석 카드 표시", !!q("#subBody .hrep-card") && d.querySelectorAll("#subBody .hrep-card .hrep-row").length >= 1);
   check("리포트 습관 분석 결론·달성률 표시", !!q("#subBody .hrep-card .hrep-ins-row") && /%/.test(q("#subBody .hrep-card .hrep-avg").textContent) && /🔥/.test(q("#subBody .hrep-card").textContent));
   q("#subBack").click();

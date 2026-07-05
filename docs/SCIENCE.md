@@ -35,9 +35,10 @@
 - Warriner, Kuperman & Brysbaert (2013), ~13,915 단어 valence·arousal·dominance 규준 (9점 척도)
 - 환산식: `v = round((규준값 − 1) / 8 × 100)`
 
-**예시(규준값 → v):** happy 8.4→92 · proud 8.0→86 · calm 7.0→76 · so-so 5.2→52 ·
+**예시(규준값 → v):** happy 8.4→92 · excited/proud 8.0→88 · calm 7.0→76 · so-so 5.2→52 ·
 sleepy 4.3→41 · exhausted 3.6→33 · nervous 3.3→30 · **anxious 3.0→27** · stressed 2.9→26 · angry 2.8→26 ·
-**helpless(무기력) 2.4→22** · lonely 2.4→19 · sad 2.1→15 · depressed 1.8→12
+**helpless(무기력)/lonely 2.4→18** · sad 2.1→15 · depressed 1.8→12
+(동일 규준값은 동일 v로 묶는다 — 환산식을 벗어난 임의 세분화를 두지 않는다)
 
 **"불안 > 무기력" 해설:** 규준상 불안(고각성 위협)은 정서가 ~3.0,
 무기력(무력감·고갈)은 우울 권역에 인접해 정서가 ~2.4로 **더 불쾌한 쪽**이다.
@@ -186,7 +187,7 @@ valence(점수)와 구체 감정(태그)은 본래 다른 차원이므로, 둘�
 
 | 트리거 조건 | 추천 | 근거 |
 |---|---|---|
-| 평균 기분 < 2.6/5 | 작은 행동부터 시작 (행동활성화) | Mazzucchelli, Kane & Rees (2010), *Clinical Psychology Review* 30(4); Martell et al. (2010) |
+| 평균 기분 < 2.6/5 | 작은 행동부터 시작 (행동활성화) | Mazzucchelli, Kane & Rees (2010), *The Journal of Positive Psychology* 5(2); Martell et al. (2010) |
 | 평균 에너지 < 2.6/5 | 느린 호흡(4-7-8) | Zaccaro et al. (2018), *Frontiers in Human Neuroscience* 12:353 |
 | 습관 달성률 < 50% | 실행의도·습관 쌓기 | Gollwitzer (1999), *American Psychologist* 54(7); Lally et al. (2010), *EJSP* 40(6) |
 | 감사 기록 0 (3일+) | 하루 한 줄 감사 | Emmons & McCullough (2003), *JPSP* 84(2) |
@@ -223,7 +224,7 @@ valence(점수)와 구체 감정(태그)은 본래 다른 차원이므로, 둘�
 | 감사 기록 0 (3일+) | 하루 한 줄 감사 | Emmons & McCullough (2003), *JPSP* |
 | 기분 추세 하락 | 자기자비 | Neff (2003), *Self and Identity* |
 
-**추가 처방 근거:** 수면–정서 Baglioni et al. (2016), *Sleep Medicine Reviews* · 도움 요청/사회적 지지 Cohen & Wills (1985), *Psychological Bulletin* · 강점 활용 Seligman et al. (2005), *American Psychologist*.
+**추가 처방 근거:** 수면–정서 Baglioni et al. (2016), *Psychological Bulletin* 142(9) · 도움 요청/사회적 지지 Cohen & Wills (1985), *Psychological Bulletin* · 강점 활용 Seligman et al. (2005), *American Psychologist*.
 
 **설계 원칙:** 구간/임계값은 셀프케어 안내를 위한 휴리스틱이며 임상 진단 기준이 아닙니다.
 crisis 구간에서는 솔루션보다 **전문 자원 연결**을 가장 앞에 둡니다.
