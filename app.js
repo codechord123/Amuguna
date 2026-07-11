@@ -3182,7 +3182,7 @@ function renderTagInsight(entries) {
   const el = document.getElementById("tagInsight"); if (!el) return;
   const cnt = {};
   Object.values(entries).forEach((e) => { if (!e.tags || !e.tags.length) return; e.tags.forEach((t) => cnt[t] = (cnt[t] || 0) + 1); });
-  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "·", v: em && em.v != null ? em.v : 50 }; });
+  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "🏷️", v: em && em.v != null ? em.v : 50 }; }); // 사전에 없는 태그(가져오기 등)도 어색하지 않게
   if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면 자주 느낀 감정을 빈도로 보여드려요.</p>'; return; }
   const total = rows.reduce((s, r) => s + r.n, 0);
   rows.sort((a, b) => b.n - a.n);
