@@ -3532,7 +3532,7 @@ function medRecord() {
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onPhase: (cls) => { if (cls === "inhale") tbResetDot(medCircle); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
-  onAutoEnd: () => { medPhase = "done"; medClockStop(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
+  onAutoEnd: () => { medPhase = "done"; medClockStop(); medRecord(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); }, // 완주 즉시 기록(닫기 전에 앱을 꺼도 세션이 남게 · medActive 가드로 중복 없음)
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
 // 시간 직접 조절(스텝퍼) + 야간 모드 + 남은 시간 카운트다운
