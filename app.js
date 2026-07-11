@@ -706,7 +706,7 @@ function resetSetupForm() {
 }
 document.getElementById("startChallenge").addEventListener("click", () => {
   const title = challengeTitle.value.trim() || presetChoice;
-  if (!title) { alert("어떤 습관을 만들지 골라주세요 🙂"); return; }
+  if (!title) { toast("어떤 습관을 만들지 골라주세요 🙂"); return; }
   const chs = loadChs();
   chs.push({ id: "c" + Date.now(), emoji: presetEmoji, title, cue: cueChoice, minVersion: challengeMin.value.trim(), startDate: todayKey(), done: {}, celebrated: [] });
   saveChs(chs);
@@ -915,7 +915,7 @@ function applyHabitAction(act, id, scopeEl) {
   } else if (act === "savehabit") {
     const f = scopeEl.querySelector("[data-edit]");
     const title = f.querySelector('[data-ef="title"]').value.trim();
-    if (!title) { alert("습관 이름을 비울 수 없어요 🙂"); return; }
+    if (!title) { toast("습관 이름을 비울 수 없어요 🙂"); return; }
     h.title = title; h.cue = f.querySelector('[data-ef="cue"]').value.trim(); h.minVersion = f.querySelector('[data-ef="min"]').value.trim();
     saveChs(chs); Sound.success(); renderChallenge(); refreshHabitDetail(id);
   } else if (act === "canceledit") {
@@ -955,7 +955,7 @@ async function shareHabit(h) {
   const text = `오늘의 쉼 ${h.emoji} '${h.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요 💪`;
   try {
     if (navigator.share) await navigator.share({ title: "오늘의 쉼 챌린지", text });
-    else { await navigator.clipboard.writeText(text); alert("진행 상황을 클립보드에 복사했어요!\n\n" + text); }
+    else { await navigator.clipboard.writeText(text); toast("진행 상황을 클립보드에 복사했어요 📋"); }
   } catch (e) {}
 }
 
@@ -2464,7 +2464,7 @@ async function shareReport(kind) {
     const file = new File([dataURLtoBlob(url)], "report.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     if (navigator.share) { await navigator.share({ text }); return; }
-    await navigator.clipboard.writeText(text); alert("리포트 요약을 복사했어요!\n\n" + text);
+    await navigator.clipboard.writeText(text); toast("리포트 요약을 복사했어요 📋");
   } catch (e) {}
 }
 
@@ -3430,7 +3430,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
     }
     if (!nEntry && !nCh) throw new Error("복원할 기록이 없어요");
     Sound.success(); loadToday(); renderChallenge();
-    alert(`복원 완료! 기록 ${nEntry}개${nCh ? ` · 습관 ${nCh}개` : ""}를 기존 데이터와 합쳤어요 🌿`);
+    toast(`복원 완료! 기록 ${nEntry}개${nCh ? ` · 습관 ${nCh}개` : ""}를 기존 데이터와 합쳤어요 🌿`);
   } catch (err) {
     alert(`불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.\n(${err && err.message ? err.message : "형식 오류"})`);
   }
@@ -3449,7 +3449,7 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   clearJDraft();
   Sound.tap();
   expandedIds.clear(); renderChallenge(); loadToday();
-  alert("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
+  toast("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
 });
 
 /* 빠른 호흡 — 어디서든 + 수면 모드 */
@@ -3870,7 +3870,7 @@ function renderStep() {
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
-    if (qs) qs.addEventListener("click", () => { if (!jData.touched) { alert("먼저 다이얼로 지금 기분을 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
+    if (qs) qs.addEventListener("click", () => { if (!jData.touched) { toast("먼저 다이얼로 지금 기분을 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
