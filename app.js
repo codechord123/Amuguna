@@ -3746,10 +3746,10 @@ function stepHtml(id) {
         <div class="dial-center"><span class="dial-emoji" id="jDialEmoji">😐</span><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
+      ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">⚡ 바쁜 날엔 여기까지만 저장</button>' : ""}
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
-      <p class="energy-out" id="jEnergyOut"></p>
-      ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="reflect-toggle" id="jQuickSave">⚡ 여기까지만 빠르게 저장</button>' : ""}`;
+      <p class="energy-out" id="jEnergyOut"></p>`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>

@@ -875,7 +875,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey-head { display: flex; align-items: center; gap: var(--s3); padding: calc(var(--s4) + env(safe-area-inset-top, 0px)) var(--s5) var(--s4); }
 .journey-progress { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
 .journey-progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); border-radius: var(--r-pill); transition: width 0.4s var(--ease-soft); }
-.journey-body { flex: 1; overflow-y: auto; max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s3) var(--s6) var(--s5); display: flex; flex-direction: column; justify-content: safe center; }
+.journey-body { flex: 1; overflow-y: auto; max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s3) var(--s6) 110px; display: flex; flex-direction: column; justify-content: safe center; } /* 하단 여백 — 고정 푸터가 마지막 칩·버튼을 가리지 않게 */
 .journey-foot { display: flex; gap: var(--s3); max-width: 580px; width: 100%; margin: 0 auto; padding: var(--s4) var(--s6) calc(var(--s5) + env(safe-area-inset-bottom)); }
 .journey-foot .btn { flex: 1; }
 .journey-foot .btn.primary { flex: 2; }
@@ -916,7 +916,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .dial-range { width: 100%; margin-top: var(--s4); }
 .emo-tags { display: flex; flex-wrap: wrap; gap: var(--s2); justify-content: center; }
 .emo-tag { border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--ink); border-radius: var(--r-pill); padding: var(--s2) var(--s3); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
-.emo-tag.selected { border-color: var(--accent); background: var(--card); color: var(--accent-deep); }
+.emo-tag.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--card)); color: var(--accent-deep); box-shadow: 0 0 0 1px var(--accent) inset; } /* 선택 상태를 면(틴트)으로 분명하게 */
+/* 빠른 저장 — 다이얼 바로 아래, 눈에 띄는 보조 버튼(바쁜 날의 탈출구) */
+.j-quick { display: block; margin: var(--s3) auto 0; padding: var(--s2) var(--s4); border-radius: var(--r-pill); border: 1.5px dashed var(--accent); background: transparent; color: var(--accent-deep); font-family: inherit; font-size: var(--t-sm); font-weight: var(--w-semi); cursor: pointer; transition: background 0.2s, transform 0.1s; }
+.j-quick:active { transform: scale(0.96); }
+.j-quick:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .emo-freq { font-style: normal; font-size: 0.78em; font-weight: var(--w-bold); color: var(--soft); margin-left: 3px; opacity: 0.85; }
 .emo-tag.selected .emo-freq { color: var(--accent-deep); }
 .energy-out { text-align: center; margin: var(--s4) 0 0; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.5; }
