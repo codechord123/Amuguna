@@ -1022,7 +1022,7 @@ function renderStats() {
   renderSummaryHabitGlance();
   renderCapture(entries);
   renderBadges();
-  checkSafetySignals();
+  checkSafetySignals(entries, list);
   renderCorrelation(entries);
   renderHabitHeatmap();
   renderHabitSummary();
@@ -1030,7 +1030,7 @@ function renderStats() {
   renderTagInsight(entries);
   renderRhythm(entries);
   renderGratitude(list);
-  renderDist(list);
+  renderDist(list, entries);
   if (typeof applyStatLayout === "function") applyStatLayout(); // 사용자 맞춤 순서/숨김 반영
 }
 // 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
@@ -2615,7 +2615,9 @@ function renderCorrelation(entries) {
       // Cohen's d (효과크기) — pooled SD 근사
       const pooled = Math.sqrt((sd(done, ad) ** 2 + sd(not, an) ** 2) / 2) || 0.0001;
       const d = (ad - an) / pooled;
-      rows.push({ h, ad, an, diff: ad - an, d, n: done.length + not.length });
+      // 평균차 95% 신뢰구간 반경(Welch 근사) — 표본이 작을 때 불확실성을 수치로 보여줌
+      const ci = Math.round(1.96 * Math.sqrt(sd(done, ad) ** 2 / done.length + sd(not, an) ** 2 / not.length));
+      rows.push({ h, ad, an, diff: ad - an, d, ci, n: done.length + not.length });
     }
   });
   if (!rows.length) {
@@ -2624,7 +2626,7 @@ function renderCorrelation(entries) {
   }
   rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
   const effectLabel = (d) => { const a = Math.abs(d); return a >= 0.8 ? "큰 차이" : a >= 0.5 ? "중간 차이" : a >= 0.2 ? "작은 차이" : "미미한 차이"; };
-  body.innerHTML = rows.map(({ h, ad, an, diff, d, n }) => {
+  body.innerHTML = rows.map(({ h, ad, an, diff, d, ci, n }) => {
     const up = diff >= 6, down = diff <= -6;
     const sign = diff >= 0 ? "▲" : "▼";
     const msg = up ? `한 날 기분이 평균 <b>${Math.round(diff)}점 더 높아요</b> 🌿`
@@ -2633,7 +2635,7 @@ function renderCorrelation(entries) {
     return `<div class="corr-row">
       <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
       <div class="corr-detail">한 날 ⌀${Math.round(ad)} · 안 한 날 ⌀${Math.round(an)} — ${msg}</div>
-      <div class="corr-meta">표본 n=${n} · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)} — 표본이 작을수록 불확실)</div>
+      <div class="corr-meta">표본 n=${n} · 차이 ${Math.round(diff)}±${ci}점(95% CI) · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)})</div>
     </div>`;
   }).join("");
   body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
@@ -3203,8 +3205,8 @@ function checkBadges() {
 // 안전 신호 점검 — (a) 최근 기록 텍스트의 위기 어휘, (b) 키워드 없이도 지속되는 심한 저기분.
 // 예전 renderInsight(#insight 카드 제거로 사문화)에 묻혀 있던 위기 스캔을 독립 실행 경로로 살리고,
 // '지속 저기분' 사용자(글로 위기를 안 쓰는 경우)도 전문 자원 안내를 받도록 밴드 기반 게이트 추가.
-function checkSafetySignals() {
-  const entries = loadEntries(), list = sortedEntries(entries);
+function checkSafetySignals(entriesArg, listArg) {
+  const entries = entriesArg || loadEntries(), list = listArg || sortedEntries(entries); // 렌더 경로에선 재로드 없이 전달값 사용(중복 파싱 절감)
   if (list.length < 3) return;
   if (settings.lastSafetyNudge === todayKey()) return; // 하루 1회만(반복 노출로 압박 주지 않기)
   const recentNotes = list.slice(-5).map((e) => [e.note, e.reflection && e.reflection.hard, e.reflection && e.reflection.good, e.praise].filter(Boolean).join(" ")).join(" ");
@@ -3268,9 +3270,9 @@ function quickInsight() {
 
 // 마음 흐름·분포 — 점수 축 하나의 이야기: 최근 30일 흐름(시간) + 그 날들이 채워진 비율(분포)
 // (감정 축은 '자주 느낀 감정' 카드가 담당 — 두 카드가 겹치지 않게 역할 분리)
-function renderDist(list) {
+function renderDist(list, entriesArg) {
   const wrap = document.getElementById("dist");
-  const entries = loadEntries();
+  const entries = entriesArg || loadEntries();
   const keys = []; for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   // 흐름 차트와 분포를 '같은 30일 키'에서 집계 — 캡션 N과 차트 점 개수가 어긋나지 않게
   const recent = keys.map((k) => entries[k]).filter((e) => e && entryScore(e) != null);
