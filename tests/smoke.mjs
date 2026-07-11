@@ -370,6 +370,7 @@ try {
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
   check("기본 카드 순서 1차 지표(dist) 우선", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === "dist");
+  check("1차 지표 카드는 기본 펼침", !q('[data-sec="dist"]').classList.contains("collapsed"));
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
   check("분석 맞춤 버튼 존재", !!q("#statEditBtn"));
   q("#statEditBtn").click(); // 편집 진입

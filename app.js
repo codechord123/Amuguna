@@ -1127,8 +1127,8 @@ function applyStatLayout() {
     const isHidden = hidden.includes(id), isPinned = pinned.includes(id) && !isHidden;
     // 컨테이너 배치: 메인 고정 → statPinned, 그 외 → 드로어(allAnalysis). 순서대로 append.
     (isPinned ? pinBox : drawer).appendChild(card);
-    // 고정 카드는 펼쳐서 바로 보이게, 드로어로 내려가면 다시 접음
-    if (card.classList.contains("collapsible")) card.classList.toggle("collapsed", !isPinned);
+    // 고정 카드는 펼쳐서 바로 보이게, 드로어로 내려가면 다시 접음 — 단 1차 지표(dist)는 드로어에서도 기본 펼침
+    if (card.classList.contains("collapsible")) card.classList.toggle("collapsed", !isPinned && id !== "dist");
     card.classList.toggle("sec-hidden", isHidden && !statEditing);
     card.classList.toggle("sec-dim", isHidden && statEditing);
     card.classList.toggle("sec-pinned", isPinned);
