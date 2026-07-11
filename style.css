@@ -120,6 +120,7 @@ html, body {
     "Noto Sans KR", "Malgun Gothic", sans-serif;
   line-height: var(--lh);
   font-size: var(--t-base);
+  word-break: keep-all; overflow-wrap: break-word; /* 한국어 어절 단위 줄바꿈(음절 중간 끊김 방지), 넘치면 강제 줄바꿈 */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background 0.4s ease, color 0.4s ease;
