@@ -328,7 +328,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-sound { display: flex; align-items: center; gap: var(--s3); width: min(280px, 80%); opacity: 0.85; }
 .med-snd-btn { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--med-track); background: transparent; color: var(--med-text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
 .med-snd-btn:active { transform: scale(0.9); }
-.med-overlay .med-vol { flex: 1; accent-color: var(--med-on-bg); height: 4px; } /* 전역 range accent보다 우선 */
+.med-overlay .med-vol { flex: 1; height: 4px; background: var(--med-track); }
+.med-overlay .med-vol::-webkit-slider-thumb { background: var(--med-on-bg); box-shadow: 0 2px 6px var(--med-glow); border-color: transparent; } /* 전역 주황 썸 대신 테마 토큰 */
+.med-overlay .med-vol::-moz-range-thumb { background: var(--med-on-bg); border-color: transparent; }
 .med-guide { list-style: none; padding: 0; margin: var(--s2) 0 0; counter-reset: med; }
 .med-guide li { counter-increment: med; position: relative; padding: var(--s3) var(--s3) var(--s3) 46px; margin-bottom: var(--s2); background: var(--bg-sunken); border-radius: var(--r-md); opacity: 0; transform: translateY(10px); animation: medIn 0.5s var(--ease-soft) forwards; }
 .med-guide li::before { content: counter(med); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: var(--t-xs); font-weight: var(--w-bold); }
@@ -421,7 +423,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .cb-stage.med-idle .tb-dot { opacity: 0; }
 /* 중심 발광 오브 — 삼각형 안에서 호흡에 따라 은은히 차오르고 잦아듦 */
 .cb-orb { position: absolute; width: 84px; height: 84px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); box-shadow: 0 0 26px 3px var(--med-glow); transition-property: opacity, box-shadow; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
-.tb-viz .cb-orb { top: 58px; } /* 삼각형 무게중심 부근 */
+.tb-viz .cb-orb { width: 76px; height: 76px; top: 76px; } /* 삼각형 무게중심(≈y114)에 맞춤 — 변 밖으로 삐져나오지 않게 */
 /* 구체 윗부분 광택 하이라이트(입체감) */
 .cb-orb::before { content: ""; position: absolute; top: 16%; left: 22%; width: 36%; height: 30%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8), transparent 72%); filter: blur(2px); }
 .cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { box-shadow: 0 0 46px 9px var(--med-glow); }
