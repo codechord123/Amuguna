@@ -515,6 +515,12 @@ const BREATH_PHASES = [
   { name: "잠깐 멈춰요", dur: 7, cls: "hold", cue: "hold" },
   { name: "내쉬기", dur: 8, cls: "exhale", cue: "exhale" },
 ];
+// 삼각 궤적 점 리셋 — 새 사이클 들숨 진입 시 100%→0%로 즉시 점프(뒤로 되감기는 애니메이션 방지)
+function tbResetDot(stage) {
+  const dot = stage && stage.querySelector && stage.querySelector(".tb-dot");
+  if (!dot) return;
+  try { dot.style.transition = "none"; dot.style.offsetDistance = "0%"; void dot.offsetWidth; dot.style.transition = ""; dot.style.offsetDistance = ""; } catch (e) {}
+}
 function makeBreather(circleEl, textEl, base, opts) {
   opts = opts || {};
   const isSleep = opts.sleep || (() => false);
@@ -523,7 +529,7 @@ function makeBreather(circleEl, textEl, base, opts) {
   function enter(i) {
     pi = i; const ph = BREATH_PHASES[i]; remain = ph.dur;
     circleEl.className = base + " " + ph.cls;
-    circleEl.style.transitionDuration = (ph.cls === "hold" ? 0.4 : ph.dur) + "s";
+    circleEl.style.transitionDuration = ph.dur + "s"; // 삼각 궤적: 멈춤도 변 하나를 7초간 이동(스냅 없음)
     Sound.breathCue(ph.cue, ph.dur); render();
     if (opts.onPhase) { try { opts.onPhase(ph.cls, i); } catch (e) {} } // 단계 전환 훅(햅틱·파티클 등 juice)
   }
@@ -3453,7 +3459,7 @@ const qbViz = qbCircleEl ? qbCircleEl.querySelector(".cb-viz") : null;
 const qbBreather = makeBreather(qbCircleEl, document.getElementById("qbText"), "cb-stage", {
   sleep: () => sleepMode,
   maxCycles: 12,
-  onPhase: (cls) => { if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // juice — 단계 전환 미세 햅틱
+  onPhase: (cls) => { if (cls === "inhale") tbResetDot(qbCircleEl); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
   onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; if (!sleepMode) Sound.chime(); setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
 });
 function openBreath() {
@@ -3484,7 +3490,7 @@ const MED_STEPS = [
   { t: "시선 내려놓기", b: "눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.", e: "" },
   { t: "호흡 관찰", b: "코로 숨이 들어오고 나가는 감각을 그저 느껴요.", e: "" },
   { t: "생각은 흘려보내기", b: "잡생각이 들면 '생각났네' 하고 다시 호흡으로.", e: "" },
-  { t: "이제 함께 호흡", b: "동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.", e: "" },
+  { t: "이제 함께 호흡", b: "삼각형을 도는 점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.", e: "" },
 ];
 const MED_STEP_MS = 5500;
 const medOverlay = document.getElementById("medOverlay");
@@ -3516,7 +3522,7 @@ function medRecord() {
 }
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
-  onPhase: (cls) => { if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // juice — 단계 전환 미세 햅틱(파티클은 완료 때만)
+  onPhase: (cls) => { if (cls === "inhale") tbResetDot(medCircle); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
   onAutoEnd: () => { medPhase = "done"; medClockStop(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); },
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
@@ -3561,7 +3567,7 @@ function applyBreathPattern() {
   document.querySelectorAll(".cb-seg.s-in").forEach((e) => (e.textContent = `들이쉬기 ${brIn}초`));
   document.querySelectorAll(".cb-seg.s-hold").forEach((e) => (e.textContent = `멈춤 ${brHold}초`));
   document.querySelectorAll(".cb-seg.s-out").forEach((e) => (e.textContent = `내쉬기 ${brEx}초`));
-  const qbh = document.getElementById("qbHint"); if (qbh) qbh.textContent = `동그라미를 따라 천천히 (${brIn}·${brHold}·${brEx})`;
+  const qbh = document.getElementById("qbHint"); if (qbh) qbh.textContent = `삼각형의 점을 따라 천천히 (${brIn}·${brHold}·${brEx})`;
 }
 const medPatternEl = document.getElementById("medPattern");
 if (medPatternEl) medPatternEl.addEventListener("click", (e) => {

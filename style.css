@@ -399,37 +399,37 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-overlay:not([hidden]) .med-caption, .med-overlay:not([hidden]) .med-dots, .med-overlay:not([hidden]) #medNext { animation: medRise 0.7s var(--ease-soft) 0.18s both; }
 @keyframes medEnter { 0% { transform: scale(0.82); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); } }
 @keyframes medRise { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
-/* transition-duration: inherit — 위상 시간(4·7·8초)을 자식(떠오름·오브·조명)에 전달.
-   이게 없으면 0초로 계산돼 떠오름/가라앉음이 급변(스냅)함 */
+/* transition-duration: inherit — 위상 시간(4·7·8초)을 자식(점·오브)에 전달.
+   이게 없으면 0초로 계산돼 이동이 급변(스냅)함 */
 .cb-viz { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; transition-duration: inherit; }
-/* 떠오르는 빛 — 들숨에 위로 떠오르며 커지고, 날숨에 가라앉으며 작아짐.
-   화면에서 시선을 잡는 '유일한 움직임'. 좌우 추적 없음 → 차분함 유지. */
-.cb-rise { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition-property: transform; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
-.cb-stage.inhale .cb-rise, .cb-stage.hold .cb-rise { transform: translateY(-30px) scale(1.28); }
-.cb-stage.exhale .cb-rise { transform: translateY(12px) scale(0.66); }
-/* 바닥 그림자 — 떠오르면 작고 옅게, 가라앉으면 크고 진하게(부유감) */
-.cb-shadow { position: absolute; left: 50%; bottom: 16px; width: 150px; height: 28px; margin-left: -75px; border-radius: 50%; background: radial-gradient(ellipse at center, var(--med-shadow) 0%, transparent 70%); filter: blur(5px); transition-property: transform, opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
-.cb-stage.inhale .cb-shadow, .cb-stage.hold .cb-shadow { transform: scale(0.55); opacity: 0.45; }
-.cb-stage.exhale .cb-shadow { transform: scale(1.15); opacity: 1; }
-.cb-stage.med-idle .cb-shadow { opacity: 0.6; }
-/* 장면 조명 — 들숨에 밝아지고 날숨에 어두워짐(2.5D 깊이용 블러 레이어, 고정) */
-.cb-glow { position: absolute; width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle, var(--med-glow) 0%, transparent 62%); filter: blur(22px); opacity: 0.16; transition-property: opacity; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
-.cb-stage.inhale .cb-glow, .cb-stage.hold .cb-glow { opacity: 0.36; }
-.cb-stage.exhale .cb-glow { opacity: 0.12; }
-.cb-stage.med-idle .cb-glow { opacity: 0.12; }
-/* 발광 아우라(오브 헤일로 — 오브와 함께 떠오름) */
-.cb-aura { position: absolute; width: 240px; height: 240px; border-radius: 50%; background: var(--med-aura); filter: blur(18px); animation: cbAura 7s var(--ease-breath) infinite; }
-@keyframes cbAura { 0%,100% { transform: scale(0.92); opacity: 0.5; } 50% { transform: scale(1.08); opacity: 0.9; } }
-/* 중심 발광 오브 — 호흡에 따라 빛이 차오르고 잦아듦 */
-.cb-orb { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); box-shadow: 0 0 36px 4px var(--med-glow); transition-property: opacity, box-shadow; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+/* ===== 삼각 호흡 궤적 (레퍼런스: 변 하나 = 단계 하나) =====
+   들숨=왼쪽 변↗ · 멈춤=오른쪽 변↘ · 날숨=밑변← — 점이 모서리를 일정 속도로 순회.
+   기하가 곧 패턴을 가르쳐, 눈으로 따라가기만 해도 4·7·8이 몸에 익는다. */
+.tb-viz { width: 200px; height: 180px; margin: var(--s3) 0; }
+.tb-tri { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tb-line { fill: none; stroke: var(--med-fg-soft); stroke-width: 2; stroke-linejoin: round; }
+.cb-stage.med-idle .tb-line { opacity: 0.55; }
+/* 따라가는 점 — offset-path로 삼각형 둘레를 순회. 단계별 목적지(꼭짓점)까지 선형 이동 */
+.tb-dot { position: absolute; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--med-dot); box-shadow: var(--med-dot-glow);
+  offset-path: path("M21.9 153.6 L94.1 26.4 Q100 16 105.9 26.4 L178.1 153.6 Q184 164 172 164 L28 164 Q16 164 21.9 153.6 Z");
+  offset-distance: 0%; offset-rotate: 0deg;
+  transition-property: offset-distance; transition-duration: inherit; transition-timing-function: linear; }
+.cb-stage.ready .tb-dot { transition-duration: 0s; offset-distance: 0%; }
+.cb-stage.inhale .tb-dot { offset-distance: 33.4%; }  /* 왼쪽 변 끝(정상) */
+.cb-stage.hold .tb-dot { offset-distance: 66.7%; }    /* 오른쪽 변 끝 */
+.cb-stage.exhale .tb-dot { offset-distance: 100%; }   /* 밑변 → 시작점 */
+.cb-stage.med-idle .tb-dot { opacity: 0; }
+/* 중심 발광 오브 — 삼각형 안에서 호흡에 따라 은은히 차오르고 잦아듦 */
+.cb-orb { position: absolute; width: 84px; height: 84px; border-radius: 50%; background: var(--med-orb); filter: blur(2px); box-shadow: 0 0 26px 3px var(--med-glow); transition-property: opacity, box-shadow; transition-duration: inherit; transition-timing-function: var(--ease-breath); }
+.tb-viz .cb-orb { top: 58px; } /* 삼각형 무게중심 부근 */
 /* 구체 윗부분 광택 하이라이트(입체감) */
 .cb-orb::before { content: ""; position: absolute; top: 16%; left: 22%; width: 36%; height: 30%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8), transparent 72%); filter: blur(2px); }
-.cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { box-shadow: 0 0 70px 14px var(--med-glow); }
-.cb-stage.exhale .cb-orb { opacity: 0.82; box-shadow: 0 0 24px 3px var(--med-glow); }
+.cb-stage.inhale .cb-orb, .cb-stage.hold .cb-orb { box-shadow: 0 0 46px 9px var(--med-glow); }
+.cb-stage.exhale .cb-orb { opacity: 0.82; box-shadow: 0 0 18px 2px var(--med-glow); }
 /* 멈춤(정점)에 '살아있음'을 주는 미세 맥동 */
 .cb-stage.hold .cb-orb { animation: cbHoldPulse 3.5s ease-in-out infinite; }
 @keyframes cbHoldPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
-.cb-count { position: relative; z-index: 1; color: #fff; font-weight: 800; text-shadow: 0 0 18px var(--med-glow); font-size: 2.2rem; line-height: 1; }
+.cb-count { position: relative; z-index: 1; color: var(--med-text); font-weight: 800; text-shadow: 0 0 14px var(--med-glow); font-size: 2.2rem; line-height: 1; min-height: 1em; }
 .cb-stage:not(.med-idle) .cb-count { font-size: 0; }
 /* 매 초 카운트가 바뀔 때마다 톡 튀는 팝(juice) */
 .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; display: inline-block; animation: cbNumPop 0.45s var(--ease-soft) both; }

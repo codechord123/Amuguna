@@ -248,12 +248,11 @@ try {
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerdown", { clientX: 220 }));
   q("#medOverlay").dispatchEvent(new window.MouseEvent("pointerup", { clientX: 110 }));
   check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
-  check("호흡 비주얼(cb-stage·발광 구체·떠오름)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .cb-orb") && !!q("#medCircle .cb-rise"));
+  check("삼각 궤적 호흡 비주얼(변=단계)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .tb-line") && !!q("#medCircle .tb-dot"));
   check("장식 기하(연꽃·만다라) 제거됨", !q("#medOverlay .cb-flower") && !q("#medOverlay .cb-geo"));
-  check("발광 아우라 + 장면 조명 유지", !!q("#medOverlay .cb-aura") && !!q("#medOverlay .cb-glow"));
-  check("바닥 그림자(부유감) 추가", !!q("#medOverlay .cb-shadow") && !!q("#breathOverlay .cb-shadow"));
-  check("기계적 궤도·공·3D 제거됨", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog"));
-  check("카운트(빛 속 숫자) 떠오름 그룹 안에", !!q("#medOverlay .cb-rise #medCircleText"));
+  check("중심 발광 오브 유지", !!q("#medCircle .cb-orb"));
+  check("구형 궤도·링 잔재 없음", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog") && !q("#medOverlay .cb-rise"));
+  check("단계 라벨 상단·카운트 하단 구조", q("#medCircle").firstElementChild.classList.contains("cb-phase") && !!q("#medCircle > .cb-count#medCircleText"));
   check("진행 버튼 라벨(스킵 오해 방지)", q("#medNext").textContent.includes("다음"));
   { let g = 0; while (!q("#medCircle").className.includes("ready") && g++ < 8) q("#medNext").click(); } // 마지막 슬라이드 → 호흡 시작
   check("명상 가이드 호흡으로 전환", q("#medCircle").className.includes("ready"));
@@ -269,7 +268,7 @@ try {
   q("#restSeg button[data-rseg=meditate]").click();
   q("#safetyBreath").click(); // 위기 진정 → 호흡 오버레이 열기
   check("호흡 시작 시 카운트 표시", /\d/.test(q("#qbText").innerHTML));
-  check("빠른 호흡도 떠오르는 빛으로 통일", !!q("#breathOverlay .cb-stage") && !!q("#breathOverlay .cb-orb") && !!q("#breathOverlay .cb-rise"));
+  check("빠른 호흡도 삼각 궤적으로 통일", !!q("#breathOverlay .cb-stage") && !!q("#breathOverlay .tb-line") && !!q("#breathOverlay .tb-dot"));
   check("Sound.tick 존재", typeof window.Sound.tick === "function");
   check("Sound.breathStart/Stop 존재", typeof window.Sound.breathStart === "function" && typeof window.Sound.breathStop === "function");
   check("호흡명상 카드·우상단 FAB 제거됨", !q("#breathBtn") && !q("#quickBreathFab"));

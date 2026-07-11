@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v137" />
+  <meta name="app-version" content="v138" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -155,7 +155,7 @@
           <li><b>시선 내려놓기</b><span>눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.</span></li>
           <li><b>호흡 관찰</b><span>코로 숨이 들어오고 나가는 감각을 그저 느껴요.</span></li>
           <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
-          <li><b>함께 호흡</b><span>아래 동그라미를 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
+          <li><b>함께 호흡</b><span>삼각형을 도는 점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
         </ol>
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
@@ -488,19 +488,16 @@
     <div class="cb-stars" aria-hidden="true"></div>
     <p class="qb-title">잠깐, 같이 숨 쉬어요</p>
     <div class="cb-stage med-idle" id="qbCircle">
-      <div class="cb-viz">
-        <div class="cb-glow" aria-hidden="true"></div>
-        <div class="cb-shadow" aria-hidden="true"></div>
-        <div class="cb-rise">
-          <div class="cb-aura" aria-hidden="true"></div>
-          <div class="cb-orb"></div>
-          <span class="cb-count" id="qbText">시작</span>
-        </div>
-      </div>
       <div class="cb-phase" aria-hidden="true"><span class="p p-ready">준비</span><span class="p p-in">들이쉬기 · INHALE</span><span class="p p-hold">멈춤 · HOLD</span><span class="p p-out">내쉬기 · EXHALE</span></div>
+      <div class="cb-viz tb-viz">
+        <svg class="tb-tri" viewBox="0 0 200 180" aria-hidden="true"><path class="tb-line" d="M21.9 153.6 L94.1 26.4 Q100 16 105.9 26.4 L178.1 153.6 Q184 164 172 164 L28 164 Q16 164 21.9 153.6 Z"/></svg>
+        <div class="cb-orb"></div>
+        <span class="tb-dot" aria-hidden="true"></span>
+      </div>
+      <span class="cb-count" id="qbText">시작</span>
       <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
     </div>
-    <p class="qb-hint" id="qbHint">동그라미를 따라 천천히 (4·7·8)</p>
+    <p class="qb-hint" id="qbHint">삼각형의 점을 따라 천천히 (4·7·8)</p>
     <button type="button" class="sleep-toggle" id="sleepToggle">🌙 수면 모드 끔</button>
     <button class="btn primary" id="qbClose">그만하기</button>
   </div>
@@ -510,16 +507,13 @@
     <div class="cb-stars" aria-hidden="true"></div>
     <button class="med-close" id="medClose" aria-label="닫기">✕</button>
     <div class="cb-stage med-idle" id="medCircle">
-      <div class="cb-viz">
-        <div class="cb-glow" aria-hidden="true"></div>
-        <div class="cb-shadow" aria-hidden="true"></div>
-        <div class="cb-rise">
-          <div class="cb-aura" aria-hidden="true"></div>
-          <div class="cb-orb"></div>
-          <span class="cb-count" id="medCircleText"></span>
-        </div>
-      </div>
       <div class="cb-phase" aria-hidden="true"><span class="p p-ready">준비</span><span class="p p-in">들이쉬기 · INHALE</span><span class="p p-hold">멈춤 · HOLD</span><span class="p p-out">내쉬기 · EXHALE</span></div>
+      <div class="cb-viz tb-viz">
+        <svg class="tb-tri" viewBox="0 0 200 180" aria-hidden="true"><path class="tb-line" d="M21.9 153.6 L94.1 26.4 Q100 16 105.9 26.4 L178.1 153.6 Q184 164 172 164 L28 164 Q16 164 21.9 153.6 Z"/></svg>
+        <div class="cb-orb"></div>
+        <span class="tb-dot" aria-hidden="true"></span>
+      </div>
+      <span class="cb-count" id="medCircleText"></span>
       <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
     </div>
     <p class="med-clock" id="medClock" aria-live="polite" hidden></p>
