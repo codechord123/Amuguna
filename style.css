@@ -498,7 +498,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hist-tags { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
 
 /* ----- 토스트 ----- */
-.toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 70; max-width: 90%; width: max-content; background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-lg); border-radius: var(--r-md); padding: var(--s3) var(--s5); font-size: var(--t-sm); font-weight: var(--w-med); opacity: 0; transition: opacity 0.4s var(--ease-soft), transform 0.4s var(--ease-soft); text-align: center; }
+.toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 130; /* 여정(85)·서브페이지(80)·호흡(90)·온보딩(100) 위에서도 보이는 알림 레이어 */ max-width: 90%; width: max-content; background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-lg); border-radius: var(--r-md); padding: var(--s3) var(--s5); font-size: var(--t-sm); font-weight: var(--w-med); opacity: 0; transition: opacity 0.4s var(--ease-soft), transform 0.4s var(--ease-soft); text-align: center; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ============================================================

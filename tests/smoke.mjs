@@ -448,6 +448,11 @@ try {
   q("#jNext").click(); // 한마디 → 기분(feel)
   const etag = q('#jBody .emo-tag[data-tag="평온해요"] .emo-freq');
   check("여정 감정태그 빈도 배지 표시", !!etag && /·\d/.test(etag.textContent));
+  // 점수 미조작 시 OS confirm 대신 이중 확인(첫 누름=안내·머무름, 둘째 누름=50으로 진행)
+  q("#jNext").click();
+  check("점수 미조작 첫 '다음'은 안내 후 머무름", !!q("#jBody #jScore"));
+  q("#jNext").click();
+  check("두 번째 '다음'은 보통(50)으로 진행", !q("#jBody #jScore"));
   q("#jClose").click();
   // 마음 달력 통합 글리프 (기분+습관+활력+일기 한 칸에)
   const calToday = new Date().toISOString().slice(0, 10);

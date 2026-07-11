@@ -3970,7 +3970,15 @@ document.getElementById("jClose").addEventListener("click", () => { Sound.tap();
 jNext.addEventListener("click", () => {
   collectStep();
   if (curId === "feel" && !jData.touched) { // 기본값 50이 몰래 저장되지 않게 — 실제로 조작했는지 확인
-    if (!confirm("아직 기분 점수를 정하지 않았어요.\n'보통(50)'으로 두고 계속할까요?")) return;
+    // OS 기본 confirm 대신 앱 결의 이중 확인: 첫 누름은 안내, 5초 안에 한 번 더 누르면 50으로 진행
+    if (!jNext._armed50) {
+      jNext._armed50 = true;
+      clearTimeout(jNext._armed50T);
+      jNext._armed50T = setTimeout(() => { jNext._armed50 = false; }, 5000);
+      toast("아직 점수를 정하지 않았어요 · 보통(50)으로 두려면 '다음'을 한 번 더 눌러주세요");
+      return;
+    }
+    jNext._armed50 = false; clearTimeout(jNext._armed50T);
     jData.touched = true;
   }
   if (curId === "finish") { saveJourney(); return; }
