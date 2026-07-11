@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v152" />
+  <meta name="app-version" content="v153" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -277,6 +277,7 @@
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
         <button data-seg="graph">분석</button>
+        <button data-seg="badges">배지</button>
       </div>
 
       <div class="stats-panel" data-panel="summary">
@@ -294,7 +295,10 @@
         </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
-        <div class="card collapsible collapsed" id="badgeCard">
+      </div>
+
+      <div class="stats-panel" data-panel="badges" hidden>
+        <div class="card" id="badgeCard">
           <h2>🏅 배지 & 레벨 <span class="badge-rate" id="badgeRate"></span></h2>
           <div class="level-row">
             <span class="level-emoji" id="levelEmoji">🌰</span>

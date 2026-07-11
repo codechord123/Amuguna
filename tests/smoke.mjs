@@ -166,6 +166,14 @@ try {
   q("#jBody #jQuickSave").click();
   check("빠른 저장으로 기록됨", ls("entries_v2")[tk].score === 82 && q("#journey").classList.contains("show") === false);
 
+  // 3f) 오늘 재편집 축약 경로에도 습관 체크 단계는 유지 (여정에서 습관이 사라졌다는 피드백)
+  q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
+  { let liteHabit = false, lg = 0;
+    while (q("#jNext").textContent.indexOf("저장") < 0 && lg++ < 10) { if (q("#jBody .j-habit")) liteHabit = true; q("#jNext").click(); }
+    check("오늘 재편집 경로에 습관 체크 포함", liteHabit); }
+  q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
+
   // 4) 통계 탭 (차트·달력·주간·인사이트 렌더)
   q("[data-tab=stats]").click();
   check("리포트 진입 표시", !!q("#weekReportBtn") && !!q("#monthDetailBtn"));
@@ -174,6 +182,11 @@ try {
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
   check("KPI 평균 기분에 단위(점) 명시", !!q("#analyzeKpis .as-unit") && /점/.test(q("#analyzeKpis .as-kpi").textContent));
   q("#statsSeg button[data-seg=summary]").click();
+  // 배지 & 레벨 — 기록 탭의 독립 서브탭 (사용자 요청)
+  check("배지 서브탭 존재", !!q('#statsSeg button[data-seg="badges"]') && !!q('.stats-panel[data-panel="badges"] #badgeCard'));
+  q('#statsSeg button[data-seg="badges"]').click();
+  check("배지 서브탭 전환", !q('.stats-panel[data-panel="badges"]').hidden && q('.stats-panel[data-panel="summary"]').hidden);
+  q('#statsSeg button[data-seg="summary"]').click();
   check("배지 카테고리 탭(7종)", d.querySelectorAll("#badgeSeg button").length === 7);
   check("기록 카테고리 11종", d.querySelectorAll("#badgeGrid .badge").length === 11);
   check("첫 기록 배지 획득(기록 탭)", d.querySelector("#badgeGrid .badge.earned") !== null);

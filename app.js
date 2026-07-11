@@ -3699,14 +3699,15 @@ function scoreColor(s) { return scoreColors()[Math.min(4, Math.floor(s / 20))]; 
 function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 80 * Math.cos(a)).toFixed(1), (100 + 80 * Math.sin(a)).toFixed(1)]; }
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
-  const editingPast = (jData.date && jData.date !== todayKey()) || jData.editLite; // 지난 기록/오늘 재편집은 간단 경로(8단계 반복 마찰 제거)
+  const pastDate = jData.date && jData.date !== todayKey(); // 지난 날짜 기록 편집
+  const lite = !!jData.editLite;                            // 오늘 재편집 축약 경로(한마디·호흡만 생략)
   const s = [];
-  if (!editingPast) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
+  if (!pastDate && !lite) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
   s.push("feel");
   s.push("note", "praise");
-  if (!editingPast && loadChs().length) s.push("habits");
+  if (!pastDate && loadChs().length) s.push("habits"); // 오늘이면 재편집이어도 습관 체크는 유지
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
-  if (!editingPast) s.push("breathe"); // 명상(호흡)은 마음을 가라앉히는 마지막 마무리 단계로
+  if (!pastDate && !lite) s.push("breathe"); // 명상(호흡)은 마음을 가라앉히는 마지막 마무리 단계로
   s.push("finish");
   return s;
 }
