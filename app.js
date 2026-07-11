@@ -228,13 +228,13 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
-function activateTab(name, opts = {}) {
-  const { scroll = true } = opts;
-  if (name === "calendar") { activateTab("stats", opts); showStatsSeg("calendar"); return; } // 달력은 기록 탭 서브탭으로 통합(v151)
+const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
+function activateTab(name, { scroll = true } = {}) {
+  document.body.classList.toggle("slim-hero", name !== "today"); // 오늘 외 탭은 히어로 슬림 + 푸터 생략(1화면)
   document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
+  if (name === "calendar") renderMoodCalendar(loadEntries());
   if (name === "challenge") renderChallenge();
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1095,7 +1095,6 @@ document.getElementById("weekReportBtn").addEventListener("click", () => { Sound
 function showStatsSeg(seg) {
   document.querySelectorAll("#statsSeg button").forEach((b) => b.classList.toggle("active", b.dataset.seg === seg));
   document.querySelectorAll(".stats-panel").forEach((p) => { p.hidden = p.dataset.panel !== seg; });
-  if (seg === "calendar") renderMoodCalendar(loadEntries());
 }
 document.getElementById("statsSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
@@ -2984,7 +2983,7 @@ function renderDiscoveries(entries, list) {
   // 5) 꾸준함 — 보호(빈 하루 메움)가 쓰였으면 정직하게 표기
   const si = calcStreakInfo(entries); if (si.streak >= 3) cards.push({ sal: 30 + si.streak, icon: "🔥", title: `${si.streak}일 이어서 기록 중이에요${si.freezesUsed ? ` (보호 ${si.freezesUsed}회 포함)` : ""}`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
   cards.sort((a, b) => b.sal - a.sal);
-  const top = cards.slice(0, 4);
+  const top = cards.slice(0, 2); // 발견 카드는 2장까지 — 분석 첫 화면을 스크롤 없이
   if (!top.length) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">아직 뚜렷한 패턴은 없어요. 꾸준히 기록하면 곧 발견이 쌓여요 🌿</p></div>'; return; }
   el.innerHTML = top.map((c) => `<div class="card disc ${c.tone || ""}"><div class="disc-head"><span class="disc-ico">${c.icon}</span><div class="disc-body"><p class="disc-title">${c.title}</p><p class="disc-sub">${c.sub}</p></div></div>${c.viz || ""}</div>`).join("");
 }
@@ -3053,7 +3052,7 @@ function recentWindowKeys(n) {
   return { keys, prevKeys };
 }
 // 습관 한눈에 — 오늘 화면·요약 서브탭 공용. 오늘 완료 체크 + 진행/연속 + 습관 분석 인사이트 한 줄.
-function renderHabitGlanceInto(listId, countId) {
+function renderHabitGlanceInto(listId, countId, withInsight) {
   const list = document.getElementById(listId); if (!list) return false;
   const wrap = list.closest("[data-hg-wrap]") || list.closest(".card");
   const chs = (typeof loadChs === "function") ? loadChs() : [];
@@ -3066,7 +3065,7 @@ function renderHabitGlanceInto(listId, countId) {
   // 분석 인사이트 — 최근 14일 데이터로 가장 의미 있는 한 줄
   const w = recentWindowKeys(14);
   const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
-  const insTxt = topHabitInsight(ha);
+  const insTxt = withInsight ? topHabitInsight(ha) : "";
   const insHtml = insTxt ? `<p class="hg-insight">💡 ${insTxt}</p>` : "";
   list.innerHTML = insHtml + chs.map((h) => {
     const doneCount = habitDoneCount(h); // 90일 창 기준 — 상세·카드와 수치 일치(창 밖 키 왜곡 방지)
@@ -3082,8 +3081,8 @@ function renderHabitGlanceInto(listId, countId) {
   }).join("");
   return true;
 }
-function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount"); }
-function renderSummaryHabitGlance() { renderHabitGlanceInto("summaryHabitList", "summaryHabitCount"); }
+function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount", false); } // 오늘 화면은 체크 중심 — 인사이트는 기록 요약에서
+function renderSummaryHabitGlance() { renderHabitGlanceInto("summaryHabitList", "summaryHabitCount", true); }
 function refreshHabitGlances() { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
 // 습관 한눈에 카드 동작 — 오늘 완료 토글(어느 화면에서든) · 이름 누르면 상세
 document.addEventListener("click", (e) => {
@@ -3945,7 +3944,7 @@ function saveJourney() {
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
   closeJourney(); loadToday(); checkBadges();
   if (!document.getElementById("tab-stats").hidden) renderStats(); // 기록 탭 진입 시 어차피 렌더 — 저장 직후 무거운 전체 분석(워드웹 등) 재계산 생략
-  { const calP = document.querySelector('.stats-panel[data-panel="calendar"]'); if (calP && !calP.hidden) renderMoodCalendar(loadEntries()); } // 달력 보고 있을 때만 즉시 갱신
+  if (!document.getElementById("tab-calendar").hidden) renderMoodCalendar(loadEntries()); // 달력 보고 있을 때만 즉시 갱신
   if (detectCrisis([jData.note, jData.hard, jData.good, jData.praise].filter(Boolean).join(" "))) showSafety();
   toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
 }

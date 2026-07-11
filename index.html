@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v151" />
+  <meta name="app-version" content="v152" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -87,6 +87,20 @@
 
     </section>
 
+    <!-- ========== 탭: 달력 ========== -->
+    <section class="tab" id="tab-calendar" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2>🗓️ 마음 달력</h2>
+          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+        </div>
+        <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
+        <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div class="mood-cal" id="moodCal"></div>
+        <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
+      </div>
+    </section>
+
     <!-- ========== 탭: 쉼 ========== -->
     <section class="tab" id="tab-rest" hidden>
       <div class="seg stats-seg" id="restSeg">
@@ -117,14 +131,12 @@
 
       <div class="card center">
         <h2>✨ 아주 작은 한 걸음</h2>
-        <p class="hint">기분이 나아지길 기다리기보다, 작은 움직임이 먼저 와도 괜찮아요.</p>
         <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
         <button class="btn" id="missionBtn">미션 받기</button>
       </div>
 
       <div class="card help-always" id="helpAlways">
-        <h2>🆘 많이 힘들 땐</h2>
-        <p class="hint">혼자 견디지 않아도 돼요. 도움을 청하는 건 용기예요. 아래는 24시간 연결돼요.</p>
+        <h2>🆘 많이 힘들 땐 — 혼자 견디지 않아도 돼요</h2>
         <ul class="safety-list">
           <li>자살예방 상담 <a href="tel:109"><strong>109</strong></a> · 24시간</li>
           <li>정신건강 상담 <a href="tel:15770199"><strong>1577-0199</strong></a></li>
@@ -265,7 +277,6 @@
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
         <button data-seg="graph">분석</button>
-        <button data-seg="calendar">달력</button>
       </div>
 
       <div class="stats-panel" data-panel="summary">
@@ -276,7 +287,6 @@
         <div class="card habit-glance" id="summaryHabitGlance" hidden data-hg-wrap>
           <div class="card-head"><h2>🎯 습관 한눈에</h2><span class="hg-count" id="summaryHabitCount"></span></div>
           <div id="summaryHabitList"></div>
-          <p class="hint">동그라미를 누르면 오늘 완료를 체크하고, 이름을 누르면 상세를 볼 수 있어요.</p>
         </div>
         <div class="report-tiles">
           <button class="report-tile" id="weekReportBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
@@ -284,8 +294,8 @@
         </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
-        <div class="card" id="badgeCard">
-          <div class="card-head"><h2>🏅 배지 & 레벨</h2><span class="badge-rate" id="badgeRate"></span></div>
+        <div class="card collapsible collapsed" id="badgeCard">
+          <h2>🏅 배지 & 레벨 <span class="badge-rate" id="badgeRate"></span></h2>
           <div class="level-row">
             <span class="level-emoji" id="levelEmoji">🌰</span>
             <div class="level-info">
@@ -352,23 +362,11 @@
         </div>
       </div>
 
-          <div class="stats-panel" data-panel="calendar" hidden>
-        <div class="card">
-          <div class="card-head">
-            <h2>🗓️ 마음 달력</h2>
-            <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
-          </div>
-          <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
-          <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-          <div class="mood-cal" id="moodCal"></div>
-          <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
-        </div>
-      </div>
     </section>
 
     <!-- ========== 탭: 설정 ========== -->
     <section class="tab" id="tab-settings" hidden>
-      <div class="card" id="accountCard">
+      <div class="card collapsible collapsed" id="accountCard">
         <h2>☁️ 계정 & 동기화</h2>
         <div id="cloudNotConfigured" hidden>
           <p class="hint">기록은 이 기기에만 안전하게 저장돼요. 다른 곳으로 전송되지 않아요. 기기를 바꾸거나 백업이 필요하면 아래 <b>내 데이터</b>에서 내보내기·가져오기를 이용해 주세요.</p>
@@ -543,6 +541,7 @@
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
     <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today">📔<span>오늘</span></button>
+    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar">🗓️<span>달력</span></button>
     <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest">🌿<span>쉼</span></button>
     <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge">🎯<span>습관</span></button>
     <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats">📊<span>기록</span></button>
