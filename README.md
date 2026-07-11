@@ -130,6 +130,10 @@ python3 -m http.server 8000
 npm install      # jsdom (테스트용)
 npm test         # 핵심 사용자 흐름 회귀 스모크 테스트 (tests/smoke.mjs)
 npm run beta     # 시뮬레이션 베타테스트 리포트 생성 (beta/)
+
+# 스크롤 제로 레이아웃 검사 (요구: playwright-core + 크로미움, 로컬 서버)
+python3 -m http.server 8787 &          # 앱 정적 서빙
+node tools/fitcheck.mjs [chromium경로]  # 모든 탭·서브탭·오버레이가 한 화면(844/667px)에 들어가는지 실측
 ```
 
 ## ☁️ 클라우드 동기화 & 로그인 (선택)
