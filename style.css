@@ -38,8 +38,8 @@
   --accent: #e8836a;
   --accent-2: #fbe2d1;
   --accent-deep: #b04628; /* 작은 글자에도 4.5:1 이상(WCAG AA) — 배경 f2e9df에서도 4.66 */
-  --success: #5ea384;
-  --danger: #d4695f;
+  --success: #3a7154; /* ▲텍스트로도 4.5:1 이상(WCAG AA, 배경 f2e9df 포함) */
+  --danger: #b0453d;  /* ▼텍스트로도 4.5:1 이상 */
   --energy: #4fbfa6;
   --ring: rgba(205, 92, 65, 0.18);
 
@@ -71,8 +71,8 @@
   --accent: #5fb6a3;
   --accent-2: #cdebe3;
   --accent-deep: #27745f; /* WCAG AA — 밝은 배경들에서 4.6:1 이상 */
-  --success: #4f9d86;
-  --danger: #cf7b72;
+  --success: #38775f; /* 텍스트 용도 4.5:1 이상(WCAG AA) */
+  --danger: #9e5147;  /* 텍스트 용도 4.5:1 이상 */
   --energy: #e79a52;
   --ring: rgba(47, 138, 118, 0.16);
   --blob-a: #c4e6dd; --blob-b: #aedbe6; --blob-c: #dcebcd;
