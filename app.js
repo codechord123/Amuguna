@@ -742,7 +742,7 @@ function renderChallenge() {
   chEmpty.hidden = true;
 }
 
-// 가장 잘 지키는 요일 — keys(대상일) 범위의 요일별 '실천률'(총 대상일 2일+ 요일만). 요약·습관분석 공용(이중 구현 방지)
+// 가장 잘 지키는 요일 — keys(대상일) 범위의 요일별 '실천율'(총 대상일 2일+ 요일만). 요약·습관분석 공용(이중 구현 방지)
 function habitBestDowIdx(h, keys) {
   const tk = todayKey(), dn = [0, 0, 0, 0, 0, 0, 0], tt = [0, 0, 0, 0, 0, 0, 0];
   keys.forEach((k) => { if (k < h.startDate || k > tk) return; const di = new Date(k + "T00:00:00").getDay(); tt[di]++; if (h.done && h.done[k]) dn[di]++; });
@@ -3115,11 +3115,11 @@ document.addEventListener("keydown", (e) => {
   const open = e.target.closest("[data-hgopen]");
   if (open) { e.preventDefault(); Sound.tap(); openHabitDetail(open.dataset.hgopen); }
 });
-// 습관 요약 — 습관별 실천률(최근 30일) · 현재 연속 · 가장 잘 지키는 요일 (실천 패턴 분석)
+// 습관 요약 — 습관별 실천율(최근 30일) · 현재 연속 · 가장 잘 지키는 요일 (실천 패턴 분석)
 function renderHabitSummary() {
   const el = document.getElementById("habitSummary"); if (!el) return;
   const chs = (typeof loadChs === "function") ? loadChs() : [];
-  if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천률·연속·요일 패턴을 정리해드려요.</p>'; return; }
+  if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천율·연속·요일 패턴을 정리해드려요.</p>'; return; }
   const dowName = ["일", "월", "화", "수", "목", "금", "토"];
   const keys30 = []; for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); keys30.push(todayKey(d)); }
   const rows = chs.map((h) => {
@@ -3127,7 +3127,7 @@ function renderHabitSummary() {
     keys30.forEach((k) => { if (k < h.startDate) return; total++; if (h.done && h.done[k]) done++; });
     const rate = total ? Math.round(done / total * 100) : 0;
     let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
-    // 가장 잘 지키는 요일 = 요일별 '실천률' — 공용 헬퍼(습관 분석과 동일 규칙, 30일 창)
+    // 가장 잘 지키는 요일 = 요일별 '실천율' — 공용 헬퍼(습관 분석과 동일 규칙, 30일 창)
     const bi = habitBestDowIdx(h, keys30);
     const bestDow = bi != null ? dowName[bi] : null;
     return { h, rate, streak, bestDow };
@@ -3137,7 +3137,7 @@ function renderHabitSummary() {
     + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
     + `<span class="hsum-rate">${r.rate}%</span>`
     + `<span class="hsum-meta">🔥${r.streak}${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
-    + `<p class="hint" style="margin-top:10px">실천률=최근 30일 · 🔥=현재 연속 · 요일↑=가장 잘 지키는 요일.</p>`;
+    + `<p class="hint" style="margin-top:10px">실천율=최근 30일 · 🔥=현재 연속 · 요일↑=가장 잘 지키는 요일.</p>`;
 }
 // 마음 리듬 — 요일(7) × 시간대(4) 평균 기분 히트맵 (요일별·시간대별 막대를 한 그래픽으로 통합)
 // 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)
