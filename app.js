@@ -2375,7 +2375,7 @@ function reportDetailHtml(kind) {
   </div>`;
 
   const chart = reportChartSvg(keys, entries);
-  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 마음 흐름</h2></div>${chart}</div>` : "";
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 ${unit === "달" ? "이번 달" : "최근 7일"} 마음 흐름</h2></div>${chart}</div>` : ""; // 분석탭 '최근 30일' 카드와 기간이 다름을 명시(이중 표현 혼동 방지)
 
   // 하이라이트 — 가장 좋았던/힘들었던 날
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
@@ -3196,6 +3196,12 @@ function checkBadges() {
   if (fresh.length) {
     const prevLevel = levelInfo(prev.length).level, newLevel = levelInfo(earned.length).level;
     settings.badges = earned; saveSettingsObj(settings);
+    // 일괄 유입(백업 가져오기·클라우드 동기화·첫 로드)으로 배지가 한꺼번에 잡히면
+    // 축하 연출이 폭죽 스팸이 됨 — 3개 이상은 조용한 요약 토스트만
+    if (fresh.length >= 3) {
+      if (typeof toast === "function") toast(`🏅 배지 ${fresh.length}개를 획득했어요! (기록 탭에서 확인)`);
+      return;
+    }
     const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
     if (typeof toast === "function") toast("🏅 새 배지 획득: " + titles);
     if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
