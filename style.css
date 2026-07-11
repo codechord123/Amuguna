@@ -12,6 +12,8 @@
   /* ----- 스페이싱 (4px 그리드) ----- */
   --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
   --s5: 20px; --s6: 24px; --s7: 32px; --s8: 44px;
+  /* ----- 점수(0-100) 팔레트 — 낮음→높음 (scoreColor가 읽음) ----- */
+  --score-0: #e8896f; --score-1: #f0b07a; --score-2: #e9d8a6; --score-3: #9ed8b0; --score-4: #5ec8b0;
 
   /* ----- 반경 ----- */
   --r-xs: 10px; --r-sm: 14px; --r-md: 18px; --r-lg: 22px; --r-xl: 28px;
@@ -81,6 +83,8 @@
 }
 
 [data-theme="dark"] {
+  /* 다크 배경에서 뭉개지지 않게 점수 팔레트 채도·명도 상향 */
+  --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
   --bg: #17161d;
   --card: #221f2b;
   --ink: #ece9f2;
@@ -589,13 +593,15 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rc-stroke-top { stop-color: var(--accent-deep); }
 .rc-stroke-bot { stop-color: var(--accent); }
 .rc-mood { stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.rc-glow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: 0.16; filter: blur(4px); }
+.rc-glow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: 0.08; filter: blur(4px); } /* 장식 잉크 절감 */
 .rc-pt { fill: var(--card); stroke: var(--accent-deep); stroke-width: 2; }
-.rc-ptlab { fill: var(--ink-2); font-size: 8.5px; font-weight: 800; text-anchor: middle; font-family: inherit; }
-.rc-xlabel { fill: var(--soft); font-size: 8.5px; text-anchor: middle; font-family: inherit; }
-.rc-ylabel { fill: var(--soft); font-size: 8px; text-anchor: end; font-family: inherit; opacity: 0.8; }
+.rc-ptlab { fill: var(--ink-2); font-size: 10px; font-weight: 800; text-anchor: middle; font-family: inherit; }
+.rc-xlabel { fill: var(--soft); font-size: 9.5px; text-anchor: middle; font-family: inherit; }
+.rc-ylabel { fill: var(--soft); font-size: 9px; text-anchor: end; font-family: inherit; opacity: 0.8; }
 /* 흐름 그래프 아래 분포 스트립 연결 캡션 */
 .fd-cap { margin: var(--s3) 0 var(--s2); font-size: var(--t-xs); color: var(--soft); text-align: center; }
+.fd-lown { color: var(--soft); opacity: 0.85; }
+.as-unit { font-size: 0.62em; font-weight: var(--w-semi); color: var(--soft); margin-left: 1px; }
 
 /* ----- 리포트: 비교·하이라이트·태그·KPI 델타 ----- */
 .kpi-delta { font-size: 0.62rem; font-weight: 800; vertical-align: middle; }
@@ -1022,7 +1028,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .rh-corner { }
 .rh-dh { align-self: end; text-align: center; font-size: 0.64rem; color: var(--soft); font-weight: 800; padding-bottom: 2px; }
 .rh-dh.rh-we { color: var(--accent-deep); }
-.rh-tl { display: flex; flex-direction: column; justify-content: center; line-height: 1.12; font-size: 0.6rem; font-weight: 700; color: var(--ink-2); }
+.rh-tl { display: flex; flex-direction: column; justify-content: center; line-height: 1.12; font-size: 0.66rem; font-weight: 700; color: var(--ink-2); }
 .rh-tl i { font-style: normal; color: var(--soft); }
 .rh-tl b { font-weight: 800; font-size: 0.92em; color: var(--soft); }
 .rh-tl.rh-ml { color: var(--soft); }
@@ -1138,7 +1144,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 
 /* 기분 분포 — 스택 바 + 범례 */
 .dist-stack { display: flex; height: 22px; border-radius: var(--r-pill); overflow: hidden; background: var(--bg-sunken); }
-.db-seg { height: 100%; min-width: 2px; transition: width 0.6s var(--ease-soft); }
+/* 색맹 대응: 색 단독 인코딩 금지 — 세그먼트 경계선 + 10%+ 구간엔 % 숫자 병기 */
+.db-seg { height: 100%; min-width: 2px; transition: width 0.6s var(--ease-soft); box-shadow: inset -1.5px 0 var(--card); display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 800; color: rgba(22, 17, 12, 0.66); }
 .db-legend { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); margin-top: var(--s3); }
 .db-leg { display: inline-flex; align-items: center; gap: var(--s1); font-size: var(--t-sm); color: var(--ink-2); }
 .db-leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }

@@ -1108,7 +1108,7 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 });
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
-const STAT_SEC_DEFAULT = ["rhythm", "capture", "tags", "dist", "grat", "habitsum", "corr", "heat", "web"];
+const STAT_SEC_DEFAULT = ["dist", "tags", "rhythm", "habitsum", "corr", "grat", "capture", "heat", "web"]; // 1차 지표(흐름·감정)부터 — 파생·메타 카드는 뒤로
 const STAT_SEC_NAME = { rhythm: "마음 리듬", capture: "기록 구성", tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
 let statEditing = false;
 function statOrder() {
@@ -1434,7 +1434,7 @@ function reportChartSvg(keys, entries) {
   }
   // x 라벨 (드물게)
   let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 5);
-  keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 10}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : +p[2]}</text>`; });
+  keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); const md = (i === 0 || p[2] === "01") ? `${+p[1]}/${+p[2]}` : +p[2]; labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 10}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : md}</text>`; }); // 월 경계는 M/D로(30일 창이 달을 넘어도 혼동 없게)
   const defs = `<defs><linearGradient id="rcArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-area-top"/><stop offset="100%" class="rc-area-bot"/></linearGradient><linearGradient id="rcStroke" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-stroke-top"/><stop offset="100%" class="rc-stroke-bot"/></linearGradient></defs>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea)" stroke="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke)" fill="none"/>${pts}${labels}</svg>`;
 }
@@ -2634,7 +2634,7 @@ function renderCorrelation(entries) {
       : `기분 차이는 크지 않아요.`;
     return `<div class="corr-row">
       <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
-      <div class="corr-detail">한 날 ⌀${Math.round(ad)} · 안 한 날 ⌀${Math.round(an)} — ${msg}</div>
+      <div class="corr-detail">한 날 평균 ${Math.round(ad)}점 · 안 한 날 ${Math.round(an)}점 — ${msg}</div>
       <div class="corr-meta">표본 n=${n} · 차이 ${Math.round(diff)}±${ci}점(95% CI) · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)})</div>
     </div>`;
   }).join("");
@@ -2984,7 +2984,7 @@ function renderDiscoveries(entries, list) {
     (slot[key] = slot[key] || { s: 0, n: 0 }); slot[key].s += entryScore(e); slot[key].n++;
   });
   const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 4);
-  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "🗓️", title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · ⌀${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
+  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "🗓️", title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · 평균 ${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
   // 4) 으뜸 감정 (최근 30일) — 감정은 점수와 분리, '빈도'만. 색은 감정 고유 정서가.
   const cut = new Date(); cut.setDate(cut.getDate() - 30); cut.setHours(0, 0, 0, 0); const tagC = {};
   moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => tagC[t] = (tagC[t] || 0) + 1); });
@@ -3005,7 +3005,7 @@ function renderAnalyzeKpis(entries, list) {
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); wk.push(todayKey(d)); }
   const avg = (ks) => { const v = ks.map((k) => entries[k] && entries[k].mood ? entryScore(entries[k]) : null).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
   const a = avg(wk);
-  const moodVal = a != null ? `<span style="color:${scoreColor(a)}">${Math.round(a)}</span>` : "—";
+  const moodVal = a != null ? `<span style="color:${scoreColor(a)}">${Math.round(a)}</span><small class="as-unit">점</small>` : "—"; // 0-100 척도임을 명시
   // 변화량(▲▼)은 표본 게이트를 통과한 weekTrend에서만 — 1건 vs 1건 허위 추세 방지
   const tr = weekTrend(entries);
   const deltaHtml = tr ? `<i class="as-delta ${tr.delta > 0 ? "up" : tr.delta < 0 ? "down" : "flat"}">${tr.delta > 0 ? "▲" : tr.delta < 0 ? "▼" : "–"}${Math.abs(tr.delta)}</i>` : "";
@@ -3276,15 +3276,16 @@ function renderDist(list, entriesArg) {
   const keys = []; for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   // 흐름 차트와 분포를 '같은 30일 키'에서 집계 — 캡션 N과 차트 점 개수가 어긋나지 않게
   const recent = keys.map((k) => entries[k]).filter((e) => e && entryScore(e) != null);
-  if (!recent.length) { wrap.innerHTML = '<p class="empty">아직 기분 기록이 없어요.</p>'; return; }
+  if (!recent.length) { wrap.innerHTML = '<p class="empty">기록이 쌓이면 최근 30일 기분의 흐름과 분포를 보여드려요 🌱</p>'; return; }
   const chart = reportChartSvg(keys, entries);
   const counts = {}; recent.forEach((e) => { const m = e.mood || scoreToMood(entryScore(e)); counts[m] = (counts[m] || 0) + 1; });
   const total = recent.length;
   const order = Object.keys(moodMeta).filter((m) => counts[m]);
   const col = (m) => scoreColor((mInfo(m).score - 1) / 4 * 100);
-  const seg = order.map((m) => `<div class="db-seg" style="width:${(counts[m] / total) * 100}%;background:${col(m)}" title="${m} ${Math.round(counts[m] / total * 100)}%"></div>`).join("");
+  const seg = order.map((m) => { const pct = Math.round(counts[m] / total * 100); return `<div class="db-seg" style="width:${(counts[m] / total) * 100}%;background:${col(m)}" title="${m} ${pct}%">${pct >= 10 ? pct + "%" : ""}</div>`; }).join("");
   const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${mInfo(m).emoji} ${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
-  wrap.innerHTML = `${chart}<p class="fd-cap">위 흐름의 ${total}일이 이렇게 채워졌어요</p><div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
+  const lowN = total < 5 ? ' <small class="fd-lown">· 표본이 적어 아직 경향으로 보긴 일러요</small>' : "";
+  wrap.innerHTML = `${chart}<p class="fd-cap">위 흐름의 ${total}일이 이렇게 채워졌어요${lowN}</p><div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
 }
 
 /* ===================== 설정 ===================== */
@@ -3295,6 +3296,7 @@ const settings = Object.assign(
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 function resolveTheme() { return settings.theme === "auto" ? (darkMq && darkMq.matches ? "dark" : "warm") : settings.theme; }
 function applySettings() {
+  _scoreColorCache = null; // 테마가 바뀌면 점수 팔레트 다시 읽기
   document.documentElement.setAttribute("data-theme", resolveTheme());
   document.documentElement.setAttribute("data-textsize", settings.textSize);
   document.querySelector('meta[name="theme-color"]').setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
@@ -3679,8 +3681,20 @@ function jComputeEnergy() {
 }
 const ENERGY_WORD = { 1: "아주 낮음", 2: "낮음", 3: "보통", 4: "높음", 5: "아주 높음" };
 function moodToScore(m) { return m && moodMeta[m] ? Math.round((mInfo(m).score - 1) / 4 * 100) : 50; }
+// 점수 팔레트 — CSS 변수(--score-0..4) 우선(다크 테마에서 채도 상향), 없으면 하드코딩 폴백.
+// 테마 전환 시 applySettings가 캐시를 비운다.
 const SCORE_COLORS = ["#e8896f", "#f0b07a", "#e9d8a6", "#9ed8b0", "#5ec8b0"];
-function scoreColor(s) { return SCORE_COLORS[Math.min(4, Math.floor(s / 20))]; }
+let _scoreColorCache = null;
+function scoreColors() {
+  if (_scoreColorCache) return _scoreColorCache;
+  try {
+    const cs = getComputedStyle(document.documentElement);
+    const arr = SCORE_COLORS.map((fb, i) => (cs.getPropertyValue("--score-" + i) || "").trim() || fb);
+    _scoreColorCache = arr;
+  } catch (e) { _scoreColorCache = SCORE_COLORS; }
+  return _scoreColorCache;
+}
+function scoreColor(s) { return scoreColors()[Math.min(4, Math.floor(s / 20))]; }
 // 270° 게이지 좌표/호
 function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 80 * Math.cos(a)).toFixed(1), (100 + 80 * Math.sin(a)).toFixed(1)]; }
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }

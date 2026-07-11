@@ -172,6 +172,7 @@ try {
   check("기록 생기면 빈 안내 숨김", q("#statsEmptyHero").hasAttribute("hidden"));
   q("#statsSeg button[data-seg=graph]").click();
   check("기록 탭 서브탭(그래프) 전환", !q('.stats-panel[data-panel="graph"]').hasAttribute("hidden") && q('.stats-panel[data-panel="summary"]').hasAttribute("hidden"));
+  check("KPI 평균 기분에 단위(점) 명시", !!q("#analyzeKpis .as-unit") && /점/.test(q("#analyzeKpis .as-kpi").textContent));
   q("#statsSeg button[data-seg=summary]").click();
   check("배지 카테고리 탭(7종)", d.querySelectorAll("#badgeSeg button").length === 7);
   check("기록 카테고리 11종", d.querySelectorAll("#badgeGrid .badge").length === 11);
@@ -368,6 +369,7 @@ try {
   check("리듬 표본1회 셀은 경향처럼 색칠 안 함", d.querySelectorAll("#rhythmGrid .rh-dim").length >= 1);
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
+  check("기본 카드 순서 1차 지표(dist) 우선", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === "dist");
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
   check("분석 맞춤 버튼 존재", !!q("#statEditBtn"));
   q("#statEditBtn").click(); // 편집 진입
@@ -412,6 +414,7 @@ try {
   check("마음 흐름·분포 통합 카드", !!q("#dist .rc-svg") && !!q("#dist .dist-stack") && !!q("#dist .fd-cap"));
   check("마음 흐름 활력선 제거", !d.querySelector(".rc-energy") && !d.querySelector(".rl-energy"));
   check("KPI 라벨에 기간 명시(7일·30일)", /7일/.test(q("#analyzeKpis").textContent) && /30일/.test(q("#analyzeKpis").textContent));
+  check("분포 세그먼트에 % 병기(색맹 대응)", /\d+%/.test(q("#dist .dist-stack").textContent));
 
   // 11c) 통계 무결성 — 표본 게이트·연속 보호 표기·손상 tags 방어 (알고리즘 감사 반영)
   { // weekTrend: 1건 vs 1건이면 판단 보류(null) — 허위 ▲▼ 차단. 3건 vs 3건이면 델타 산출
