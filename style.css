@@ -317,6 +317,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* 호흡 패턴(4·7·8) 직접 조절 */
 .med-adv { margin-top: var(--s3); }
 .med-adv summary { font-size: var(--t-sm); color: var(--ink-2); cursor: pointer; padding: var(--s2) 0; }
+/* 명상하는 법 — 접이식(첫 화면엔 타이머·시작 버튼이 바로 보이게) */
+.med-howto { margin: 0 0 var(--s2); }
+.med-howto summary { font-size: var(--t-sm); color: var(--ink-2); cursor: pointer; padding: var(--s2) 0; font-weight: var(--w-semi); }
+.med-howto[open] summary { margin-bottom: var(--s2); }
 .med-pattern { display: flex; flex-direction: column; gap: var(--s2); padding: var(--s2) 0 0; }
 .med-pat-row { display: flex; align-items: center; gap: var(--s2); }
 .med-pat-label { width: 40px; font-size: var(--t-sm); color: var(--ink-2); }
@@ -960,6 +964,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .subback:hover { background: var(--line); }
 .subpage-body { max-width: 600px; margin: 0 auto; padding: var(--s5) var(--s4) var(--s8); }
 .detail-stat { color: var(--soft); font-size: var(--t-base); margin: 0 0 var(--s3); font-weight: var(--w-semi); }
+/* 리포트 기간 이동 내비 (지난 주/달 되짚어 보기) */
+.rpt-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); margin: 0 0 var(--s3); }
+.rpt-nav .rpt-period { margin: 0; text-align: center; flex: 1; }
+.rpt-nav-btn { padding: 6px 10px; font-size: var(--t-xs); white-space: nowrap; }
+.rpt-nav-btn[disabled] { opacity: 0.35; cursor: default; }
 
 .habit-add { border: 1.5px dashed var(--accent); background: var(--bg-sunken); color: var(--accent-deep); border-radius: var(--r-lg); padding: var(--s4); width: 100%; cursor: pointer; font-family: inherit; font-weight: var(--w-bold); font-size: var(--t-base); margin-bottom: var(--s4); transition: transform 0.15s var(--ease-soft), background 0.2s; }
 .habit-add:hover { transform: translateY(-2px); background: var(--card); }
@@ -1108,17 +1117,6 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ww-svg.focused .ww-edge.on { opacity: 0.95; stroke: var(--accent-deep); }
 
 /* 습관 실천 매트릭스 (히트맵) */
-.hm { display: flex; flex-direction: column; gap: var(--s2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.hm-row { display: flex; align-items: center; gap: var(--s2); }
-.hm-name { flex: 0 0 96px; font-size: var(--t-xs); color: var(--ink-2); font-weight: var(--w-semi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
-.hm-rate { font-style: normal; font-size: 0.6rem; color: var(--soft); font-weight: 800; margin-left: auto; }
-.hm-cells { display: flex; gap: 3px; flex: 1; }
-.hm-cell { flex: 1; min-width: 14px; aspect-ratio: 1; border-radius: 5px; background: var(--bg-sunken); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff; font-weight: 800; }
-.hm-on { background: var(--success); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
-.hm-off { background: var(--bg-sunken); border: 1px solid var(--line); }
-.hm-na { background: transparent; }
-.hm-head .hm-cell { background: transparent; }
-.hm-dlabel { flex: 1; min-width: 14px; text-align: center; font-size: 0.55rem; color: var(--soft); font-weight: 700; }
 
 /* 지난 기록 필터 + 점수 칩 */
 .hist-filter button { font-size: var(--t-xs); }

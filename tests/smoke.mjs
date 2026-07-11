@@ -347,7 +347,7 @@ try {
   const hmToday = new Date().toISOString().slice(0, 10);
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
-  check("습관 실천 매트릭스 표시", d.querySelectorAll("#habitHeatmap .hm-row").length >= 2 && d.querySelectorAll("#habitHeatmap .hm-cell.hm-on").length >= 1);
+  check("기능 다이어트: 기록구성·실천매트릭스 제거(습관 분석은 요약+상관 2장)", !q("#habitHeatmap") && !q('[data-sec="heat"]') && !q('[data-sec="capture"]') && !q("#captureBody"));
   check("습관 요약(실천률·연속) 표시", d.querySelectorAll("#habitSummary .hsum-row").length >= 1 && /%/.test(q("#habitSummary").textContent) && /🔥/.test(q("#habitSummary").textContent));
   check("요약 서브탭 습관 한눈에 표시", !q("#summaryHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#summaryHabitList .hg-row").length >= 1 && /오늘 \d+\/\d+/.test(q("#summaryHabitCount").textContent));
   // 메인(오늘) 화면에도 습관 노출 + 거기서 바로 오늘 완료 체크
@@ -473,6 +473,13 @@ try {
   q("[data-tab=stats]").click();
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
+  { // 기간 이동 — 지난 주를 되짚어 볼 수 있고, 과거 기간에선 저장·공유(현재 기간 캔버스)를 숨김
+    const p0 = q("#subBody .rpt-period").textContent;
+    q('#subBody [data-ract="nav"][data-off="1"]').click();
+    check("리포트 지난 주 이동", q("#subBody .rpt-period").textContent !== p0 && !q('#subBody [data-ract="share"]'));
+    q('#subBody [data-ract="nav"][data-off="0"]').click();
+    check("리포트 이번 주 복귀(공유 복원)", q("#subBody .rpt-period").textContent === p0 && !!q('#subBody [data-ract="share"]'));
+  }
   { // 차트 그라데이션 id 중복 금지 — 겹치면 숨겨진 쪽으로 해석돼 선이 안 그려짐(다크에서 발견)
     const gids = Array.from(d.querySelectorAll("linearGradient[id]")).map((g) => g.id);
     check("SVG 그라데이션 id 문서 내 고유", gids.length > 0 && new Set(gids).size === gids.length);

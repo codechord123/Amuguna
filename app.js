@@ -466,11 +466,22 @@ function updateFavBtn() {
   const fav = (settings.favQuotes || []).includes(currentQuote);
   favBtn.textContent = fav ? "♥" : "♡"; favBtn.classList.toggle("on", fav);
 }
-// 문장이 끝나면 다음 문장은 한 줄 아래에 (쉼표는 그대로 둠)
+// 위로 문구를 '한 호흡' 단위로 행 나눔 — 문장 끝(.!?…)과 쉼표·줄표 뒤에서 줄을 바꾸되,
+// 6자 미만 조각은 이웃 줄에 붙여 호흡이 잘게 끊기지 않게 한다.
 function formatQuote(t) {
-  return escapeHtml((t || "").trim())
-    .replace(/([.!?。…])\s+/g, "$1<br>")   // 문장 끝 + 다음 문장 → 줄바꿈
-    .replace(/(<br>\s*)+$/g, "");           // 마지막 줄바꿈 제거
+  const raw = (t || "").trim();
+  const segs = []; let buf = "";
+  raw.split(/(\s+)/).forEach((tok) => {
+    buf += tok;
+    if (/[.!?。…,—]['"’”]?$/.test(buf.trim())) { segs.push(buf.trim()); buf = ""; }
+  });
+  if (buf.trim()) segs.push(buf.trim());
+  const lines = [];
+  segs.forEach((p) => {
+    if (lines.length && (p.length < 6 || lines[lines.length - 1].length < 6)) lines[lines.length - 1] += " " + p;
+    else lines.push(p);
+  });
+  return lines.map((l) => escapeHtml(l)).join("<br>");
 }
 function showRandomQuote() {
   const pool = activePool(); if (!pool.length) return;
@@ -891,6 +902,7 @@ subBody.addEventListener("click", (e) => {
     const el = e.target.closest("[data-ract]"); if (!el) return;
     if (el.dataset.ract === "img") { Sound.tap(); showImagePreview(el.dataset.kind); }
     else if (el.dataset.ract === "share") { Sound.tap(); shareReport(el.dataset.kind); }
+    else if (el.dataset.ract === "nav") { Sound.tap(); const sb = document.getElementById("subBody"); if (sb) { sb.innerHTML = reportDetailHtml(el.dataset.kind, +el.dataset.off); sb.scrollTop = 0; document.getElementById("subpage").scrollTop = 0; } }
   }
 });
 
@@ -1026,11 +1038,9 @@ function renderStats() {
   renderMonthly(entries);
   renderWeekGlance(entries);
   renderSummaryHabitGlance();
-  renderCapture(entries);
   renderBadges();
   checkSafetySignals(entries, list);
   renderCorrelation(entries);
-  renderHabitHeatmap();
   renderHabitSummary();
   renderWordWeb(entries);
   renderTagInsight(entries);
@@ -1038,22 +1048,6 @@ function renderStats() {
   renderGratitude(list);
   renderDist(list, entries);
   if (typeof applyStatLayout === "function") applyStatLayout(); // 사용자 맞춤 순서/숨김 반영
-}
-// 기록 구성 — 여정의 각 항목을 최근 30일 동안 며칠 남겼는지(정리)
-function renderCapture(entries) {
-  const el = document.getElementById("captureBody"); if (!el) return;
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30); cutoff.setHours(0, 0, 0, 0);
-  const recs = Object.values(entries).filter((e) => e.date && new Date(e.date + "T00:00:00") >= cutoff);
-  if (!recs.length) { el.innerHTML = '<p class="empty">여정을 시작하면 기록 구성이 채워져요 🌱</p>'; return; }
-  const total = recs.length;
-  const rows = [
-    { e: "🎯", k: "기분 점수", n: recs.filter((x) => entryScore(x) != null).length },
-    { e: "🏷️", k: "감정 태그", n: recs.filter((x) => x.tags && x.tags.length).length },
-    { e: "📝", k: "일기", n: recs.filter((x) => x.note && x.note.trim()).length },
-    { e: "🌱", k: "잘한 일", n: recs.filter((x) => x.praise && x.praise.trim()).length },
-    { e: "🌙", k: "저녁 회고", n: recs.filter((x) => x.reflection && (x.reflection.good || x.reflection.hard)).length },
-  ];
-  el.innerHTML = rows.map((r) => `<div class="dist-row"><span class="cap-name">${r.e} ${r.k}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.n / total * 100)}%"></div></div><span class="dist-count">${r.n}</span></div>`).join("");
 }
 // 잘한 일(감사) 모아보기 — 여정의 감사 데이터를 한곳에(분석/회고)
 function renderGratitude(list) {
@@ -1114,8 +1108,8 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 });
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
-const STAT_SEC_DEFAULT = ["dist", "tags", "rhythm", "habitsum", "corr", "grat", "capture", "heat", "web"]; // 1차 지표(흐름·감정)부터 — 파생·메타 카드는 뒤로
-const STAT_SEC_NAME = { rhythm: "마음 리듬", capture: "기록 구성", tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", heat: "습관 실천 매트릭스", web: "생각의 지도" };
+const STAT_SEC_DEFAULT = ["dist", "tags", "rhythm", "habitsum", "corr", "grat", "web"]; // 에센셜만 — 기록구성·실천매트릭스는 중복이라 정리(v150)
+const STAT_SEC_NAME = { rhythm: "마음 리듬", tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", web: "생각의 지도" };
 let statEditing = false;
 function statOrder() {
   const saved = (settings.statOrder || []).filter((id) => STAT_SEC_DEFAULT.includes(id));
@@ -2335,26 +2329,37 @@ function habitReportCard(ha, unit) {
     + insHtml + rowsHtml
     + `<p class="hint" style="margin-top:10px">막대=이번 ${unit} 달성률 · 칩=지난 ${unit} 대비 · 🔥=현재 연속 · 📈오름세/📉주춤=후반 흐름 · 기분=한 날이 안 한 날보다.</p></div>`;
 }
-function reportDetailHtml(kind) {
+function reportDetailHtml(kind, off = 0) {
   const entries = loadEntries();
-  let keys = [], prevKeys = [];
+  const maxOff = kind === "month" ? 12 : 26; // 과거 이동 상한 (1년/반년)
+  off = Math.max(0, Math.min(maxOff, off | 0));
+  let keys = [], prevKeys = [], period = "";
   if (kind === "month") {
-    const now = new Date(), y = now.getFullYear(), m = now.getMonth(), days = new Date(y, m + 1, 0).getDate();
+    const base = new Date(); base.setDate(1); base.setMonth(base.getMonth() - off);
+    const y = base.getFullYear(), m = base.getMonth(), days = new Date(y, m + 1, 0).getDate();
     for (let d = 1; d <= days; d++) keys.push(`${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
     const pm = new Date(y, m - 1, 1), py = pm.getFullYear(), pmo = pm.getMonth(), pdays = new Date(py, pmo + 1, 0).getDate();
     for (let d = 1; d <= pdays; d++) prevKeys.push(`${py}-${String(pmo + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+    period = `${y}년 ${m + 1}월`;
   } else {
-    for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
-    for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i); prevKeys.push(todayKey(d)); }
+    for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i - off * 7); keys.push(todayKey(d)); }
+    for (let i = 13; i >= 7; i--) { const d = new Date(); d.setDate(d.getDate() - i - off * 7); prevKeys.push(todayKey(d)); }
+    const f = keys[0].split("-"), l = keys[6].split("-");
+    period = `${+f[1]}/${+f[2]} ~ ${+l[1]}/${+l[2]}`;
   }
   const cur = periodStats(keys, entries), prev = periodStats(prevKeys, entries);
-  const summary = kind === "month" ? monthData : weekData;
-  const period = summary ? (summary.range || summary.label || "") : "";
   const unit = kind === "month" ? "달" : "주";
+  // 기간 이동 내비 — 지난 주/달을 되짚어 볼 수 있게
+  const navRow = `<div class="rpt-nav">
+    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off + 1}" ${off >= maxOff ? "disabled" : ""} aria-label="지난 ${unit} 보기">◀ 지난 ${unit}</button>
+    <span class="detail-stat rpt-period">${period}${off === 0 ? ` · 이번 ${unit}` : ""}</span>
+    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off - 1}" ${off <= 0 ? "disabled" : ""} aria-label="다음 ${unit} 보기">다음 ${unit} ▶</button>
+  </div>`;
+  // 저장·공유 캔버스는 현재 기간 요약 기준 — 과거 기간에서는 숨겨 오해 방지
+  const actRow = off === 0 ? `<div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>` : "";
 
   if (cur.recs.length === 0) {
-    return `<p class="detail-stat">${period}</p><div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">아직 이 기간엔 기록이 없어요.<br>오늘의 여정으로 첫 기록을 남겨봐요.</p></div>
-    <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
+    return `${navRow}<div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">이 기간엔 기록이 없어요.<br>◀ 버튼으로 다른 ${unit}을 볼 수 있어요.</p></div>${actRow}`;
   }
 
   // 기간 비교 게이트 — 두 기간 모두 최소 3일 기록일 때만 ▲▼ 비교(1일 vs 7일 같은 편향 비교 차단)
@@ -2378,7 +2383,8 @@ function reportDetailHtml(kind) {
   </div>`;
 
   const chart = reportChartSvg(keys, entries);
-  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 ${unit === "달" ? "이번 달" : "최근 7일"} 마음 흐름</h2></div>${chart}</div>` : ""; // 분석탭 '최근 30일' 카드와 기간이 다름을 명시(이중 표현 혼동 방지)
+  const flowTitle = off === 0 ? (unit === "달" ? "이번 달" : "최근 7일") : `이 ${unit}`;
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 ${flowTitle} 마음 흐름</h2></div>${chart}</div>` : ""; // 분석탭 '최근 30일' 카드와 기간이 다름을 명시(이중 표현 혼동 방지)
 
   // 하이라이트 — 가장 좋았던/힘들었던 날
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
@@ -2392,7 +2398,7 @@ function reportDetailHtml(kind) {
   const habCard = habitReportCard(habAnalysis, unit);
   const solItems = selectSolutions(diag, trend, keys[keys.length - 1]);
   // 의료 프레이밍 회피 — '진단/처방' 대신 '살펴보기/제안' (심리측정 감사 반영)
-  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🔍</span><div class="diag-body"><p class="diag-label">이번 ${unit} 마음 살펴보기 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
+  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🔍</span><div class="diag-body"><p class="diag-label">${off === 0 ? "이번" : "이"} ${unit} 마음 살펴보기 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
   const solCard = `<div class="card sol-card"><h2>🌿 맞춤 제안</h2><p class="hint">살펴본 내용(기분 구간 × 감정 × 일기 맥락)에 맞춘 제안이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}<p class="sol-disclaimer">ℹ️ 의료적 진단·치료가 아닌 셀프케어 참고용이에요. 힘들 땐 전문가의 도움을 받아요.</p></div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
@@ -2420,7 +2426,7 @@ function reportDetailHtml(kind) {
   const headlineCard = hbits.length ? `<div class="card rpt-headline"><span class="rh-ico">💡</span><p>${hbits.slice(0, 2).join(" · ")}</p></div>` : "";
 
   return `
-    <p class="detail-stat">${period}</p>
+    ${navRow}
     ${headlineCard}
     ${heroCard}
     ${chartCard}
@@ -2429,7 +2435,7 @@ function reportDetailHtml(kind) {
     ${diagCard}
     ${solCard}
     ${moreCard}
-    <div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>`;
+    ${actRow}`;
 }
 // 리포트 이미지 미리보기 — iOS/PWA에서 강제 다운로드가 막혀도 '길게 눌러 저장'이 되도록 실제 이미지를 띄운다
 function showImagePreview(kind) {
@@ -2928,32 +2934,6 @@ function renderWordWebCy(el) {
     const ro = new ResizeObserver(() => { if (host.offsetWidth > 4 && host.offsetHeight > 4) { try { cy.resize(); cy.fit(undefined, 18); } catch (e) {} } });
     ro.observe(host);
   } else { setTimeout(() => { try { cy.resize(); cy.fit(undefined, 18); } catch (e) {} }, 300); }
-}
-function renderHabitHeatmap() {
-  const el = document.getElementById("habitHeatmap"); if (!el) return;
-  const chs = loadChs();
-  if (!chs.length) { el.innerHTML = '<p class="empty">습관을 만들면 실천 흐름을 한눈에 보여드려요.</p>'; return; }
-  const N = 14, days = [];
-  for (let i = N - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(todayKey(d)); }
-  const dowNames = ["일", "월", "화", "수", "목", "금", "토"];
-  const head = `<div class="hm-row hm-head"><span class="hm-name"></span><div class="hm-cells">${days.map((k) => {
-    const d = new Date(k + "T00:00:00");
-    return `<span class="hm-dlabel">${d.getDate() === 1 || k === days[0] ? (d.getMonth() + 1) + "/" + d.getDate() : ""}</span>`;
-  }).join("")}</div></div>`;
-  const rows = chs.map((h) => {
-    const cells = days.map((k) => {
-      const before = k < h.startDate;
-      const done = !!(h.done && h.done[k]);
-      const cls = before ? "hm-na" : done ? "hm-on" : "hm-off";
-      const lbl = before ? "" : done ? "✓" : "";
-      return `<span class="hm-cell ${cls}" title="${k} ${done ? "실천" : before ? "" : "미실천"}">${lbl}</span>`;
-    }).join("");
-    const total = days.filter((k) => k >= h.startDate).length;
-    const did = days.filter((k) => k >= h.startDate && h.done && h.done[k]).length;
-    const rate = total ? Math.round(did / total * 100) : 0;
-    return `<div class="hm-row"><span class="hm-name">${h.emoji} ${escapeHtml(h.title)}<i class="hm-rate">${rate}%</i></span><div class="hm-cells">${cells}</div></div>`;
-  }).join("");
-  el.innerHTML = `<div class="hm">${head}${rows}</div><p class="hint" style="margin-top:10px">진한 칸 = 실천한 날 · 최근 ${N}일</p>`;
 }
 // 분석 탭 '나에 대한 발견' — 의미 있는 발견을 결론 문장 + 근거 그래픽 카드로 자동 노출
 function renderDiscoveries(entries, list) {

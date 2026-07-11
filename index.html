@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v149" />
+  <meta name="app-version" content="v150" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -149,14 +149,17 @@
 
       <div class="rest-panel" data-rpanel="meditate">
       <div class="card med-how">
-        <h2>🧘 명상하는 법</h2>
-        <ol class="med-guide" id="medGuide">
-          <li><b>편안한 자세</b><span>의자나 바닥에 앉아 어깨의 힘을 스르륵 빼요.</span></li>
-          <li><b>시선 내려놓기</b><span>눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.</span></li>
-          <li><b>호흡 관찰</b><span>코로 숨이 들어오고 나가는 감각을 그저 느껴요.</span></li>
-          <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
-          <li><b>함께 호흡</b><span id="medHowBreath">삼각형을 도는 점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
-        </ol>
+        <h2>🧘 명상</h2>
+        <details class="med-howto">
+          <summary>명상하는 법 · 5단계 보기</summary>
+          <ol class="med-guide" id="medGuide">
+            <li><b>편안한 자세</b><span>의자나 바닥에 앉아 어깨의 힘을 스르륵 빼요.</span></li>
+            <li><b>시선 내려놓기</b><span>눈을 살며시 감거나, 한 곳을 부드럽게 바라봐요.</span></li>
+            <li><b>호흡 관찰</b><span>코로 숨이 들어오고 나가는 감각을 그저 느껴요.</span></li>
+            <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
+            <li><b>함께 호흡</b><span id="medHowBreath">삼각형을 도는 점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
+          </ol>
+        </details>
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
             <button type="button" class="med-step-btn" data-d="-1" aria-label="1분 줄이기">−</button>
@@ -329,11 +332,6 @@
             <p class="hint">요일(가로) × 시간대(세로)별 평균 기분. 가장 진한 초록 칸이 '나에게 좋은 시간'이에요. 가장자리 숫자는 요일·시간대별 평균이에요.</p>
             <div id="rhythmGrid"></div>
           </div>
-        <div class="card collapsible collapsed" data-sec="capture">
-          <h2>🧩 기록 구성 (최근 30일)</h2>
-          <p class="hint">여정에서 어떤 항목을 얼마나 남겼는지 보여줘요.</p>
-          <div class="dist" id="captureBody"></div>
-        </div>
         <div class="card collapsible collapsed" data-sec="tags">
           <h2>🏷️ 자주 느낀 감정 (빈도)</h2>
           <p class="hint">감정 축 — 어떤 감정을 얼마나 <b>자주</b> 느꼈는지. 점수와 별개로 집계돼요.</p>
@@ -358,11 +356,6 @@
           <h2>🔗 습관과 기분</h2>
           <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
           <div id="corrBody"></div>
-        </div>
-        <div class="card collapsible collapsed" id="heatCard" data-sec="heat">
-          <h2>🔥 습관 실천 매트릭스</h2>
-          <p class="hint">최근 14일 × 습관별 실천 여부 — 진할수록 꾸준히 해낸 칸이에요.</p>
-          <div id="habitHeatmap"></div>
         </div>
         <div class="card collapsible collapsed" id="webCard" data-sec="web">
           <h2>🕸️ 생각의 지도</h2>
