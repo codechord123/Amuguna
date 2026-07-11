@@ -1441,8 +1441,11 @@ function reportChartSvg(keys, entries) {
   // x 라벨 (드물게)
   let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 5);
   keys.forEach((k, i) => { if (i % step !== 0 && i !== n - 1) return; const p = k.split("-"); const md = (i === 0 || p[2] === "01") ? `${+p[1]}/${+p[2]}` : +p[2]; labels += `<text x="${xAt(i).toFixed(1)}" y="${H - 10}" class="rc-xlabel">${n <= 7 ? dayOfWeekKo(k) : md}</text>`; }); // 월 경계는 M/D로(30일 창이 달을 넘어도 혼동 없게)
-  const defs = `<defs><linearGradient id="rcArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-area-top"/><stop offset="100%" class="rc-area-bot"/></linearGradient><linearGradient id="rcStroke" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-stroke-top"/><stop offset="100%" class="rc-stroke-bot"/></linearGradient></defs>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea)" stroke="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke)" fill="none"/>${pts}${labels}</svg>`;
+  // 이 차트는 분석 서브탭과 리포트 상세에 동시에 존재할 수 있음 — 그라데이션 id가 겹치면
+  // url(#…)이 숨겨진 쪽 첫 요소로 해석돼 선·면이 그려지지 않으므로 렌더마다 고유 id 부여
+  const uid = (reportChartSvg._uid = (reportChartSvg._uid || 0) + 1);
+  const defs = `<defs><linearGradient id="rcArea${uid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-area-top"/><stop offset="100%" class="rc-area-bot"/></linearGradient><linearGradient id="rcStroke${uid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" class="rc-stroke-top"/><stop offset="100%" class="rc-stroke-bot"/></linearGradient></defs>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="rc-svg" role="img" aria-label="기분 흐름">${defs}${grid}${ylab}${area ? `<path d="${area}" fill="url(#rcArea${uid})" stroke="none"/>` : ""}<path d="${moodLine}" class="rc-glow" fill="none"/><path d="${moodLine}" class="rc-mood" stroke="url(#rcStroke${uid})" fill="none"/>${pts}${labels}</svg>`;
 }
 // 리포트 솔루션 — 데이터에 맞춘 과학 논문 기반 추천 (근거 DB: docs/SCIENCE.md)
 const REPORT_PAPERS = {
@@ -3997,11 +4000,14 @@ window.addEventListener("pointerdown", () => Sound.unlock(), { once: true });
 
 /* 서비스워커 — 새 버전 감지 시 안내(예고 없는 교체 대신 부드러운 업데이트 인지) */
 if ("serviceWorker" in navigator) window.addEventListener("load", () => {
+  // sw.js가 clients.claim()을 쓰므로 활성화 시점의 controller로는 첫 설치와 업데이트를 구분할 수 없음.
+  // 등록 전의 controller 유무를 기억해 첫 방문(설치)에는 토스트를 띄우지 않음.
+  const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register("sw.js").then((reg) => {
     reg.addEventListener("updatefound", () => {
       const nw = reg.installing; if (!nw) return;
       nw.addEventListener("statechange", () => {
-        if (nw.state === "activated" && navigator.serviceWorker.controller) toast("새 버전으로 업데이트했어요 ✨");
+        if (nw.state === "activated" && hadController) toast("새 버전으로 업데이트했어요 ✨");
       });
     });
   }).catch(() => {});

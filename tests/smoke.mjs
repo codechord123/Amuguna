@@ -467,6 +467,10 @@ try {
   q("[data-tab=stats]").click();
   q("#statsSeg button[data-seg=summary]").click(); q("#weekReportBtn").click();
   check("주간 리포트 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-ract=share]"));
+  { // 차트 그라데이션 id 중복 금지 — 겹치면 숨겨진 쪽으로 해석돼 선이 안 그려짐(다크에서 발견)
+    const gids = Array.from(d.querySelectorAll("linearGradient[id]")).map((g) => g.id);
+    check("SVG 그라데이션 id 문서 내 고유", gids.length > 0 && new Set(gids).size === gids.length);
+  }
   check("리포트 진단·처방 표시", !!q("#subBody .diag-card") && !!q("#subBody .sol-card .sol"));
   check("리포트 처방에 의료 면책 문구", !!q("#subBody .sol-disclaimer") && /의료적/.test(q("#subBody .sol-disclaimer").textContent) && /전문가/.test(q("#subBody .sol-disclaimer").textContent));
   check("의료 프레이밍 회피(살펴보기·제안)", /살펴보기/.test(q("#subBody .diag-label").textContent) && /맞춤 제안/.test(q("#subBody .sol-card h2").textContent));
