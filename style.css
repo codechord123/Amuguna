@@ -37,7 +37,7 @@
   --bg-sunken: #f2e9df;
   --accent: #e8836a;
   --accent-2: #fbe2d1;
-  --accent-deep: #cd5c41;
+  --accent-deep: #b04628; /* 작은 글자에도 4.5:1 이상(WCAG AA) — 배경 f2e9df에서도 4.66 */
   --success: #5ea384;
   --danger: #d4695f;
   --energy: #4fbfa6;
@@ -70,7 +70,7 @@
   --bg-sunken: #e5efec;
   --accent: #5fb6a3;
   --accent-2: #cdebe3;
-  --accent-deep: #2f8a76;
+  --accent-deep: #27745f; /* WCAG AA — 밝은 배경들에서 4.6:1 이상 */
   --success: #4f9d86;
   --danger: #cf7b72;
   --energy: #e79a52;
@@ -755,7 +755,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm), inset 0 1px 0 var(--card-hi); }
 [data-theme="dark"] .badge.earned { background: var(--card); }
 .badge.earned:hover { transform: translateY(-2px); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); }
-.badge.locked { opacity: 0.38; filter: grayscale(1); }
+.badge.locked { filter: grayscale(1); } /* 통짜 opacity는 제목 글자까지 흐려져 대비 미달(1.7:1) — 이모지만 흐리게 */
+.badge.locked .badge-emoji { opacity: 0.4; }
+.badge.locked .badge-title { color: var(--soft); }
 .badge-emoji { font-size: 1.5rem; }
 .badge-title { font-size: 0.68rem; line-height: 1.25; color: var(--ink-2); font-weight: var(--w-semi); }
 
