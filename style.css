@@ -328,7 +328,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-sound { display: flex; align-items: center; gap: var(--s3); width: min(280px, 80%); opacity: 0.85; }
 .med-snd-btn { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--med-track); background: transparent; color: var(--med-text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
 .med-snd-btn:active { transform: scale(0.9); }
-.med-vol { flex: 1; accent-color: var(--med-on-bg); height: 4px; }
+.med-overlay .med-vol { flex: 1; accent-color: var(--med-on-bg); height: 4px; } /* 전역 range accent보다 우선 */
 .med-guide { list-style: none; padding: 0; margin: var(--s2) 0 0; counter-reset: med; }
 .med-guide li { counter-increment: med; position: relative; padding: var(--s3) var(--s3) var(--s3) 46px; margin-bottom: var(--s2); background: var(--bg-sunken); border-radius: var(--r-md); opacity: 0; transform: translateY(10px); animation: medIn 0.5s var(--ease-soft) forwards; }
 .med-guide li::before { content: counter(med); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: var(--t-xs); font-weight: var(--w-bold); }
