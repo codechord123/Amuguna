@@ -186,12 +186,12 @@ try {
   q("[data-tab=today]").click();
   check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
   q('#todayStats [data-jump="calendar"]').click();
-  check("홈 연속→달력 탭 점프", !q("#tab-calendar").hasAttribute("hidden"));
+  check("홈 연속→달력(기록 서브탭) 점프", !q("#tab-stats").hasAttribute("hidden") && !q('.stats-panel[data-panel="calendar"]').hidden);
   q("[data-tab=today]").click();
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
-  // 6) 달력 탭 (통합 마음 달력)
-  q("[data-tab=calendar]").click();
+  // 6) 마음 달력 (기록 탭 서브탭으로 통합)
+  q("[data-tab=stats]").click(); q('#statsSeg button[data-seg="calendar"]').click();
   check("마음 달력 렌더됨", d.querySelectorAll("#moodCal .cal-cell").length > 0);
   const calBefore = q("#calMonth").textContent; q("#calPrev").click();
   check("달력 이전 달로 이동", q("#calMonth").textContent !== calBefore);
@@ -461,12 +461,12 @@ try {
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2020-01-01", done: { [calToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("이번 주 한눈에 습관 달성률 데이터 표시", /\d+%/.test(q("#wgBody").textContent) && /습관/.test(q("#wgBody").textContent));
-  q("[data-tab=calendar]").click();
+  q("[data-tab=stats]").click(); q('#statsSeg button[data-seg="calendar"]').click();
   q("#calNext").click(); q("#calNext").click();
   check("마음 달력 기분 색 표시", !!d.querySelector(`#moodCal [data-cal="${calToday}"][class*="m"]`));
 
   // 12) 페이지 전환들 (달력→그날 상세 · 리포트)
-  q("[data-tab=calendar]").click();
+  q("[data-tab=stats]").click(); q('#statsSeg button[data-seg="calendar"]').click();
   d.querySelector(`#moodCal [data-cal="${calToday}"]`).click();
   check("달력에서 그날 상세 페이지", !q("#subpage").hasAttribute("hidden") && !!q("#subBody [data-eact=edit]"));
   q("#subBack").click();
@@ -555,7 +555,7 @@ try {
   check("안전 카드 핫라인 109 표기", /\b109\b/.test(q("#safetyCard").textContent));
 
   // 13d) 접근성/하드닝: 탭 ARIA · aria-live · CSP
-  check("접근성: 탭바 tablist 역할 + tab 6개", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 6);
+  check("접근성: 탭바 tablist 역할 + tab 5개(달력은 기록으로 통합)", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 5);
   q("[data-tab=stats]").click();
   check("접근성: 활성 탭 aria-selected 갱신", q('#tabbar [data-tab="stats"]').getAttribute("aria-selected") === "true" && q('#tabbar [data-tab="today"]').getAttribute("aria-selected") === "false");
   check("접근성: 응원문구 aria-live", q("#tsCheer").getAttribute("aria-live") === "polite");

@@ -228,12 +228,13 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
-function activateTab(name, { scroll = true } = {}) {
+const tabs = { today: "tab-today", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
+function activateTab(name, opts = {}) {
+  const { scroll = true } = opts;
+  if (name === "calendar") { activateTab("stats", opts); showStatsSeg("calendar"); return; } // 달력은 기록 탭 서브탭으로 통합(v151)
   document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
-  if (name === "calendar") renderMoodCalendar(loadEntries());
   if (name === "challenge") renderChallenge();
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1094,6 +1095,7 @@ document.getElementById("weekReportBtn").addEventListener("click", () => { Sound
 function showStatsSeg(seg) {
   document.querySelectorAll("#statsSeg button").forEach((b) => b.classList.toggle("active", b.dataset.seg === seg));
   document.querySelectorAll(".stats-panel").forEach((p) => { p.hidden = p.dataset.panel !== seg; });
+  if (seg === "calendar") renderMoodCalendar(loadEntries());
 }
 document.getElementById("statsSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
@@ -3943,7 +3945,7 @@ function saveJourney() {
   if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
   closeJourney(); loadToday(); checkBadges();
   if (!document.getElementById("tab-stats").hidden) renderStats(); // 기록 탭 진입 시 어차피 렌더 — 저장 직후 무거운 전체 분석(워드웹 등) 재계산 생략
-  if (!document.getElementById("tab-calendar").hidden) renderMoodCalendar(loadEntries()); // 달력 보고 있을 때만 즉시 갱신
+  { const calP = document.querySelector('.stats-panel[data-panel="calendar"]'); if (calP && !calP.hidden) renderMoodCalendar(loadEntries()); } // 달력 보고 있을 때만 즉시 갱신
   if (detectCrisis([jData.note, jData.hard, jData.good, jData.praise].filter(Boolean).join(" "))) showSafety();
   toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
 }

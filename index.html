@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v150" />
+  <meta name="app-version" content="v151" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -85,20 +85,6 @@
         </div>
       </div>
 
-    </section>
-
-    <!-- ========== 탭: 달력 ========== -->
-    <section class="tab" id="tab-calendar" hidden>
-      <div class="card">
-        <div class="card-head">
-          <h2>🗓️ 마음 달력</h2>
-          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
-        </div>
-        <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
-        <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-        <div class="mood-cal" id="moodCal"></div>
-        <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
-      </div>
     </section>
 
     <!-- ========== 탭: 쉼 ========== -->
@@ -279,6 +265,7 @@
       <div class="seg stats-seg" id="statsSeg">
         <button data-seg="summary" class="active">요약</button>
         <button data-seg="graph">분석</button>
+        <button data-seg="calendar">달력</button>
       </div>
 
       <div class="stats-panel" data-panel="summary">
@@ -365,6 +352,18 @@
         </div>
       </div>
 
+          <div class="stats-panel" data-panel="calendar" hidden>
+        <div class="card">
+          <div class="card-head">
+            <h2>🗓️ 마음 달력</h2>
+            <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+          </div>
+          <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
+          <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div class="mood-cal" id="moodCal"></div>
+          <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
+        </div>
+      </div>
     </section>
 
     <!-- ========== 탭: 설정 ========== -->
@@ -544,7 +543,6 @@
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
     <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today">📔<span>오늘</span></button>
-    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar">🗓️<span>달력</span></button>
     <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest">🌿<span>쉼</span></button>
     <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge">🎯<span>습관</span></button>
     <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats">📊<span>기록</span></button>
