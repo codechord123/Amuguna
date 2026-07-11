@@ -255,7 +255,7 @@ function entryDetailHtml(e) {
   const moodTxt = e.mood ? `${mInfo(e.mood).emoji} ${e.mood}` : "기분 기록 없음";
   const refl = e.reflection && (e.reflection.good || e.reflection.hard);
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
-  const tags = (e.tags && e.tags.length) ? `<div class="hist-tags" style="margin-top:var(--s3)">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
+  const tags = (e.tags && e.tags.length) ? `<h2>🏷️ 감정 태그</h2><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
   // 한 페이지 한눈에 — 게이지(점수) + 기분/활력/태그 + 일기·잘한일·회고
   return `
     <div class="card rpt-hero">
@@ -3577,6 +3577,10 @@ function applyBreathPattern() {
   document.querySelectorAll(".cb-seg.s-hold").forEach((e) => (e.textContent = `멈춤 ${brHold}초`));
   document.querySelectorAll(".cb-seg.s-out").forEach((e) => (e.textContent = `내쉬기 ${brEx}초`));
   const qbh = document.getElementById("qbHint"); if (qbh) qbh.textContent = `삼각형의 점을 따라 천천히 (${brIn}·${brHold}·${brEx})`;
+  // 안내 문구들도 실제 설정 패턴과 일치하게 (쉼 탭 5단계 가이드 + 명상 마지막 슬라이드)
+  const breatheTxt = `삼각형을 도는 점을 따라 ${brIn}초 들이쉬고·${brHold}초 멈추고·${brEx}초 내쉬어요.`;
+  const howEl = document.getElementById("medHowBreath"); if (howEl) howEl.textContent = breatheTxt;
+  if (typeof MED_STEPS !== "undefined" && MED_STEPS[4]) MED_STEPS[4].b = breatheTxt;
 }
 const medPatternEl = document.getElementById("medPattern");
 if (medPatternEl) medPatternEl.addEventListener("click", (e) => {

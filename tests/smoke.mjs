@@ -232,6 +232,7 @@ try {
   const _brIn0 = +q("#patIn").textContent;
   q("#medPattern button[data-p='in'][data-d='1']").click();
   check("호흡 패턴(478) 직접 조절+반영", +q("#patIn").textContent === _brIn0 + 1 && ls("settings_v2").brIn === _brIn0 + 1 && q("#medOverlay .cb-seg.s-in").textContent.includes(String(_brIn0 + 1)));
+  check("패턴 변경이 안내 문구에도 반영", q("#medHowBreath").textContent.includes(`${_brIn0 + 1}초 들이쉬고`));
   q("#medPattern button[data-p='in'][data-d='-1']").click(); // 원복
   q("#medAmbBtn").click();
   check("명상 화면에서 배경음 켜기", ls("settings_v2").ambientType === "rain");
