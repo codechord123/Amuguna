@@ -297,6 +297,7 @@ try {
 
   // 10) 클라우드 (미설정 폴백 + 병합 로직)
   check("클라우드 미설정 안내 표시", !q("#cloudNotConfigured").hasAttribute("hidden"));
+  check("미설정 안내가 사용자 친화 문구(개발 용어 없음)", !q("#cloudNotConfigured").textContent.includes("config.js") && !q("#cloudNotConfigured").textContent.includes("SQL"));
   check("로그인 UI 숨김(미설정)", q("#cloudLoggedOut").hasAttribute("hidden"));
   const merged = window.Cloud._merge(
     { entries: { a: { updatedAt: "2020-01-01", x: 1 } }, challenges: [{ id: "h", done: { d1: true }, celebrated: [1] }], projects: [], settings: { tone: "plain" } },

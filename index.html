@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v140" />
+  <meta name="app-version" content="v141" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -379,7 +379,9 @@
       <div class="card" id="accountCard">
         <h2>☁️ 계정 & 동기화</h2>
         <div id="cloudNotConfigured" hidden>
-          <p class="hint">기기 간 자동 동기화를 쓰려면 <code>config.js</code>에 Supabase 주소·키를 넣고 안내 SQL을 한 번 실행하세요. (README의 "클라우드 동기화" 참고) 설정 전에는 이 기기에만 저장돼요.</p>
+          <p class="hint">기록은 이 기기에만 안전하게 저장돼요. 다른 곳으로 전송되지 않아요. 기기를 바꾸거나 백업이 필요하면 아래 <b>내 데이터</b>에서 내보내기·가져오기를 이용해 주세요.</p>
+          <!-- 개발자용: 기기 간 자동 동기화는 config.js에 Supabase 주소·키 설정 + README "클라우드 동기화"의 SQL 실행으로 활성화 -->
+
         </div>
         <div id="cloudLoggedOut" hidden>
           <p class="hint">로그인하면 기록이 기기 간에 자동으로 동기화돼요.</p>
@@ -440,7 +442,7 @@
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>🔔 매일 기록 알림</h2>
+        <h2>🔔 기록 알림</h2>
         <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
         <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" aria-label="매일 기록 알림 켜기" /></label>
         <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" aria-label="알림 시간" /></label>
