@@ -250,7 +250,7 @@ try {
   check("명상 가이드 스와이프로 단계 이동", q("#medStepTitle").textContent !== _medT1);
   check("삼각 궤적 호흡 비주얼(변=단계)", q("#medCircle").classList.contains("cb-stage") && !!q("#medCircle .tb-line") && !!q("#medCircle .tb-dot"));
   check("장식 기하(연꽃·만다라) 제거됨", !q("#medOverlay .cb-flower") && !q("#medOverlay .cb-geo"));
-  check("중심 발광 오브 유지", !!q("#medCircle .cb-orb"));
+  check("삼각형 내부 오브 제거 + 변별 트레일 3개", !q("#medCircle .cb-orb") && !!q("#medCircle .tb-e1") && !!q("#medCircle .tb-e2") && !!q("#medCircle .tb-e3"));
   check("구형 궤도·링 잔재 없음", !q("#medOverlay .cb-plane") && !q("#medOverlay .cb-dot") && !q("#medOverlay .cb-ring-prog") && !q("#medOverlay .cb-rise"));
   check("단계 라벨 상단·카운트 하단 구조", q("#medCircle").firstElementChild.classList.contains("cb-phase") && !!q("#medCircle > .cb-count#medCircleText"));
   check("진행 버튼 라벨(스킵 오해 방지)", q("#medNext").textContent.includes("다음"));
