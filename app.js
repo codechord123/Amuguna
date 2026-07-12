@@ -750,6 +750,7 @@ function renderChallenge() {
   const doneToday = chs.filter((h) => h.done[today]).length;
   summary.hidden = false;
   summary.textContent = `오늘 ${doneToday} / ${chs.length} 완료 ${doneToday === chs.length ? "🎉 다 해냈어요!" : "🌱"}`;
+  list.classList.toggle("compact", chs.length >= 4); // 많아지면 카드 밀도를 높여 한 화면 유지
   list.innerHTML = chs.map((h) => habitCardHtml(h)).join("");
   chEmpty.hidden = true;
 }

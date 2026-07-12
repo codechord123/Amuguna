@@ -16,10 +16,12 @@ function demo() {
     entries[k] = { date: k, mood: "괜찮아요", score: 25 + (i * 9) % 70, tags: ["평온해요"], note: "메모", praise: "잘함", reflection: { good: "", hard: "" }, updatedAt: d.toISOString(), createdAt: d.toISOString() }; }
   return entries;
 }
-const habit = [
-  { id: "h1", title: "아침 산책", emoji: "🚶", startDate: "2026-06-20", done: {}, doneAt: {}, celebrated: [] },
-  { id: "h2", title: "물 8잔", emoji: "💧", startDate: "2026-06-25", done: {}, doneAt: {}, celebrated: [] },
-];
+// 습관 5개 — 컴팩트 모드(4개+)와 '한눈에 3개+더보기'가 함께 검증되는 최악 케이스
+const habit = [1, 2, 3, 4, 5].map((n) => ({
+  id: "h" + n, emoji: ["🚶", "💧", "📔", "🧘", "🙏"][n - 1],
+  title: ["아침 산책", "물 8잔", "한 줄 일기", "스트레칭", "감사 3가지"][n - 1],
+  startDate: "2026-07-01", done: {}, doneAt: {}, celebrated: [],
+}));
 
 let bad = 0;
 const browser = await chromium.launch({ executablePath: exe });

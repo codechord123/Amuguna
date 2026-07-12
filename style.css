@@ -779,6 +779,12 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
    ============================================================ */
 .ch-summary { text-align: center; color: var(--ink-2); font-weight: var(--w-semi); margin: 0 0 var(--s4); font-size: var(--t-base); }
 .habit-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--s5); margin-bottom: var(--s4); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); }
+/* 습관 4개 이상 — 컴팩트 카드로 한 화면 유지 */
+#challengeList.compact .habit-card { padding: var(--s3) var(--s4); margin-bottom: var(--s2); border-radius: var(--r-md); }
+#challengeList.compact .habit-check { width: 42px; height: 42px; font-size: 1.05rem; }
+#challengeList.compact .habit-title { font-size: var(--t-base); }
+#challengeList.compact .habit-meta { font-size: var(--t-xs); }
+#challengeList.compact .habit-mini-bar { margin-top: var(--s1); }
 .habit-top { display: flex; align-items: center; gap: var(--s4); }
 .habit-info { flex: 1; min-width: 0; cursor: pointer; }
 .habit-title { font-weight: var(--w-bold); font-size: var(--t-md); display: flex; align-items: center; gap: var(--s2); }
@@ -1107,6 +1113,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hg-more { display: block; width: 100%; margin-top: var(--s1); padding: 6px var(--s2); background: none; border: none; border-top: 1px solid var(--line); color: var(--accent-deep); font-family: inherit; font-size: var(--t-xs); font-weight: var(--w-semi); cursor: pointer; text-align: center; }
 /* 습관이 3개+더보기로 꽉 찬 날은 응원 한 줄을 양보 — 오늘 탭 스크롤 제로 유지 */
 .today-stats:has(.hg-more) .ts-cheer { display: none; }
+/* 기록 요약도 동일 — 꽉 찬 습관 한눈에에선 인사이트 칩 양보(분석 탭 습관 카드에 상세 존재) */
+.habit-glance:has(.hg-more) .hg-insight { display: none; }
 .hg-meta { flex: 0 0 auto; font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
 .hg-insight { margin: 0 0 var(--s2); padding: var(--s2) var(--s3); background: linear-gradient(160deg, var(--accent-2), var(--card) 85%); border: 1px solid var(--line); border-radius: var(--r-md); font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); word-break: keep-all; }
 [data-theme="dark"] .hg-insight { background: var(--bg-sunken); }
@@ -1348,4 +1356,8 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .badge { padding: var(--s1); gap: 2px; }
   .badge .badge-emoji { font-size: 1.1rem; }
   .badge .badge-title { font-size: 0.56rem; }
+  /* 습관 컴팩트 목록 추가 압축 */
+  #challengeList.compact .habit-card { padding: var(--s2) var(--s3); margin-bottom: var(--s1); }
+  #challengeList.compact .habit-check { width: 36px; height: 36px; }
+  #challengeList.compact .habit-mini-bar { display: none; }
 }
