@@ -1335,4 +1335,14 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .card.center h2, .help-always h2 { margin-bottom: var(--s1); font-size: var(--t-base); }
   .quote { font-size: var(--t-base); }
   .comfort-tools { padding-top: var(--s1); }
+  /* 배지 서브탭 압축 */
+  .level-row { margin: var(--s1) 0 var(--s2); }
+  .level-emoji { font-size: 1.6rem; }
+  .badge-status { margin: var(--s1) 0; }
+  .badge-next { margin-bottom: var(--s2); padding: var(--s2); font-size: var(--t-xs); }
+  .badge-detail { margin-bottom: var(--s2); padding: var(--s2); font-size: var(--t-xs); }
+  .badge-grid { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: var(--s1); }
+  .badge { padding: var(--s1); gap: 2px; }
+  .badge .badge-emoji { font-size: 1.1rem; }
+  .badge .badge-title { font-size: 0.56rem; }
 }

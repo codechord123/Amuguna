@@ -40,6 +40,8 @@ for (const vp of VIEWPORTS) {
   }
   await page.click('[data-tab="stats"]'); await page.waitForTimeout(300);
   await page.click('#statsSeg button[data-seg="graph"]'); await page.waitForTimeout(700); await measureDoc("stats/분석");
+  await page.click('#statsSeg button[data-seg="badges"]'); await page.waitForTimeout(700); await measureDoc("stats/배지");
+  await page.click('#statsSeg button[data-seg="summary"]'); await page.waitForTimeout(200);
   await page.click('[data-tab="rest"]'); await page.waitForTimeout(300);
   await page.click('#restSeg button[data-rseg="comfort"]'); await page.waitForTimeout(500); await measureDoc("rest/위로");
 
