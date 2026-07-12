@@ -3067,7 +3067,12 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
   const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
   const insTxt = withInsight ? topHabitInsight(ha) : "";
   const insHtml = insTxt ? `<p class="hg-insight">💡 ${insTxt}</p>` : "";
-  list.innerHTML = insHtml + chs.map((h) => {
+  // 4개 이상이면 '오늘 안 한 습관' 우선으로 3개까지만 — 한 화면(스크롤 제로) 유지, 나머지는 습관 탭으로
+  const glanceChs = chs.length > 3
+    ? chs.slice().sort((a, b) => (!!(a.done && a.done[tk])) - (!!(b.done && b.done[tk]))).slice(0, 3)
+    : chs;
+  const moreHtml = chs.length > 3 ? `<button class="hg-more" data-hgmore>＋ ${chs.length - 3}개 더 — 습관 탭에서 보기 ›</button>` : "";
+  list.innerHTML = insHtml + glanceChs.map((h) => {
     const doneCount = habitDoneCount(h); // 90일 창 기준 — 상세·카드와 수치 일치(창 밖 키 왜곡 방지)
     const todayDone = !!(h.done && h.done[tk]);
     let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
@@ -3078,7 +3083,7 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
       + `<div class="hg-title">${h.emoji || "✅"} ${escapeHtml(h.title)}</div>`
       + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
       + `<span class="hg-meta">🔥${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
-  }).join("");
+  }).join("") + moreHtml;
   return true;
 }
 function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount", false); } // 오늘 화면은 체크 중심 — 인사이트는 기록 요약에서
@@ -3088,6 +3093,8 @@ function refreshHabitGlances() { renderTodayHabitGlance(); renderSummaryHabitGla
 document.addEventListener("click", (e) => {
   const chk = e.target.closest("[data-hgcheck]");
   if (chk) { applyHabitAction("check", chk.dataset.hgcheck); return; }
+  const more = e.target.closest("[data-hgmore]");
+  if (more) { Sound.tap(); activateTab("challenge"); return; }
   const open = e.target.closest("[data-hgopen]");
   if (open) { Sound.tap(); openHabitDetail(open.dataset.hgopen); }
 });

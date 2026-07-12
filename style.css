@@ -1104,6 +1104,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .hg-title { font-size: var(--t-base); font-weight: var(--w-semi); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hg-bar { margin-top: 4px; background: var(--bg-sunken); border-radius: var(--r-pill); height: 7px; overflow: hidden; }
 .hg-bar i { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 0.6s var(--ease-soft); }
+.hg-more { display: block; width: 100%; margin-top: var(--s1); padding: 6px var(--s2); background: none; border: none; border-top: 1px solid var(--line); color: var(--accent-deep); font-family: inherit; font-size: var(--t-xs); font-weight: var(--w-semi); cursor: pointer; text-align: center; }
+/* 습관이 3개+더보기로 꽉 찬 날은 응원 한 줄을 양보 — 오늘 탭 스크롤 제로 유지 */
+.today-stats:has(.hg-more) .ts-cheer { display: none; }
 .hg-meta { flex: 0 0 auto; font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
 .hg-insight { margin: 0 0 var(--s2); padding: var(--s2) var(--s3); background: linear-gradient(160deg, var(--accent-2), var(--card) 85%); border: 1px solid var(--line); border-radius: var(--r-md); font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); word-break: keep-all; }
 [data-theme="dark"] .hg-insight { background: var(--bg-sunken); }

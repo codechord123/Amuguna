@@ -369,6 +369,15 @@ try {
   check("오늘 화면 습관 한눈에 표시", !q("#todayHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#todayHabitList .hg-row").length >= 1);
   check("습관 인사이트는 기록 요약에서만(오늘 화면은 체크 중심)", !q("#todayHabitList .hg-insight") && !!q("#summaryHabitList .hg-insight") && q("#summaryHabitList .hg-insight").textContent.includes("산책"));
   check("오늘 화면 습관 오늘 완료 반영", !!q("#todayHabitList .hg-check.done"));
+  { // 습관 4개 이상 → 한눈에는 3개 + 더보기(스크롤 제로 유지), 오늘 안 한 습관 우선
+    const _chBak = window.localStorage.getItem("challenges_v2");
+    const many = [1, 2, 3, 4, 5].map((n) => ({ id: "hm" + n, emoji: "✅", title: "습관" + n, startDate: rk(10), done: n <= 2 ? { [tk]: true } : {}, doneAt: {}, celebrated: [] }));
+    window.localStorage.setItem("challenges_v2", JSON.stringify(many));
+    window.renderTodayHabitGlance();
+    check("습관 5개면 한눈에 3개 + 더보기", d.querySelectorAll("#todayHabitList .hg-row").length === 3 && !!q("#todayHabitList .hg-more"));
+    check("오늘 안 한 습관 우선 노출", [...d.querySelectorAll("#todayHabitList .hg-check")].every((b) => !b.classList.contains("done")));
+    window.localStorage.setItem("challenges_v2", _chBak); window.renderTodayHabitGlance();
+  }
   q("#todayHabitList .hg-check").click();
   check("오늘 화면에서 습관 체크 해제(저장)", !q("#todayHabitList .hg-check.done") && !ls("challenges_v2")[0].done[hmToday]);
   q("#todayHabitList .hg-check").click(); // 원복
