@@ -44,6 +44,7 @@ try { window.document.dispatchEvent(new window.Event("DOMContentLoaded")); } cat
 
 const q = (s) => d.querySelector(s);
 const ls = (k) => JSON.parse(window.localStorage.getItem(k) || "null");
+const rk = (i) => { const dt = new Date(); dt.setDate(dt.getDate() - i); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; }; // i일 전 키 — 하드코딩 날짜는 창(window) 밖으로 밀려 시간이 지나면 깨짐
 
 try {
   q("#obSkip").click();
@@ -376,7 +377,7 @@ try {
   check("감정 지도 섹션 제거됨", !q("#moodMatrix") && !q('#allAnalysis [data-sec="matrix"]'));
   // 마음 리듬 (요일×시간대 히트맵) — 작성 시각(createdAt|updatedAt, 그날 작성분만) 기준
   const rh = {};
-  ["2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18"].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });
+  [rk(7), rk(6), rk(5), rk(4)].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });
   window.localStorage.setItem("entries_v2", JSON.stringify(rh));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
@@ -413,9 +414,9 @@ try {
 
   // 감정 빈도 뷰(감정 축) — 빈도 막대 + 색은 감정 고유 정서가(점수와 독립)
   window.localStorage.setItem("entries_v2", JSON.stringify({
-    "2026-06-10": { date: "2026-06-10", mood: "활기차요", score: 90, tags: ["불안해요", "평온해요"], updatedAt: "2026-06-10T09:00:00" },
-    "2026-06-11": { date: "2026-06-11", mood: "활기차요", score: 88, tags: ["불안해요"], updatedAt: "2026-06-11T09:00:00" },
-    "2026-06-12": { date: "2026-06-12", mood: "괜찮아요", score: 70, tags: ["평온해요", "고마워요"], updatedAt: "2026-06-12T09:00:00" },
+    [rk(3)]: { date: rk(3), mood: "활기차요", score: 90, tags: ["불안해요", "평온해요"], updatedAt: rk(3) + "T09:00:00" },
+    [rk(2)]: { date: rk(2), mood: "활기차요", score: 88, tags: ["불안해요"], updatedAt: rk(2) + "T09:00:00" },
+    [rk(1)]: { date: rk(1), mood: "괜찮아요", score: 70, tags: ["평온해요", "고마워요"], updatedAt: rk(1) + "T09:00:00" },
   }));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   const fr = d.querySelectorAll("#tagInsight .freq .dist-row");
