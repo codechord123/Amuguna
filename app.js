@@ -482,14 +482,20 @@ function formatQuote(t) {
     if (lines.length && (p.length < 6 || lines[lines.length - 1].length < 6)) lines[lines.length - 1] += " " + p;
     else lines.push(p);
   });
+  while (lines.length > 4) { const t = lines.pop(); lines[lines.length - 1] += " " + t; } // 최대 4줄 — 카드가 자라 화면을 밀지 않게
   return lines.map((l) => escapeHtml(l)).join("<br>");
+}
+// 긴 문구는 글자 크기를 한 단계 낮춰 카드 높이(스크롤 제로)를 지킨다
+function sizeQuote() {
+  quoteEl.classList.toggle("q-long", currentQuote.length > 55 && currentQuote.length <= 85);
+  quoteEl.classList.toggle("q-xlong", currentQuote.length > 85);
 }
 function showRandomQuote() {
   const pool = activePool(); if (!pool.length) return;
   let i, tries = 0; do { i = Math.floor(Math.random() * pool.length); tries++; } while (pool[i] === currentQuote && pool.length > 1 && tries < 12);
   currentQuote = pool[i];
   quoteEl.classList.add("swap");
-  setTimeout(() => { quoteEl.innerHTML = "“" + formatQuote(currentQuote) + "”"; quoteEl.classList.remove("swap"); updateFavBtn(); }, 230);
+  setTimeout(() => { quoteEl.innerHTML = "“" + formatQuote(currentQuote) + "”"; sizeQuote(); quoteEl.classList.remove("swap"); updateFavBtn(); }, 230);
 }
 document.getElementById("quoteBtn").addEventListener("click", () => { Sound.chime(); showRandomQuote(); });
 favBtn.addEventListener("click", () => {
@@ -506,7 +512,7 @@ document.getElementById("myQuoteAdd").addEventListener("click", () => {
   settings.myQuotes = settings.myQuotes || [];
   if (!settings.myQuotes.includes(t)) settings.myQuotes.push(t);
   saveSettingsObj(settings); inp.value = ""; Sound.success();
-  currentQuote = t; quoteEl.innerHTML = "“" + formatQuote(t) + "”"; updateFavBtn();
+  currentQuote = t; quoteEl.innerHTML = "“" + formatQuote(t) + "”"; sizeQuote(); updateFavBtn();
   if (subMode === "quotes" && !subpage.hidden) subBody.innerHTML = quoteManageHtml();
 });
 

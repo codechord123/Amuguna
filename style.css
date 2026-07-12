@@ -256,6 +256,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
    ============================================================ */
 .quote { margin: var(--s2) calc(var(--s4) * -1) var(--s3); font-size: var(--t-lg); font-weight: var(--w-semi); line-height: 1.85; min-height: 2.4em; display: flex; align-items: center; justify-content: center; text-align: center; border: none; padding: var(--s3) var(--s2); word-break: keep-all; overflow-wrap: break-word; transition: opacity 0.35s ease, transform 0.35s var(--ease-soft); }
 .quote.swap { opacity: 0; transform: translateY(8px); }
+.comfort-card:has(.q-long) .comfort-tools, .comfort-card:has(.q-xlong) .comfort-tools { margin-top: var(--s2); padding-top: var(--s1); }
+.comfort-card:has(.q-xlong) .comfort-add { display: none; } /* 아주 긴 문구 표시 중엔 추가 폼 접근을 잠시 양보(문구 바뀌면 복귀) */
+.quote.q-long { font-size: var(--t-base); line-height: 1.7; }
+.quote.q-xlong { font-size: var(--t-sm); line-height: 1.6; }
 .quote-actions { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
 .icon-btn { border: 1.5px solid var(--line); background: var(--card); color: var(--accent-deep); width: 46px; height: 46px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-family: inherit; transition: transform 0.15s var(--ease-soft), border-color 0.2s, background 0.2s; }
 .icon-btn:hover { transform: scale(1.06); border-color: var(--line-strong); }
@@ -1345,7 +1349,13 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .icon-btn { width: 40px; height: 40px; }
   .card.center h2, .help-always h2 { margin-bottom: var(--s1); font-size: var(--t-base); }
   .quote { font-size: var(--t-base); }
+  .quote.q-long, .quote.q-xlong { font-size: var(--t-sm); line-height: 1.5; }
   .comfort-tools { padding-top: var(--s1); }
+  .comfort-card:has(.q-long) .quote-actions .btn, .comfort-card:has(.q-xlong) .quote-actions .btn { padding: 8px 14px; }
+  .comfort-card:has(.q-long) .icon-btn, .comfort-card:has(.q-xlong) .icon-btn { width: 34px; height: 34px; }
+  .comfort-card:has(.q-long) .comfort-add, .comfort-card:has(.q-xlong) .comfort-add { display: none; }
+  .comfort-card:has(.q-long) .quote, .comfort-card:has(.q-xlong) .quote { margin-bottom: var(--s1); padding: var(--s1) var(--s2); }
+  .mission { min-height: 0; }
   /* 배지 서브탭 압축 */
   .level-row { margin: var(--s1) 0 var(--s2); }
   .level-emoji { font-size: 1.6rem; }
