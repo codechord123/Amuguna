@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#14131c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="함께 숨쉬기" />
+  <meta name="description" content="교실 전자칠판·큰 화면용 삼각형 호흡 명상. 뒷자리에서도 보이는 초대형 글씨." />
+  <title>함께 숨쉬기 · 큰 화면 명상</title>
+  <style>
+    /* ============================================================
+       함께 숨쉬기 — 전자칠판·큰 화면 전용 명상 (오늘의 쉼)
+       자체 완결형: 외부 파일·인터넷 없이 동작. 뒷자리에서도 보이게 초대형 글씨.
+       ============================================================ */
+    :root {
+      --bg-0: #14131c; --bg-1: #1d1b2b; --bg-2: #241f33;
+      --line: #4a4668;
+      --fg: #f3f0ff;           /* 삼각형 선 */
+      --fg-soft: #a9a3c8;
+      --dot: #ffe08c;          /* 움직이는 점 */
+      --dot-glow: 0 0 40px 8px rgba(255, 224, 140, 0.55);
+      --accent: #ffdf8a;
+      --ink-on: #2a2440;
+      --count: #fff7e6;
+    }
+    :root.light {
+      --bg-0: #eef1fb; --bg-1: #e5e9f7; --bg-2: #dfe4f3;
+      --line: #b9c0dd;
+      --fg: #3a4066;
+      --fg-soft: #6a6f93;
+      --dot: #5b6cc9;
+      --dot-glow: 0 0 34px 6px rgba(91, 108, 201, 0.45);
+      --accent: #4a5bb8;
+      --ink-on: #ffffff;
+      --count: #2c335e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background:
+        radial-gradient(120% 90% at 50% 0%, var(--bg-2), transparent 60%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-0));
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      overflow: hidden;
+      transition: background 0.6s ease, color 0.6s ease;
+      -webkit-font-smoothing: antialiased;
+      user-select: none; -webkit-user-select: none;
+    }
+    .wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2vmin; }
+
+    /* 상단 진행 정보(은은하게) */
+    .top { position: absolute; top: 2.4vmin; left: 0; right: 0; z-index: 3; display: flex; justify-content: space-between; padding: 0 3.2vmin; color: var(--fg-soft); font-weight: 700; font-size: clamp(0.9rem, 2.4vmin, 2.2rem); letter-spacing: 0.02em; pointer-events: none; }
+    .top .cyc { opacity: 0.85; }
+    .top .pat { opacity: 0.7; }
+
+    /* 명상 중심 — 삼각형 + 가운데 초대형 숫자·문구 겹침 */
+    .center { position: relative; width: min(92vw, 116vmin); height: min(78vh, 82vmin); display: flex; align-items: center; justify-content: center; }
+    .scaler { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transform: scale(0.94); transition-property: transform; transition-timing-function: cubic-bezier(0.37, 0, 0.4, 1); will-change: transform; }
+    .tri-svg { height: 100%; width: auto; overflow: visible; display: block; }
+    .tb-line { fill: none; stroke: var(--line); stroke-width: 2.4; opacity: 0.55; }
+    .tb-trail { fill: none; stroke: var(--fg); stroke-width: 3.4; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; filter: drop-shadow(0 0 8px var(--dot)); }
+    /* 각 단계에서 해당 변을 칠함 */
+    .scaler.inhale .tb-e1, .scaler.hold .tb-e2, .scaler.exhale .tb-e3 { stroke-dashoffset: 0; opacity: 0.92; transition-property: stroke-dashoffset; transition-timing-function: linear; }
+    /* 이미 칠해진 변은 다음 단계에서 은은히 유지 */
+    .scaler.hold .tb-e1, .scaler.exhale .tb-e1, .scaler.exhale .tb-e2 { stroke-dashoffset: 0; opacity: 0.45; transition: opacity 0.6s ease; }
+    /* 리셋(새 들숨 진입 직전) */
+    .scaler.reset .tb-trail { stroke-dashoffset: 100; opacity: 0; transition: none; }
+    .scaler.idle .tb-trail { stroke-dashoffset: 100; opacity: 0; transition: none; }
+
+    /* 점은 SVG 내부 원 — 뷰박스와 함께 확대되어 어느 크기에서도 삼각형 변에 정확히 붙음. 위치는 JS가 경로 길이로 계산 */
+    .tb-dot { fill: #fffdf5; filter: drop-shadow(0 0 16px var(--dot)) drop-shadow(0 0 7px var(--dot)); opacity: 0; transition: opacity 0.4s ease; }
+    .scaler:not(.idle) .tb-dot { opacity: 1; }
+
+    /* 가운데 글씨 스택 (겹침) */
+    .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; gap: 0.4vmin; padding-top: 6%; }
+    .phase { font-size: clamp(1.6rem, 8.4vmin, 12rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1; color: var(--fg); text-shadow: 0 0 24px rgba(0,0,0,0.25); min-height: 1em; }
+    .count { font-size: clamp(4rem, 30vmin, 40rem); font-weight: 900; line-height: 0.9; color: var(--count); letter-spacing: -0.03em; text-shadow: 0 0 40px var(--dot); font-variant-numeric: tabular-nums; }
+    .instr { font-size: clamp(1.1rem, 4.4vmin, 5rem); font-weight: 700; color: var(--fg-soft); line-height: 1.2; min-height: 1.2em; }
+
+    /* 시작 전 안내 */
+    .start-hint { font-size: clamp(1.2rem, 4.6vmin, 5.5rem); font-weight: 800; color: var(--fg); line-height: 1.3; }
+    .start-sub { font-size: clamp(0.95rem, 3vmin, 3rem); font-weight: 700; color: var(--fg-soft); margin-top: 1.6vmin; }
+
+    /* 컨트롤 바 (하단, 자동 숨김) */
+    .controls { position: absolute; left: 0; right: 0; bottom: 2.4vmin; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.6vmin; padding: 0 2vmin; transition: opacity 0.4s ease, transform 0.4s ease; }
+    body.playing.hide-ui .controls, body.playing.hide-ui .top { opacity: 0; transform: translateY(1vmin); pointer-events: none; }
+    .btn { font-family: inherit; cursor: pointer; border: 2px solid var(--line); background: rgba(255,255,255,0.06); color: var(--fg); border-radius: 999px; font-weight: 800; padding: 1.4vmin 2.8vmin; font-size: clamp(1rem, 2.8vmin, 2.4rem); display: inline-flex; align-items: center; gap: 0.8vmin; transition: transform 0.12s ease, background 0.2s, border-color 0.2s; min-height: 44px; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary { background: var(--accent); color: var(--ink-on); border-color: var(--accent); font-size: clamp(1.15rem, 3.4vmin, 3rem); padding: 1.6vmin 4vmin; }
+    .btn.on { background: rgba(255,255,255,0.16); border-color: var(--fg-soft); }
+    .presets { display: inline-flex; gap: 1vmin; background: rgba(255,255,255,0.05); padding: 0.8vmin; border-radius: 999px; border: 1px solid var(--line); }
+    .preset { font-family: inherit; cursor: pointer; border: none; background: transparent; color: var(--fg-soft); border-radius: 999px; font-weight: 800; padding: 1vmin 2.2vmin; font-size: clamp(0.85rem, 2.4vmin, 2rem); transition: background 0.2s, color 0.2s; min-height: 40px; }
+    .preset.sel { background: var(--accent); color: var(--ink-on); }
+
+    /* 전체 화면 탭 영역(중앙 클릭으로 시작/멈춤) — 컨트롤·상단 정보 아래에 깔림 */
+    .tap { position: absolute; inset: 0; z-index: 1; cursor: pointer; background: transparent; border: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scaler, .tb-dot, .tb-trail { transition: none !important; }
+    }
+    /* 세로 화면(태블릿 세로)에서도 무리 없이 */
+    @media (max-aspect-ratio: 3/4) {
+      .center { height: min(60vh, 82vmin); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <span class="cyc" id="cyc"></span>
+      <span class="pat" id="patLabel"></span>
+    </div>
+
+    <div class="center">
+      <div class="scaler" id="scaler">
+        <svg class="tri-svg" viewBox="0 0 200 180" aria-hidden="true">
+          <path class="tb-line" d="M21.9 153.6 L94.1 26.4 Q100 16 105.9 26.4 L178.1 153.6 Q184 164 172 164 L28 164 Q16 164 21.9 153.6 Z"/>
+          <path class="tb-trail tb-e1" pathLength="100" d="M21.9 153.6 L94.1 26.4 Q100 16 105.9 26.4"/>
+          <path class="tb-trail tb-e2" pathLength="100" d="M105.9 26.4 L178.1 153.6 Q184 164 172 164"/>
+          <path class="tb-trail tb-e3" pathLength="100" d="M172 164 L28 164 Q16 164 21.9 153.6"/>
+          <circle class="tb-dot" id="dot" r="5.6" cx="21.9" cy="153.6" aria-hidden="true"></circle>
+        </svg>
+      </div>
+      <div class="mid" id="mid">
+        <div class="start-hint" id="startHint">함께 숨을 쉬어볼까요? 🌿</div>
+        <div class="start-sub" id="startSub">아래 <b>시작</b>을 누르거나, 화면을 누르면 시작해요</div>
+      </div>
+    </div>
+
+    <div class="controls" id="controls">
+      <button class="btn primary" id="playBtn">▶ 시작</button>
+      <div class="presets" id="presets">
+        <button class="preset sel" data-p="easy">🌱 쉽게 4·4·4</button>
+        <button class="preset" data-p="calm">🌊 차분히 4·7·8</button>
+        <button class="preset" data-p="slow">🐢 천천히 5·5·5</button>
+      </div>
+      <button class="btn on" id="soundBtn" aria-pressed="true">🔊 소리</button>
+      <button class="btn" id="fsBtn">⛶ 전체화면</button>
+      <button class="btn" id="themeBtn">🌙 어둡게</button>
+    </div>
+
+    <button class="tap" id="tap" aria-label="시작 또는 멈춤"></button>
+  </div>
+
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    const stage = $("scaler");          // 단계 클래스가 붙는 요소(삼각형/트레일/스케일)
+    const dot = $("dot");
+    const mid = $("mid");
+    const cycEl = $("cyc"), patEl = $("patLabel");
+
+    const PRESETS = {
+      easy: { in: 4, hold: 4, ex: 4, label: "쉽게 · 4·4·4" },
+      calm: { in: 4, hold: 7, ex: 8, label: "차분히 · 4·7·8" },
+      slow: { in: 5, hold: 5, ex: 5, label: "천천히 · 5·5·5" },
+    };
+    let presetKey = "easy";
+    let P = PRESETS[presetKey];
+
+    // 단계 정의(들숨=왼쪽 변, 멈춤=오른쪽 변, 날숨=아래 변)
+    function phases() {
+      return [
+        { name: "들이쉬기", cls: "inhale", dur: P.in,   instr: "코로 천천히 들이쉬어요", dist: "33.4%", scale: 1.09, cue: [392, 523] },
+        { name: "잠깐 멈춰요", cls: "hold",   dur: P.hold, instr: "숨을 잠깐 멈춰요",       dist: "66.7%", scale: 1.09, cue: [523] },
+        { name: "내쉬기",   cls: "exhale", dur: P.ex,   instr: "입으로 후~ 길게 내쉬어요", dist: "100%",  scale: 0.94, cue: [392, 262] },
+      ];
+    }
+
+    let running = false, idx = 0, cycle = 0, remain = 0;
+    let phaseTimer = null, tickTimer = null, preTimer = null;
+    let soundOn = true;
+
+    // ---- 부드러운 종소리(웹오디오) ----
+    let AC = null;
+    function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } return AC; }
+    function ding(freq, when, dur) {
+      const c = ac(); if (!c || !soundOn) return;
+      const t = c.currentTime + (when || 0);
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.7));
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + (dur || 0.7) + 0.05);
+    }
+    function cueChord(freqs) { if (!freqs) return; freqs.forEach((f, i) => ding(f, i * 0.12, 0.6)); }
+
+    // ---- 점 위치: 삼각형 경로 길이 기반(뷰박스 확대와 무관하게 변에 정확히) ----
+    const linePath = document.querySelector(".tb-line");
+    let L = 0;
+    try { L = linePath.getTotalLength(); } catch (e) { L = 0; }
+    const ENDS = [0.334, 0.667, 1.0];       // 들숨/멈춤/날숨 끝 지점(둘레 비율)
+    let fracFrom = 0, fracTo = 0, phaseStart = 0, phaseDur = 1, rafId = null;
+    function dotAt(frac) {
+      if (!L) return;
+      const f = frac <= 0 ? 0 : frac >= 1 ? 1 : frac;
+      const p = linePath.getPointAtLength(f * L);
+      dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+    }
+    function frame() {
+      if (!running) { rafId = null; return; }
+      const e = Math.min(1, (performance.now() - phaseStart) / phaseDur);
+      dotAt(fracFrom + (fracTo - fracFrom) * e);
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function setPhaseVisual(ph, i) {
+      if (i === 0) {
+        // 새 사이클: 트레일을 시작 상태로 리셋(전환 없이)
+        stage.className = "scaler reset " + ph.cls;
+        void stage.offsetWidth;
+      }
+      stage.className = "scaler " + ph.cls;
+      const dur = ph.dur + "s";
+      stage.style.transitionDuration = dur;
+      stage.style.transform = "scale(" + ph.scale + ")";
+      stage.querySelectorAll(".tb-trail").forEach((el) => (el.style.transitionDuration = dur));
+      // 점: 이 단계의 시작→끝 비율을 rAF로 이동(삼각형 변을 따라)
+      fracFrom = i === 0 ? 0 : ENDS[i - 1];
+      fracTo = ENDS[i];
+      phaseStart = performance.now(); phaseDur = ph.dur * 1000;
+      dotAt(fracFrom);
+      if (!rafId) rafId = requestAnimationFrame(frame);
+    }
+
+    function renderCount() { mid.innerHTML = '<div class="phase">' + curName + '</div><div class="count">' + remain + '</div><div class="instr">' + curInstr + "</div>"; }
+    let curName = "", curInstr = "";
+
+    function enterPhase(i) {
+      const ph = phases()[i];
+      idx = i; curName = ph.name; curInstr = ph.instr; remain = ph.dur;
+      setPhaseVisual(ph, i);
+      cueChord(ph.cue);
+      renderCount();
+      cycEl.textContent = cycle > 0 ? cycle + "번째 호흡" : "";
+      clearInterval(tickTimer);
+      tickTimer = setInterval(() => { remain = Math.max(0, remain - 1); if (remain >= 1) renderCount(); }, 1000);
+      clearTimeout(phaseTimer);
+      phaseTimer = setTimeout(() => {
+        if (!running) return;
+        let next = i + 1;
+        if (next >= 3) { next = 0; cycle++; }
+        enterPhase(next);
+      }, ph.dur * 1000);
+    }
+
+    function start() {
+      if (running) return;
+      running = true; cycle = 0; idx = 0;
+      document.body.classList.add("playing");
+      try { ac() && ac().resume && ac().resume(); } catch (e) {}
+      requestWake();
+      $("playBtn").innerHTML = "⏸ 멈추기";
+      // 준비 카운트 3·2·1
+      stage.className = "scaler idle";
+      let n = 3;
+      const showPre = () => { curName = "준비"; curInstr = "곧 시작해요"; remain = n; renderCount(); ding(330, 0, 0.35); };
+      showPre();
+      preTimer = setInterval(() => {
+        n--;
+        if (n <= 0) { clearInterval(preTimer); preTimer = null; enterPhase(0); }
+        else { remain = n; curName = "준비"; renderCount(); ding(330, 0, 0.3); }
+      }, 1000);
+      scheduleHide();
+    }
+
+    function stop() {
+      running = false;
+      clearTimeout(phaseTimer); clearInterval(tickTimer); clearInterval(preTimer);
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      phaseTimer = tickTimer = preTimer = null;
+      document.body.classList.remove("playing", "hide-ui");
+      stage.className = "scaler idle";
+      stage.style.transitionDuration = "0.8s"; stage.style.transform = "scale(0.94)";
+      $("playBtn").innerHTML = "▶ 시작";
+      cycEl.textContent = cycle > 0 ? "잘했어요 · " + cycle + "번 호흡했어요 🌿" : "";
+      mid.innerHTML = '<div class="start-hint">잘했어요! 🌿</div><div class="start-sub">' + (cycle > 0 ? cycle + "번 함께 숨쉬었어요 · 다시 시작하려면 눌러요" : "다시 하려면 시작을 눌러요") + "</div>";
+      ding(392, 0, 0.5); ding(523, 0.12, 0.7);
+      releaseWake();
+    }
+
+    function toggle() { running ? stop() : start(); }
+
+    // ---- UI 자동 숨김 ----
+    let hideTimer = null;
+    function scheduleHide() { clearTimeout(hideTimer); document.body.classList.remove("hide-ui"); hideTimer = setTimeout(() => { if (running) document.body.classList.add("hide-ui"); }, 3500); }
+    ["mousemove", "touchstart", "keydown"].forEach((ev) => window.addEventListener(ev, scheduleHide, { passive: true }));
+
+    // ---- 화면 꺼짐 방지 ----
+    let wake = null;
+    async function requestWake() { try { if ("wakeLock" in navigator) wake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+    function releaseWake() { try { wake && wake.release(); wake = null; } catch (e) {} }
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && running) requestWake(); });
+
+    function applyPreset(k) {
+      presetKey = k; P = PRESETS[k];
+      document.querySelectorAll(".preset").forEach((b) => b.classList.toggle("sel", b.dataset.p === k));
+      patEl.textContent = P.label;
+      if (running) { stop(); start(); }
+    }
+
+    // ---- 이벤트 ----
+    $("playBtn").addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
+    $("tap").addEventListener("click", toggle);
+    $("presets").addEventListener("click", (e) => { const b = e.target.closest(".preset"); if (b) { e.stopPropagation(); applyPreset(b.dataset.p); } });
+    $("soundBtn").addEventListener("click", (e) => {
+      e.stopPropagation(); soundOn = !soundOn;
+      const b = $("soundBtn"); b.classList.toggle("on", soundOn); b.setAttribute("aria-pressed", soundOn); b.innerHTML = soundOn ? "🔊 소리" : "🔇 소리 끔";
+      if (soundOn) { try { ac() && ac().resume && ac().resume(); } catch (er) {} ding(523, 0, 0.4); }
+    });
+    $("fsBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!document.fullscreenElement) { (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement); }
+      else { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+    });
+    document.addEventListener("fullscreenchange", () => { $("fsBtn").innerHTML = document.fullscreenElement ? "⛶ 전체화면 끄기" : "⛶ 전체화면"; });
+    $("themeBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const light = document.documentElement.classList.toggle("light");
+      $("themeBtn").innerHTML = light ? "☀️ 밝게" : "🌙 어둡게";
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", light ? "#eef1fb" : "#14131c");
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); }
+      else if (e.key === "f" || e.key === "F") { $("fsBtn").click(); }
+    });
+
+    // 초기 상태
+    stage.className = "scaler idle";
+    patEl.textContent = P.label;
+  </script>
+</body>
+</html>
