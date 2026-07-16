@@ -166,9 +166,9 @@
     // 단계 정의(들숨=왼쪽 변, 멈춤=오른쪽 변, 날숨=아래 변)
     function phases() {
       return [
-        { name: "들이쉬기", cls: "inhale", dur: P.in,   instr: "코로 천천히 들이쉬어요", dist: "33.4%", scale: 1.09, cue: [392, 523] },
-        { name: "잠깐 멈춰요", cls: "hold",   dur: P.hold, instr: "숨을 잠깐 멈춰요",       dist: "66.7%", scale: 1.09, cue: [523] },
-        { name: "내쉬기",   cls: "exhale", dur: P.ex,   instr: "입으로 후~ 길게 내쉬어요", dist: "100%",  scale: 0.94, cue: [392, 262] },
+        { name: "들이쉬기", cls: "inhale", dur: P.in,   instr: "코로 천천히 들이쉬어요", dist: "33.4%", scale: 1.09, cue: [392, 523], amb: 0.09 },
+        { name: "잠깐 멈춰요", cls: "hold",   dur: P.hold, instr: "숨을 잠깐 멈춰요",       dist: "66.7%", scale: 1.09, cue: [523],      amb: 0.08 },
+        { name: "내쉬기",   cls: "exhale", dur: P.ex,   instr: "입으로 후~ 길게 내쉬어요", dist: "100%",  scale: 0.94, cue: [392, 262], amb: 0.03 },
       ];
     }
 
@@ -176,20 +176,51 @@
     let phaseTimer = null, tickTimer = null, preTimer = null;
     let soundOn = true;
 
-    // ---- 부드러운 종소리(웹오디오) ----
-    let AC = null;
+    // ---- 소리(웹오디오): 단계 종소리 + 은은한 배경 화음 ----
+    let AC = null, ambGain = null, ambOsc = [];
     function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } return AC; }
+    // 자동재생 정책 잠금 해제 — 첫 조작(클릭·터치·키)에서 컨텍스트를 깨우고 무음 버퍼 재생(iOS 대응)
+    function unlockAudio() {
+      const c = ac(); if (!c) return;
+      if (c.state !== "running" && c.resume) { try { c.resume(); } catch (e) {} }
+      try { const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) {}
+    }
+    ["pointerdown", "touchend", "mousedown", "keydown"].forEach((ev) => window.addEventListener(ev, unlockAudio, { passive: true }));
+
     function ding(freq, when, dur) {
       const c = ac(); if (!c || !soundOn) return;
+      if (c.state === "suspended" && c.resume) { try { c.resume(); } catch (e) {} }
       const t = c.currentTime + (when || 0);
       const o = c.createOscillator(), g = c.createGain();
       o.type = "sine"; o.frequency.value = freq;
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.16, t + 0.04);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.7));
-      o.connect(g).connect(c.destination); o.start(t); o.stop(t + (dur || 0.7) + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.24, t + 0.05);   // 조금 키움(뒷자리·큰 화면)
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.8));
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + (dur || 0.8) + 0.05);
     }
-    function cueChord(freqs) { if (!freqs) return; freqs.forEach((f, i) => ding(f, i * 0.12, 0.6)); }
+    function cueChord(freqs) { if (!freqs) return; freqs.forEach((f, i) => ding(f, i * 0.12, 0.7)); }
+
+    // 배경 화음(낮은 뿌리음+5도) — 명상 내내 은은하게. 호흡에 맞춰 커지고 작아짐.
+    function startAmbient() {
+      const c = ac(); if (!c || !soundOn || ambGain) return;
+      if (c.state === "suspended" && c.resume) { try { c.resume(); } catch (e) {} }
+      ambGain = c.createGain(); ambGain.gain.value = 0.0001;
+      const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 540;
+      ambGain.connect(lp).connect(c.destination);
+      [130.81, 196.00, 261.63].forEach((f, i) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; const og = c.createGain(); og.gain.value = i === 2 ? 0.35 : 1; o.connect(og).connect(ambGain); o.start(); ambOsc.push(o); });
+      ambGain.gain.setTargetAtTime(0.055, c.currentTime, 0.9);
+    }
+    function ambBreath(level) {
+      const c = ac(); if (!ambGain || !c) return;
+      ambGain.gain.cancelScheduledValues(c.currentTime);
+      ambGain.gain.setTargetAtTime(level, c.currentTime, 1.1);
+    }
+    function stopAmbient() {
+      const c = ac(); if (!ambGain || !c) return;
+      try { ambGain.gain.cancelScheduledValues(c.currentTime); ambGain.gain.setTargetAtTime(0.0001, c.currentTime, 0.5); } catch (e) {}
+      const osc = ambOsc; ambOsc = []; ambGain = null;
+      setTimeout(() => osc.forEach((o) => { try { o.stop(); } catch (e) {} }), 1400);
+    }
 
     // ---- 점 위치: 삼각형 경로 길이 기반(뷰박스 확대와 무관하게 변에 정확히) ----
     const linePath = document.querySelector(".tb-line");
@@ -237,6 +268,7 @@
       idx = i; curName = ph.name; curInstr = ph.instr; remain = ph.dur;
       setPhaseVisual(ph, i);
       cueChord(ph.cue);
+      ambBreath(ph.amb);   // 배경 화음이 호흡에 맞춰 커지고 작아짐
       renderCount();
       cycEl.textContent = cycle > 0 ? cycle + "번째 호흡" : "";
       clearInterval(tickTimer);
@@ -255,6 +287,7 @@
       running = true; cycle = 0; idx = 0;
       document.body.classList.add("playing");
       try { ac() && ac().resume && ac().resume(); } catch (e) {}
+      startAmbient();      // 은은한 배경 화음 시작(소리 켜짐일 때)
       requestWake();
       $("playBtn").innerHTML = "⏸ 멈추기";
       // 준비 카운트 3·2·1
@@ -276,6 +309,7 @@
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       phaseTimer = tickTimer = preTimer = null;
       document.body.classList.remove("playing", "hide-ui");
+      stopAmbient();       // 배경 화음 페이드아웃
       stage.className = "scaler idle";
       stage.style.transitionDuration = "0.8s"; stage.style.transform = "scale(0.94)";
       $("playBtn").innerHTML = "▶ 시작";
@@ -307,12 +341,19 @@
 
     // ---- 이벤트 ----
     $("playBtn").addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
-    $("tap").addEventListener("click", toggle);
+    // 화면 탭: 시작 전엔 시작, 재생 중엔 컨트롤만 다시 표시(실수로 멈추지 않게 — 멈춤은 '멈추기'·스페이스)
+    $("tap").addEventListener("click", () => { if (!running) start(); else scheduleHide(); });
     $("presets").addEventListener("click", (e) => { const b = e.target.closest(".preset"); if (b) { e.stopPropagation(); applyPreset(b.dataset.p); } });
     $("soundBtn").addEventListener("click", (e) => {
       e.stopPropagation(); soundOn = !soundOn;
       const b = $("soundBtn"); b.classList.toggle("on", soundOn); b.setAttribute("aria-pressed", soundOn); b.innerHTML = soundOn ? "🔊 소리" : "🔇 소리 끔";
-      if (soundOn) { try { ac() && ac().resume && ac().resume(); } catch (er) {} ding(523, 0, 0.4); }
+      if (soundOn) {
+        try { ac() && ac().resume && ac().resume(); } catch (er) {}
+        ding(523, 0, 0.5);
+        if (running) startAmbient();          // 세션 중 다시 켜면 배경 화음 복귀
+      } else {
+        stopAmbient();                        // 끄면 배경 화음도 멈춤
+      }
     });
     $("fsBtn").addEventListener("click", (e) => {
       e.stopPropagation();
