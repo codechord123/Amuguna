@@ -235,6 +235,22 @@
     }
     function cueChord(freqs) { if (!freqs) return; freqs.forEach((f, i) => ding(f, i * 0.12, 0.7)); }
 
+    // 매 초 박자 — 은은한 싱잉볼/클릭. 초가 긴 4·7·8 등에서 귀로 초를 세게 가이드.
+    function tick() {
+      const c = ac(); if (!c || !soundOn) return;
+      if (c.state === "suspended" && c.resume) { try { c.resume(); } catch (e) {} }
+      const t = c.currentTime;
+      const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), g2 = c.createGain();
+      o.type = "sine"; o.frequency.value = 880;    // 맑은 고음(싱잉볼)
+      o2.type = "sine"; o2.frequency.value = 1760;  // 옥타브 배음(살짝 = 클릭 느낌)
+      g2.gain.value = 0.28;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.1, t + 0.006);   // 빠른 어택(또렷한 박)
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);  // 짧은 벨 여운
+      o.connect(g); o2.connect(g2).connect(g); g.connect(c.destination);
+      o.start(t); o2.start(t); o.stop(t + 0.34); o2.stop(t + 0.34);
+    }
+
     // 배경 화음(낮은 뿌리음+5도) — 명상 내내 은은하게. 호흡에 맞춰 커지고 작아짐.
     function startAmbient() {
       const c = ac(); if (!c || !soundOn || ambGain) return;
@@ -309,7 +325,7 @@
       renderCount();
       cycEl.textContent = cycle > 0 ? cycle + "번째 호흡" : "";
       clearInterval(tickTimer);
-      tickTimer = setInterval(() => { remain = Math.max(0, remain - 1); if (remain >= 1) renderCount(); }, 1000);
+      tickTimer = setInterval(() => { remain = Math.max(0, remain - 1); if (remain >= 1) { renderCount(); tick(); } }, 1000); // 매 초 싱잉볼 박자
       clearTimeout(phaseTimer);
       phaseTimer = setTimeout(() => {
         if (!running) return;
