@@ -53,8 +53,9 @@
     .wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2vmin; }
 
     /* 상단 진행 정보(은은하게) */
-    .top { position: absolute; top: 2.4vmin; left: 0; right: 0; z-index: 3; display: flex; justify-content: space-between; padding: 0 3.2vmin; color: var(--fg-soft); font-weight: 700; font-size: clamp(0.9rem, 2.4vmin, 2.2rem); letter-spacing: 0.02em; pointer-events: none; }
-    .top .cyc { opacity: 0.85; }
+    .top { position: absolute; top: 2.4vmin; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 2vmin; padding: 0 3.2vmin; color: var(--fg-soft); font-weight: 700; font-size: clamp(0.9rem, 2.4vmin, 2.2rem); letter-spacing: 0.02em; pointer-events: none; transition: opacity 0.4s ease; }
+    .top .clock { color: var(--fg); opacity: 0.95; font-variant-numeric: tabular-nums; font-weight: 800; }
+    .top .cyc { opacity: 0.8; text-align: center; flex: 1; }
     .top .pat { opacity: 0.7; }
 
     /* 명상 중심 — 삼각형 + 가운데 초대형 숫자·문구 겹침 */
@@ -87,7 +88,9 @@
 
     /* 컨트롤 바 (하단, 자동 숨김) */
     .controls { position: absolute; left: 0; right: 0; bottom: 2.4vmin; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.6vmin; padding: 0 2vmin; transition: opacity 0.4s ease, transform 0.4s ease; }
-    body.playing.hide-ui .controls, body.playing.hide-ui .top { opacity: 0; transform: translateY(1vmin); pointer-events: none; }
+    body.playing.hide-ui .controls { opacity: 0; transform: translateY(1vmin); pointer-events: none; }
+    /* 상단 시계·진행 정보는 몰입 중에도 은은히 유지(남은 시간 확인용) — 살짝 흐리게만 */
+    body.playing.hide-ui .top { opacity: 0.5; }
     .btn { font-family: inherit; cursor: pointer; border: 2px solid var(--line); background: rgba(255,255,255,0.06); color: var(--fg); border-radius: 999px; font-weight: 800; padding: 1.4vmin 2.8vmin; font-size: clamp(1rem, 2.8vmin, 2.4rem); display: inline-flex; align-items: center; gap: 0.8vmin; transition: transform 0.12s ease, background 0.2s, border-color 0.2s; min-height: 44px; }
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: scale(0.97); }
@@ -112,6 +115,7 @@
 <body>
   <div class="wrap">
     <div class="top">
+      <span class="clock" id="clock"></span>
       <span class="cyc" id="cyc"></span>
       <span class="pat" id="patLabel"></span>
     </div>
@@ -139,6 +143,13 @@
         <button class="preset" data-p="calm">🌊 차분히 4·7·8</button>
         <button class="preset" data-p="slow">🐢 천천히 5·5·5</button>
       </div>
+      <div class="presets" id="durs" aria-label="명상 시간">
+        <button class="preset sel" data-m="0">∞ 계속</button>
+        <button class="preset" data-m="1">1분</button>
+        <button class="preset" data-m="2">2분</button>
+        <button class="preset" data-m="3">3분</button>
+        <button class="preset" data-m="5">5분</button>
+      </div>
       <button class="btn on" id="soundBtn" aria-pressed="true">🔊 소리</button>
       <button class="btn" id="fsBtn">⛶ 전체화면</button>
       <button class="btn" id="themeBtn">🌙 어둡게</button>
@@ -153,7 +164,7 @@
     const stage = $("scaler");          // 단계 클래스가 붙는 요소(삼각형/트레일/스케일)
     const dot = $("dot");
     const mid = $("mid");
-    const cycEl = $("cyc"), patEl = $("patLabel");
+    const cycEl = $("cyc"), patEl = $("patLabel"), clockEl = $("clock");
 
     const PRESETS = {
       easy: { in: 4, hold: 4, ex: 4, label: "쉽게 · 4·4·4" },
@@ -175,6 +186,30 @@
     let running = false, idx = 0, cycle = 0, remain = 0;
     let phaseTimer = null, tickTimer = null, preTimer = null;
     let soundOn = true;
+
+    // ---- 세션 시간(경과/남은 시간 + 자동 종료) ----
+    let durationSec = 0;   // 0 = 무제한(계속)
+    let sessionSec = 0;    // 호흡 시작 후 경과(초)
+    let clockTimer = null, pendingEnd = false;
+    function fmtTime(s) { const m = Math.floor(s / 60), ss = s % 60; return m + ":" + String(ss).padStart(2, "0"); }
+    function updateClock() {
+      if (!running) { clockEl.textContent = ""; return; }
+      if (durationSec > 0) {
+        const rem = Math.max(0, durationSec - sessionSec);
+        clockEl.textContent = "⏳ 남은 " + fmtTime(rem);
+      } else {
+        clockEl.textContent = "⏱ " + fmtTime(sessionSec);
+      }
+    }
+    function startClock() {
+      sessionSec = 0; pendingEnd = false; updateClock();
+      clearInterval(clockTimer);
+      clockTimer = setInterval(() => {
+        sessionSec++;
+        if (durationSec > 0 && sessionSec >= durationSec) pendingEnd = true; // 다음 호흡 끝에서 부드럽게 종료
+        updateClock();
+      }, 1000);
+    }
 
     // ---- 소리(웹오디오): 단계 종소리 + 은은한 배경 화음 ----
     let AC = null, ambGain = null, ambOsc = [];
@@ -264,6 +299,8 @@
     let curName = "", curInstr = "";
 
     function enterPhase(i) {
+      // 시간 다 됐으면 한 호흡(들숨 시작 지점)에서 부드럽게 마무리
+      if (i === 0 && pendingEnd && cycle > 0) { stop(true); return; }
       const ph = phases()[i];
       idx = i; curName = ph.name; curInstr = ph.instr; remain = ph.dur;
       setPhaseVisual(ph, i);
@@ -297,24 +334,27 @@
       showPre();
       preTimer = setInterval(() => {
         n--;
-        if (n <= 0) { clearInterval(preTimer); preTimer = null; enterPhase(0); }
+        if (n <= 0) { clearInterval(preTimer); preTimer = null; startClock(); enterPhase(0); }
         else { remain = n; curName = "준비"; renderCount(); ding(330, 0, 0.3); }
       }, 1000);
       scheduleHide();
     }
 
-    function stop() {
+    function stop(byTime) {
       running = false;
-      clearTimeout(phaseTimer); clearInterval(tickTimer); clearInterval(preTimer);
+      clearTimeout(phaseTimer); clearInterval(tickTimer); clearInterval(preTimer); clearInterval(clockTimer);
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      phaseTimer = tickTimer = preTimer = null;
+      phaseTimer = tickTimer = preTimer = clockTimer = null;
       document.body.classList.remove("playing", "hide-ui");
       stopAmbient();       // 배경 화음 페이드아웃
       stage.className = "scaler idle";
       stage.style.transitionDuration = "0.8s"; stage.style.transform = "scale(0.94)";
       $("playBtn").innerHTML = "▶ 시작";
-      cycEl.textContent = cycle > 0 ? "잘했어요 · " + cycle + "번 호흡했어요 🌿" : "";
-      mid.innerHTML = '<div class="start-hint">잘했어요! 🌿</div><div class="start-sub">' + (cycle > 0 ? cycle + "번 함께 숨쉬었어요 · 다시 시작하려면 눌러요" : "다시 하려면 시작을 눌러요") + "</div>";
+      const done = cycle > 0 ? cycle + "번 호흡" + (sessionSec > 0 ? " · 총 " + fmtTime(sessionSec) : "") : "";
+      clockEl.textContent = "";
+      cycEl.textContent = done ? "잘했어요 · " + done + " 🌿" : "";
+      const sub = byTime ? "시간이 다 됐어요 · " + done + " 🌿" : (cycle > 0 ? done + " · 다시 하려면 눌러요" : "다시 하려면 시작을 눌러요");
+      mid.innerHTML = '<div class="start-hint">' + (byTime ? "명상 끝! 잘했어요 🌿" : "잘했어요! 🌿") + '</div><div class="start-sub">' + sub + "</div>";
       ding(392, 0, 0.5); ding(523, 0.12, 0.7);
       releaseWake();
     }
@@ -344,6 +384,14 @@
     // 화면 탭: 시작 전엔 시작, 재생 중엔 컨트롤만 다시 표시(실수로 멈추지 않게 — 멈춤은 '멈추기'·스페이스)
     $("tap").addEventListener("click", () => { if (!running) start(); else scheduleHide(); });
     $("presets").addEventListener("click", (e) => { const b = e.target.closest(".preset"); if (b) { e.stopPropagation(); applyPreset(b.dataset.p); } });
+    $("durs").addEventListener("click", (e) => {
+      const b = e.target.closest(".preset"); if (!b) return; e.stopPropagation();
+      durationSec = (+b.dataset.m) * 60;
+      document.querySelectorAll("#durs .preset").forEach((x) => x.classList.toggle("sel", x === b));
+      if (durationSec === 0) pendingEnd = false;
+      else if (running && sessionSec >= durationSec) pendingEnd = true; // 이미 지난 시간으로 바꾸면 다음 호흡에 마무리
+      updateClock();
+    });
     $("soundBtn").addEventListener("click", (e) => {
       e.stopPropagation(); soundOn = !soundOn;
       const b = $("soundBtn"); b.classList.toggle("on", soundOn); b.setAttribute("aria-pressed", soundOn); b.innerHTML = soundOn ? "🔊 소리" : "🔇 소리 끔";
