@@ -215,6 +215,13 @@ try {
   q("[data-tab=settings]").click();
   q("[data-theme=dark]").click();
   check("다크 테마 적용", d.documentElement.getAttribute("data-theme") === "dark");
+  check("보타니칼 테마 버튼 존재", !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]"));
+  q("[data-theme=garden]").click();
+  check("보타니칼 테마 적용", d.documentElement.getAttribute("data-theme") === "garden");
+  q("[data-theme=midnight]").click();
+  check("나이트 테마 적용", d.documentElement.getAttribute("data-theme") === "midnight");
+  q("[data-theme=warm]").click();
+  check("따뜻함 테마 복귀", d.documentElement.getAttribute("data-theme") === "warm");
   q("#textSizeSeg button[data-size=xl]").click();
   check("글자 크기 적용", d.documentElement.getAttribute("data-textsize") === "xl");
   q("#toneSeg button[data-tone=plain]").click();
