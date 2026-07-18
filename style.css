@@ -9,6 +9,7 @@
    ============================================================ */
 
 :root {
+  color-scheme: light; /* 네이티브 컨트롤(날짜 입력·스크롤바)을 테마 밝기에 맞춤 */
   /* ----- 스페이싱 (4px 그리드) ----- */
   --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
   --s5: 20px; --s6: 24px; --s7: 32px; --s8: 44px;
@@ -83,6 +84,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   /* 다크 배경에서 뭉개지지 않게 점수 팔레트 채도·명도 상향 */
   --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
   --bg: #17161d;
@@ -133,6 +135,7 @@
 
 /* ===== 보타니칼 나이트 🌌 (B안 · 미드나잇 — 깊은 숲 + 골드 라인) ===== */
 [data-theme="midnight"] {
+  color-scheme: dark;
   /* 다크 배경용 점수 팔레트(다크 테마와 동일 기준) */
   --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
   --bg: #16211b;
