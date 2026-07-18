@@ -1478,7 +1478,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .theme-btn[data-theme="midnight"] { background: #101c18; }
 .theme-btn[data-theme="midnight"] span { color: #e9d3a1; }
 .theme-btn[data-theme="minimal"] { background: #ffffff; }
-.theme-btn[data-theme="minimal"] span { color: #1a1a18; }
+.theme-btn[data-theme="minimal"] span { color: #b3480c; }
 
 /* ===== 미니멀 테마 — 여백·헤어라인·타이포만 (장식 0) ===== */
 [data-theme="minimal"] {
@@ -1490,13 +1490,13 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   --line: #e6e6e1;
   --line-strong: #d4d4cd;
   --bg-sunken: #f0f0ec;
-  --accent: #2a2a28; /* 모노크롬 — 검정 톤 */
-  --accent-2: #ececea;
-  --accent-deep: #1a1a18; /* 15:1+ */
+  --accent: #e8641e; /* 블랙 & 오렌지 — 채움·포인트 */
+  --accent-2: #fdeadd;
+  --accent-deep: #b3480c; /* 텍스트용 번트 오렌지 · 5.2:1+ */
   --success: #2f6a4f;
   --danger: #9c4f3f;
-  --energy: #55554f;
-  --ring: rgba(0, 0, 0, 0.12);
+  --energy: #e8641e;
+  --ring: rgba(232, 100, 30, 0.16);
   --blob-a: #fafaf8; --blob-b: #fafaf8; --blob-c: #fafaf8;
   --shadow-sm: none;
   --shadow: none;
