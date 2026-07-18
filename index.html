@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v170" />
+  <meta name="app-version" content="v171" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -37,8 +37,9 @@
 
   <main class="app">
     <header class="hero">
-      <p class="greeting" id="greeting">안녕, 오늘도 와줘서 고마워요</p>
+      <p class="hero-kicker" aria-hidden="true">DAILY REST</p>
       <h1>오늘의 쉼</h1>
+      <p class="greeting"><span id="heroDate"></span><span id="greeting">오늘도 와줘서 고마워요</span></p>
       <p class="subtitle">매일 마음을 기록하고, 나를 조금씩 이해해가요.</p>
     </header>
 

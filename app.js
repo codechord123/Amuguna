@@ -343,6 +343,7 @@ function updateJourneyHero() {
   const tk = todayKey(), p = tk.split("-");
   const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   set("journeyEyebrow", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일`);
+  set("heroDate", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일 · `);
   const e = loadEntries()[tk];
   const done = !!(e && e.mood);
   card.classList.toggle("done", done);
