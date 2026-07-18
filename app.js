@@ -3097,20 +3097,30 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
   const insTxt = withInsight ? topHabitInsight(ha) : "";
   const insHtml = insTxt ? `<p class="hg-insight">${insTxt}</p>` : "";
   // 4개 이상이면 '오늘 안 한 습관' 우선으로 3개까지만 — 한 화면(스크롤 제로) 유지, 나머지는 습관 탭으로
-  const glanceChs = chs.length > 3
-    ? chs.slice().sort((a, b) => (!!(a.done && a.done[tk])) - (!!(b.done && b.done[tk]))).slice(0, 3)
-    : chs;
+  // 정렬은 최초 1회만 고정 — 체크 직후 재정렬로 방금 누른 항목이 점프하지 않게(반응성 체감)
+  const idsKey = chs.map((h) => h.id).join(",");
+  const cache = renderHabitGlanceInto._order || (renderHabitGlanceInto._order = {});
+  if (!cache[listId] || cache[listId].key !== idsKey) {
+    cache[listId] = { key: idsKey, ids: chs.slice().sort((a, b) => (!!(a.done && a.done[tk])) - (!!(b.done && b.done[tk]))).map((h) => h.id) };
+  }
+  const stable = cache[listId].ids.map((id) => chs.find((h) => h.id === id)).filter(Boolean);
+  const glanceChs = chs.length > 3 ? stable.slice(0, 3) : stable;
   const moreHtml = chs.length > 3 ? `<button class="hg-more" data-hgmore>＋ ${chs.length - 3}개 더 — 습관 탭에서 보기 ›</button>` : "";
+  const week7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); week7.push(todayKey(d)); }
   list.innerHTML = insHtml + glanceChs.map((h) => {
     const doneCount = habitDoneCount(h); // 90일 창 기준 — 상세·카드와 수치 일치(창 밖 키 왜곡 방지)
     const todayDone = !!(h.done && h.done[tk]);
     let streak = 0; for (let i = 0; ; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = todayKey(d); if (k < h.startDate) break; if (h.done && h.done[k]) streak++; else if (i === 0) continue; else break; }
     const pct = Math.min(100, Math.round(doneCount / CH_TARGET * 100));
+    // 요약(모아보기)에서는 90일 막대 대신 최근 7일 점 — 이번 주에 했는지 한눈에
+    const mid = withInsight
+      ? `<div class="hg-week" aria-label="최근 7일 실천">${week7.map((k) => `<i class="hg-wd ${h.done && h.done[k] ? "on" : ""} ${k === tk ? "td" : ""}" title="${+k.split("-")[1]}/${+k.split("-")[2]}"></i>`).join("")}</div>`
+      : `<div class="hg-bar"><i style="width:${pct}%"></i></div>`;
     return `<div class="hg-row">`
       + `<button class="hg-check ${todayDone ? "done" : ""}" data-hgcheck="${h.id}" aria-pressed="${todayDone}" aria-label="${escapeHtml(h.title)} 오늘 완료 ${todayDone ? "취소" : "체크"}">${todayDone ? "✓" : "○"}</button>`
       + `<div class="hg-info" data-hgopen="${h.id}" role="button" tabindex="0" aria-label="${escapeHtml(h.title)} 상세 보기">`
       + `<div class="hg-title">${ICONS.leaf} ${escapeHtml(h.title)}</div>`
-      + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
+      + mid + `</div>`
       + `<span class="hg-meta">${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
   }).join("") + moreHtml;
   return true;
