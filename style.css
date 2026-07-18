@@ -66,27 +66,30 @@
 
 /* ===== 보타니칼 🌿 (A안 · 프레스드 가든 — 크림 종이 + 세이지 + 마른 장미) ===== */
 [data-theme="garden"] {
-  --bg: #faf8f2;
-  --card: #ffffff;
-  --ink: #2c2a25;
-  --ink-2: #55524a;
-  --soft: #6e6a5f; /* 전 배경 4.6:1+ (WCAG AA) */
-  --line: #eae6dc;
-  --line-strong: #d9d3c5;
-  --bg-sunken: #f1eee6;
-  --accent: #d97742; /* 노을빛 앰버 */
-  --accent-2: #f7e6d8;
-  --accent-deep: #a04a1d; /* 텍스트용 · 5.6:1+ */
+  --bg: #eceef8;
+  --card: #f8f9fd;
+  --ink: #383c55;
+  --ink-2: #4c5170;
+  --soft: #5d6284; /* 전 배경 4.7:1+ (WCAG AA) */
+  --line: #dcdfee;
+  --line-strong: #c8ccdf;
+  --bg-sunken: #e2e4f1;
+  --accent: #6a72b4; /* 나른한 라벤더 */
+  --accent-2: #e4e6f7;
+  --accent-deep: #4d5490; /* 텍스트용 · 6.1:1+ */
   --success: #3f7257;
   --danger: #a34b3c;
-  --energy: #d97742;
-  --ring: rgba(217, 119, 66, 0.18);
-  --blob-a: #faf8f2; --blob-b: #faf8f2; --blob-c: #faf8f2;
-  --shadow-sm: 0 2px 6px rgba(120, 100, 70, 0.06);
-  --shadow: 0 14px 34px rgba(120, 100, 70, 0.09), 0 3px 8px rgba(120, 100, 70, 0.05);
-  --shadow-lg: 0 24px 54px rgba(110, 90, 60, 0.13), 0 6px 16px rgba(110, 90, 60, 0.07);
-  --card-hi: rgba(255, 255, 255, 0.8);
+  --energy: #6a72b4;
+  --ring: rgba(106, 114, 180, 0.2);
+  --blob-a: #eceef8; --blob-b: #eceef8; --blob-c: #eceef8;
+  --shadow-sm: 0 2px 6px rgba(110, 118, 170, 0.07);
+  --shadow: 0 16px 40px rgba(110, 118, 170, 0.12), 0 3px 8px rgba(110, 118, 170, 0.06);
+  --shadow-lg: 0 24px 56px rgba(100, 108, 160, 0.16), 0 6px 16px rgba(100, 108, 160, 0.08);
+  --card-hi: rgba(255, 255, 255, 0.85);
 }
+/* 나른한 안개 그라데이션 */
+[data-theme="garden"] { background-image: linear-gradient(175deg, #f0f2fa 0%, #e8eaf6 45%, #ebe7f3 100%); background-attachment: fixed; }
+
 
 
 /* ===== 보타니칼 나이트 🌌 (B안 · 미드나잇 — 깊은 숲 + 골드 라인) ===== */
@@ -94,27 +97,28 @@
   color-scheme: dark;
   /* 다크 배경용 점수 팔레트 */
   --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
-  --bg: #15171a;
-  --card: #1e2126;
-  --ink: #ebe6dc;
-  --ink-2: #c5c0b4;
-  --soft: #98948a; /* 5.9:1+ (WCAG AA) */
-  --line: #2c2f34;
-  --line-strong: #3a3e44;
-  --bg-sunken: #1a1d21;
-  --accent: #c98a4e; /* 호박빛 */
-  --accent-2: #33291c;
-  --accent-deep: #e2b380; /* 다크 관례: 텍스트용은 밝게 · 8.4:1+ */
+  --bg: #14131e;
+  --card: #1e1d2b;
+  --ink: #ece7da;
+  --ink-2: #c9c5bb;
+  --soft: #9a96a8; /* 5.8:1+ (WCAG AA) */
+  --line: #2e2c3e;
+  --line-strong: #3f3c52;
+  --bg-sunken: #191826;
+  --accent: #d9b36a; /* 별빛 금 */
+  --accent-2: #2e2a1e;
+  --accent-deep: #ecd08e; /* 다크 관례: 텍스트용은 밝게 · 11:1 */
   --success: #8fd0a5;
   --danger: #e08a82;
-  --energy: #c98a4e;
-  --ring: rgba(201, 138, 78, 0.26);
-  --blob-a: #15171a; --blob-b: #15171a; --blob-c: #15171a;
+  --energy: #d9b36a;
+  --ring: rgba(217, 179, 106, 0.28);
+  --blob-a: #14131e; --blob-b: #14131e; --blob-c: #14131e;
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
-  --shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 3px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.4);
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 26px 58px rgba(0, 0, 0, 0.6), 0 6px 16px rgba(0, 0, 0, 0.42);
   --card-hi: rgba(255, 255, 255, 0.05);
 }
+
 
 
 /* ----- 보타니칼 공통 터치: 세리프 제목 + 모서리 잎 라인아트 ----- */
@@ -150,7 +154,50 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 .mood:focus-visible, .btn:focus-visible, .habit-check:focus-visible { outline-offset: 3px; }
 
 /* 배경 블롭 — 은은한 분위기만 */
-.bg-blobs { display: none; /* 고요한 방 — 배경 장식 없음 */ }
+.bg-blobs { display: none; position: fixed; inset: 0; overflow: hidden; z-index: -1; }
+/* 밤 · 별빛 — 별이 뜨고, 이따금 별똥별이 흐름 */
+[data-theme="midnight"] .bg-blobs { display: block; }
+[data-theme="midnight"] .bg-blobs::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.3px 1.3px at 12% 16%, rgba(255,246,220,0.85), transparent 60%),
+    radial-gradient(1px 1px at 76% 8%, rgba(255,246,220,0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 88% 30%, rgba(255,246,220,0.7), transparent 60%),
+    radial-gradient(1px 1px at 30% 38%, rgba(255,246,220,0.45), transparent 60%),
+    radial-gradient(1.3px 1.3px at 60% 50%, rgba(255,246,220,0.55), transparent 60%),
+    radial-gradient(1px 1px at 8% 60%, rgba(255,246,220,0.5), transparent 60%),
+    radial-gradient(1.6px 1.6px at 44% 7%, rgba(255,246,220,0.8), transparent 60%),
+    radial-gradient(1px 1px at 92% 68%, rgba(255,246,220,0.5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 20% 84%, rgba(255,246,220,0.5), transparent 60%),
+    radial-gradient(1px 1px at 54% 74%, rgba(255,246,220,0.4), transparent 60%),
+    radial-gradient(1.2px 1.2px at 70% 90%, rgba(255,246,220,0.55), transparent 60%),
+    radial-gradient(1px 1px at 38% 58%, rgba(255,246,220,0.35), transparent 60%),
+    radial-gradient(1.4px 1.4px at 66% 22%, rgba(255,246,220,0.6), transparent 60%),
+    radial-gradient(1px 1px at 84% 48%, rgba(255,246,220,0.4), transparent 60%);
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: 0.65; } to { opacity: 1; } }
+[data-theme="midnight"] .blob { display: block; opacity: 0; filter: none; border-radius: 0;
+  width: 96px; height: 1.6px; background: linear-gradient(90deg, rgba(255,248,222,0.95), rgba(255,248,222,0)); }
+[data-theme="midnight"] .blob1 { top: 12%; left: 58%; animation: shoot1 9s linear infinite 2.5s; }
+[data-theme="midnight"] .blob2 { top: 42%; left: 8%; animation: shoot2 13s linear infinite 7s; }
+[data-theme="midnight"] .blob3 { display: none; }
+@keyframes shoot1 {
+  0%, 91% { opacity: 0; transform: rotate(32deg) translateX(0); }
+  92% { opacity: 1; }
+  97% { opacity: 0.9; transform: rotate(32deg) translateX(190px); }
+  100% { opacity: 0; transform: rotate(32deg) translateX(230px); }
+}
+@keyframes shoot2 {
+  0%, 93% { opacity: 0; transform: rotate(24deg) translateX(0); }
+  94% { opacity: 1; }
+  98% { opacity: 0.9; transform: rotate(24deg) translateX(170px); }
+  100% { opacity: 0; transform: rotate(24deg) translateX(210px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="midnight"] .bg-blobs::before, [data-theme="midnight"] .blob { animation: none !important; }
+  [data-theme="midnight"] .blob { opacity: 0; }
+}
 .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.28; transition: background 0.5s ease; }
 .blob1 { width: 360px; height: 360px; background: var(--blob-a); top: -110px; left: -80px; animation: float 18s ease-in-out infinite; }
 .blob2 { width: 320px; height: 320px; background: var(--blob-b); bottom: -100px; right: -70px; animation: float 22s ease-in-out infinite reverse; }
@@ -161,11 +208,11 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 
 /* ----- 히어로 ----- */
 .hero { text-align: center; margin-bottom: var(--s4); }
-.sun-dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto var(--s3);
-  background: radial-gradient(circle at 35% 30%, #f0b06a, #d97742);
-  box-shadow: 0 0 14px rgba(217, 119, 66, 0.45); }
-.sun-dot.sun-morning { background: radial-gradient(circle at 35% 30%, #f4d08a, #e0a050); box-shadow: 0 0 14px rgba(224, 160, 80, 0.4); }
-.sun-dot.sun-night { background: radial-gradient(circle at 35% 30%, #e8b47c, #c98a4e); box-shadow: 0 0 16px rgba(201, 138, 78, 0.5); }
+.sun-dot { width: 11px; height: 11px; border-radius: 50%; margin: 0 auto var(--s3);
+  background: radial-gradient(circle at 35% 30%, #cdd3f2, #97a0d6);
+  box-shadow: 0 0 16px rgba(151, 160, 214, 0.55); }
+.sun-dot.sun-morning { background: radial-gradient(circle at 35% 30%, #dee3f8, #aab3e2); box-shadow: 0 0 14px rgba(170, 179, 226, 0.5); }
+[data-theme="midnight"] .sun-dot { background: radial-gradient(circle at 35% 30%, #f5dfa8, #d9b36a); box-shadow: 0 0 18px rgba(217, 179, 106, 0.65); }
 body.slim-hero .sun-dot { display: none; }
 /* 오늘 외 탭은 히어로를 한 줄로 슬림하게 + 푸터 숨김 — 스크롤 없는 1화면 목표 */
 body.slim-hero .hero { margin-bottom: var(--s3); }
@@ -1444,16 +1491,16 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .med-snd-btn .snd-ico { width: 20px; height: 20px; }
 /* 축하 꽃잎 파티클 — 이모지 대체 */
 .confetti.petal { width: 11px; height: 15px; border-radius: 62% 38% 60% 40% / 60% 60% 42% 40%; opacity: 0.9; }
-.confetti.petal.p0 { background: #f0c48e; }
-.confetti.petal.p1 { background: #d97742; }
-.confetti.petal.p2 { background: #e8a35c; }
-.confetti.petal.p3 { background: #c98a4e; }
-.confetti.petal.p4 { background: #f5dcc0; }
+.confetti.petal.p0 { background: #b9c0ea; }
+.confetti.petal.p1 { background: #8e97d3; }
+.confetti.petal.p2 { background: #e8d29a; }
+.confetti.petal.p3 { background: #d9b36a; }
+.confetti.petal.p4 { background: #dfe3f6; }
 
 /* 테마 타일 — 각 테마의 실제 배경/잉크색으로 미리보기 (아이콘 없음) */
 .theme-btn { padding: var(--s5) var(--s2); }
-.theme-btn[data-theme="garden"] { background: #faf8f2; }
-.theme-btn[data-theme="garden"] span { color: #a04a1d; }
-.theme-btn[data-theme="midnight"] { background: #15171a; }
-.theme-btn[data-theme="midnight"] span { color: #e2b380; }
+.theme-btn[data-theme="garden"] { background: #eceef8; }
+.theme-btn[data-theme="garden"] span { color: #4d5490; }
+.theme-btn[data-theme="midnight"] { background: #14131e; }
+.theme-btn[data-theme="midnight"] span { color: #ecd08e; }
 

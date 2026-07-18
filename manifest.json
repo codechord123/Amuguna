@@ -8,8 +8,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#faf8f2",
-  "theme_color": "#d97742",
+  "background_color": "#eceef8",
+  "theme_color": "#6a72b4",
   "categories": ["health", "lifestyle"],
   "screenshots": [
     { "src": "docs/store/shot-today.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "오늘의 여정 — 연속·주간 목표·습관 한눈에" },
