@@ -1491,3 +1491,35 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] .jh-eyebrow { color: var(--accent); }
 /* 가든: 은은한 도트 그리드 종이 질감 */
 [data-theme="garden"] { background-image: radial-gradient(rgba(125, 155, 118, 0.16) 1px, transparent 1.2px); background-size: 22px 22px; }
+
+/* ===== 이모지 대체 아이콘 시스템 ===== */
+.ic-line { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: -0.2em; }
+.habit-title .ic-line, .hsum-name .ic-line, .hg-title .ic-line, .corr-top .ic-line { color: var(--accent-deep); }
+.disc-ico .ic-line { width: 1.4em; height: 1.4em; }
+.badge-emoji .ic-line { width: 1em; height: 1em; stroke-width: 1.5; vertical-align: -0.12em; }
+.badge.earned .badge-emoji { color: var(--accent-deep); }
+.level-emoji .ic-line { width: 2rem; height: 2rem; stroke-width: 1.4; color: var(--accent-deep); }
+.onboard-emoji .ob-ico { width: 56px; height: 56px; fill: none; stroke: var(--accent-deep); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+/* 감정 칩 밴드 점 — 점수 팔레트와 동일 축 */
+.band-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: 1px; background: var(--score-2); }
+.band-dot.pos { background: var(--score-4); }
+.band-dot.neg { background: var(--score-0); }
+/* 배경음·볼륨 라인 아이콘 */
+.snd-ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: block; margin: 0 auto; }
+.vol-ico .snd-ico { width: 18px; height: 18px; }
+.med-snd-btn .snd-ico { width: 20px; height: 20px; }
+/* 테마 스와치 — 이모지 대신 각 테마의 배경+포인트 색 */
+.theme-btn::before { content: ""; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); flex-shrink: 0; }
+.theme-btn[data-theme="warm"]::before { background: linear-gradient(135deg, #f7f1ea 50%, #e8836a 50%); }
+.theme-btn[data-theme="calm"]::before { background: linear-gradient(135deg, #eef3f2 50%, #5fb6a3 50%); }
+.theme-btn[data-theme="dark"]::before { background: linear-gradient(135deg, #17161d 50%, #ac95f0 50%); }
+.theme-btn[data-theme="garden"]::before { background: linear-gradient(135deg, #f5f2e8 50%, #7d9b76 50%); }
+.theme-btn[data-theme="midnight"]::before { background: linear-gradient(135deg, #16211b 50%, #cda86a 50%); }
+.theme-btn[data-theme="auto"]::before { background: linear-gradient(135deg, #f5f2e8 25%, #7d9b76 25% 50%, #16211b 50% 75%, #cda86a 75%); }
+/* 축하 꽃잎 파티클 — 이모지 대체 */
+.confetti.petal { width: 11px; height: 15px; border-radius: 62% 38% 60% 40% / 60% 60% 42% 40%; opacity: 0.9; }
+.confetti.petal.p0 { background: #a9b89b; }
+.confetti.petal.p1 { background: #cda86a; }
+.confetti.petal.p2 { background: #c68a72; }
+.confetti.petal.p3 { background: #7d9b76; }
+.confetti.petal.p4 { background: #e8cf9e; }

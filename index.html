@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v164" />
+  <meta name="app-version" content="v165" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -26,7 +26,7 @@
   <!-- ========== 온보딩 ========== -->
   <div class="onboard" id="onboard" role="dialog" aria-modal="true" aria-label="앱 소개" hidden>
     <div class="onboard-card">
-      <div class="onboard-emoji" id="obEmoji">☕</div>
+      <div class="onboard-emoji" id="obEmoji"><svg class="ob-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9 H16.5 V15 C16.5 18, 14.5 20, 11.5 20 H10 C7 20, 5 18, 5 15 Z"/><path d="M16.5 10.5 H18.5 C20 10.5, 20.8 11.5, 20.8 12.6 C20.8 14, 19.8 15, 18.3 15 H16.5"/><path d="M8.5 6 C8.5 5, 9.4 4.7, 9.4 3.8 M12.5 6 C12.5 5, 13.4 4.7, 13.4 3.8"/></svg></div>
       <h2 id="obTitle"></h2>
       <p id="obDesc"></p>
       <div class="onboard-dots" id="obDots"></div>
@@ -182,16 +182,16 @@
         <h2>잔잔한 배경음</h2>
         <p class="hint">마음을 가라앉히는 소리를 틀어두고 쉬어가요.</p>
         <div class="sound-grid" id="soundGrid">
-          <button class="sound-btn" data-sound="rain" aria-pressed="false">🌧️<span>빗소리</span></button>
-          <button class="sound-btn" data-sound="wave" aria-pressed="false">🌊<span>파도</span></button>
-          <button class="sound-btn" data-sound="forest" aria-pressed="false" title="숲과 새소리">🌲<span>숲</span></button>
-          <button class="sound-btn" data-sound="fire" aria-pressed="false">🔥<span>모닥불</span></button>
-          <button class="sound-btn" data-sound="off" aria-pressed="false">🔇<span>끄기</span></button>
+          <button class="sound-btn" data-sound="rain" aria-pressed="false"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15 C 4.4 15, 3 13.2, 3 11.5 C 3 9.8, 4.4 8.5, 6 8.4 C 6.4 6, 8.4 4.2, 11 4.2 C 13.3 4.2, 15.2 5.6, 15.9 7.8 C 18 7.9, 20 9.5, 20 11.6 C 20 13.5, 18.5 15, 16.5 15 Z"/><path d="M8 17.5 L7 20 M12.2 17.5 L11.2 20 M16.4 17.5 L15.4 20"/></svg><span>빗소리</span></button>
+          <button class="sound-btn" data-sound="wave" aria-pressed="false"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13.5 C 5 11.5, 7 11.5, 9 13.5 C 11 15.5, 13 15.5, 15 13.5 C 17 11.5, 19 11.5, 21 13.5"/><path d="M3 18 C 5 16, 7 16, 9 18 C 11 20, 13 20, 15 18 C 17 16, 19 16, 21 18"/></svg><span>파도</span></button>
+          <button class="sound-btn" data-sound="forest" aria-pressed="false" title="숲과 새소리"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 L7.5 10 H9.5 L5.5 16.5 H18.5 L14.5 10 H16.5 Z"/><path d="M12 16.5 V20.5"/></svg><span>숲</span></button>
+          <button class="sound-btn" data-sound="fire" aria-pressed="false"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 C 8.7 20.5, 6.8 18.4, 6.8 15.8 C 6.8 13, 8.7 11.4, 9.7 9.4 C 10.2 10.4, 10.8 11, 11.7 11.5 C 11.2 8.6, 12.2 5.8, 14.6 4.2 C 14.1 7, 15.6 8.6, 16.6 10.5 C 17.3 11.9, 17.4 13.4, 17.4 15.8 C 17.4 18.4, 15.3 20.5, 12 20.5 Z"/></svg><span>모닥불</span></button>
+          <button class="sound-btn" data-sound="off" aria-pressed="false"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/><path d="M15.8 9.8 L20.2 14.2 M20.2 9.8 L15.8 14.2"/></svg><span>끄기</span></button>
         </div>
         <div class="volume-row">
-          <span>🔈</span>
+          <span class="vol-ico"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/></svg></span>
           <input type="range" id="ambientVol" min="0" max="100" value="55" aria-label="배경음 음량" />
-          <span>🔊</span>
+          <span class="vol-ico"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/><path d="M15.5 9.5 A 4.5 4.5 0 0 1 15.5 14.5 M17.8 7.3 A 8 8 0 0 1 17.8 16.7"/></svg></span>
         </div>
         <div class="timer-row">
           <span class="timer-label">꺼짐 타이머</span>
@@ -214,7 +214,7 @@
 
       <div class="card" id="chEmpty" hidden>
         <div class="setup-empty">
-          <div class="onboard-emoji">🌱</div>
+          <div class="onboard-emoji"><svg class="ob-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg></div>
           <h2>한 가지 작은 습관부터요</h2>
           <p class="hint">거창하지 않아도 괜찮아요. 매일 한 칸씩이면 충분해요. <strong>습관은 여러 개 등록할 수 있어요</strong> — 부담되면 하나부터 시작해도 좋아요.</p>
         </div>
@@ -226,12 +226,12 @@
       <div class="card" id="challengeSetup" hidden>
         <p class="field-label">어떤 습관을 만들고 싶어요?</p>
         <div class="preset-grid" id="presetGrid">
-          <button class="preset" data-h="10분 산책하기" data-e="🚶">🚶 10분 산책</button>
-          <button class="preset" data-h="감사한 일 3가지 적기" data-e="🙏">🙏 감사 3가지</button>
-          <button class="preset" data-h="물 8잔 마시기" data-e="💧">💧 물 8잔</button>
-          <button class="preset" data-h="10분 스트레칭하기" data-e="🧘">🧘 10분 스트레칭</button>
-          <button class="preset" data-h="자기 전 휴대폰 멀리 두기" data-e="📵">📵 자기 전 폰 멀리</button>
-          <button class="preset" data-h="한 줄 일기 쓰기" data-e="📔">📔 한 줄 일기</button>
+          <button class="preset" data-h="10분 산책하기" data-e="🚶">10분 산책</button>
+          <button class="preset" data-h="감사한 일 3가지 적기" data-e="🙏">감사 3가지</button>
+          <button class="preset" data-h="물 8잔 마시기" data-e="💧">물 8잔</button>
+          <button class="preset" data-h="10분 스트레칭하기" data-e="🧘">10분 스트레칭</button>
+          <button class="preset" data-h="자기 전 휴대폰 멀리 두기" data-e="📵">자기 전 폰 멀리</button>
+          <button class="preset" data-h="한 줄 일기 쓰기" data-e="📔">한 줄 일기</button>
         </div>
         <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요 (무엇을 할까요?)" maxlength="40" aria-label="습관 이름" />
 
@@ -403,12 +403,12 @@
       <div class="card collapsible collapsed">
         <h2>테마</h2>
         <div class="theme-grid" id="themeGrid">
-          <button class="theme-btn" data-theme="warm">🌅<span>따뜻</span></button>
-          <button class="theme-btn" data-theme="calm">🌿<span>차분</span></button>
-          <button class="theme-btn" data-theme="dark">🌙<span>다크</span></button>
-          <button class="theme-btn" data-theme="garden">🍃<span>보타니칼</span></button>
-          <button class="theme-btn" data-theme="midnight">🌌<span>나이트</span></button>
-          <button class="theme-btn" data-theme="auto">🔄<span>자동</span></button>
+          <button class="theme-btn" data-theme="warm"><span>따뜻</span></button>
+          <button class="theme-btn" data-theme="calm"><span>차분</span></button>
+          <button class="theme-btn" data-theme="dark"><span>다크</span></button>
+          <button class="theme-btn" data-theme="garden"><span>보타니칼</span></button>
+          <button class="theme-btn" data-theme="midnight"><span>나이트</span></button>
+          <button class="theme-btn" data-theme="auto"><span>자동</span></button>
         </div>
       </div>
 
@@ -519,7 +519,7 @@
     <p class="med-swipe-hint" id="medSwipeHint">← 넘기며 따라가요 →</p>
     <button class="btn primary" id="medNext">건너뛰고 호흡 시작 →</button>
     <div class="med-sound" id="medSound">
-      <button type="button" class="med-snd-btn" id="medAmbBtn" aria-label="배경음 켜기/끄기">🔈</button>
+      <button type="button" class="med-snd-btn" id="medAmbBtn" aria-label="배경음 켜기/끄기"><svg class="snd-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/></svg></button>
       <input type="range" class="med-vol" id="medVol" min="0" max="100" value="55" aria-label="배경음 음량" />
     </div>
   </div>

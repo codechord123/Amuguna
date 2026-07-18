@@ -5,6 +5,21 @@
 
 /* ===================== 저장소 ===================== */
 const DB = { ENTRIES: "entries_v2", SETTINGS: "settings_v2", CH: "challenges_v2", ONBOARD: "onboarded_v1", JDRAFT: "journey_draft_v1", TOMB: "tombstones_v1" };
+
+/* 라인 아이콘 — 이모지 대체 (보타니칼 디자인 언어, stroke=currentColor) */
+const IC = (p, vb) => `<svg class="ic-line" viewBox="${vb || "0 0 24 24"}" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  leaf: IC('<path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/>'),
+  medal: IC('<circle cx="12" cy="9.5" r="5.5"/><path d="M9 14.3 L7.6 20.5 L12 18.2 L16.4 20.5 L15 14.3"/>'),
+  sprout: IC('<path d="M12 21 V11.5"/><path d="M12 12 C 11.5 8.5, 9 6.5, 5.5 6.5 C 5.8 10, 8.5 12, 12 12 Z"/><path d="M12 10.5 C 12.3 7.5, 14.5 5.5, 17.8 5.5 C 17.6 8.8, 15.2 10.8, 12 10.5 Z"/>'),
+  cup: IC('<path d="M5 9 H16.5 V15 C16.5 18, 14.5 20, 11.5 20 H10 C7 20, 5 18, 5 15 Z"/><path d="M16.5 10.5 H18.5 C20 10.5, 20.8 11.5, 20.8 12.6 C20.8 14, 19.8 15, 18.3 15 H16.5"/><path d="M8.5 6 C8.5 5, 9.4 4.7, 9.4 3.8 M12.5 6 C12.5 5, 13.4 4.7, 13.4 3.8"/>'),
+  path: IC('<path d="M5 19.5 C 9.5 17.5, 9 12.5, 12 11.3 C 15 10, 15 6, 19 4.8"/><circle cx="5" cy="19.5" r="1.3"/><circle cx="19" cy="4.8" r="1.3"/>'),
+  bars: IC('<path d="M5 20 V13 M10 20 V9 M15 20 V12 M20 20 V6"/>'),
+  trendUp: IC('<path d="M4 17 L10 11 L13.5 14.5 L20 8"/><path d="M15.5 8 H20 V12.5"/>'),
+  trendDown: IC('<path d="M4 8 L10 14 L13.5 10.5 L20 16"/><path d="M20 11.5 V16 H15.5"/>'),
+  clock: IC('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5 V12 L15.2 14"/>'),
+  tag: IC('<path d="M12.6 3.5 H20.5 V11.4 L11.9 20 C11.2 20.7, 10.1 20.7, 9.4 20 L4 14.6 C 3.3 13.9, 3.3 12.8, 4 12.1 Z"/><circle cx="16.4" cy="7.6" r="1.3"/>'),
+};
 const CH_TARGET = 90;
 
 // 기분 → 점수(1~5) + 태그 (Russell 정동 원형 모형 기반, 점수만이 아니라 라벨로 분기)
@@ -203,17 +218,17 @@ function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&
 
 /* ===================== 온보딩 ===================== */
 const obSlides = [
-  { e: "☕", t: "여긴 잘 쉬려고 온 곳이에요", d: "잘하려고 애쓰지 않아도 돼요. 그냥 와준 것만으로 충분해요." },
-  { e: "✨", t: "'오늘의 여정'으로 기록해요", d: "동그라미를 돌려 오늘 기분을 0~100점으로, 감정도 골라요. 한 걸음씩 따라가면 끝나요." },
-  { e: "📊", t: "기록이 쌓이면 나를 알게 돼요", d: "기분·활력 흐름, 요일 패턴, 감정과 습관의 관계까지 '기록' 탭이 분석해줘요." },
-  { e: "🌿", t: "지칠 땐 '쉼' 탭에서 숨 한 번", d: "위로 한마디, 호흡 명상, 잔잔한 소리. 언제든 도망 와도 돼요." },
+  { e: "cup", t: "여긴 잘 쉬려고 온 곳이에요", d: "잘하려고 애쓰지 않아도 돼요. 그냥 와준 것만으로 충분해요." },
+  { e: "path", t: "'오늘의 여정'으로 기록해요", d: "동그라미를 돌려 오늘 기분을 0~100점으로, 감정도 골라요. 한 걸음씩 따라가면 끝나요." },
+  { e: "bars", t: "기록이 쌓이면 나를 알게 돼요", d: "기분·활력 흐름, 요일 패턴, 감정과 습관의 관계까지 '기록' 탭이 분석해줘요." },
+  { e: "leaf", t: "지칠 땐 '쉼' 탭에서 숨 한 번", d: "위로 한마디, 호흡 명상, 잔잔한 소리. 언제든 도망 와도 돼요." },
 ];
 let obIndex = 0;
 const onboard = document.getElementById("onboard");
 function showOnboard() { obIndex = 0; onboard.hidden = false; renderOb(); }
 function renderOb() {
   const s = obSlides[obIndex];
-  document.getElementById("obEmoji").textContent = s.e;
+  document.getElementById("obEmoji").innerHTML = ICONS[s.e] || ICONS.leaf;
   document.getElementById("obTitle").textContent = s.t;
   document.getElementById("obDesc").textContent = s.d;
   document.getElementById("obNext").textContent = obIndex === obSlides.length - 1 ? "시작하기" : "다음";
@@ -253,7 +268,7 @@ function openEntryDetail(dateKey) {
 }
 function entryDetailHtml(e) {
   const sc = entryScore(e);
-  const moodTxt = e.mood ? `${mInfo(e.mood).emoji} ${e.mood}` : "기분 기록 없음";
+  const moodTxt = e.mood ? e.mood : "기분 기록 없음";
   const refl = e.reflection && (e.reflection.good || e.reflection.hard);
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
   const tags = (e.tags && e.tags.length) ? `<h2>감정 태그</h2><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
@@ -333,7 +348,7 @@ function updateJourneyHero() {
   card.classList.toggle("done", done);
   if (done) {
     set("journeyEmoji", "🌿");
-    set("journeyStartHint", `오늘 ${mInfo(e.mood).emoji} ${e.mood} 마음을 남겼어요. 잘 해냈어요.`);
+    set("journeyStartHint", `오늘 '${e.mood}' 마음을 남겼어요. 잘 해냈어요.`);
     set("journeyStart", "오늘 여정 다시 하기");
     const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
     set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
@@ -784,7 +799,7 @@ function habitCardHtml(h) {
   <div class="habit-card" data-id="${h.id}">
     <div class="habit-top">
       <div class="habit-info" data-act="open" role="button" tabindex="0">
-        <div class="habit-title">${h.emoji} ${escapeHtml(h.title)} <span class="go">›</span></div>
+        <div class="habit-title">${ICONS.leaf} ${escapeHtml(h.title)} <span class="go">›</span></div>
         <div class="habit-meta">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일</div>
       </div>
       <button class="habit-check ${todayDone ? "done" : ""}" data-act="check" aria-label="오늘 완료 체크">${todayDone ? "✓" : "○"}</button>
@@ -873,7 +888,7 @@ function closeSubpage() {
 function openHabitDetail(id) {
   const h = loadChs().find((x) => x.id === id); if (!h) return;
   stowSetup();
-  openHabitId = id; openSubpage(`${h.emoji} ${h.title}`, detailHabitHtml(h), "habit"); fillHabitGrid(h);
+  openHabitId = id; openSubpage(h.title, detailHabitHtml(h), "habit"); fillHabitGrid(h);
 }
 function openAddHabit() {
   resetSetupForm();
@@ -886,7 +901,7 @@ function openAddHabit() {
 function refreshHabitDetail(id) {
   if (subpage.hidden || openHabitId !== id) return;
   const h = loadChs().find((x) => x.id === id); if (!h) return;
-  subTitle.textContent = `${h.emoji} ${h.title}`; subBody.innerHTML = detailHabitHtml(h); fillHabitGrid(h);
+  subTitle.textContent = h.title; subBody.innerHTML = detailHabitHtml(h); fillHabitGrid(h);
 }
 document.getElementById("subBack").addEventListener("click", () => { Sound.tap(); closeSubpage(); });
 subBody.addEventListener("click", (e) => {
@@ -961,7 +976,7 @@ function exportHabitIcs(h) {
     "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//오늘의 쉼//90일 챌린지//KR", "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT", "UID:" + h.id + "@oneul-shim", "DTSTAMP:" + stamp,
     "DTSTART;VALUE=DATE:" + start, "RRULE:FREQ=DAILY;COUNT=" + CH_TARGET,
-    "SUMMARY:" + h.emoji + " " + h.title,
+    "SUMMARY:" + h.title,
     "DESCRIPTION:오늘의 쉼 90일 챌린지 — 오늘도 한 칸 채워봐요!" + (h.cue ? " (" + h.cue + ")" : ""),
     "BEGIN:VALARM", "TRIGGER:PT" + (Number(hh) * 60 + Number(mm)) + "M", "ACTION:DISPLAY", "DESCRIPTION:" + h.title, "END:VALARM",
     "END:VEVENT", "END:VCALENDAR",
@@ -972,7 +987,7 @@ function exportHabitIcs(h) {
 }
 async function shareHabit(h) {
   const doneCount = habitDoneCount(h);
-  const text = `오늘의 쉼 ${h.emoji} '${h.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요 💪`;
+  const text = `오늘의 쉼 '${h.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요`;
   try {
     if (navigator.share) await navigator.share({ title: "오늘의 쉼 챌린지", text });
     else { await navigator.clipboard.writeText(text); toast("진행 상황을 클립보드에 복사했어요"); }
@@ -982,12 +997,11 @@ async function shareHabit(h) {
 function confetti() {
   if (settings && settings.tone === "plain") return; // 담백 모드: 축하 연출 생략(압박감 완화)
   try { if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch (e) {} // 모션 최소화 존중
-  const emojis = ["🎉", "✨", "💛", "🌟", "🎊", "🌸"];
   for (let i = 0; i < 28; i++) {
     const s = document.createElement("span");
-    s.className = "confetti"; s.textContent = emojis[i % emojis.length];
+    s.className = "confetti petal p" + (i % 5);
     s.style.left = Math.random() * 100 + "vw"; s.style.animationDelay = (Math.random() * 0.4) + "s";
-    s.style.fontSize = (16 + Math.random() * 18) + "px";
+    const sc = 0.7 + Math.random() * 0.9; s.style.width = Math.round(11 * sc) + "px"; s.style.height = Math.round(15 * sc) + "px";
     document.body.appendChild(s); setTimeout(() => s.remove(), 2700);
   }
 }
@@ -1275,7 +1289,7 @@ function renderWeekly(entries) {
   if (days.length === 0) { weekData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 주 ${days.length}일 기록.` : `이번 주 ${days.length}일이나 마음을 남겼어요.`);
-  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 ${mInfo(topMood[0]).emoji} ${topMood[0]}` : ""}.`);
+  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 '${topMood[0]}'` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
   if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
@@ -1305,7 +1319,7 @@ function renderMonthly(entries) {
   if (recs.length === 0) { monthData = null; return; }
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 달 ${recs.length}일 기록.` : `이번 달 ${recs.length}일 마음을 남겼어요.`);
-  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 ${mInfo(topMood[0]).emoji} ${topMood[0]}` : ""}.`);
+  if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 '${topMood[0]}'` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
   if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
@@ -1338,7 +1352,7 @@ function drawReportCanvas(kind) {
     if (r.delta != null && Math.abs(r.delta) >= 1) bits.push(`${r.delta > 0 ? "▲" : "▼"}${Math.abs(r.delta)}`);
     if (r.momentum != null && r.momentum >= 10) bits.push("");
     else if (r.momentum != null && r.momentum <= -10) bits.push("");
-    return { name: `${r.h.emoji || "✅"} ${r.h.title}`, rate: `${r.rate}%`, sub: bits.join(" ") };
+    return { name: r.h.title, rate: `${r.rate}%`, sub: bits.join(" ") };
   }) : [];
   const habInsight = ha ? (habitInsightLines(ha, unit)[0] || "").replace(/<[^>]+>/g, "") : "";
   const dMood = (cur.days >= 3 && prev.days >= 3 && cur.avgMood != null && prev.avgMood != null) ? Math.round(cur.avgMood - prev.avgMood) : null; // 표본 게이트 — 편향 비교 차단
@@ -2303,7 +2317,7 @@ function computeHabitAnalysis(keys, prevKeys, entries) {
 // 습관 분석 결론 문장들 — 가장 꾸준한 습관·살아나는/주춤하는 습관·기분과 이어진 습관·완벽 달성
 function habitInsightLines(ha, unit) {
   if (!ha) return [];
-  const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
+  const nm = (r) => `<b>${escapeHtml(r.h.title)}</b>`;
   const periodTxt = unit === "달" ? "이번 달" : "이번 주";
   const lines = [];
   if (ha.mostConsistent) lines.push(`가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>예요.`);
@@ -2328,7 +2342,7 @@ function habitReportCard(ha, unit) {
     if (r.bestDow) sub.push(`${r.bestDow}요일↑`);
     if (r.moodDiff != null && r.moodDiff >= 5) sub.push(`기분 +${r.moodDiff}`);
     return `<div class="hrep-row">`
-      + `<div class="hrep-line"><span class="hsum-name">${r.h.emoji || "✅"} ${escapeHtml(r.h.title)}</span>`
+      + `<div class="hrep-line"><span class="hsum-name">${ICONS.leaf} ${escapeHtml(r.h.title)}</span>`
       + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
       + `<span class="hsum-rate">${r.rate}%</span>${dChip}</div>`
       + `<p class="hrep-sub">${sub.join(" · ")}</p></div>`;
@@ -2419,7 +2433,7 @@ function reportDetailHtml(kind, off = 0) {
     const wrows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
     if (wrows.length >= 2) weekBreakSec = `<div class="rpt-sec"><h3>주차별 평균 기분</h3><div class="dist">${wrows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
   }
-  const drows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? mInfo(e.mood).emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
+  const drows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
   const daysSec = `<div class="rpt-sec"><h3>날짜별 기록 (${cur.days}일)</h3><div class="rpt-list">${drows}</div></div>`;
   const moreInner = stabSec + weekBreakSec + daysSec;
   const moreCard = moreInner ? `<details class="card rpt-more"><summary>자세히 보기</summary>${moreInner}</details>` : "";
@@ -2430,7 +2444,7 @@ function reportDetailHtml(kind, off = 0) {
   { const mbd = {}; keys.forEach((k) => { const e = entries[k]; if (e && e.mood) mbd[k] = entryScore(e); });
     let bH = null;
     (loadChs() || []).forEach((hh) => { const dn = [], nt = []; keys.forEach((k) => { if (mbd[k] == null || k < hh.startDate) return; (hh.done && hh.done[k] ? dn : nt).push(mbd[k]); }); if (dn.length >= 3 && nt.length >= 3) { const ad = dn.reduce((s, v) => s + v, 0) / dn.length, an = nt.reduce((s, v) => s + v, 0) / nt.length, df = ad - an; if (df >= 5 && (!bH || df > bH.df)) bH = { h: hh, df }; } });
-    if (bH) hbits.push(`${bH.h.emoji} <b>${escapeHtml(bH.h.title)}</b> 한 날 기분이 더 좋았어요`); }
+    if (bH) hbits.push(`<b>${escapeHtml(bH.h.title)}</b> 한 날 기분이 더 좋았어요`); }
   const headlineCard = hbits.length ? `<div class="card rpt-headline"><span class="rh-ico"></span><p>${hbits.slice(0, 2).join(" · ")}</p></div>` : "";
 
   return `
@@ -2578,7 +2592,7 @@ function renderBadges() {
   const lv = levelInfo(n);
   const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   set("badgeRate", `배지 ${n}/${total}`);
-  set("levelEmoji", lv.cur.emoji);
+  const _lvEl = document.getElementById("levelEmoji"); if (_lvEl) _lvEl.innerHTML = ICONS.sprout;
   set("levelName", `Lv.${lv.level} ${lv.cur.name}`);
   set("levelNext", lv.next ? `다음 '${lv.next.name}'까지 배지 ${lv.next.min - n}개` : "최고 레벨 달성!");
   const fill = document.getElementById("badgeBarFill");
@@ -2588,7 +2602,7 @@ function renderBadges() {
     : n === 0 ? "첫 배지를 향해 한 걸음씩"
     : `획득률 ${pct}% · ${total - n}개 남았어요`);
   const nb = document.getElementById("badgeNext");
-  if (nb) { const nextB = BADGES.find((b) => !earned.has(b.id)); nb.innerHTML = nextB ? `다음 배지 <b>${nextB.e} ${nextB.t}</b> · ${nextB.d}` : "더 이상 모을 배지가 없어요!"; }
+  if (nb) { const nextB = BADGES.find((b) => !earned.has(b.id)); nb.innerHTML = nextB ? `다음 배지 <b>${nextB.t}</b> · ${nextB.d}` : "더 이상 모을 배지가 없어요!"; }
   // 카테고리 탭(세그) — 선택한 카테고리만 표시
   const seg = document.getElementById("badgeSeg");
   if (seg) seg.innerHTML = BADGE_CATS.map((c) => {
@@ -2596,7 +2610,7 @@ function renderBadges() {
     const got = items.filter((b) => earned.has(b.id)).length;
     return `<button data-bcat="${c.id}" class="${c.id === badgeCat ? "active" : ""}">${c.label} ${got}/${items.length}</button>`;
   }).join("");
-  const badgeHtml = (b) => `<button class="badge ${earned.has(b.id) ? "earned" : "locked"}" data-bid="${b.id}" aria-label="${b.t} — ${b.d}"><span class="badge-emoji">${b.e}</span><span class="badge-title">${b.t}</span></button>`;
+  const badgeHtml = (b) => `<button class="badge ${earned.has(b.id) ? "earned" : "locked"}" data-bid="${b.id}" aria-label="${b.t} — ${b.d}"><span class="badge-emoji">${ICONS.medal}</span><span class="badge-title">${b.t}</span></button>`;
   const items = BADGES.filter((b) => b.cat === badgeCat);
   const sorted = [...items].sort((a, b) => (earned.has(b.id) ? 1 : 0) - (earned.has(a.id) ? 1 : 0));
   document.getElementById("badgeGrid").innerHTML = `<div class="badge-grid">${sorted.map(badgeHtml).join("")}</div>`;
@@ -2613,7 +2627,7 @@ document.getElementById("badgeGrid").addEventListener("click", (e) => {
   Sound.tap();
   const got = new Set(earnedBadgeIds()).has(b.id);
   const d = document.getElementById("badgeDetail");
-  if (d) { d.innerHTML = `<b>${b.e} ${b.t}</b> <span class="${got ? "bd-got" : "bd-no"}">${got ? "획득 ✓" : "아직"}</span> — ${b.d}`; d.classList.remove("pulse"); void d.offsetWidth; d.classList.add("pulse"); }
+  if (d) { d.innerHTML = `<b>${b.t}</b> <span class="${got ? "bd-got" : "bd-no"}">${got ? "획득 ✓" : "아직"}</span> — ${b.d}`; d.classList.remove("pulse"); void d.offsetWidth; d.classList.add("pulse"); }
 });
 /* 습관 ↔ 기분 상관관계 */
 // 습관별 한 날/안 한 날 기분 배열 — 발견 카드·상관 카드가 같은 규칙(시작일~오늘·표본 5+/5+)을 공유하는 단일 엔진
@@ -2656,7 +2670,7 @@ function renderCorrelation(entries) {
       : down ? `한 날이 오히려 조금 낮았어요. 부담이 됐다면 가볍게 조절해도 좋아요.`
       : `기분 차이는 크지 않아요.`;
     return `<div class="corr-row">
-      <div class="corr-top"><span>${h.emoji} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
+      <div class="corr-top"><span>${ICONS.leaf} ${escapeHtml(h.title)}</span><span class="corr-diff ${up ? "up" : down ? "down" : ""}">${sign}${Math.round(Math.abs(diff))}</span></div>
       <div class="corr-detail">한 날 평균 ${Math.round(ad)}점 · 안 한 날 ${Math.round(an)}점 — ${msg}</div>
       <div class="corr-meta">표본 n=${n} · 차이 ${Math.round(diff)}±${ci}점(95% CI) · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)})</div>
     </div>`;
@@ -2957,7 +2971,7 @@ function renderDiscoveries(entries, list) {
   const chip = (txt, val) => `<div class="disc-chip" style="background:${scoreColor(val)}">${txt}</div>`;
   // 1) 추세 — weekTrend 단일 기준(캘린더 7일·표본 게이트). 롤링 창이므로 '최근 7일'로 정직하게 표기
   const trd = weekTrend(entries);
-  if (trd && Math.abs(trd.delta) >= 5) { const up = trd.delta > 0; cards.push({ sal: 60 + Math.abs(trd.delta), icon: up ? "" : "", title: up ? "최근 7일, 그 전보다 기분이 좋아졌어요" : "최근 7일은 조금 가라앉았어요", sub: up ? "잘 지내고 있다는 신호예요" : "스스로를 더 아껴줄 때예요", viz: barPair("이전 7일", trd.prev, "최근 7일", trd.cur), tone: up ? "good" : "soft" }); }
+  if (trd && Math.abs(trd.delta) >= 5) { const up = trd.delta > 0; cards.push({ sal: 60 + Math.abs(trd.delta), icon: up ? ICONS.trendUp : ICONS.trendDown, title: up ? "최근 7일, 그 전보다 기분이 좋아졌어요" : "최근 7일은 조금 가라앉았어요", sub: up ? "잘 지내고 있다는 신호예요" : "스스로를 더 아껴줄 때예요", viz: barPair("이전 7일", trd.prev, "최근 7일", trd.cur), tone: up ? "good" : "soft" }); }
   // 2) 습관과 기분의 상관 (표본 5+/5+) — 관찰 서술: 상관≠인과를 카드에도 명시
   const moodByDate = {}; moods.forEach((e) => moodByDate[e.date] = entryScore(e));
   const chs = (typeof loadChs === "function") ? loadChs() : [];
@@ -2965,7 +2979,7 @@ function renderDiscoveries(entries, list) {
     const { done, not } = habitMoodArrays(hh, moodByDate); // 상관 카드와 동일 엔진(규칙 분기 방지)
     if (done.length >= 5 && not.length >= 5) {
       const ad = done.reduce((s, v) => s + v, 0) / done.length, an = not.reduce((s, v) => s + v, 0) / not.length, diff = ad - an;
-      if (diff >= 6) cards.push({ sal: 70 + diff, icon: hh.emoji || "✅", title: `${escapeHtml(hh.title)} 한 날, 기분이 더 높았어요`, sub: `한 날 평균 ${Math.round(ad)}점 · 안 한 날 ${Math.round(an)}점 · 관찰된 상관일 뿐 인과는 아니에요`, viz: barPair("안 한 날", an, "한 날", ad), tone: "good" });
+      if (diff >= 6) cards.push({ sal: 70 + diff, icon: ICONS.leaf, title: `${escapeHtml(hh.title)} 한 날, 기분이 더 높았어요`, sub: `한 날 평균 ${Math.round(ad)}점 · 안 한 날 ${Math.round(an)}점 · 관찰된 상관일 뿐 인과는 아니에요`, viz: barPair("안 한 날", an, "한 날", ad), tone: "good" });
     }
   });
   // 3) 평온한 요일×시간대 (표본 4+ · 그날 바로 남긴 기록만 — 나중에 수정한 기록의 시각 왜곡 배제)
@@ -2981,14 +2995,14 @@ function renderDiscoveries(entries, list) {
     (slot[key] = slot[key] || { s: 0, n: 0 }); slot[key].s += entryScore(e); slot[key].n++;
   });
   const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 4);
-  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "", title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · 평균 ${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
+  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: ICONS.clock, title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · 평균 ${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
   // 4) 으뜸 감정 (최근 30일) — 감정은 점수와 분리, '빈도'만. 색은 감정 고유 정서가.
   const cut = new Date(); cut.setDate(cut.getDate() - 30); cut.setHours(0, 0, 0, 0); const tagC = {};
   moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => tagC[t] = (tagC[t] || 0) + 1); });
   const tags = Object.entries(tagC).map(([t, n]) => ({ t, n })).filter((x) => x.n >= 2);
-  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; const em = emoByKey(t.t); const cv = em && em.v != null ? em.v : 50; cards.push({ sal: 25 + t.n, icon: "", title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 느꼈어요`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, cv), tone: "" }); }
+  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; const em = emoByKey(t.t); const cv = em && em.v != null ? em.v : 50; cards.push({ sal: 25 + t.n, icon: ICONS.tag, title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 느꼈어요`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, cv), tone: "" }); }
   // 5) 꾸준함 — 보호(빈 하루 메움)가 쓰였으면 정직하게 표기
-  const si = calcStreakInfo(entries); if (si.streak >= 3) cards.push({ sal: 30 + si.streak, icon: "", title: `${si.streak}일 이어서 기록 중이에요${si.freezesUsed ? ` (보호 ${si.freezesUsed}회 포함)` : ""}`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
+  const si = calcStreakInfo(entries); if (si.streak >= 3) cards.push({ sal: 30 + si.streak, icon: ICONS.sprout, title: `${si.streak}일 이어서 기록 중이에요${si.freezesUsed ? ` (보호 ${si.freezesUsed}회 포함)` : ""}`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
   cards.sort((a, b) => b.sal - a.sal);
   const top = cards.slice(0, 2); // 발견 카드는 2장까지 — 분석 첫 화면을 스크롤 없이
   if (!top.length) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">아직 뚜렷한 패턴은 없어요. 꾸준히 기록하면 곧 발견이 쌓여요</p></div>'; return; }
@@ -3037,13 +3051,13 @@ function renderWeekGlance(entries) {
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
   el.innerHTML = `<div class="rpt-hero" style="margin:0">
     <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
-    <div class="rpt-hero-side"><p class="rpt-hero-cap">최근 7일 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(avgEn, "활력")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(mInfo(top).emoji, "대표")}</div></div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">최근 7일 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(avgEn, "활력")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(top, "대표")}</div></div>
   </div>`;
 }
 // 습관 분석 한 줄 — 한눈에 카드/홈에서 가장 의미 있는 인사이트 1개 (기분 연관 > 모멘텀 > 꾸준함)
 function topHabitInsight(ha) {
   if (!ha) return "";
-  const nm = (r) => `${r.h.emoji || "✅"} <b>${escapeHtml(r.h.title)}</b>`;
+  const nm = (r) => `<b>${escapeHtml(r.h.title)}</b>`;
   if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요 <small class="ins-caveat">(상관일 뿐, 인과 아님)</small>`;
   if (ha.improved && ha.improved.momentum >= 15) return `${nm(ha.improved)} 요즘 더 살아나고 있어요 (▲${ha.improved.momentum}%)`;
   if (ha.declined && ha.declined.momentum <= -15) return `${nm(ha.declined)} 요즘 주춤해요 — 힘든 날엔 최소 버전부터`;
@@ -3087,7 +3101,7 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
     return `<div class="hg-row">`
       + `<button class="hg-check ${todayDone ? "done" : ""}" data-hgcheck="${h.id}" aria-pressed="${todayDone}" aria-label="${escapeHtml(h.title)} 오늘 완료 ${todayDone ? "취소" : "체크"}">${todayDone ? "✓" : "○"}</button>`
       + `<div class="hg-info" data-hgopen="${h.id}" role="button" tabindex="0" aria-label="${escapeHtml(h.title)} 상세 보기">`
-      + `<div class="hg-title">${h.emoji || "✅"} ${escapeHtml(h.title)}</div>`
+      + `<div class="hg-title">${ICONS.leaf} ${escapeHtml(h.title)}</div>`
       + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
       + `<span class="hg-meta">${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
   }).join("") + moreHtml;
@@ -3128,7 +3142,7 @@ function renderHabitSummary() {
     return { h, rate, streak, bestDow };
   });
   rows.sort((a, b) => b.rate - a.rate);
-  el.innerHTML = rows.map((r) => `<div class="hsum-row"><span class="hsum-name">${r.h.emoji || "✅"} ${escapeHtml(r.h.title)}</span>`
+  el.innerHTML = rows.map((r) => `<div class="hsum-row"><span class="hsum-name">${ICONS.leaf} ${escapeHtml(r.h.title)}</span>`
     + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
     + `<span class="hsum-rate">${r.rate}%</span>`
     + `<span class="hsum-meta">연속 ${r.streak}일${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
@@ -3205,7 +3219,7 @@ function checkBadges() {
     if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
     if (newLevel > prevLevel) { // 목표 도달로 레벨업
       const lv = levelInfo(earned.length);
-      setTimeout(() => { if (typeof toast === "function") toast(`${lv.cur.emoji} 레벨 업! Lv.${lv.level} '${lv.cur.name}' 달성 🎉`); confetti(); }, 1500);
+      setTimeout(() => { if (typeof toast === "function") toast(`레벨 업! Lv.${lv.level} '${lv.cur.name}' 달성`); confetti(); }, 1500);
     }
   } else if (JSON.stringify(prev) !== JSON.stringify(earned)) { settings.badges = earned; saveSettingsObj(settings); }
 }
@@ -3592,7 +3606,9 @@ applyBreathPattern();
 
 // 명상 오버레이 하단 사운드 컨트롤(세션 중에도 배경음 on/off + 볼륨)
 const medAmbBtn = document.getElementById("medAmbBtn"), medVol = document.getElementById("medVol");
-function medSyncAmbIcon() { if (medAmbBtn) medAmbBtn.textContent = (Sound.state.ambientType && Sound.state.ambientType !== "off") ? "" : ""; }
+const _SPK_ON = IC('<path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/><path d="M15.5 9.5 A 4.5 4.5 0 0 1 15.5 14.5"/>');
+const _SPK_OFF = IC('<path d="M4 10 V14 H7.5 L12 18 V6 L7.5 10 Z"/><path d="M16 9.5 L20.5 14.5 M20.5 9.5 L16 14.5"/>');
+function medSyncAmbIcon() { if (medAmbBtn) medAmbBtn.innerHTML = (Sound.state.ambientType && Sound.state.ambientType !== "off") ? _SPK_ON : _SPK_OFF; }
 if (medAmbBtn) medAmbBtn.addEventListener("click", () => {
   Sound.unlock();
   if (Sound.state.ambientType && Sound.state.ambientType !== "off") { Sound.stopAmbient(); settings.ambientType = "off"; }
@@ -3763,7 +3779,7 @@ function stepHtml(id) {
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">바쁜 날엔 여기까지만 저장</button>' : ""}
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
-      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
+      <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}"><i class="band-dot ${e.band}"></i>${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
       <p class="energy-out" id="jEnergyOut"></p>`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
