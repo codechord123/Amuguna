@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#64a07c" />
+  <meta name="theme-color" content="#d97742" />
   <meta name="description" content="매일 마음을 기록하고, 데이터로 나를 이해하고, 위로받는 셀프케어 앱" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v171" />
+  <meta name="app-version" content="v172" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -37,7 +37,7 @@
 
   <main class="app">
     <header class="hero">
-      <p class="hero-kicker" aria-hidden="true">DAILY REST</p>
+      <div class="sun-dot" id="sunDot" aria-hidden="true"></div>
       <h1>오늘의 쉼</h1>
       <p class="greeting"><span id="heroDate"></span><span id="greeting">오늘도 와줘서 고마워요</span></p>
       <p class="subtitle">매일 마음을 기록하고, 나를 조금씩 이해해가요.</p>
@@ -404,9 +404,8 @@
       <div class="card collapsible collapsed">
         <h2>테마</h2>
         <div class="theme-grid" id="themeGrid">
-          <button class="theme-btn" data-theme="garden"><span>보타니칼</span></button>
-          <button class="theme-btn" data-theme="midnight"><span>미드나잇</span></button>
-          <button class="theme-btn" data-theme="minimal"><span>미니멀</span></button>
+          <button class="theme-btn" data-theme="garden"><span>낮 · 종이</span></button>
+          <button class="theme-btn" data-theme="midnight"><span>밤 · 먹</span></button>
         </div>
       </div>
 

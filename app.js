@@ -208,12 +208,13 @@ function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&
 /* ===================== 인사말 ===================== */
 (function greet() {
   const h = new Date().getHours();
-  let msg = "안녕, 오늘도 와줘서 고마워요";
-  if (h < 6) msg = "늦은 밤이네요. 그래도 잘 버텨줘서 고마워요";
-  else if (h < 12) msg = "좋은 아침이에요. 천천히 시작해요";
-  else if (h < 18) msg = "오후도 무리하지 말고요";
-  else msg = "하루 마무리, 정말 수고 많았어요";
+  let msg = "안녕, 오늘도 와줘서 고마워요", sun = "sun-day";
+  if (h < 6) { msg = "늦은 밤이네요. 그래도 잘 버텨줘서 고마워요"; sun = "sun-night"; }
+  else if (h < 12) { msg = "좋은 아침이에요. 천천히 시작해요"; sun = "sun-morning"; }
+  else if (h < 18) { msg = "오후도 무리하지 말고요"; sun = "sun-day"; }
+  else { msg = "하루 마무리, 정말 수고 많았어요"; sun = "sun-night"; }
   document.getElementById("greeting").textContent = msg;
+  const dot = document.getElementById("sunDot"); if (dot) dot.classList.add(sun); // 해 점 — 시간 따라 물듦
 })();
 
 /* ===================== 온보딩 ===================== */
@@ -3321,7 +3322,8 @@ const settings = Object.assign(
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 function resolveTheme() {
   const t = settings.theme;
-  if (t === "garden" || t === "midnight" || t === "minimal") return t;
+  if (t === "garden" || t === "midnight") return t;
+  if (t === "minimal") return "garden"; // 구버전 미니멀 → 종이
   if (t === "dark") return "midnight"; // 구버전 테마 → 가장 가까운 쪽으로
   if (t === "auto") return (darkMq && darkMq.matches) ? "midnight" : "garden";
   return "garden";
