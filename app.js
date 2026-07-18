@@ -3320,7 +3320,7 @@ const settings = Object.assign(
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 function resolveTheme() {
   const t = settings.theme;
-  if (t === "garden" || t === "midnight") return t;
+  if (t === "garden" || t === "midnight" || t === "minimal") return t;
   if (t === "dark") return "midnight"; // 구버전 테마 → 가장 가까운 쪽으로
   if (t === "auto") return (darkMq && darkMq.matches) ? "midnight" : "garden";
   return "garden";

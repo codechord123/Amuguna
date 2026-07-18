@@ -66,26 +66,26 @@
 
 /* ===== 보타니칼 🌿 (A안 · 프레스드 가든 — 크림 종이 + 세이지 + 마른 장미) ===== */
 [data-theme="garden"] {
-  --bg: #f5f2e8;
-  --card: #fdfbf3;
-  --ink: #2e3a2e;
-  --ink-2: #4d5a44;
-  --soft: #5f6852; /* 전 배경 4.8:1+ (WCAG AA) */
-  --line: #e3ddc8;
-  --line-strong: #d3ccae;
-  --bg-sunken: #eeeadb;
-  --accent: #7d9b76;
-  --accent-2: #e3e9d4;
-  --accent-deep: #44603f; /* 5.8:1+ */
-  --success: #3a7154;
-  --danger: #9c4f3f;
-  --energy: #c68a72; /* 마른 장미 포인트 */
-  --ring: rgba(68, 96, 63, 0.16);
-  --blob-a: #dde5cd; --blob-b: #ead9cd; --blob-c: #d2e0d8;
-  --shadow-sm: 0 2px 5px rgba(90, 105, 75, 0.08);
-  --shadow: 0 10px 24px rgba(90, 105, 75, 0.12), 0 3px 8px rgba(90, 105, 75, 0.07);
-  --shadow-lg: 0 22px 50px rgba(80, 95, 65, 0.16), 0 6px 16px rgba(80, 95, 65, 0.09);
-  --card-hi: rgba(255, 255, 255, 0.7);
+  --bg: #f7f7f2;
+  --card: #fffefa;
+  --ink: #26302a;
+  --ink-2: #46544c;
+  --soft: #5f6e64; /* 전 배경 5.0:1+ (WCAG AA) */
+  --line: #e4e6dc;
+  --line-strong: #d0d5c5;
+  --bg-sunken: #eef0e7;
+  --accent: #64a07c; /* 맑은 제이드 그린 */
+  --accent-2: #ddeee3;
+  --accent-deep: #2e6a4c; /* 5.9:1+ */
+  --success: #2f7a58;
+  --danger: #a34b3c;
+  --energy: #c8836a; /* 테라코타 로즈 포인트 */
+  --ring: rgba(46, 106, 76, 0.16);
+  --blob-a: #d8e9dd; --blob-b: #f0ddd3; --blob-c: #d5e5e4;
+  --shadow-sm: 0 2px 5px rgba(70, 110, 90, 0.08);
+  --shadow: 0 10px 24px rgba(70, 110, 90, 0.11), 0 3px 8px rgba(70, 110, 90, 0.06);
+  --shadow-lg: 0 22px 50px rgba(60, 100, 80, 0.15), 0 6px 16px rgba(60, 100, 80, 0.08);
+  --card-hi: rgba(255, 255, 255, 0.75);
 }
 
 /* ===== 보타니칼 나이트 🌌 (B안 · 미드나잇 — 깊은 숲 + 골드 라인) ===== */
@@ -93,22 +93,22 @@
   color-scheme: dark;
   /* 다크 배경용 점수 팔레트(다크 테마와 동일 기준) */
   --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
-  --bg: #16211b;
-  --card: #223428;
-  --ink: #eee9db;
-  --ink-2: #c3c2ac;
-  --soft: #9aa591; /* 5.1:1+ (WCAG AA) */
-  --line: #35473a;
-  --line-strong: #43584a;
-  --bg-sunken: #1c2a22;
-  --accent: #cda86a; /* 골드 */
-  --accent-2: #39482f;
-  --accent-deep: #e8cf9e; /* 다크 관례: 텍스트용은 밝게 · 8.7:1+ */
+  --bg: #101c18;
+  --card: #1b2b25;
+  --ink: #edeee6;
+  --ink-2: #c2c8ba;
+  --soft: #9cab9e; /* 6.1:1+ (WCAG AA) */
+  --line: #2e4038;
+  --line-strong: #3d5347;
+  --bg-sunken: #17251f;
+  --accent: #d3ad6e; /* 샴페인 골드 */
+  --accent-2: #2c4438;
+  --accent-deep: #e9d3a1; /* 다크 관례: 텍스트용은 밝게 · 10:1+ */
   --success: #8fd0a5;
   --danger: #e08a82;
-  --energy: #9db98f;
-  --ring: rgba(205, 168, 106, 0.24);
-  --blob-a: #2c4232; --blob-b: #3c4a2c; --blob-c: #274038;
+  --energy: #8fb9a0;
+  --ring: rgba(211, 173, 110, 0.24);
+  --blob-a: #1f3d33; --blob-b: #2a4a3e; --blob-c: #1e3a41;
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.34);
   --shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 3px 8px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 22px 52px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.4);
@@ -126,17 +126,17 @@
 :is([data-theme="garden"], [data-theme="midnight"]) .bg-blobs::before { top: -34px; left: -26px; }
 :is([data-theme="garden"], [data-theme="midnight"]) .bg-blobs::after { top: -8px; right: -28px; transform: scaleX(-1); }
 [data-theme="garden"] .bg-blobs::before {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%237d9b76" stroke-width="1.6" stroke-linecap="round"><path d="M14 108 C 26 76, 40 44, 68 14"/><ellipse cx="30" cy="78" rx="9" ry="5.5" transform="rotate(-38 30 78)"/><ellipse cx="41" cy="60" rx="9" ry="5.5" transform="rotate(-34 41 60)"/><ellipse cx="52" cy="43" rx="8.4" ry="5.2" transform="rotate(-30 52 43)"/><ellipse cx="63" cy="28" rx="7.6" ry="4.8" transform="rotate(-26 63 28)"/><ellipse cx="22" cy="94" rx="9.5" ry="6" transform="rotate(-42 22 94)"/></g></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%2364a07c" stroke-width="1.6" stroke-linecap="round"><path d="M14 108 C 26 76, 40 44, 68 14"/><ellipse cx="30" cy="78" rx="9" ry="5.5" transform="rotate(-38 30 78)"/><ellipse cx="41" cy="60" rx="9" ry="5.5" transform="rotate(-34 41 60)"/><ellipse cx="52" cy="43" rx="8.4" ry="5.2" transform="rotate(-30 52 43)"/><ellipse cx="63" cy="28" rx="7.6" ry="4.8" transform="rotate(-26 63 28)"/><ellipse cx="22" cy="94" rx="9.5" ry="6" transform="rotate(-42 22 94)"/></g></svg>');
 }
 [data-theme="garden"] .bg-blobs::after {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%23a9b89b" stroke-width="1.5" stroke-linecap="round"><path d="M12 106 C 24 74, 34 44, 60 12"/><path d="M22 82 C 32 78, 40 78, 48 82"/><path d="M28 66 C 37 62, 45 62, 52 66"/><path d="M34 51 C 42 47, 49 47, 56 51"/><path d="M40 37 C 47 33, 53 33, 59 37"/><path d="M46 25 C 52 21, 57 21, 62 24"/></g></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%23a9c4ae" stroke-width="1.5" stroke-linecap="round"><path d="M12 106 C 24 74, 34 44, 60 12"/><path d="M22 82 C 32 78, 40 78, 48 82"/><path d="M28 66 C 37 62, 45 62, 52 66"/><path d="M34 51 C 42 47, 49 47, 56 51"/><path d="M40 37 C 47 33, 53 33, 59 37"/><path d="M46 25 C 52 21, 57 21, 62 24"/></g></svg>');
 }
 [data-theme="midnight"] .bg-blobs::before {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%23cda86a" stroke-width="1.4" stroke-linecap="round"><path d="M14 108 C 26 76, 40 44, 68 14"/><ellipse cx="30" cy="78" rx="9" ry="5.5" transform="rotate(-38 30 78)"/><ellipse cx="41" cy="60" rx="9" ry="5.5" transform="rotate(-34 41 60)"/><ellipse cx="52" cy="43" rx="8.4" ry="5.2" transform="rotate(-30 52 43)"/><ellipse cx="63" cy="28" rx="7.6" ry="4.8" transform="rotate(-26 63 28)"/><ellipse cx="22" cy="94" rx="9.5" ry="6" transform="rotate(-42 22 94)"/></g></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%23d3ad6e" stroke-width="1.4" stroke-linecap="round"><path d="M14 108 C 26 76, 40 44, 68 14"/><ellipse cx="30" cy="78" rx="9" ry="5.5" transform="rotate(-38 30 78)"/><ellipse cx="41" cy="60" rx="9" ry="5.5" transform="rotate(-34 41 60)"/><ellipse cx="52" cy="43" rx="8.4" ry="5.2" transform="rotate(-30 52 43)"/><ellipse cx="63" cy="28" rx="7.6" ry="4.8" transform="rotate(-26 63 28)"/><ellipse cx="22" cy="94" rx="9.5" ry="6" transform="rotate(-42 22 94)"/></g></svg>');
   opacity: 0.6;
 }
 [data-theme="midnight"] .bg-blobs::after {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%235f7258" stroke-width="1.5" stroke-linecap="round"><path d="M12 106 C 24 74, 34 44, 60 12"/><path d="M22 82 C 32 78, 40 78, 48 82"/><path d="M28 66 C 37 62, 45 62, 52 66"/><path d="M34 51 C 42 47, 49 47, 56 51"/><path d="M40 37 C 47 33, 53 33, 59 37"/></g></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%23577465" stroke-width="1.5" stroke-linecap="round"><path d="M12 106 C 24 74, 34 44, 60 12"/><path d="M22 82 C 32 78, 40 78, 48 82"/><path d="M28 66 C 37 62, 45 62, 52 66"/><path d="M34 51 C 42 47, 49 47, 56 51"/><path d="M40 37 C 47 33, 53 33, 59 37"/></g></svg>');
 }
 
 
@@ -1244,7 +1244,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ============================================================
    설정
    ============================================================ */
-.theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s3); }
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
 .theme-btn { border: 1.5px solid var(--line); background: var(--bg-sunken); border-radius: var(--r-sm); padding: var(--s4) var(--s1); cursor: pointer; font-size: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: var(--s2); font-family: inherit; color: var(--ink); transition: border-color 0.2s, background 0.2s; }
 .theme-btn span { font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); }
 .theme-btn.active { border-color: var(--accent); border-width: 2px; background: var(--card); }
@@ -1430,12 +1430,12 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   content: ""; display: block; width: 54px; height: 1px; margin: 4px auto 0;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
 }
-[data-theme="garden"] .hero h1::after { background: linear-gradient(90deg, transparent, #c68a72, transparent); }
+[data-theme="garden"] .hero h1::after { background: linear-gradient(90deg, transparent, #c8836a, transparent); }
 .slim-hero .hero h1::after { display: none; }
 /* 오늘 통계: 점선 프레임 + 세리프 숫자 + 세로 구분선 */
 .today-stats { border: 1px dashed var(--line); }
-[data-theme="garden"] .today-stats { border-color: #b9c2a8; }
-[data-theme="midnight"] .today-stats { border-color: #46584a; }
+[data-theme="garden"] .today-stats { border-color: #c3d0c0; }
+[data-theme="midnight"] .today-stats { border-color: #3c5145; }
 .ts-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; letter-spacing: 0; }
 .ts-item + .ts-item { border-left: 1px solid var(--line); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
 .ts-label { letter-spacing: 0.1em; }
@@ -1445,7 +1445,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="garden"] .jh-eyebrow { color: #9c5636; }
 [data-theme="midnight"] .jh-eyebrow { color: var(--accent); }
 /* 가든: 은은한 도트 그리드 종이 질감 */
-[data-theme="garden"] { background-image: radial-gradient(rgba(125, 155, 118, 0.16) 1px, transparent 1.2px); background-size: 22px 22px; }
+[data-theme="garden"] { background-image: radial-gradient(rgba(100, 160, 124, 0.14) 1px, transparent 1.2px); background-size: 22px 22px; }
 
 /* ===== 이모지 대체 아이콘 시스템 ===== */
 .ic-line { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: -0.2em; }
@@ -1465,15 +1465,59 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .med-snd-btn .snd-ico { width: 20px; height: 20px; }
 /* 축하 꽃잎 파티클 — 이모지 대체 */
 .confetti.petal { width: 11px; height: 15px; border-radius: 62% 38% 60% 40% / 60% 60% 42% 40%; opacity: 0.9; }
-.confetti.petal.p0 { background: #a9b89b; }
-.confetti.petal.p1 { background: #cda86a; }
+.confetti.petal.p0 { background: #a9c4ae; }
+.confetti.petal.p1 { background: #d3ad6e; }
 .confetti.petal.p2 { background: #c68a72; }
-.confetti.petal.p3 { background: #7d9b76; }
+.confetti.petal.p3 { background: #64a07c; }
 .confetti.petal.p4 { background: #e8cf9e; }
 
 /* 테마 타일 — 각 테마의 실제 배경/잉크색으로 미리보기 (아이콘 없음) */
 .theme-btn { padding: var(--s5) var(--s2); }
-.theme-btn[data-theme="garden"] { background: #f5f2e8; }
-.theme-btn[data-theme="garden"] span { color: #44603f; }
-.theme-btn[data-theme="midnight"] { background: #16211b; }
-.theme-btn[data-theme="midnight"] span { color: #e8cf9e; }
+.theme-btn[data-theme="garden"] { background: #f7f7f2; }
+.theme-btn[data-theme="garden"] span { color: #2e6a4c; }
+.theme-btn[data-theme="midnight"] { background: #101c18; }
+.theme-btn[data-theme="midnight"] span { color: #e9d3a1; }
+.theme-btn[data-theme="minimal"] { background: #ffffff; }
+.theme-btn[data-theme="minimal"] span { color: #3f5138; }
+
+/* ===== 미니멀 테마 — 여백·헤어라인·타이포만 (장식 0) ===== */
+[data-theme="minimal"] {
+  --bg: #faf9f4;
+  --card: #ffffff;
+  --ink: #23291f;
+  --ink-2: #4c5544;
+  --soft: #616a57; /* 전 배경 4.9:1+ (WCAG AA) */
+  --line: #e6e4d9;
+  --line-strong: #d6d3c2;
+  --bg-sunken: #f0efe6;
+  --accent: #5c7854;
+  --accent-2: #e9ece1;
+  --accent-deep: #3f5138; /* 8.1:1+ */
+  --success: #3a7154;
+  --danger: #9c4f3f;
+  --energy: #b3826d;
+  --ring: rgba(63, 81, 56, 0.14);
+  --blob-a: #faf9f4; --blob-b: #faf9f4; --blob-c: #faf9f4;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-lg: none;
+  --card-hi: transparent;
+}
+/* 장식 전부 제거 */
+[data-theme="minimal"] .bg-blobs { display: none; }
+[data-theme="minimal"] .hero h1::after { display: none; }
+/* 카드 → 헤어라인 섹션 */
+[data-theme="minimal"] :is(.tab, .subpage-body) .card {
+  background: transparent; box-shadow: none; border: none; border-radius: 0;
+  border-bottom: 1px solid var(--line);
+}
+[data-theme="minimal"] :is(.tab, .subpage-body) .card:last-child { border-bottom: none; }
+[data-theme="minimal"] .today-stats { border: none; border-bottom: 1px solid var(--line); }
+[data-theme="minimal"] .journey-hero { background: transparent; }
+[data-theme="minimal"] .journey-hero .jh-inner { border: none; }
+/* 주요 버튼 → 아웃라인 필 */
+[data-theme="minimal"] .btn.primary {
+  background: transparent; color: var(--accent-deep);
+  border: 1.5px solid var(--accent-deep); box-shadow: none;
+}
+[data-theme="minimal"] .tabbar { background: var(--bg); border-top: 1px solid var(--line); box-shadow: none; }

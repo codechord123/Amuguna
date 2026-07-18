@@ -214,9 +214,11 @@ try {
 
   // 7) 설정: 테마/글자크기/톤
   q("[data-tab=settings]").click();
-  check("테마는 보타니칼·미드나잇 2종만", d.querySelectorAll(".theme-btn").length === 2 && !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]"));
+  check("테마 3종(보타니칼·미드나잇·미니멀)", d.querySelectorAll(".theme-btn").length === 3 && !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]") && !!q(".theme-btn[data-theme=minimal]"));
   q("[data-theme=midnight]").click();
   check("미드나잇 테마 적용", d.documentElement.getAttribute("data-theme") === "midnight");
+  q("[data-theme=minimal]").click();
+  check("미니멀 테마 적용", d.documentElement.getAttribute("data-theme") === "minimal");
   q("[data-theme=garden]").click();
   check("보타니칼 테마 적용", d.documentElement.getAttribute("data-theme") === "garden");
   q("#textSizeSeg button[data-size=xl]").click();
