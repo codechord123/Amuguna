@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="warm">
+<html lang="ko" data-theme="garden">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f3987a" />
+  <meta name="theme-color" content="#7d9b76" />
   <meta name="description" content="매일 마음을 기록하고, 데이터로 나를 이해하고, 위로받는 셀프케어 앱" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v163" />
+  <meta name="app-version" content="v164" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -38,13 +38,13 @@
   <main class="app">
     <header class="hero">
       <p class="greeting" id="greeting">안녕, 오늘도 와줘서 고마워요</p>
-      <h1>오늘의 쉼 <span class="hero-emo">☕</span></h1>
+      <h1>오늘의 쉼</h1>
       <p class="subtitle">매일 마음을 기록하고, 나를 조금씩 이해해가요.</p>
     </header>
 
     <!-- 안전 카드 (위기 신호 감지 시 노출) -->
     <div class="card safety" id="safetyCard" hidden>
-      <h2>🫂 혼자 견디지 않아도 돼요</h2>
+      <h2>혼자 견디지 않아도 돼요</h2>
       <p>지금 많이 힘드시다면, 마음을 나눌 수 있는 곳이 있어요. 도움을 청하는 건 약함이 아니라 용기예요.</p>
       <ul class="safety-list">
         <li>자살예방 상담전화 <a href="tel:109"><strong>109</strong></a> · 24시간</li>
@@ -53,7 +53,7 @@
         <li>긴급한 위험이 느껴지면 <a href="tel:119"><strong>119</strong></a></li>
       </ul>
       <div class="data-btns">
-        <button class="btn primary" id="safetyBreath">🌬️ 지금 같이 호흡하기</button>
+        <button class="btn primary" id="safetyBreath">지금 같이 호흡하기</button>
         <button class="btn" id="safetyClose">닫기</button>
       </div>
     </div>
@@ -62,13 +62,13 @@
     <section class="tab" id="tab-today">
       <div class="card today-stats" id="todayStats">
         <div class="ts-row">
-          <button class="ts-item" data-jump="calendar"><span class="ts-num" id="tsStreak">0</span><span class="ts-label"><i class="lbl-emo">🔥</i> 연속</span></button>
-          <button class="ts-item" data-jump="weekreport"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label"><i class="lbl-emo">📅</i> 최근 7일</span></button>
-          <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label"><i class="lbl-emo">🌿</i> 전체</span></button>
+          <button class="ts-item" data-jump="calendar"><span class="ts-num" id="tsStreak">0</span><span class="ts-label">연속</span></button>
+          <button class="ts-item" data-jump="weekreport"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label">최근 7일</span></button>
+          <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label">전체</span></button>
         </div>
         <div class="wk-goal"><div class="wk-goal-bar"><i id="wkGoalFill"></i></div><span class="wk-goal-cap" id="wkGoalCap"></span></div>
         <div class="ts-habits" id="todayHabitGlance" hidden data-hg-wrap>
-          <div class="ts-habits-head"><span class="ts-habits-title"><i class="lbl-emo">🎯</i> 오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
+          <div class="ts-habits-head"><span class="ts-habits-title">오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
           <div id="todayHabitList"></div>
         </div>
         <p class="ts-cheer" id="tsCheer" aria-live="polite">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
@@ -91,7 +91,7 @@
     <section class="tab" id="tab-calendar" hidden>
       <div class="card">
         <div class="card-head">
-          <h2>🗓️ 마음 달력</h2>
+          <h2>마음 달력</h2>
           <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
         </div>
         <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
@@ -104,13 +104,13 @@
     <!-- ========== 탭: 쉼 ========== -->
     <section class="tab" id="tab-rest" hidden>
       <div class="seg stats-seg" id="restSeg">
-        <button data-rseg="meditate" class="active">🧘 명상</button>
-        <button data-rseg="comfort">💌 위로</button>
+        <button data-rseg="meditate" class="active">명상</button>
+        <button data-rseg="comfort">위로</button>
       </div>
 
       <div class="rest-panel" data-rpanel="comfort" hidden>
       <div class="card center comfort-card">
-        <h2>💌 나를 위한 한마디</h2>
+        <h2>나를 위한 한마디</h2>
         <blockquote class="quote" id="quote">버튼을 눌러 오늘의 응원을 받아보세요.</blockquote>
         <div class="quote-actions">
           <button class="btn primary" id="quoteBtn">따뜻한 한마디 받기</button>
@@ -118,10 +118,10 @@
         </div>
         <div class="comfort-tools">
           <label class="fav-only"><input type="checkbox" id="favOnly" /> 즐겨찾기만</label>
-          <button type="button" class="comfort-link" id="manageToggle">📋 내 문구 관리 ›</button>
+          <button type="button" class="comfort-link" id="manageToggle">내 문구 관리 ›</button>
         </div>
         <details class="comfort-add">
-          <summary>✍️ 나만의 문구 추가</summary>
+          <summary>나만의 문구 추가</summary>
           <div class="quote-add">
             <input type="text" id="myQuoteInput" class="text-input" placeholder="나에게 해주고 싶은 말" maxlength="100" aria-label="나만의 문구" />
             <button class="btn" id="myQuoteAdd">추가</button>
@@ -130,13 +130,13 @@
       </div>
 
       <div class="card center">
-        <h2>✨ 아주 작은 한 걸음</h2>
+        <h2>아주 작은 한 걸음</h2>
         <p class="mission" id="mission">오늘의 작은 미션을 받아보세요.</p>
         <button class="btn" id="missionBtn">미션 받기</button>
       </div>
 
       <div class="card help-always" id="helpAlways">
-        <h2>🆘 많이 힘들 땐 — 혼자 견디지 않아도 돼요</h2>
+        <h2>많이 힘들 땐 — 혼자 견디지 않아도 돼요</h2>
         <ul class="safety-list">
           <li>자살예방 상담 <a href="tel:109"><strong>109</strong></a> · 24시간</li>
           <li>정신건강 상담 <a href="tel:15770199"><strong>1577-0199</strong></a></li>
@@ -147,7 +147,7 @@
 
       <div class="rest-panel" data-rpanel="meditate">
       <div class="card med-how">
-        <h2>🧘 명상</h2>
+        <h2>명상</h2>
         <details class="med-howto">
           <summary>명상하는 법 · 5단계 보기</summary>
           <ol class="med-guide" id="medGuide">
@@ -157,7 +157,7 @@
             <li><b>생각은 흘려보내기</b><span>잡생각이 들면 '생각났네' 하고 다시 호흡으로 돌아와요.</span></li>
             <li><b>함께 호흡</b><span id="medHowBreath">삼각형을 도는 점을 따라 4초 들이쉬고·7초 멈추고·8초 내쉬어요.</span></li>
           </ol>
-          <p class="med-bigscreen"><a href="meditate.html" target="_blank" rel="noopener">🖥️ 큰 화면(전자칠판·TV)용 명상 열기</a> — 여럿이 함께할 때 초대형 글씨로</p>
+          <p class="med-bigscreen"><a href="meditate.html" target="_blank" rel="noopener">큰 화면(전자칠판·TV)용 명상 열기</a> — 여럿이 함께할 때 초대형 글씨로</p>
         </details>
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
@@ -165,21 +165,21 @@
             <span class="med-step-val"><b id="medMinVal">5</b>분</span>
             <button type="button" class="med-step-btn" data-d="1" aria-label="1분 늘리기">+</button>
           </div>
-          <label class="med-night"><input type="checkbox" id="medNightToggle" /> <span>🌙 야간 모드</span></label>
+          <label class="med-night"><input type="checkbox" id="medNightToggle" /> <span>야간 모드</span></label>
         </div>
         <details class="med-adv">
-          <summary>⚙️ 호흡 패턴 직접 조절 (4·7·8)</summary>
+          <summary>호흡 패턴 직접 조절 (4·7·8)</summary>
           <div class="med-pattern" id="medPattern">
             <div class="med-pat-row"><span class="med-pat-label">들숨</span><button type="button" class="med-step-btn sm" data-p="in" data-d="-1" aria-label="들숨 줄이기">−</button><b id="patIn">4</b><button type="button" class="med-step-btn sm" data-p="in" data-d="1" aria-label="들숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
             <div class="med-pat-row"><span class="med-pat-label">멈춤</span><button type="button" class="med-step-btn sm" data-p="hold" data-d="-1" aria-label="멈춤 줄이기">−</button><b id="patHold">7</b><button type="button" class="med-step-btn sm" data-p="hold" data-d="1" aria-label="멈춤 늘리기">+</button><span class="med-pat-unit">초</span></div>
             <div class="med-pat-row"><span class="med-pat-label">날숨</span><button type="button" class="med-step-btn sm" data-p="ex" data-d="-1" aria-label="날숨 줄이기">−</button><b id="patEx">8</b><button type="button" class="med-step-btn sm" data-p="ex" data-d="1" aria-label="날숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
           </div>
         </details>
-        <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">▶ 따라하며 명상하기</button>
+        <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">따라하며 명상하기</button>
         <p class="med-stat" id="medStat"></p>
       </div>
       <div class="card">
-        <h2>🔊 잔잔한 배경음</h2>
+        <h2>잔잔한 배경음</h2>
         <p class="hint">마음을 가라앉히는 소리를 틀어두고 쉬어가요.</p>
         <div class="sound-grid" id="soundGrid">
           <button class="sound-btn" data-sound="rain" aria-pressed="false">🌧️<span>빗소리</span></button>
@@ -194,7 +194,7 @@
           <span>🔊</span>
         </div>
         <div class="timer-row">
-          <span class="timer-label">⏲️ 꺼짐 타이머</span>
+          <span class="timer-label">꺼짐 타이머</span>
           <div class="seg" id="timerBtns">
             <button data-min="15">15분</button>
             <button data-min="30">30분</button>
@@ -256,22 +256,22 @@
     <!-- ========== 탭: 기록 ========== -->
     <section class="tab" id="tab-stats" hidden>
       <div class="card center" id="statsEmptyHero" hidden>
-        <h2>🌱 아직 기록이 없어요</h2>
+        <h2>아직 기록이 없어요</h2>
         <p class="hint">첫 기록을 남기면 이곳이 나만의 마음 분석으로 채워져요.<br />연속·감정 흐름·습관 상관관계까지 자동으로 정리해드려요.</p>
         <button class="btn primary" id="statsEmptyCta">오늘의 여정 시작하기</button>
       </div>
       <div class="card stat-row">
         <div class="stat">
           <span class="stat-num" id="streakNum">0</span>
-          <span class="stat-label">🔥 연속</span>
+          <span class="stat-label">연속</span>
         </div>
         <div class="stat">
           <span class="stat-num" id="totalNum">0</span>
-          <span class="stat-label">📒 전체 기록</span>
+          <span class="stat-label">전체 기록</span>
         </div>
         <div class="stat">
           <span class="stat-num" id="statBadge">0</span>
-          <span class="stat-label">🏅 획득 배지</span>
+          <span class="stat-label">획득 배지</span>
         </div>
       </div>
 
@@ -283,16 +283,16 @@
 
       <div class="stats-panel" data-panel="summary">
         <div class="card wg-card" id="weekGlanceCard">
-          <div class="card-head"><h2>📅 최근 7일 한눈에</h2><span class="today-date" id="wgRange"></span></div>
+          <div class="card-head"><h2>최근 7일 한눈에</h2><span class="today-date" id="wgRange"></span></div>
           <div id="wgBody"></div>
         </div>
         <div class="card habit-glance" id="summaryHabitGlance" hidden data-hg-wrap>
-          <div class="card-head"><h2>🎯 습관 한눈에</h2><span class="hg-count" id="summaryHabitCount"></span></div>
+          <div class="card-head"><h2>습관 한눈에</h2><span class="hg-count" id="summaryHabitCount"></span></div>
           <div id="summaryHabitList"></div>
         </div>
         <div class="report-tiles">
-          <button class="report-tile" id="weekReportBtn"><span class="rt-emoji">🗓️</span><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
-          <button class="report-tile" id="monthDetailBtn"><span class="rt-emoji">📈</span><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
+          <button class="report-tile" id="weekReportBtn"><span class="rt-label">주간 리포트</span><span class="rt-go">›</span></button>
+          <button class="report-tile" id="monthDetailBtn"><span class="rt-label">월간 리포트</span><span class="rt-go">›</span></button>
         </div>
         <canvas id="weekCanvas" width="600" height="340" style="display:none"></canvas>
         <canvas id="monthCanvas" width="600" height="340" style="display:none"></canvas>
@@ -300,7 +300,7 @@
 
       <div class="stats-panel" data-panel="badges" hidden>
         <div class="card" id="badgeCard">
-          <h2>🏅 배지 & 레벨 <span class="badge-rate" id="badgeRate"></span></h2>
+          <h2>배지 & 레벨 <span class="badge-rate" id="badgeRate"></span></h2>
           <div class="level-row">
             <span class="level-emoji" id="levelEmoji">🌰</span>
             <div class="level-info">
@@ -320,47 +320,47 @@
         <div class="card as-kpis-card">
           <div class="as-kpis" id="analyzeKpis"></div>
         </div>
-        <p class="section-label">🔍 나에 대한 발견</p>
+        <p class="section-label">나에 대한 발견</p>
         <div id="discoveries"></div>
         <div id="statPinned"></div>
         <div class="stat-tools">
           <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 ▾</button>
-          <button class="sec-edit-btn" id="statEditBtn" aria-pressed="false">🔧 맞춤</button>
+          <button class="sec-edit-btn" id="statEditBtn" aria-pressed="false">맞춤</button>
         </div>
-        <p class="sec-edit-hint" id="statEditHint" hidden>📌 <b>메인에 올리기</b>로 분석을 이 화면 위쪽에 바로 띄울 수 있어요. ▲▼로 순서, 👁로 숨김. 완료를 누르면 적용돼요.</p>
+        <p class="sec-edit-hint" id="statEditHint" hidden><b>메인에 올리기</b>로 분석을 이 화면 위쪽에 바로 띄울 수 있어요. ▲▼로 순서,로 숨김. 완료를 누르면 적용돼요.</p>
         <div id="allAnalysis" hidden>
           <div class="card" data-sec="rhythm">
-            <div class="card-head"><h2>🗓️ 마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
+            <div class="card-head"><h2>마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>
             <p class="hint">요일(가로) × 시간대(세로)별 평균 기분. 가장 진한 초록 칸이 '나에게 좋은 시간'이에요. 가장자리 숫자는 요일·시간대별 평균이에요.</p>
             <div id="rhythmGrid"></div>
           </div>
         <div class="card collapsible collapsed" data-sec="tags">
-          <h2>🏷️ 자주 느낀 감정 (빈도)</h2>
+          <h2>자주 느낀 감정 (빈도)</h2>
           <p class="hint">감정 축 — 어떤 감정을 얼마나 <b>자주</b> 느꼈는지. 점수와 별개로 집계돼요.</p>
           <div id="tagInsight"></div>
         </div>
         <div class="card collapsible" data-sec="dist"><!-- 1차 지표는 기본 펼침 — 접힌 제목만으론 재배치 의미가 없음 -->
-          <h2>🌊 마음 흐름·분포 (최근 30일)</h2>
+          <h2>마음 흐름·분포 (최근 30일)</h2>
           <p class="hint">점수 축 — 기분 점수가 시간에 따라 어떻게 흘렀고, 그 날들이 어떤 기분으로 채워졌는지예요.</p>
           <div class="dist" id="dist"></div>
         </div>
         <div class="card collapsible collapsed" data-sec="grat">
-          <h2>🌱 잘한 일 모아보기</h2>
+          <h2>잘한 일 모아보기</h2>
           <p class="hint">여정에서 적은 '잘한 일·감사'가 여기 모여요.</p>
           <div id="gratList"></div>
         </div>
         <div class="card collapsible collapsed" data-sec="habitsum">
-          <h2>📋 습관 요약</h2>
+          <h2>습관 요약</h2>
           <p class="hint">습관별 실천율(최근 30일) · 현재 연속 · 가장 잘 지키는 요일을 한눈에.</p>
           <div id="habitSummary"></div>
         </div>
         <div class="card collapsible collapsed" id="corrCard" data-sec="corr">
-          <h2>🔗 습관과 기분</h2>
+          <h2>습관과 기분</h2>
           <p class="hint">습관을 한 날과 안 한 날의 평균 기분을 비교해요. 표본 수와 효과크기(Cohen's d)를 함께 보여드려요.</p>
           <div id="corrBody"></div>
         </div>
         <div class="card collapsible collapsed" id="webCard" data-sec="web">
-          <h2>🕸️ 생각의 지도</h2>
+          <h2>생각의 지도</h2>
           <p class="hint">일기·회고에 자주 쓴 단어를, 같은 날 함께 쓴 것끼리 이어 그린 연결망이에요.</p>
           <div id="wordWeb"></div>
         </div>
@@ -372,7 +372,7 @@
     <!-- ========== 탭: 설정 ========== -->
     <section class="tab" id="tab-settings" hidden>
       <div class="card collapsible collapsed" id="accountCard">
-        <h2>☁️ 계정 & 동기화</h2>
+        <h2>계정 & 동기화</h2>
         <div id="cloudNotConfigured" hidden>
           <p class="hint">기록은 이 기기에만 안전하게 저장돼요. 다른 곳으로 전송되지 않아요. 기기를 바꾸거나 백업이 필요하면 아래 <b>내 데이터</b>에서 내보내기·가져오기를 이용해 주세요.</p>
           <!-- 개발자용: 기기 간 자동 동기화는 config.js에 Supabase 주소·키 설정 + README "클라우드 동기화"의 SQL 실행으로 활성화 -->
@@ -401,7 +401,7 @@
 
       <div class="settings-grid">
       <div class="card collapsible collapsed">
-        <h2>🎨 테마</h2>
+        <h2>테마</h2>
         <div class="theme-grid" id="themeGrid">
           <button class="theme-btn" data-theme="warm">🌅<span>따뜻</span></button>
           <button class="theme-btn" data-theme="calm">🌿<span>차분</span></button>
@@ -413,7 +413,7 @@
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>🔠 글자 크기</h2>
+        <h2>글자 크기</h2>
         <p class="hint">눈이 편한 크기로 맞춰보세요.</p>
         <div class="seg" id="textSizeSeg">
           <button data-size="m">보통</button>
@@ -423,7 +423,7 @@
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>💬 위로 톤</h2>
+        <h2>위로 톤</h2>
         <p class="hint">달달한 위로가 부담스러우면 담백하게 바꿀 수 있어요.</p>
         <div class="seg" id="toneSeg">
           <button data-tone="warm">다정하게</button>
@@ -432,14 +432,14 @@
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>🔊 소리</h2>
+        <h2>소리</h2>
         <label class="toggle-row"><span>효과음 (버튼·저장음)</span><input type="checkbox" id="sfxToggle" checked /></label>
         <label class="toggle-row"><span>호흡할 때 가이드 소리</span><input type="checkbox" id="breathSoundToggle" checked /></label>
         <label class="toggle-row"><span>진동 (햅틱)</span><input type="checkbox" id="hapticToggle" checked /></label>
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>🔔 기록 알림</h2>
+        <h2>기록 알림</h2>
         <p class="hint">정한 시간에 부드럽게 기록을 권유해요. (앱이 열려 있을 때 동작해요)</p>
         <label class="toggle-row"><span>알림 켜기</span><input type="checkbox" id="reminderToggle" aria-label="매일 기록 알림 켜기" /></label>
         <label class="toggle-row"><span>시간</span><input type="time" id="reminderTime" value="21:00" aria-label="알림 시간" /></label>
@@ -447,7 +447,7 @@
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>📚 과학적 근거</h2>
+        <h2>과학적 근거</h2>
         <p class="hint">이 앱의 기능은 검증된 심리학·행동과학 연구에 기반해요. 왜 그렇게 만들었는지 정리했어요.</p>
         <ul class="sci-list">
           <li><b>기분 기록·일기</b> — 감정에 이름 붙이기가 편도체 활동을 낮춰요 (정서명명; Lieberman 2007).</li>
@@ -458,11 +458,11 @@
           <li><b>감사 기록</b> — 구체적 감사가 안녕감을 높여요 (Emmons 2003).</li>
           <li><b>패턴 분석</b> — 표본 수·효과크기(Cohen's d)를 함께, 상관≠인과로 표기 (Cohen 1988).</li>
         </ul>
-        <p class="hint">전체 근거와 출처 목록: <a href="docs/SCIENCE.md" target="_blank" rel="noopener" style="color:var(--accent-deep)">📚 과학적 근거 문서 보기</a></p>
+        <p class="hint">전체 근거와 출처 목록: <a href="docs/SCIENCE.md" target="_blank" rel="noopener" style="color:var(--accent-deep)">과학적 근거 문서 보기</a></p>
       </div>
 
       <div class="card collapsible collapsed">
-        <h2>💾 내 데이터</h2>
+        <h2>내 데이터</h2>
         <p class="hint">모든 기록은 이 기기에만 저장돼요. 백업하거나 다른 기기로 옮길 수 있어요.</p>
         <div class="data-btns">
           <button class="btn" id="exportBtn">기록 내보내기 (JSON)</button>
@@ -471,8 +471,8 @@
           <button class="btn" id="replayOnboard">앱 소개 다시 보기</button>
           <button class="btn danger" id="clearBtn">전체 기록 지우기</button>
         </div>
-        <p class="hint" style="margin-top:12px">☁️ <strong>기기 간 이동:</strong> 기존 기기에서 "내보내기" → 새 기기에서 "복원".</p>
-        <p class="hint"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">🔒 개인정보 처리방침</a> · <a href="terms.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">📄 이용약관</a> · <span id="appVer"></span></p>
+        <p class="hint" style="margin-top:12px"><strong>기기 간 이동:</strong> 기존 기기에서 "내보내기" → 새 기기에서 "복원".</p>
+        <p class="hint"><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">개인정보 처리방침</a> · <a href="terms.html" target="_blank" rel="noopener" style="color:var(--accent-deep)">이용약관</a> · <span id="appVer"></span></p>
       </div>
       </div>
     </section>
@@ -496,7 +496,7 @@
       <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
     </div>
     <p class="qb-hint" id="qbHint">삼각형의 점을 따라 천천히 (4·7·8)</p>
-    <button type="button" class="sleep-toggle" id="sleepToggle">🌙 수면 모드 끔</button>
+    <button type="button" class="sleep-toggle" id="sleepToggle">수면 모드 끔</button>
     <button class="btn primary" id="qbClose">그만하기</button>
   </div>
 
@@ -547,12 +547,12 @@
   </div>
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
-    <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><i class="tb-emo">📔</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
-    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><i class="tb-emo">🗓️</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>달력</span></button>
-    <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><i class="tb-emo">🌿</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
-    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge"><i class="tb-emo">🎯</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg><span>습관</span></button>
-    <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><i class="tb-emo">📊</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
-    <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><i class="tb-emo">⚙️</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>
+    <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
+    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>달력</span></button>
+    <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
+    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg><span>습관</span></button>
+    <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
+    <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>
   </nav>
 
   <script src="config.js"></script>

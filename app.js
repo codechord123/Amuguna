@@ -25,8 +25,8 @@ const moodReplies = {
   "불안해요": "불안한 마음, 알아요. 한 번에 하나씩만 생각해요. 잠깐 호흡 쉼표에서 숨을 고르고 와도 좋아요.",
   "무기력해요": "지금의 무기력은 게으름이 아니라 몸과 마음이 보내는 쉼 신호예요. 아주 작은 움직임 하나면 충분해요.",
   "그럭저럭": "그럭저럭도 충분히 잘하고 있는 거예요. 오늘도 잘 흘러가고 있어요.",
-  "괜찮아요": "괜찮다니 다행이에요. 이 가벼움을 오늘 잘 누려봐요 ☺️",
-  "활기차요": "활기가 도는 날이네요! 이 좋은 기운, 오늘 마음껏 누려요 ⚡",
+  "괜찮아요": "괜찮다니 다행이에요. 이 가벼움을 오늘 잘 누려봐요",
+  "활기차요": "활기가 도는 날이네요! 이 좋은 기운, 오늘 마음껏 누려요",
 };
 const plainReplies = {
   "지쳤어요": "지쳤네요. 오늘은 회복을 우선하세요.",
@@ -37,14 +37,14 @@ const plainReplies = {
   "괜찮아요": "괜찮은 날이네요. 이 컨디션을 잘 활용해보세요.",
   "활기차요": "컨디션이 좋네요. 이 기운을 잘 활용하세요.",
 };
-const energyFaces = { 1: "🪫 바닥이에요", 2: "😔 적어요", 3: "😐 보통", 4: "🙂 괜찮아요", 5: "⚡ 넘쳐요" };
+const energyFaces = { 1: "바닥이에요", 2: "적어요", 3: "보통", 4: "괜찮아요", 5: "넘쳐요" };
 
 /* 감정 팔레트 — '마음 + 에너지 + 태그'를 하나로 통합한 도구.
    카테고리는 직관적으로 긍정·보통·부정(정서가)으로 묶고,
    각 감정의 en(에너지 1-5)은 기록에 함께 저장된다(정서 원형모형, Russell 1980).
    base = 통계·점수용 기존 7분류 */
 // v = 정서가(valence) 0~100 — 감정과 긍부정 점수를 일치시키는 기준값.
-//     감정을 고르면 다이얼 점수가 고른 감정들의 평균 v로 맞춰진다.
+// 감정을 고르면 다이얼 점수가 고른 감정들의 평균 v로 맞춰진다.
 // v(정서가 0~100)는 정서 원형모형(Russell, 1980)의 '쾌–불쾌' 축이며,
 // 공개 규준치(ANEW: Bradley&Lang 1999, Warriner et al. 2013, 9점 척도)를
 // (x-1)/8*100 로 환산해 맞췄다. en(활력 1~5)은 직교하는 '각성' 축이라,
@@ -75,9 +75,9 @@ const EMOTIONS = [
   { k: "우울해요",   e: "🥺",   base: "우울해요",   en: 1, band: "neg", v: 12 }, // depressed 1.8
 ];
 const EMO_BANDS = [
-  { id: "pos", label: "🌟 긍정적인 마음" },
-  { id: "neu", label: "🌤️ 그저 그런 마음" },
-  { id: "neg", label: "🌧️ 힘든 마음" },
+  { id: "pos", label: "긍정적인 마음" },
+  { id: "neu", label: "그저 그런 마음" },
+  { id: "neg", label: "힘든 마음" },
 ];
 function emoByKey(k) { return EMOTIONS.find((x) => x.k === k); }
 // 위기 신호 어휘 — 공백 제거·소문자화 후 부분일치로 비교(아래 detectCrisis). 재현율(놓치지 않음) 우선.
@@ -256,7 +256,7 @@ function entryDetailHtml(e) {
   const moodTxt = e.mood ? `${mInfo(e.mood).emoji} ${e.mood}` : "기분 기록 없음";
   const refl = e.reflection && (e.reflection.good || e.reflection.hard);
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
-  const tags = (e.tags && e.tags.length) ? `<h2>🏷️ 감정 태그</h2><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
+  const tags = (e.tags && e.tags.length) ? `<h2>감정 태그</h2><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
   // 한 페이지 한눈에 — 게이지(점수) + 기분/활력/태그 + 일기·잘한일·회고
   return `
     <div class="card rpt-hero">
@@ -264,9 +264,9 @@ function entryDetailHtml(e) {
       <div class="rpt-hero-side"><p class="rpt-hero-cap">${moodTxt}</p><div class="hero-stats">${hs(e.energy || "—", "활력/5")}${hs((e.tags && e.tags.length) || 0, "감정 태그")}</div></div>
     </div>
     ${tags ? `<div class="card">${tags}</div>` : ""}
-    ${e.note ? `<div class="card"><h2>📝 일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
-    ${e.praise ? `<div class="card"><h2>🌱 잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
-    ${refl ? `<div class="card"><h2>🌙 저녁 회고</h2>${e.reflection.good ? `<p class="h-note">🌤️ ${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">🌧️ ${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
+    ${e.note ? `<div class="card"><h2>일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
+    ${e.praise ? `<div class="card"><h2>잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
+    ${refl ? `<div class="card"><h2>저녁 회고</h2>${e.reflection.good ? `<p class="h-note">${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
     ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
     <div class="data-btns" style="margin-top:18px">
       <button class="btn primary" data-eact="edit">✏️ 수정</button>
@@ -292,7 +292,7 @@ function updateTodayStats() {
   const entries = loadEntries(), tk = todayKey();
   const list = sortedEntries(entries);
   const streak = calcStreak(entries);
-  const prevBest = syncBestStreak(streak);   // 신기록이면 직전 최고값(>=0) 반환
+  const prevBest = syncBestStreak(streak); // 신기록이면 직전 최고값(>=0) 반환
   const best = settings.bestStreak || 0;
   const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   const week = keys.filter((k) => entries[k] && entries[k].mood).length;
@@ -303,22 +303,22 @@ function updateTodayStats() {
   const doneToday = !!(entries[tk] && entries[tk].mood);
   const plain = settings.tone === "plain"; // 담백 모드: 손실 프레이밍·기록경쟁·축하 압박을 덜어낸 담담한 문구
   let cheer;
-  if (list.length === 0) cheer = plain ? "오늘 첫 기록을 남겨보세요." : "환영해요! 오늘 첫 마음을 남겨볼까요? 🌱";
+  if (list.length === 0) cheer = plain ? "오늘 첫 기록을 남겨보세요." : "환영해요! 오늘 첫 마음을 남겨볼까요?";
   else if (doneToday && prevBest >= 0 && streak >= 3) {
-    cheer = plain ? `오늘까지 ${streak}일째 기록했어요.` : `🏆 신기록! ${streak}일 연속 — 지금까지 중 가장 길어요!`;
+    cheer = plain ? `오늘까지 ${streak}일째 기록했어요.` : `신기록! ${streak}일 연속 — 지금까지 중 가장 길어요!`;
     if (!plain && typeof confetti === "function") setTimeout(confetti, 200);
   }
   else if (!doneToday) cheer = plain
     ? (streak >= 1 ? `${streak}일째 기록 중이에요. 오늘도 편할 때 남겨보세요.` : "오늘 기분을 기록해보세요.")
-    : (streak >= 1 ? `🔥 ${streak}일 연속 중! 오늘 기록하면 ${streak + 1}일로 이어져요` : (best >= 3 ? `최고 ${best}일까지 해냈던 당신! 오늘 다시 시작해 신기록에 도전해요 💪` : "오늘 마음을 남기고 다시 시작해 봐요 💛"));
-  else if (streak >= 7) cheer = plain ? `${streak}일째 꾸준히 기록 중이에요.` : `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요 👑`;
-  else if (week >= 5) cheer = plain ? "이번 주 자주 기록했어요." : "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요 ☀️";
-  else cheer = plain ? "오늘 기록했어요." : (best >= 3 ? `오늘도 해냈어요 💛 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요 💛");
+    : (streak >= 1 ? `${streak}일 연속 중! 오늘 기록하면 ${streak + 1}일로 이어져요` : (best >= 3 ? `최고 ${best}일까지 해냈던 당신! 오늘 다시 시작해 신기록에 도전해요` : "오늘 마음을 남기고 다시 시작해 봐요"));
+  else if (streak >= 7) cheer = plain ? `${streak}일째 꾸준히 기록 중이에요.` : `${streak}일 연속이라니 정말 대단해요! 스스로를 꾸준히 돌보고 있어요`;
+  else if (week >= 5) cheer = plain ? "이번 주 자주 기록했어요." : "이번 주 정말 잘 챙겼어요. 이 리듬, 그대로 좋아요";
+  else cheer = plain ? "오늘 기록했어요." : (best >= 3 ? `오늘도 해냈어요 (최고 ${best}일 연속 기록 보유 중)` : "오늘도 해냈어요. 이 작은 기록들이 모여 큰 변화가 돼요");
   set("tsCheer", cheer);
   // 주간 목표 진행(목표경사 효과) — 7일 중 며칠
   const wf = document.getElementById("wkGoalFill");
   if (wf) { wf.style.width = Math.round(week / 7 * 100) + "%"; wf.style.background = week >= 7 ? "var(--success)" : week >= 5 ? "var(--accent)" : "var(--accent-deep)"; }
-  set("wkGoalCap", week >= 7 ? "목표 달성! 🎉" : `목표 ${week}/7`);
+  set("wkGoalCap", week >= 7 ? "목표 달성!" : `목표 ${week}/7`);
 }
 
 // 첫 화면(오늘의 여정) — 날짜·상태에 맞춰 주제 중심으로 안내
@@ -345,7 +345,7 @@ function updateJourneyHero() {
   }
   // 첫 주 온보딩 미션 — 습관 형성 가속(작은 목표)
   const total = sortedEntries(loadEntries()).length;
-  if (total < 3) set("journeySub", `🌱 첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`);
+  if (total < 3) set("journeySub", `첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`);
 }
 // 위기 신호 직후의 부정 표현 — "죽고 싶지 않아", "자해 안 해" 등은 위기로 보지 않음
 const CRISIS_NEG = /^(지않|진않|지는않|지말|지마|하지않|안[하해했할함]|은아니|는아니|아니)/;
@@ -522,7 +522,7 @@ function quoteManageHtml() {
     ? `<p class="manage-h">${title}</p>` + arr.map((q, i) =>
         `<div class="manage-row"><span>${escapeHtml(q)}</span><button class="task-del" data-mk="${kind}" data-mi="${i}" aria-label="삭제">×</button></div>`).join("")
     : "";
-  const html = section("♥ 즐겨찾기", fav, "fav") + section("✍️ 내 문구", mine, "my");
+  const html = section("♥ 즐겨찾기", fav, "fav") + section("내 문구", mine, "my");
   return html || '<p class="empty">아직 즐겨찾기나 내 문구가 없어요.</p>';
 }
 document.getElementById("manageToggle").addEventListener("click", () => { Sound.tap(); openSubpage("내 문구 · 즐겨찾기", quoteManageHtml(), "quotes"); });
@@ -560,7 +560,7 @@ function makeBreather(circleEl, textEl, base, opts) {
         if (isSleep() && opts.maxCycles && cycles >= opts.maxCycles) { api.stop(); if (opts.onAutoEnd) opts.onAutoEnd(); return; }
       }
       enter(next);
-    } else { render(); Sound.tick(); }   // 숫자 + 카운트(둥근 사운드)
+    } else { render(); Sound.tick(); } // 숫자 + 카운트(둥근 사운드)
   }
   const api = {
     isRunning: () => running,
@@ -593,27 +593,27 @@ function makeBreather(circleEl, textEl, base, opts) {
 }
 
 const missions = [
-  "물 한 잔 천천히 마시기 💧", "창문 열고 바깥 공기 30초 느끼기 🌿", "어깨를 크게 한 바퀴 돌리기 🤸",
-  "좋아하는 노래 딱 한 곡 듣기 🎧", "스마트폰 내려놓고 1분간 눈 감기 😌", "기지개를 시원하게 한 번 켜기 🙆",
-  "따뜻한 차나 커피 한 잔 내리기 ☕", "방 안에서 다섯 걸음만 걷기 🚶", "고마운 사람 한 명 떠올리기 💛",
-  "햇빛 드는 곳에 잠깐 앉아 있기 ☀️", "지금 어지러운 것 딱 하나만 정리하기 🧺", "거울 보고 '수고했어' 한마디 건네기 🪞",
-  "심호흡 세 번 천천히 하기 🌬️", "세수하고 개운하게 만들기 💦",
-  "지금 손에 닿는 것 5가지 만져보기 ✋", "좋아하는 향 한 번 맡기 🕯️", "발가락을 쥐었다 펴기 10번 🦶",
-  "오늘 하늘 색깔 한 번 올려다보기 🌤️", "물 마시고 기지개 켜기 💧", "어깨에 힘 빼고 한숨 길게 내쉬기 😮‍💨",
-  "좋아하는 사진 한 장 다시 보기 🖼️", "방 불을 조금 어둡게 해보기 💡", "포근한 담요나 옷 걸치기 🧣",
-  "오늘 먹고 싶은 것 하나 정하기 🍫", "창밖 소리 30초 가만히 듣기 👂", "손 따뜻하게 비비기 🤲",
-  "할 일 목록에서 하나 지우기(미뤄도 OK) ✔️", "좋아하는 사람에게 안부 한 줄 보내기 💬", "스트레칭으로 목 좌우로 돌리기 🙆‍♀️",
-  "지금 기분을 한 단어로 말해보기 🗣️", "따뜻한 물로 손 씻기 🚿", "의자에 기대 1분 멍때리기 🌫️",
-  "좋아하는 음료 천천히 한 모금 🥤", "휴대폰 알림 잠깐 꺼두기 🔕", "가장 편한 자세로 2분 눕기 🛋️",
-  "오늘의 작은 성공 하나 떠올리기 🌟", "식물이나 창밖 초록 바라보기 🪴", "좋아하는 노래 흥얼거리기 🎶",
-  "양손을 깍지 껴 위로 쭉 뻗기 🙌", "차가운 물 한 모금 마시기 🧊", "오늘 입은 옷 색깔 의식해 보기 👕",
-  "좋아하는 책 한 문단만 읽기 📖", "지금 들리는 소리 3가지 찾기 🔊", "창문 열어 환기 1분 🪟",
-  "발바닥을 바닥에 꾹 붙여보기 🦶", "어제보다 잘한 것 하나 칭찬하기 👏", "기지개 켜며 하품 한 번 😪",
-  "좋아하는 간식 한 입 음미하기 🍪", "휴대폰 화면 밝기 낮추기 🌗", "오늘 날씨를 한 문장으로 적기 ⛅",
-  "손목·발목 천천히 돌리기 🔄", "거울 보며 미소 한 번 😊", "미뤄둔 일 딱 1분만 시작하기 ⏱️",
-  "좋아하는 사람 사진 한 장 보기 🖼️", "따뜻한 차 천천히 우리기 🍵", "눈을 감고 10까지 세기 🔢",
-  "오늘 감사한 것 하나 소리 내 말하기 🗣️", "방 안 물건 하나 제자리에 두기 🧹", "심장 박동에 1분 집중하기 💓",
-  "좋아하는 향수·로션 바르기 🧴", "잠깐 맨발로 서 있기 🦶", "내일의 나에게 한 줄 응원 쓰기 ✉️",
+  "물 한 잔 천천히 마시기", "창문 열고 바깥 공기 30초 느끼기", "어깨를 크게 한 바퀴 돌리기",
+  "좋아하는 노래 딱 한 곡 듣기", "스마트폰 내려놓고 1분간 눈 감기", "기지개를 시원하게 한 번 켜기",
+  "따뜻한 차나 커피 한 잔 내리기", "방 안에서 다섯 걸음만 걷기", "고마운 사람 한 명 떠올리기",
+  "햇빛 드는 곳에 잠깐 앉아 있기", "지금 어지러운 것 딱 하나만 정리하기", "거울 보고 '수고했어' 한마디 건네기",
+  "심호흡 세 번 천천히 하기", "세수하고 개운하게 만들기",
+  "지금 손에 닿는 것 5가지 만져보기", "좋아하는 향 한 번 맡기", "발가락을 쥐었다 펴기 10번",
+  "오늘 하늘 색깔 한 번 올려다보기", "물 마시고 기지개 켜기", "어깨에 힘 빼고 한숨 길게 내쉬기",
+  "좋아하는 사진 한 장 다시 보기", "방 불을 조금 어둡게 해보기", "포근한 담요나 옷 걸치기",
+  "오늘 먹고 싶은 것 하나 정하기", "창밖 소리 30초 가만히 듣기", "손 따뜻하게 비비기",
+  "할 일 목록에서 하나 지우기(미뤄도 OK)", "좋아하는 사람에게 안부 한 줄 보내기", "스트레칭으로 목 좌우로 돌리기",
+  "지금 기분을 한 단어로 말해보기", "따뜻한 물로 손 씻기", "의자에 기대 1분 멍때리기",
+  "좋아하는 음료 천천히 한 모금", "휴대폰 알림 잠깐 꺼두기", "가장 편한 자세로 2분 눕기",
+  "오늘의 작은 성공 하나 떠올리기", "식물이나 창밖 초록 바라보기", "좋아하는 노래 흥얼거리기",
+  "양손을 깍지 껴 위로 쭉 뻗기", "차가운 물 한 모금 마시기", "오늘 입은 옷 색깔 의식해 보기",
+  "좋아하는 책 한 문단만 읽기", "지금 들리는 소리 3가지 찾기", "창문 열어 환기 1분",
+  "발바닥을 바닥에 꾹 붙여보기", "어제보다 잘한 것 하나 칭찬하기", "기지개 켜며 하품 한 번",
+  "좋아하는 간식 한 입 음미하기", "휴대폰 화면 밝기 낮추기", "오늘 날씨를 한 문장으로 적기",
+  "손목·발목 천천히 돌리기", "거울 보며 미소 한 번", "미뤄둔 일 딱 1분만 시작하기",
+  "좋아하는 사람 사진 한 장 보기", "따뜻한 차 천천히 우리기", "눈을 감고 10까지 세기",
+  "오늘 감사한 것 하나 소리 내 말하기", "방 안 물건 하나 제자리에 두기", "심장 박동에 1분 집중하기",
+  "좋아하는 향수·로션 바르기", "잠깐 맨발로 서 있기", "내일의 나에게 한 줄 응원 쓰기",
 ];
 const missionEl = document.getElementById("mission");
 let lastMission = -1;
@@ -660,7 +660,7 @@ timerBtns.addEventListener("click", (e) => {
     sleepTimer = setTimeout(() => {
       Sound.stopAmbient();
       document.querySelectorAll(".sound-btn").forEach((x) => { x.classList.remove("active"); x.setAttribute("aria-pressed", "false"); });
-      timerStatus.textContent = "타이머 종료 — 배경음을 껐어요. 잘 자요 🌙";
+      timerStatus.textContent = "타이머 종료 — 배경음을 껐어요. 잘 자요";
       timerBtns.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.min === "0"));
       sleepTimer = null;
     }, min * 60000);
@@ -671,15 +671,15 @@ timerBtns.addEventListener("click", (e) => {
 
 /* ===================== 90일 챌린지 (복수 습관) ===================== */
 const MILESTONES = {
-  1: "첫 걸음을 뗐어요! 시작이 가장 어려운 건데, 해냈어요 🌱",
-  3: "3일째! 작심삼일의 벽을 넘었어요 💪",
-  7: "일주일 완성! 일상에 자리를 잡아가고 있어요 ☀️",
-  14: "2주 돌파! 제법 익숙해졌죠? 🌿",
-  21: "21일! 습관의 씨앗이 텄어요 🌷",
-  30: "한 달 달성! 정말 대단해요 🎉",
-  50: "50일! 절반을 훌쩍 넘었어요 🔥",
-  66: "66일! 과학이 말하는 '습관이 자리잡는 날'에 도달했어요 🧠✨",
-  90: "90일 완주!! 3달을 해낸 당신은 이미 다른 사람이에요. 진심으로 축하해요 🏆",
+  1: "첫 걸음을 뗐어요! 시작이 가장 어려운 건데, 해냈어요",
+  3: "3일째! 작심삼일의 벽을 넘었어요",
+  7: "일주일 완성! 일상에 자리를 잡아가고 있어요",
+  14: "2주 돌파! 제법 익숙해졌죠?",
+  21: "21일! 습관의 씨앗이 텄어요",
+  30: "한 달 달성! 정말 대단해요",
+  50: "50일! 절반을 훌쩍 넘었어요",
+  66: "66일! 과학이 말하는 '습관이 자리잡는 날'에 도달했어요",
+  90: "90일 완주!! 3달을 해낸 당신은 이미 다른 사람이에요. 진심으로 축하해요",
 };
 const expandedIds = new Set();
 let addingMode = false;
@@ -724,7 +724,7 @@ function resetSetupForm() {
 }
 document.getElementById("startChallenge").addEventListener("click", () => {
   const title = challengeTitle.value.trim() || presetChoice;
-  if (!title) { toast("어떤 습관을 만들지 골라주세요 🙂"); return; }
+  if (!title) { toast("어떤 습관을 만들지 골라주세요"); return; }
   const chs = loadChs();
   chs.push({ id: "c" + Date.now(), emoji: presetEmoji, title, cue: cueChoice, minVersion: challengeMin.value.trim(), startDate: todayKey(), done: {}, celebrated: [] });
   saveChs(chs);
@@ -755,7 +755,7 @@ function renderChallenge() {
   const today = todayKey();
   const doneToday = chs.filter((h) => h.done[today]).length;
   summary.hidden = false;
-  summary.textContent = `오늘 ${doneToday} / ${chs.length} 완료 ${doneToday === chs.length ? "🎉 다 해냈어요!" : "🌱"}`;
+  summary.textContent = `오늘 ${doneToday} / ${chs.length} 완료 ${doneToday === chs.length ? "다 해냈어요!" : ""}`;
   list.classList.toggle("compact", chs.length >= 4); // 많아지면 카드 밀도를 높여 한 화면 유지
   list.innerHTML = chs.map((h) => habitCardHtml(h)).join("");
   chEmpty.hidden = true;
@@ -805,8 +805,8 @@ function detailHabitHtml(h) {
     <div class="ch-progress"><div class="ch-bar" style="width:${Math.min(100, (doneCount / CH_TARGET) * 100)}%"></div></div>
     <button class="btn ${todayDone ? "" : "primary"} block" data-act="check">${todayDone ? "오늘 완료함 ✓ (취소하려면 누르기)" : "오늘 완료 체크 ✓"}</button>
     ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
-    ${h.cue ? `<p class="habit-cue">⏰ ${escapeHtml(h.cue)}에 하기</p>` : ""}
-    ${h.minVersion ? `<p class="habit-min">💡 힘든 날엔 최소만: ${escapeHtml(h.minVersion)}</p>` : ""}
+    ${h.cue ? `<p class="habit-cue">${escapeHtml(h.cue)}에 하기</p>` : ""}
+    ${h.minVersion ? `<p class="habit-min">힘든 날엔 최소만: ${escapeHtml(h.minVersion)}</p>` : ""}
     <div class="ch-grid" data-grid="${h.id}"></div>
     <div class="inline-edit" data-edit hidden>
       <input class="text-input" data-ef="title" value="${escapeHtml(h.title)}" maxlength="40" />
@@ -815,9 +815,9 @@ function detailHabitHtml(h) {
       <div class="edit-actions"><button class="btn primary" data-act="savehabit">저장</button><button class="btn" data-act="canceledit">취소</button></div>
     </div>
     <div class="data-btns" style="margin-top:16px">
-      <button class="btn" data-act="edit">✏️ 편집</button>
-      <button class="btn" data-act="calendar">📅 캘린더에 매일 알림</button>
-      <button class="btn" data-act="share">📤 진행 공유</button>
+      <button class="btn" data-act="edit">편집</button>
+      <button class="btn" data-act="calendar">캘린더에 매일 알림</button>
+      <button class="btn" data-act="share">진행 공유</button>
       <button class="btn danger" data-act="giveup">이 습관 그만두기</button>
     </div>`;
 }
@@ -832,7 +832,7 @@ function fillHabitGrid(h) {
     let cls = "ch-cell";
     if (h.done[key]) cls += " done";
     else if (key === today) cls += " today";
-    else if (key < today) cls += " miss";   // 비처벌: 빈 구멍이 아니라 회색
+    else if (key < today) cls += " miss"; // 비처벌: 빈 구멍이 아니라 회색
     else cls += " future";
     html += `<div class="${cls}" title="${i + 1}일째"></div>`;
   }
@@ -921,8 +921,8 @@ function applyHabitAction(act, id, scopeEl) {
     const k = todayKey();
     const willBeDone = !h.done[k];
     h.doneAt = h.doneAt || {}; h.doneAt[k] = new Date().toISOString(); // 토글 시각 기록(기기 간 최신성 병합)
-    if (willBeDone) h.done[k] = true; else delete h.done[k];           // 해제는 키 삭제(union 병합에 의한 부활 방지)
-    const after = habitDoneCount(h);                                    // 90일 창 기준 집계(창 밖 키 왜곡 방지)
+    if (willBeDone) h.done[k] = true; else delete h.done[k]; // 해제는 키 삭제(union 병합에 의한 부활 방지)
+    const after = habitDoneCount(h); // 90일 창 기준 집계(창 밖 키 왜곡 방지)
     let celebrated = false;
     if (willBeDone && MILESTONES[after] && !h.celebrated.includes(after)) { h.celebrated.push(after); celebrated = true; }
     saveChs(chs);
@@ -935,7 +935,7 @@ function applyHabitAction(act, id, scopeEl) {
   } else if (act === "savehabit") {
     const f = scopeEl.querySelector("[data-edit]");
     const title = f.querySelector('[data-ef="title"]').value.trim();
-    if (!title) { toast("습관 이름을 비울 수 없어요 🙂"); return; }
+    if (!title) { toast("습관 이름을 비울 수 없어요"); return; }
     h.title = title; h.cue = f.querySelector('[data-ef="cue"]').value.trim(); h.minVersion = f.querySelector('[data-ef="min"]').value.trim();
     saveChs(chs); Sound.success(); renderChallenge(); refreshHabitDetail(id);
   } else if (act === "canceledit") {
@@ -952,7 +952,7 @@ function applyHabitAction(act, id, scopeEl) {
   }
 }
 
-/* 🔌 캘린더(.ics) — 습관을 캘린더 앱에 90일치 매일 알림으로 */
+/* 캘린더(.ics) — 습관을 캘린더 앱에 90일치 매일 알림으로 */
 function exportHabitIcs(h) {
   const start = h.startDate.replace(/-/g, "");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -975,7 +975,7 @@ async function shareHabit(h) {
   const text = `오늘의 쉼 ${h.emoji} '${h.title}' 90일 챌린지 — ${doneCount}일 달성! 함께 해요 💪`;
   try {
     if (navigator.share) await navigator.share({ title: "오늘의 쉼 챌린지", text });
-    else { await navigator.clipboard.writeText(text); toast("진행 상황을 클립보드에 복사했어요 📋"); }
+    else { await navigator.clipboard.writeText(text); toast("진행 상황을 클립보드에 복사했어요"); }
   } catch (e) {}
 }
 
@@ -1004,7 +1004,7 @@ function calcStreakInfo(entries) {
   while (true) {
     const k = todayKey(d);
     if (entries[k] && entries[k].mood) { streak++; }
-    else if (streak > 0 && freezes > 0) { freezes--; freezesUsed++; }   // 빈 날 1일을 보호로 메움(사용 횟수는 표기용으로 반환)
+    else if (streak > 0 && freezes > 0) { freezes--; freezesUsed++; } // 빈 날 1일을 보호로 메움(사용 횟수는 표기용으로 반환)
     else break;
     d.setDate(d.getDate() - 1);
   }
@@ -1063,7 +1063,7 @@ function renderGratitude(list) {
   const seen = new Set();
   const items = list.filter((e) => e.praise && e.praise.trim()).reverse()
     .filter((e) => { const key = e.praise.trim(); if (seen.has(key)) return false; seen.add(key); return true; }); // 같은 문구 중복 제거
-  if (!items.length) { el.innerHTML = '<p class="empty">여정에서 \'잘한 일\'을 적으면 여기에 모여요 🌱</p>'; return; }
+  if (!items.length) { el.innerHTML = '<p class="empty">여정에서 \'잘한 일\'을 적으면 여기에 모여요</p>'; return; }
   el.innerHTML = items.slice(0, 10).map((e) => { const p = e.date.split("-"); return `<div class="grat-item"><span class="grat-date">${+p[1]}/${+p[2]}</span><span class="grat-text">${escapeHtml(e.praise)}</span></div>`; }).join("");
 }
 
@@ -1090,8 +1090,8 @@ function renderMoodCalendar(entries) {
   wrap.innerHTML = html;
   wrap.querySelectorAll("[data-cal]").forEach((b) => b.addEventListener("click", () => {
     Sound.tap(); const k = b.dataset.cal;
-    if (loadEntries()[k]) openEntryDetail(k);   // 기록 있으면 요약(한눈에) → 거기서 수정
-    else openEntryEditor(k);                     // 빈 날은 바로 기록(여정)
+    if (loadEntries()[k]) openEntryDetail(k); // 기록 있으면 요약(한눈에) → 거기서 수정
+    else openEntryEditor(k); // 빈 날은 바로 기록(여정)
   }));
 }
 document.getElementById("calPrev").addEventListener("click", () => { calOffset--; Sound.tap(); renderMoodCalendar(loadEntries()); });
@@ -1146,10 +1146,10 @@ function applyStatLayout() {
       if (!bar) { bar = document.createElement("div"); bar.className = "sec-ctrl"; }
       card.insertBefore(bar, card.firstChild);
       bar.innerHTML = `<span class="sec-ctrl-name">${STAT_SEC_NAME[id]}</span>`
-        + `<button class="sec-btn ${isPinned ? "on" : ""}" data-act="pin" data-secid="${id}" aria-pressed="${isPinned}" aria-label="메인에 올리기">📌</button>`
+        + `<button class="sec-btn ${isPinned ? "on" : ""}" data-act="pin" data-secid="${id}" aria-pressed="${isPinned}" aria-label="메인에 올리기"></button>`
         + `<button class="sec-btn" data-act="up" data-secid="${id}" aria-label="위로">▲</button>`
         + `<button class="sec-btn" data-act="down" data-secid="${id}" aria-label="아래로">▼</button>`
-        + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? "🚫" : "👁"}</button>`;
+        + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? "" : ""}</button>`;
     } else if (bar) { bar.remove(); }
   });
   drawer.classList.toggle("stat-editing", statEditing);
@@ -1209,7 +1209,7 @@ if (_statEditBtn) _statEditBtn.addEventListener("click", () => {
   Sound.tap(); statEditing = !statEditing;
   _statEditBtn.setAttribute("aria-pressed", statEditing ? "true" : "false");
   _statEditBtn.classList.toggle("on", statEditing);
-  _statEditBtn.textContent = statEditing ? "✓ 완료" : "🔧 맞춤";
+  _statEditBtn.textContent = statEditing ? "✓ 완료" : "맞춤";
   const hint = document.getElementById("statEditHint"); if (hint) hint.hidden = !statEditing;
   // 편집 중에는 드로어를 펼쳐서 모든 카드 헤더가 보이도록
   const box = document.getElementById("allAnalysis");
@@ -1233,7 +1233,7 @@ document.getElementById("todayStats").addEventListener("click", (e) => {
   Sound.tap();
   const j = it.dataset.jump;
   if (j === "weekreport") { activateTab("stats"); showStatsSeg("summary"); openReport("week"); }
-  else if (j === "calendar" || j === "log") { activateTab("calendar"); }   // 달력은 별도 탭으로
+  else if (j === "calendar" || j === "log") { activateTab("calendar"); } // 달력은 별도 탭으로
   else { activateTab("stats"); showStatsSeg(j); }
 });
 // 인사이트 → 바로 행동(호흡·미션·위로)으로 이동 (연결성)
@@ -1278,7 +1278,7 @@ function renderWeekly(entries) {
   if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 ${mInfo(topMood[0]).emoji} ${topMood[0]}` : ""}.`);
   if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
-  if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요 💛" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
+  if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
   weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
 
@@ -1309,7 +1309,7 @@ function renderMonthly(entries) {
   if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
   if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
-  if (!plain) parts.push("한 달을 차곡차곡 살아냈어요 💛");
+  if (!plain) parts.push("한 달을 차곡차곡 살아냈어요");
   monthData = { label: `${y}년 ${m + 1}월`, summary: parts.join(" "), daysLogged: recs.length, avgMood, avgEnergy, habDone, habTotal, series: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
 }
 // 전체 페이지 리포트 이미지 — 진단·처방·하이라이트까지 담은 세로 카드(높이 자동)
@@ -1334,17 +1334,17 @@ function drawReportCanvas(kind) {
   const sols = selectSolutions(diag, trend, keys[keys.length - 1]).map((s) => s.txt);
   const ha = computeHabitAnalysis(keys, prevKeys, entries);
   const habLines = ha ? ha.rows.slice(0, 3).map((r) => {
-    const bits = [`🔥${r.streak}`];
+    const bits = [`${r.streak}`];
     if (r.delta != null && Math.abs(r.delta) >= 1) bits.push(`${r.delta > 0 ? "▲" : "▼"}${Math.abs(r.delta)}`);
-    if (r.momentum != null && r.momentum >= 10) bits.push("📈");
-    else if (r.momentum != null && r.momentum <= -10) bits.push("📉");
+    if (r.momentum != null && r.momentum >= 10) bits.push("");
+    else if (r.momentum != null && r.momentum <= -10) bits.push("");
     return { name: `${r.h.emoji || "✅"} ${r.h.title}`, rate: `${r.rate}%`, sub: bits.join(" ") };
   }) : [];
   const habInsight = ha ? (habitInsightLines(ha, unit)[0] || "").replace(/<[^>]+>/g, "") : "";
   const dMood = (cur.days >= 3 && prev.days >= 3 && cur.avgMood != null && prev.avgMood != null) ? Math.round(cur.avgMood - prev.avgMood) : null; // 표본 게이트 — 편향 비교 차단
   const headline = (dMood != null && Math.abs(dMood) >= 3) ? (dMood > 0 ? `지난 ${unit}보다 기분이 ▲${dMood}점 좋아졌어요` : `지난 ${unit}보다 ▼${-dMood}점 가라앉았어요`) : "";
-  const bestTxt = cur.best ? `🌟 가장 좋았던 날 ${cur.best.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.best.sc)}점` : "";
-  const worstTxt = (cur.worst && (!cur.best || cur.worst.e.date !== cur.best.e.date)) ? `🌧️ 가장 힘들었던 날 ${cur.worst.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.worst.sc)}점` : "";
+  const bestTxt = cur.best ? `가장 좋았던 날 ${cur.best.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.best.sc)}점` : "";
+  const worstTxt = (cur.worst && (!cur.best || cur.worst.e.date !== cur.best.e.date)) ? `가장 힘들었던 날 ${cur.worst.e.date.slice(5).replace("-", "/")} · ${Math.round(cur.worst.sc)}점` : "";
   const css = getComputedStyle(document.documentElement);
   const cardC = css.getPropertyValue("--card").trim() || "#fffefc", ink = css.getPropertyValue("--ink").trim() || "#322a25", ink2 = css.getPropertyValue("--ink-2").trim() || "#6a5c53", soft = css.getPropertyValue("--soft").trim() || "#877668", accentDeep = css.getPropertyValue("--accent-deep").trim() || "#cd5c41", line = css.getPropertyValue("--line").trim() || "#ece1d6";
   const S = 2, W = 380, padX = 22, contentW = W - padX * 2;
@@ -1360,24 +1360,24 @@ function drawReportCanvas(kind) {
     const numW = ctx.measureText(numStr).width; ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("/100", padX + numW + 5, y); }
     if (dMood != null) { ctx.font = "bold 12px sans-serif"; if (render) { ctx.fillStyle = dMood > 0 ? accentDeep : soft; ctx.fillText(`${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(dMood)} 지난 ${unit}`, padX + numW + 44, y); } }
     y += 22; const stats = [`기록 ${cur.days}일`]; if (cur.avgEnergy != null) stats.push(`활력 ${cur.avgEnergy.toFixed(1)}/5`); if (cur.habPct != null) stats.push(`습관 ${cur.habPct}%`);
-    ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(stats.join("    ·    "), padX, y); }
+    ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(stats.join(" · "), padX, y); }
     y += 22; if (render) { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 24;
-    if (headline) { ctx.font = "bold 13px sans-serif"; if (render) ctx.fillStyle = accentDeep; y = wrap("💡 " + headline, padX, y, contentW, 19, render); y += 14; }
-    if (diag) { ctx.font = "bold 15px sans-serif"; if (render) ctx.fillStyle = ink; y = wrap(`🔍 ${diag.label}`, padX, y, contentW, 21, render); y += 5; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap(diag.dx, padX, y, contentW, 20, render); y += 18; }
-    ctx.font = "bold 15px sans-serif"; if (render) { ctx.fillStyle = ink; ctx.fillText("🌿 맞춤 제안", padX, y); } y += 24;
-    sols.forEach((s) => { ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap("•  " + s, padX, y, contentW, 20, render); y += 10; });
+    if (headline) { ctx.font = "bold 13px sans-serif"; if (render) ctx.fillStyle = accentDeep; y = wrap("" + headline, padX, y, contentW, 19, render); y += 14; }
+    if (diag) { ctx.font = "bold 15px sans-serif"; if (render) ctx.fillStyle = ink; y = wrap(`${diag.label}`, padX, y, contentW, 21, render); y += 5; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap(diag.dx, padX, y, contentW, 20, render); y += 18; }
+    ctx.font = "bold 15px sans-serif"; if (render) { ctx.fillStyle = ink; ctx.fillText("맞춤 제안", padX, y); } y += 24;
+    sols.forEach((s) => { ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; y = wrap("• " + s, padX, y, contentW, 20, render); y += 10; });
     if (bestTxt || worstTxt) { y += 6; if (render) { ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 22; ctx.font = "13px sans-serif"; if (render) ctx.fillStyle = ink2; if (bestTxt) { if (render) ctx.fillText(bestTxt, padX, y); y += 21; } if (worstTxt) { if (render) ctx.fillText(worstTxt, padX, y); y += 21; } }
     if (habLines.length) {
       y += 6; if (render) { ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 22;
-      ctx.font = "bold 15px sans-serif"; const avgTxt = ha.avgDelta != null && Math.abs(ha.avgDelta) >= 1 ? `  (${ha.avgDelta > 0 ? "▲" : "▼"}${Math.abs(ha.avgDelta)})` : "";
-      if (render) { ctx.fillStyle = ink; ctx.fillText(`🎯 습관 분석 · 평균 ${ha.avgRate}%${avgTxt}`, padX, y); } y += 23;
+      ctx.font = "bold 15px sans-serif"; const avgTxt = ha.avgDelta != null && Math.abs(ha.avgDelta) >= 1 ? ` (${ha.avgDelta > 0 ? "▲" : "▼"}${Math.abs(ha.avgDelta)})` : "";
+      if (render) { ctx.fillStyle = ink; ctx.fillText(`습관 분석 · 평균 ${ha.avgRate}%${avgTxt}`, padX, y); } y += 23;
       habLines.forEach((hl) => {
-        ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(hl.name, padX, y); ctx.textAlign = "right"; ctx.fillStyle = soft; ctx.fillText(`${hl.rate}  ${hl.sub}`, W - padX, y); ctx.textAlign = "left"; } y += 20;
+        ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(hl.name, padX, y); ctx.textAlign = "right"; ctx.fillStyle = soft; ctx.fillText(`${hl.rate} ${hl.sub}`, W - padX, y); ctx.textAlign = "left"; } y += 20;
       });
-      if (habInsight) { y += 2; ctx.font = "12px sans-serif"; if (render) ctx.fillStyle = soft; y = wrap("💡 " + habInsight, padX, y, contentW, 18, render); }
+      if (habInsight) { y += 2; ctx.font = "12px sans-serif"; if (render) ctx.fillStyle = soft; y = wrap("" + habInsight, padX, y, contentW, 18, render); }
       y += 8;
     }
-    y += 10; ctx.font = "11px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("오늘의 쉼 · 나를 돌본 기록 🌿", padX, y); } y += 24;
+    y += 10; ctx.font = "11px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("오늘의 쉼 · 나를 돌본 기록", padX, y); } y += 24;
     return y;
   };
   const totalH = Math.ceil(run(false));
@@ -1392,9 +1392,9 @@ document.getElementById("monthDetailBtn").addEventListener("click", () => { Soun
 /* 리포트 상세 페이지 */
 function openReport(kind) {
   renderWeekly(loadEntries()); renderMonthly(loadEntries());
-  openSubpage(kind === "month" ? "📈 월간 리포트" : "🗓️ 주간 리포트", reportDetailHtml(kind), "report");
+  openSubpage(kind === "month" ? "월간 리포트" : "주간 리포트", reportDetailHtml(kind), "report");
 }
-const SCORE_FACES = ["😣", "😟", "😐", "🙂", "😄"];
+const SCORE_FACES = ["", "", "", "", ""];
 function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Math.max(0, Math.round(v) - 1))]; }
 // 평균 기분 게이지 링 (0-100) — 리포트 히어로 비주얼
 function moodGaugeSvg(v) {
@@ -1404,7 +1404,7 @@ function moodGaugeSvg(v) {
 // 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
 function reportChartSvg(keys, entries) {
   const n = keys.length;
-  const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null);       // 0-100 (기분 한 축만 — 활력선은 노이즈라 제거)
+  const mood = keys.map((k) => entries[k] ? entryScore(entries[k]) : null); // 0-100 (기분 한 축만 — 활력선은 노이즈라 제거)
   if (!mood.some((v) => v != null)) return "";
   const W = 340, H = 178, padL = 22, padR = 16, padT = 20, padB = 30;
   const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -1471,11 +1471,11 @@ const REPORT_PAPERS = {
 };
 // 진단 구간 — 평균 기분(0-100)을 5단계로 구분. 각 구간의 진단(dx)·기본 처방(rx 키 목록)
 const DIAG_BANDS = [
-  { max: 20,  key: "crisis", label: "많이 힘든 시기", tone: "low",  dx: "마음이 오래 가라앉아 있어요. 혼자 견디지 않아도 괜찮아요.",       rx: ["help", "ba", "selfcomp"] },
-  { max: 40,  key: "low",    label: "지쳐 있는 시기", tone: "low",  dx: "에너지가 바닥에 가까워요. 회복을 가장 앞에 두어도 돼요.",         rx: ["ba", "breath", "sleep"] },
-  { max: 60,  key: "mid",    label: "그럭저럭 유지",  tone: "mid",  dx: "큰 기복 없이 잘 버티고 있어요. 작은 루틴이 흐름을 지켜줘요.",     rx: ["ii", "gratitude"] },
-  { max: 80,  key: "good",   label: "안정적인 시기",  tone: "good", dx: "마음이 비교적 안정적이에요. 지금의 좋은 흐름을 이어가요.",       rx: ["savoring", "ii"] },
-  { max: 101, key: "great",  label: "활기찬 시기",    tone: "good", dx: "활력이 도는 좋은 시기예요. 이 기운을 나누고 음미해봐요.",         rx: ["savoring", "strength"] },
+  { max: 20, key: "crisis", label: "많이 힘든 시기", tone: "low", dx: "마음이 오래 가라앉아 있어요. 혼자 견디지 않아도 괜찮아요.", rx: ["help", "ba", "selfcomp"] },
+  { max: 40, key: "low", label: "지쳐 있는 시기", tone: "low", dx: "에너지가 바닥에 가까워요. 회복을 가장 앞에 두어도 돼요.", rx: ["ba", "breath", "sleep"] },
+  { max: 60, key: "mid", label: "그럭저럭 유지", tone: "mid", dx: "큰 기복 없이 잘 버티고 있어요. 작은 루틴이 흐름을 지켜줘요.", rx: ["ii", "gratitude"] },
+  { max: 80, key: "good", label: "안정적인 시기", tone: "good", dx: "마음이 비교적 안정적이에요. 지금의 좋은 흐름을 이어가요.", rx: ["savoring", "ii"] },
+  { max: 101, key: "great", label: "활기찬 시기", tone: "good", dx: "활력이 도는 좋은 시기예요. 이 기운을 나누고 음미해봐요.", rx: ["savoring", "strength"] },
 ];
 // 처방 카탈로그 — 각 처방을 '문장형'으로, 6가지 변형을 두어 매번 다르게 출력(반복 방지)
 const RX = {
@@ -2145,33 +2145,33 @@ const EMO_TO_THEME = {
 // 테마별 진단·기본 처방 (세분화)
 const DX_THEMES = {
   anxiety: { label: "긴장·불안이 잦아요", dx: "고각성(긴장) 상태가 자주 보여요. 몸의 각성을 낮추는 걸 먼저 해봐요.", rx: ["grounding", "breath", "nature", "plan"] },
-  anger:   { label: "분노·짜증이 올라와요", dx: "화가 자주 치밀어요. 충동과 결정 사이에 ‘틈’을 만드는 게 도움이 돼요.", rx: ["breath", "move", "plan", "boundary"] },
+  anger: { label: "분노·짜증이 올라와요", dx: "화가 자주 치밀어요. 충동과 결정 사이에 ‘틈’을 만드는 게 도움이 돼요.", rx: ["breath", "move", "plan", "boundary"] },
   sadness: { label: "마음이 가라앉아 있어요", dx: "저조·우울감이 두드러져요. 작은 활동과 연결이 회복을 도와요.", rx: ["ba", "move", "connect", "selfcomp"] },
-  lonely:  { label: "외로움이 자주 느껴져요", dx: "혼자라는 느낌이 커요. 아주 가는 연결 하나가 큰 완충이 돼요.", rx: ["connect", "ba", "express", "selfcomp"] },
+  lonely: { label: "외로움이 자주 느껴져요", dx: "혼자라는 느낌이 커요. 아주 가는 연결 하나가 큰 완충이 돼요.", rx: ["connect", "ba", "express", "selfcomp"] },
   burnout: { label: "소진·낮은 활력", dx: "에너지가 고갈된 소진 신호예요. 회복과 수면을 가장 앞에 둬요.", rx: ["rest", "sleep", "nature", "ba"] },
-  foggy:   { label: "생각이 뒤엉켜 있어요", dx: "머리가 멍하고 복잡해요. 꺼내 적어 정리하면 한결 또렷해져요.", rx: ["express", "plan", "rest"] },
-  joy:     { label: "기쁨이 차오르는 시기", dx: "활기·설렘이 우세해요. 이 좋은 정서를 음미하고 넓혀봐요.", rx: ["savoring", "strength", "gratitude"] },
-  calm:    { label: "잔잔하고 안정적이에요", dx: "평온·만족이 우세해요. 지금의 자원을 감사로 단단히 다져요.", rx: ["gratitude", "savoring", "strength"] },
-  mixed:   { label: "여러 감정이 섞여 있어요", dx: "감정이 뒤섞여 있어요. 이름을 붙여 정리하면 한결 가벼워져요.", rx: ["express", "labeling", "gratitude"] },
+  foggy: { label: "생각이 뒤엉켜 있어요", dx: "머리가 멍하고 복잡해요. 꺼내 적어 정리하면 한결 또렷해져요.", rx: ["express", "plan", "rest"] },
+  joy: { label: "기쁨이 차오르는 시기", dx: "활기·설렘이 우세해요. 이 좋은 정서를 음미하고 넓혀봐요.", rx: ["savoring", "strength", "gratitude"] },
+  calm: { label: "잔잔하고 안정적이에요", dx: "평온·만족이 우세해요. 지금의 자원을 감사로 단단히 다져요.", rx: ["gratitude", "savoring", "strength"] },
+  mixed: { label: "여러 감정이 섞여 있어요", dx: "감정이 뒤섞여 있어요. 이름을 붙여 정리하면 한결 가벼워져요.", rx: ["express", "labeling", "gratitude"] },
 };
 // 일기 키워드 → 맥락 테마 (세분화)
 const KEYWORD_THEME = {
-  work:      ["직장", "회사", "업무", "야근", "상사", "마감", "프로젝트", "출근", "퇴근", "업무량"],
-  study:     ["시험", "공부", "학교", "성적", "과제", "발표", "논문", "수업", "학업"],
-  rel:       ["관계", "친구", "사람들", "동료", "지인"],
-  conflict:  ["다툼", "싸움", "갈등", "말다툼", "틀어"],
-  love:      ["연애", "애인", "남친", "여친", "연인", "헤어", "짝사랑", "썸"],
-  family:    ["가족", "엄마", "아빠", "부모", "시댁", "처가", "형제", "명절", "남편", "아내"],
-  sleep:     ["수면", "불면", "피곤", "졸려", "새벽", "잠"],
-  health:    ["몸살", "병원", "두통", "건강", "통증", "체력", "아픔"],
+  work: ["직장", "회사", "업무", "야근", "상사", "마감", "프로젝트", "출근", "퇴근", "업무량"],
+  study: ["시험", "공부", "학교", "성적", "과제", "발표", "논문", "수업", "학업"],
+  rel: ["관계", "친구", "사람들", "동료", "지인"],
+  conflict: ["다툼", "싸움", "갈등", "말다툼", "틀어"],
+  love: ["연애", "애인", "남친", "여친", "연인", "헤어", "짝사랑", "썸"],
+  family: ["가족", "엄마", "아빠", "부모", "시댁", "처가", "형제", "명절", "남편", "아내"],
+  sleep: ["수면", "불면", "피곤", "졸려", "새벽", "잠"],
+  health: ["몸살", "병원", "두통", "건강", "통증", "체력", "아픔"],
   appearance:["외모", "다이어트", "몸무게", "거울", "체중"],
-  selfcrit:  ["자책", "한심", "실패", "부족함", "열등감"],
-  money:     ["월급", "대출", "경제", "생활비", "지출"],
-  future:    ["미래", "진로", "불확실", "막막", "취업"],
+  selfcrit: ["자책", "한심", "실패", "부족함", "열등감"],
+  money: ["월급", "대출", "경제", "생활비", "지출"],
+  future: ["미래", "진로", "불확실", "막막", "취업"],
   parenting: ["육아", "아기", "아이", "아이들", "돌봄", "재우"],
-  loss:      ["상실", "사별", "떠나보", "잃었", "장례"],
-  change:    ["이사", "변화", "적응", "전학", "이직"],
-  phone:     ["스마트폰", "핸드폰", "sns", "인스타", "유튜브", "틱톡", "스크롤"],
+  loss: ["상실", "사별", "떠나보", "잃었", "장례"],
+  change: ["이사", "변화", "적응", "전학", "이직"],
+  phone: ["스마트폰", "핸드폰", "sns", "인스타", "유튜브", "틱톡", "스크롤"],
 };
 const KW_RX = { work: "ctx_work", study: "ctx_study", rel: "ctx_rel", conflict: "ctx_conflict", love: "ctx_love", family: "ctx_family", sleep: "sleep", health: "ctx_health", appearance: "ctx_appearance", selfcrit: "selfcomp", money: "ctx_money", future: "ctx_future", parenting: "ctx_parenting", loss: "ctx_loss", change: "ctx_change", phone: "ctx_phone" };
 const KW_LABEL = { work: "요즘 ‘일·직장’ 부담이 자주 보여요", study: "‘학업·시험’ 압박이 비쳐요", rel: "‘관계’가 마음에 자주 올라와요", conflict: "‘갈등·다툼’이 마음에 남아 있어요", love: "‘연애’ 고민이 비쳐요", family: "‘가족’ 일이 마음에 올라와요", sleep: "‘수면·피로’ 언급이 잦아요", health: "‘몸·건강’ 이야기가 보여요", appearance: "‘외모·몸’에 대한 마음이 보여요", selfcrit: "스스로를 탓하는 표현이 보여요", money: "‘경제적 부담’이 비쳐요", future: "‘미래·진로’ 고민이 보여요", parenting: "‘육아·돌봄’의 무게가 느껴져요", loss: "‘상실·이별’의 슬픔이 느껴져요", change: "‘변화·적응’의 부담이 보여요", phone: "‘스마트폰·SNS’ 사용이 자주 보여요" };
@@ -2208,14 +2208,14 @@ function richDiagnose(cur, entries, keys) {
   if (cur.sd != null && cur.sd >= 22) parts.push("기복도 큰 편이에요.");
   const kws = keywordThemes(entries, keys);
   const negBand = band.key === "crisis" || band.key === "low" || band.key === "mid";
-  const topKw = negBand ? kws[0] : null;                       // 힘든 구간에서만, 가장 강한 맥락 1개만
+  const topKw = negBand ? kws[0] : null; // 힘든 구간에서만, 가장 강한 맥락 1개만
   if (topKw && KW_LABEL[topKw]) parts.push(KW_LABEL[topKw] + ".");
   const baseRx = (theme && RX["theme_" + theme]) ? ["theme_" + theme].concat(base ? base.rx : band.rx) : (base ? base.rx : band.rx);
   const rx = [];
-  if (band.key === "crisis") rx.push("help");                 // 위기 최우선
-  if (baseRx[0]) rx.push(baseRx[0]);                          // 감정 테마 전용 처방 우선
-  if (topKw && KW_RX[topKw]) rx.push(KW_RX[topKw]);           // 일기 맥락 처방(상위 보장, 1개)
-  baseRx.slice(1).forEach((k) => rx.push(k));                 // 나머지 기본 처방
+  if (band.key === "crisis") rx.push("help"); // 위기 최우선
+  if (baseRx[0]) rx.push(baseRx[0]); // 감정 테마 전용 처방 우선
+  if (topKw && KW_RX[topKw]) rx.push(KW_RX[topKw]); // 일기 맥락 처방(상위 보장, 1개)
+  baseRx.slice(1).forEach((k) => rx.push(k)); // 나머지 기본 처방
   if (cur.avgEnergy != null && cur.avgEnergy < 2.6) rx.push("breath"); // 데이터 신호
   if (cur.habPct != null && cur.habPct < 50) rx.push("ii");
   if (cur.gratCount === 0 && cur.days >= 3) rx.push("gratitude");
@@ -2310,21 +2310,21 @@ function habitInsightLines(ha, unit) {
   if (ha.improved && ha.improved.momentum >= 15) lines.push(`${nm(ha.improved)}이(가) ${periodTxt} 후반 들어 살아나고 있어요 (▲${ha.improved.momentum}%).`);
   else if (ha.declined && ha.declined.momentum <= -15) lines.push(`${nm(ha.declined)}은(는) 후반 들어 주춤했어요 (▼${-ha.declined.momentum}%) — 힘든 날엔 최소 버전부터 다시 시작해요.`);
   if (ha.moodLinked) lines.push(`${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요. <small class="ins-caveat">(관찰된 상관일 뿐, 인과는 아니에요)</small>`);
-  if (ha.perfect.length) lines.push(`${ha.perfect.map(nm).join(", ")} ${ha.perfect.length > 1 ? "모두 " : ""}완벽하게 지켰어요 🎉`);
+  if (ha.perfect.length) lines.push(`${ha.perfect.map(nm).join(", ")} ${ha.perfect.length > 1 ? "모두 " : ""}완벽하게 지켰어요`);
   return lines;
 }
 // 습관 분석 카드(요약 리포트 본문) — 결론 문장 + 습관별 막대(증감·연속·모멘텀·요일·기분)
 function habitReportCard(ha, unit) {
   if (!ha) return "";
   const lines = habitInsightLines(ha, unit).slice(0, 3);
-  const insHtml = lines.length ? `<div class="hrep-ins">${lines.map((t) => `<p class="hrep-ins-row"><span>💡</span><span>${t}</span></p>`).join("")}</div>` : "";
+  const insHtml = lines.length ? `<div class="hrep-ins">${lines.map((t) => `<p class="hrep-ins-row"><span>${t}</span></p>`).join("")}</div>` : "";
   const avgChip = ha.avgDelta != null && Math.abs(ha.avgDelta) >= 1 ? ` <span class="kpi-delta ${ha.avgDelta >= 1 ? "up" : "down"}">${ha.avgDelta > 0 ? "▲" : "▼"}${Math.abs(ha.avgDelta)} 지난 ${unit}</span>` : "";
   const rowsHtml = ha.rows.map((r) => {
     const dChip = (r.delta != null && Math.abs(r.delta) >= 1) ? `<i class="hrep-delta ${r.delta > 0 ? "up" : "down"}">${r.delta > 0 ? "▲" : "▼"}${Math.abs(r.delta)}</i>` : `<i class="hrep-delta flat"></i>`;
     const sub = [];
-    sub.push(`🔥${r.streak}일`);
-    if (r.momentum != null && r.momentum >= 10) sub.push("📈 오름세");
-    else if (r.momentum != null && r.momentum <= -10) sub.push("📉 주춤");
+    sub.push(`연속 ${r.streak}일`);
+    if (r.momentum != null && r.momentum >= 10) sub.push("오름세");
+    else if (r.momentum != null && r.momentum <= -10) sub.push("주춤");
     if (r.bestDow) sub.push(`${r.bestDow}요일↑`);
     if (r.moodDiff != null && r.moodDiff >= 5) sub.push(`기분 +${r.moodDiff}`);
     return `<div class="hrep-row">`
@@ -2333,9 +2333,9 @@ function habitReportCard(ha, unit) {
       + `<span class="hsum-rate">${r.rate}%</span>${dChip}</div>`
       + `<p class="hrep-sub">${sub.join(" · ")}</p></div>`;
   }).join("");
-  return `<div class="card hrep-card"><div class="card-head"><h2>🎯 습관 분석</h2><span class="hrep-avg">평균 ${ha.avgRate}%${avgChip}</span></div>`
+  return `<div class="card hrep-card"><div class="card-head"><h2>습관 분석</h2><span class="hrep-avg">평균 ${ha.avgRate}%${avgChip}</span></div>`
     + insHtml + rowsHtml
-    + `<p class="hint" style="margin-top:10px">막대=이번 ${unit} 달성률 · 칩=지난 ${unit} 대비 · 🔥=현재 연속 · 📈오름세/📉주춤=후반 흐름 · 기분=한 날이 안 한 날보다.</p></div>`;
+    + `<p class="hint" style="margin-top:10px">막대=이번 ${unit} 달성률 · 칩=지난 ${unit} 대비 · 연속=현재 연속일 · 오름세/주춤=후반 흐름 · 기분=한 날이 안 한 날보다.</p></div>`;
 }
 function reportDetailHtml(kind, off = 0) {
   const entries = loadEntries();
@@ -2364,7 +2364,7 @@ function reportDetailHtml(kind, off = 0) {
     <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off - 1}" ${off <= 0 ? "disabled" : ""} aria-label="다음 ${unit} 보기">다음 ${unit} ▶</button>
   </div>`;
   // 저장·공유 캔버스는 현재 기간 요약 기준 — 과거 기간에서는 숨겨 오해 방지
-  const actRow = off === 0 ? `<div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">🖼️ 이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">📤 공유</button></div>` : "";
+  const actRow = off === 0 ? `<div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">공유</button></div>` : "";
 
   if (cur.recs.length === 0) {
     return `${navRow}<div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">이 기간엔 기록이 없어요.<br>◀ 버튼으로 다른 ${unit}을 볼 수 있어요.</p></div>${actRow}`;
@@ -2392,11 +2392,11 @@ function reportDetailHtml(kind, off = 0) {
 
   const chart = reportChartSvg(keys, entries);
   const flowTitle = off === 0 ? (unit === "달" ? "이번 달" : "최근 7일") : `이 ${unit}`;
-  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>📈 ${flowTitle} 마음 흐름</h2></div>${chart}</div>` : ""; // 분석탭 '최근 30일' 카드와 기간이 다름을 명시(이중 표현 혼동 방지)
+  const chartCard = chart ? `<div class="card"><div class="card-head"><h2>${flowTitle} 마음 흐름</h2></div>${chart}</div>` : ""; // 분석탭 '최근 30일' 카드와 기간이 다름을 명시(이중 표현 혼동 방지)
 
   // 하이라이트 — 가장 좋았던/힘들었던 날
   const dayLine = (o, emoji, kindTxt) => { if (!o) return ""; const p = o.e.date.split("-"); const snip = (o.e.note || o.e.praise || (o.e.reflection && (o.e.reflection.good || o.e.reflection.hard)) || "").trim(); return `<div class="hl-row"><span class="hl-emoji">${emoji}</span><div class="hl-body"><p class="hl-top">${kindTxt} · ${+p[1]}/${+p[2]} (${dayOfWeekKo(o.e.date)}) <b>${Math.round(o.sc)}점</b></p>${snip ? `<p class="hl-note">${escapeHtml(snip.slice(0, 60))}</p>` : ""}</div></div>`; };
-  const hlCard = (cur.best && cur.worst && cur.best.e.date !== cur.worst.e.date) ? `<div class="card"><h2>✨ 이 기간 하이라이트</h2>${dayLine(cur.best, "🌟", "가장 좋았던 날")}${dayLine(cur.worst, "🌧️", "가장 힘들었던 날")}</div>` : "";
+  const hlCard = (cur.best && cur.worst && cur.best.e.date !== cur.worst.e.date) ? `<div class="card"><h2>이 기간 하이라이트</h2>${dayLine(cur.best, "", "가장 좋았던 날")}${dayLine(cur.worst, "", "가장 힘들었던 날")}</div>` : "";
 
   // 추세 → 솔루션
   let trend = "flat";
@@ -2406,23 +2406,23 @@ function reportDetailHtml(kind, off = 0) {
   const habCard = habitReportCard(habAnalysis, unit);
   const solItems = selectSolutions(diag, trend, keys[keys.length - 1]);
   // 의료 프레이밍 회피 — '진단/처방' 대신 '살펴보기/제안' (심리측정 감사 반영)
-  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico">🔍</span><div class="diag-body"><p class="diag-label">${off === 0 ? "이번" : "이"} ${unit} 마음 살펴보기 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
-  const solCard = `<div class="card sol-card"><h2>🌿 맞춤 제안</h2><p class="hint">살펴본 내용(기분 구간 × 감정 × 일기 맥락)에 맞춘 제안이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">📚 ${s.c}</p></div>`).join("")}<p class="sol-disclaimer">ℹ️ 의료적 진단·치료가 아닌 셀프케어 참고용이에요. 힘들 땐 전문가의 도움을 받아요.</p></div>`;
+  const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico"></span><div class="diag-body"><p class="diag-label">${off === 0 ? "이번" : "이"} ${unit} 마음 살펴보기 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
+  const solCard = `<div class="card sol-card"><h2>맞춤 제안</h2><p class="hint">살펴본 내용(기분 구간 × 감정 × 일기 맥락)에 맞춘 제안이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">${s.c}</p></div>`).join("")}<p class="sol-disclaimer">ℹ의료적 진단·치료가 아닌 셀프케어 참고용이에요. 힘들 땐 전문가의 도움을 받아요.</p></div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";
-  if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabSec = `<div class="rpt-sec"><h3>📐 기분 안정성</h3><p class="insight">변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
+  if (cur.sd != null) { const lvl = cur.sd < 12 ? "안정적이에요" : cur.sd < 22 ? "보통이에요" : "기복이 큰 편이에요"; stabSec = `<div class="rpt-sec"><h3>기분 안정성</h3><p class="insight">변동 폭은 <b>${lvl}</b> (표준편차 ${Math.round(cur.sd)}점). ${cur.sd >= 22 ? "기복이 클 땐 규칙적인 수면·호흡이 도움이 돼요." : "꾸준한 흐름을 잘 유지하고 있어요."}</p></div>`; }
   let weekBreakSec = "";
   if (kind === "month") {
     const wk = [[], [], [], [], []];
     keys.forEach((k) => { const day = +k.split("-")[2]; const wi = Math.min(4, Math.floor((day - 1) / 7)); if (entries[k] && entries[k].mood) wk[wi].push(entryScore(entries[k])); });
     const wrows = wk.map((arr, i) => arr.length ? { i, avg: arr.reduce((a, b) => a + b, 0) / arr.length } : null).filter(Boolean);
-    if (wrows.length >= 2) weekBreakSec = `<div class="rpt-sec"><h3>📅 주차별 평균 기분</h3><div class="dist">${wrows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
+    if (wrows.length >= 2) weekBreakSec = `<div class="rpt-sec"><h3>주차별 평균 기분</h3><div class="dist">${wrows.map((r) => `<div class="dist-row"><span class="cap-name">${r.i + 1}주차</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.round(r.avg)}%;background:${scoreColor(r.avg)}"></div></div><span class="dist-count">${Math.round(r.avg)}</span></div>`).join("")}</div></div>`;
   }
   const drows = keys.filter((k) => entries[k]).map((k) => { const e = entries[k], p = k.split("-"); return `<div class="rpt-row"><span>${+p[1]}/${+p[2]} (${dayOfWeekKo(k)})</span><span>${e.mood ? mInfo(e.mood).emoji + " " + e.mood : "-"}</span><span>${entryScore(e) != null ? Math.round(entryScore(e)) + "점" : ""}</span></div>`; }).join("");
-  const daysSec = `<div class="rpt-sec"><h3>🗓️ 날짜별 기록 (${cur.days}일)</h3><div class="rpt-list">${drows}</div></div>`;
+  const daysSec = `<div class="rpt-sec"><h3>날짜별 기록 (${cur.days}일)</h3><div class="rpt-list">${drows}</div></div>`;
   const moreInner = stabSec + weekBreakSec + daysSec;
-  const moreCard = moreInner ? `<details class="card rpt-more"><summary>📂 자세히 보기</summary>${moreInner}</details>` : "";
+  const moreCard = moreInner ? `<details class="card rpt-more"><summary>자세히 보기</summary>${moreInner}</details>` : "";
 
   // 핵심 한 줄 — 추세 + 가장 영향 준 습관 (결론 먼저)
   const hbits = [];
@@ -2431,7 +2431,7 @@ function reportDetailHtml(kind, off = 0) {
     let bH = null;
     (loadChs() || []).forEach((hh) => { const dn = [], nt = []; keys.forEach((k) => { if (mbd[k] == null || k < hh.startDate) return; (hh.done && hh.done[k] ? dn : nt).push(mbd[k]); }); if (dn.length >= 3 && nt.length >= 3) { const ad = dn.reduce((s, v) => s + v, 0) / dn.length, an = nt.reduce((s, v) => s + v, 0) / nt.length, df = ad - an; if (df >= 5 && (!bH || df > bH.df)) bH = { h: hh, df }; } });
     if (bH) hbits.push(`${bH.h.emoji} <b>${escapeHtml(bH.h.title)}</b> 한 날 기분이 더 좋았어요`); }
-  const headlineCard = hbits.length ? `<div class="card rpt-headline"><span class="rh-ico">💡</span><p>${hbits.slice(0, 2).join(" · ")}</p></div>` : "";
+  const headlineCard = hbits.length ? `<div class="card rpt-headline"><span class="rh-ico"></span><p>${hbits.slice(0, 2).join(" · ")}</p></div>` : "";
 
   return `
     ${navRow}
@@ -2457,8 +2457,8 @@ function showImagePreview(kind) {
       <img class="ip-img" src="${url}" alt="${label} 리포트 이미지" />
       <p class="ip-hint">이미지를 길게 눌러 ‘사진에 저장’하거나, 아래 버튼을 쓰세요.</p>
       <div class="ip-btns">
-        <button class="btn primary" data-ipact="share">📤 공유</button>
-        <button class="btn" data-ipact="download">⬇️ 저장</button>
+        <button class="btn primary" data-ipact="share">공유</button>
+        <button class="btn" data-ipact="download">저장</button>
       </div>
       <button class="btn ip-close" data-ipclose>닫기</button>
     </div>`;
@@ -2473,24 +2473,24 @@ function showImagePreview(kind) {
 async function shareReport(kind) {
   const url = drawReportCanvas(kind);
   const d = kind === "month" ? monthData : weekData;
-  const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${Math.round(d.avgMood)}/100` : ""} 🌿` : "오늘의 쉼 리포트";
+  const text = d ? `오늘의 쉼 · ${kind === "month" ? "월간" : "주간"} 리포트 (${d.range || d.label}) — 기록 ${d.daysLogged}일${d.avgMood != null ? `, 평균 기분 ${Math.round(d.avgMood)}/100` : ""}` : "오늘의 쉼 리포트";
   try {
     const file = new File([dataURLtoBlob(url)], "report.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     if (navigator.share) { await navigator.share({ text }); return; }
-    await navigator.clipboard.writeText(text); toast("리포트 요약을 복사했어요 📋");
+    await navigator.clipboard.writeText(text); toast("리포트 요약을 복사했어요");
   } catch (e) {}
 }
 
 /* 성취 배지 — 카테고리별 분류 */
 const BADGE_CATS = [
-  { id: "record",  label: "📒 기록" },
-  { id: "streak",  label: "🔥 꾸준함" },
-  { id: "habit",   label: "🎯 습관" },
-  { id: "mind",    label: "🧘 마음챙김" },
-  { id: "emotion", label: "🎨 감정" },
-  { id: "care",    label: "💛 돌봄·감사" },
-  { id: "special", label: "✨ 특별" },
+  { id: "record", label: "기록" },
+  { id: "streak", label: "꾸준함" },
+  { id: "habit", label: "습관" },
+  { id: "mind", label: "마음챙김" },
+  { id: "emotion", label: "감정" },
+  { id: "care", label: "돌봄·감사" },
+  { id: "special", label: "특별" },
 ];
 const BADGES = [
   // 기록
@@ -2580,15 +2580,15 @@ function renderBadges() {
   set("badgeRate", `배지 ${n}/${total}`);
   set("levelEmoji", lv.cur.emoji);
   set("levelName", `Lv.${lv.level} ${lv.cur.name}`);
-  set("levelNext", lv.next ? `다음 '${lv.next.name}'까지 배지 ${lv.next.min - n}개` : "최고 레벨 달성! 🎉");
+  set("levelNext", lv.next ? `다음 '${lv.next.name}'까지 배지 ${lv.next.min - n}개` : "최고 레벨 달성!");
   const fill = document.getElementById("badgeBarFill");
   if (fill) fill.style.width = lv.prog + "%"; // 다음 레벨까지의 진행도
   set("badgeStatus", n === total
-    ? "🎉 모든 배지를 모았어요! 정말 대단해요."
-    : n === 0 ? "첫 배지를 향해 한 걸음씩 🌱"
+    ? "모든 배지를 모았어요! 정말 대단해요."
+    : n === 0 ? "첫 배지를 향해 한 걸음씩"
     : `획득률 ${pct}% · ${total - n}개 남았어요`);
   const nb = document.getElementById("badgeNext");
-  if (nb) { const nextB = BADGES.find((b) => !earned.has(b.id)); nb.innerHTML = nextB ? `🎯 다음 배지 <b>${nextB.e} ${nextB.t}</b> · ${nextB.d}` : "✨ 더 이상 모을 배지가 없어요!"; }
+  if (nb) { const nextB = BADGES.find((b) => !earned.has(b.id)); nb.innerHTML = nextB ? `다음 배지 <b>${nextB.e} ${nextB.t}</b> · ${nextB.d}` : "더 이상 모을 배지가 없어요!"; }
   // 카테고리 탭(세그) — 선택한 카테고리만 표시
   const seg = document.getElementById("badgeSeg");
   if (seg) seg.innerHTML = BADGE_CATS.map((c) => {
@@ -2631,7 +2631,7 @@ function renderCorrelation(entries) {
   const rows = [];
   chs.forEach((h) => {
     const { done, not } = habitMoodArrays(h, moodByDate);
-    if (done.length >= 5 && not.length >= 5) {  // 표본 5+/5+ 이상에서만 (과소표본 과잉해석 방지)
+    if (done.length >= 5 && not.length >= 5) { // 표본 5+/5+ 이상에서만 (과소표본 과잉해석 방지)
       const ad = done.reduce((s, v) => s + v, 0) / done.length;
       const an = not.reduce((s, v) => s + v, 0) / not.length;
       const sd = (arr, m) => Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length);
@@ -2652,7 +2652,7 @@ function renderCorrelation(entries) {
   body.innerHTML = rows.map(({ h, ad, an, diff, d, ci, n }) => {
     const up = diff >= 6, down = diff <= -6;
     const sign = diff >= 0 ? "▲" : "▼";
-    const msg = up ? `한 날 기분이 평균 <b>${Math.round(diff)}점 더 높아요</b> 🌿`
+    const msg = up ? `한 날 기분이 평균 <b>${Math.round(diff)}점 더 높아요</b>`
       : down ? `한 날이 오히려 조금 낮았어요. 부담이 됐다면 가볍게 조절해도 좋아요.`
       : `기분 차이는 크지 않아요.`;
     return `<div class="corr-row">
@@ -2661,7 +2661,7 @@ function renderCorrelation(entries) {
       <div class="corr-meta">표본 n=${n} · 차이 ${Math.round(diff)}±${ci}점(95% CI) · 효과크기(Cohen's d) ${d.toFixed(2)} (관측된 ${effectLabel(d)})</div>
     </div>`;
   }).join("");
-  body.innerHTML += `<p class="sci-note">📚 이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
+  body.innerHTML += `<p class="sci-note">이 분석은 <b>관찰적 상관</b>이며 인과를 뜻하지 않아요. 효과크기는 Cohen's d 기준(0.2 작음·0.5 중간·0.8 큼; Cohen, 1988), 행동활성화·습관 연구(Mazzucchelli 2010; Lally 2010)에 근거해 해석을 돕습니다.</p>`;
 }
 // 습관 실천 매트릭스 — 최근 14일 × 습관별 실천 히트맵 (옵시디언/깃 잔디 기법)
 // 생각의 지도 — 일기·회고 단어 연결망(옵시디언식). 토크나이즈 + 동시출현 + 포스 레이아웃 (실시간 AI 불필요)
@@ -2685,7 +2685,7 @@ const VERB_CONTRACT = { "했": "하", "갔": "가", "왔": "오", "봤": "보", 
 // 명사가 절대 갖지 않는 형태만 환원한다(고정밀). 그 외(명사·현재형)는 건드리지 않음.
 function lemmaKo(w) {
   if (w.length < 2) return w;
-  const m = w.match(/^(.+?)(았|었|였)(.*)$/);          // 명시적 과거 음절
+  const m = w.match(/^(.+?)(았|었|였)(.*)$/); // 명시적 과거 음절
   if (m && m[1].length >= 1) return m[1] + "다";
   const m2 = w.match(/^(.*)(했|갔|왔|봤|됐|줬|썼|잤|났|탔|섰|켰|폈|쳤|셨|꼈|웠)(어요|어|다|지|고|네|는데|으니|어서)?$/); // 축약 과거
   if (m2) return m2[1] + VERB_CONTRACT[m2[2]] + "다";
@@ -2717,18 +2717,18 @@ function tokenizeKo(txt) {
 }
 function layoutGraph(nodes, edges, W, H) {
   const n = nodes.length; if (!n) return;
-  const k = Math.sqrt((W * H) / n);                 // 이상 거리(노드 간 간격)
+  const k = Math.sqrt((W * H) / n); // 이상 거리(노드 간 간격)
   nodes.forEach((nd, i) => { const a = 2 * Math.PI * i / n; nd.x = W / 2 + Math.cos(a) * W * 0.34; nd.y = H / 2 + Math.sin(a) * H * 0.34; });
   let temp = W * 0.16;
   for (let it = 0; it < 340; it++) {
     nodes.forEach((v) => { v.dx = 0; v.dy = 0; });
-    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {   // 반발(강하게) — 뭉침 방지
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { // 반발(강하게) — 뭉침 방지
       const v = nodes[i], u = nodes[j];
       let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
       const f = k * k / dist * 2.0, fx = dx / dist * f, fy = dy / dist * f;
       v.dx += fx; v.dy += fy; u.dx -= fx; u.dy -= fy;
     }
-    edges.forEach((e) => {                                          // 인력(약하게) — 가깝지만 겹치지 않게
+    edges.forEach((e) => { // 인력(약하게) — 가깝지만 겹치지 않게
       const v = nodes[e.a], u = nodes[e.b];
       let dx = v.x - u.x, dy = v.y - u.y, dist = Math.hypot(dx, dy) || 0.01;
       const f = dist * dist / k * (0.14 + Math.min(2, e.w) * 0.05);
@@ -2738,7 +2738,7 @@ function layoutGraph(nodes, edges, W, H) {
     nodes.forEach((v) => {
       let d = Math.hypot(v.dx, v.dy) || 0.01;
       v.x += v.dx / d * Math.min(d, temp); v.y += v.dy / d * Math.min(d, temp);
-      v.x += (W / 2 - v.x) * 0.005; v.y += (H / 2 - v.y) * 0.005;   // 약한 중심 중력
+      v.x += (W / 2 - v.x) * 0.005; v.y += (H / 2 - v.y) * 0.005; // 약한 중심 중력
       v.x = Math.max(22, Math.min(W - 22, v.x)); v.y = Math.max(20, Math.min(H - 26, v.y));
     });
     temp *= 0.985;
@@ -2809,7 +2809,7 @@ function renderWordWeb(entries) {
     const ws = [...new Set(tokenizeKo(txt))];
     if (ws.length) docs.push({ words: ws, score: entryScore(e), date: e.date || "" });
   });
-  if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요 🕸️</p>'; el._wwData = null; return; }
+  if (docs.length < 2) { el.innerHTML = '<p class="empty">일기·회고를 더 적으면 자주 쓴 단어들의 연결망을 그려드려요</p>'; el._wwData = null; return; }
   docs.sort((a, b) => a.date < b.date ? -1 : 1); // 오래된 → 최근
   // 노드 선정 = 빈도 + 최근 가중치. 새로 쓴 단어가 오래된 단어에 묻혀 안 보이는 문제를 막는다.
   const freq = {}, mSum = {}, mN = {}, wt = {}, adjW = {};
@@ -2828,7 +2828,7 @@ function renderWordWeb(entries) {
   const pr = textRank(allWords, adjW);
   const recF = (w) => (wt[w] / freq[w]); // 1~2 (최근일수록↑)
   const top = allWords.sort((a, b) => (pr[b] * recF(b)) - (pr[a] * recF(a))).slice(0, 16);
-  if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요 🕸️</p>'; el._wwData = null; return; }
+  if (top.length < 3) { el.innerHTML = '<p class="empty">단어가 더 모이면 연결망을 보여드려요</p>'; el._wwData = null; return; }
   const idx = {}; top.forEach((w, i) => idx[w] = i);
   const nodes = top.map((w) => ({ w, f: freq[w], score: mN[w] ? mSum[w] / mN[w] : 50 }));
   const ew = {};
@@ -2909,7 +2909,7 @@ function renderWordWebCy(el) {
       { selector: "edge", style: { "width": "data(w)", "line-color": edgeCol, "curve-style": "bezier", "opacity": 0.5, "transition-property": "opacity, line-color, width", "transition-duration": "0.25s" } },
       { selector: "edge[sim = 1]", style: { "line-style": "dashed", "opacity": 0.32, "width": 1.5 } }, // 2차 연결(비슷한 맥락)은 점선
       { selector: "node.ww-faded", style: { "opacity": 0.1, "text-opacity": 0.1 } },
-      { selector: "edge.ww-hide", style: { "opacity": 0, "events": "no" } },     // 그룹핑 아닌 선은 완전히 숨김
+      { selector: "edge.ww-hide", style: { "opacity": 0, "events": "no" } }, // 그룹핑 아닌 선은 완전히 숨김
       { selector: "edge.ww-hl", style: { "line-color": accent, "opacity": 0.95, "width": 3 } }, // 그룹핑 선만 강조
       { selector: "node.ww-pick", style: { "border-width": 3, "border-color": accent } },
     ],
@@ -2919,12 +2919,12 @@ function renderWordWebCy(el) {
   el._cy = cy;
   cy.on("tap", "node", (ev) => {
     const n = ev.target;
-    const incident = n.connectedEdges();          // 누른 단어에 직접 이어진 선 = '그룹핑'
-    const group = n.closedNeighborhood().nodes();  // 누른 단어 + 직접 연결된 단어들
+    const incident = n.connectedEdges(); // 누른 단어에 직접 이어진 선 = '그룹핑'
+    const group = n.closedNeighborhood().nodes(); // 누른 단어 + 직접 연결된 단어들
     cy.batch(() => {
       cy.nodes().addClass("ww-faded"); group.removeClass("ww-faded");
       cy.edges().addClass("ww-hide").removeClass("ww-hl"); // 일단 모든 선 숨김
-      incident.removeClass("ww-hide").addClass("ww-hl");   // 그룹핑 선만 다시 표시·강조
+      incident.removeClass("ww-hide").addClass("ww-hl"); // 그룹핑 선만 다시 표시·강조
       cy.nodes().removeClass("ww-pick"); n.addClass("ww-pick");
     });
     // 인터랙티브 감성: 선택한 그룹으로 부드럽게 포커스 + 노드 펄스
@@ -2947,7 +2947,7 @@ function renderWordWebCy(el) {
 function renderDiscoveries(entries, list) {
   const el = document.getElementById("discoveries"); if (!el) return;
   const moods = list.filter((e) => e.mood);
-  if (moods.length < 3) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">기록이 3일 이상 쌓이면 나에 대한 발견을 찾아드려요 🌱</p></div>'; return; }
+  if (moods.length < 3) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">기록이 3일 이상 쌓이면 나에 대한 발견을 찾아드려요</p></div>'; return; }
   const tk = todayKey(), cards = [];
   const barPair = (aLab, aVal, bLab, bVal) => {
     const mx = Math.max(aVal, bVal, 1);
@@ -2957,7 +2957,7 @@ function renderDiscoveries(entries, list) {
   const chip = (txt, val) => `<div class="disc-chip" style="background:${scoreColor(val)}">${txt}</div>`;
   // 1) 추세 — weekTrend 단일 기준(캘린더 7일·표본 게이트). 롤링 창이므로 '최근 7일'로 정직하게 표기
   const trd = weekTrend(entries);
-  if (trd && Math.abs(trd.delta) >= 5) { const up = trd.delta > 0; cards.push({ sal: 60 + Math.abs(trd.delta), icon: up ? "📈" : "📉", title: up ? "최근 7일, 그 전보다 기분이 좋아졌어요" : "최근 7일은 조금 가라앉았어요", sub: up ? "잘 지내고 있다는 신호예요" : "스스로를 더 아껴줄 때예요 🫂", viz: barPair("이전 7일", trd.prev, "최근 7일", trd.cur), tone: up ? "good" : "soft" }); }
+  if (trd && Math.abs(trd.delta) >= 5) { const up = trd.delta > 0; cards.push({ sal: 60 + Math.abs(trd.delta), icon: up ? "" : "", title: up ? "최근 7일, 그 전보다 기분이 좋아졌어요" : "최근 7일은 조금 가라앉았어요", sub: up ? "잘 지내고 있다는 신호예요" : "스스로를 더 아껴줄 때예요", viz: barPair("이전 7일", trd.prev, "최근 7일", trd.cur), tone: up ? "good" : "soft" }); }
   // 2) 습관과 기분의 상관 (표본 5+/5+) — 관찰 서술: 상관≠인과를 카드에도 명시
   const moodByDate = {}; moods.forEach((e) => moodByDate[e.date] = entryScore(e));
   const chs = (typeof loadChs === "function") ? loadChs() : [];
@@ -2981,17 +2981,17 @@ function renderDiscoveries(entries, list) {
     (slot[key] = slot[key] || { s: 0, n: 0 }); slot[key].s += entryScore(e); slot[key].n++;
   });
   const slots = Object.entries(slot).map(([k, v]) => ({ k, avg: v.s / v.n, n: v.n })).filter((s) => s.n >= 4);
-  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "🗓️", title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · 평균 ${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
+  if (slots.length) { slots.sort((x, y) => y.avg - x.avg); const t = slots[0], [di, bk] = t.k.split("|"); cards.push({ sal: 40 + (t.avg - 50), icon: "", title: `${days[di]}요일 ${bk}에 평온한 경향이 있어요`, sub: "이 시간을 나를 위해 비워두면 좋을 수 있어요", viz: chip(`${days[di]} ${bk} · 평균 ${Math.round(t.avg)}점 · ${t.n}회`, t.avg), tone: "good" }); }
   // 4) 으뜸 감정 (최근 30일) — 감정은 점수와 분리, '빈도'만. 색은 감정 고유 정서가.
   const cut = new Date(); cut.setDate(cut.getDate() - 30); cut.setHours(0, 0, 0, 0); const tagC = {};
   moods.forEach((e) => { if (new Date(e.date + "T00:00:00") < cut) return; (e.tags || []).forEach((t) => tagC[t] = (tagC[t] || 0) + 1); });
   const tags = Object.entries(tagC).map(([t, n]) => ({ t, n })).filter((x) => x.n >= 2);
-  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; const em = emoByKey(t.t); const cv = em && em.v != null ? em.v : 50; cards.push({ sal: 25 + t.n, icon: "🏷️", title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 느꼈어요`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, cv), tone: "" }); }
+  if (tags.length) { tags.sort((x, y) => y.n - x.n); const t = tags[0]; const em = emoByKey(t.t); const cv = em && em.v != null ? em.v : 50; cards.push({ sal: 25 + t.n, icon: "", title: `요즘 자주 느낀 감정은 '${escapeHtml(t.t)}'`, sub: `최근 30일 ${t.n}번 느꼈어요`, viz: chip(`#${escapeHtml(t.t)} · ${t.n}회`, cv), tone: "" }); }
   // 5) 꾸준함 — 보호(빈 하루 메움)가 쓰였으면 정직하게 표기
-  const si = calcStreakInfo(entries); if (si.streak >= 3) cards.push({ sal: 30 + si.streak, icon: "🔥", title: `${si.streak}일 이어서 기록 중이에요${si.freezesUsed ? ` (보호 ${si.freezesUsed}회 포함)` : ""}`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
+  const si = calcStreakInfo(entries); if (si.streak >= 3) cards.push({ sal: 30 + si.streak, icon: "", title: `${si.streak}일 이어서 기록 중이에요${si.freezesUsed ? ` (보호 ${si.freezesUsed}회 포함)` : ""}`, sub: "꾸준함이 마음 회복의 가장 큰 힘이에요", viz: "", tone: "good" });
   cards.sort((a, b) => b.sal - a.sal);
   const top = cards.slice(0, 2); // 발견 카드는 2장까지 — 분석 첫 화면을 스크롤 없이
-  if (!top.length) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">아직 뚜렷한 패턴은 없어요. 꾸준히 기록하면 곧 발견이 쌓여요 🌿</p></div>'; return; }
+  if (!top.length) { el.innerHTML = '<div class="card disc disc-empty"><p class="empty">아직 뚜렷한 패턴은 없어요. 꾸준히 기록하면 곧 발견이 쌓여요</p></div>'; return; }
   el.innerHTML = top.map((c) => `<div class="card disc ${c.tone || ""}"><div class="disc-head"><span class="disc-ico">${c.icon}</span><div class="disc-body"><p class="disc-title">${c.title}</p><p class="disc-sub">${c.sub}</p></div></div>${c.viz || ""}</div>`).join("");
 }
 // 분석 탭 핵심 지표 4종 — 한눈에 들어오는 요약 숫자
@@ -3025,7 +3025,7 @@ function renderWeekGlance(entries) {
   const moods = recs.filter((e) => e.mood);
   const rng = document.getElementById("wgRange");
   if (rng) { const a = keys[0].split("-"), b = keys[6].split("-"); rng.textContent = `${+a[1]}/${+a[2]} ~ ${+b[1]}/${+b[2]}`; }
-  if (!moods.length) { el.innerHTML = '<p class="empty">최근 7일 기록이 쌓이면 한눈에 요약해드려요 🌱</p>'; return; }
+  if (!moods.length) { el.innerHTML = '<p class="empty">최근 7일 기록이 쌓이면 한눈에 요약해드려요</p>'; return; }
   const avg = moods.reduce((s, e) => s + entryScore(e), 0) / moods.length;
   const counts = {}; moods.forEach((e) => counts[e.mood] = (counts[e.mood] || 0) + 1);
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
@@ -3047,7 +3047,7 @@ function topHabitInsight(ha) {
   if (ha.moodLinked) return `${nm(ha.moodLinked)} 한 날 기분이 평균 <b>${ha.moodLinked.moodDiff}점</b> 더 좋았어요 <small class="ins-caveat">(상관일 뿐, 인과 아님)</small>`;
   if (ha.improved && ha.improved.momentum >= 15) return `${nm(ha.improved)} 요즘 더 살아나고 있어요 (▲${ha.improved.momentum}%)`;
   if (ha.declined && ha.declined.momentum <= -15) return `${nm(ha.declined)} 요즘 주춤해요 — 힘든 날엔 최소 버전부터`;
-  if (ha.perfect && ha.perfect.length) return `${ha.perfect.map(nm).join(", ")} 최근 ${ha.perfect.length > 1 ? "모두 " : ""}꾸준히 지키고 있어요 🎉`;
+  if (ha.perfect && ha.perfect.length) return `${ha.perfect.map(nm).join(", ")} 최근 ${ha.perfect.length > 1 ? "모두 " : ""}꾸준히 지키고 있어요`;
   if (ha.mostConsistent) return `가장 꾸준한 습관은 ${nm(ha.mostConsistent)} · <b>${ha.mostConsistent.rate}%</b>`;
   return "";
 }
@@ -3068,12 +3068,12 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
   const tk = todayKey();
   const doneToday = chs.filter((h) => h.done && h.done[tk]).length;
   const cnt = document.getElementById(countId);
-  if (cnt) cnt.textContent = `오늘 ${doneToday}/${chs.length}${doneToday === chs.length ? " 🎉" : ""}`;
+  if (cnt) cnt.textContent = `오늘 ${doneToday}/${chs.length}${doneToday === chs.length ? "" : ""}`;
   // 분석 인사이트 — 최근 14일 데이터로 가장 의미 있는 한 줄
   const w = recentWindowKeys(14);
   const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
   const insTxt = withInsight ? topHabitInsight(ha) : "";
-  const insHtml = insTxt ? `<p class="hg-insight">💡 ${insTxt}</p>` : "";
+  const insHtml = insTxt ? `<p class="hg-insight">${insTxt}</p>` : "";
   // 4개 이상이면 '오늘 안 한 습관' 우선으로 3개까지만 — 한 화면(스크롤 제로) 유지, 나머지는 습관 탭으로
   const glanceChs = chs.length > 3
     ? chs.slice().sort((a, b) => (!!(a.done && a.done[tk])) - (!!(b.done && b.done[tk]))).slice(0, 3)
@@ -3089,7 +3089,7 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
       + `<div class="hg-info" data-hgopen="${h.id}" role="button" tabindex="0" aria-label="${escapeHtml(h.title)} 상세 보기">`
       + `<div class="hg-title">${h.emoji || "✅"} ${escapeHtml(h.title)}</div>`
       + `<div class="hg-bar"><i style="width:${pct}%"></i></div></div>`
-      + `<span class="hg-meta">🔥${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
+      + `<span class="hg-meta">${streak} · ${doneCount}/${CH_TARGET}</span></div>`;
   }).join("") + moreHtml;
   return true;
 }
@@ -3131,8 +3131,8 @@ function renderHabitSummary() {
   el.innerHTML = rows.map((r) => `<div class="hsum-row"><span class="hsum-name">${r.h.emoji || "✅"} ${escapeHtml(r.h.title)}</span>`
     + `<div class="hsum-bar-wrap"><div class="hsum-bar" style="width:${r.rate}%"></div></div>`
     + `<span class="hsum-rate">${r.rate}%</span>`
-    + `<span class="hsum-meta">🔥${r.streak}${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
-    + `<p class="hint" style="margin-top:10px">실천율=최근 30일 · 🔥=현재 연속 · 요일↑=가장 잘 지키는 요일.</p>`;
+    + `<span class="hsum-meta">연속 ${r.streak}일${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
+    + `<p class="hint" style="margin-top:10px">실천율=최근 30일 · 연속=현재 연속일 · 요일↑=가장 잘 지키는 요일.</p>`;
 }
 // 마음 리듬 — 요일(7) × 시간대(4) 평균 기분 히트맵 (요일별·시간대별 막대를 한 그래픽으로 통합)
 // 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)
@@ -3152,7 +3152,7 @@ function renderRhythm(entries) {
     const di = new Date(e.date + "T00:00:00").getDay();
     cell[bi][di].sum += entryScore(e); cell[bi][di].n++; total++;
   });
-  if (total < 3) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 요일·시간대별 마음 리듬을 보여드려요 🌱</p>'; return; }
+  if (total < 3) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 요일·시간대별 마음 리듬을 보여드려요</p>'; return; }
   const rowAvg = buckets.map((_, bi) => { let s = 0, n = 0; days.forEach((_, di) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
   const colAvg = days.map((_, di) => { let s = 0, n = 0; buckets.forEach((_, bi) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
   const cellHtml = (avg, n, label, marg) => avg == null
@@ -3177,7 +3177,7 @@ function renderTagInsight(entries) {
   const el = document.getElementById("tagInsight"); if (!el) return;
   const cnt = {};
   Object.values(entries).forEach((e) => { if (!e.tags || !e.tags.length) return; e.tags.forEach((t) => cnt[t] = (cnt[t] || 0) + 1); });
-  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "🏷️", v: em && em.v != null ? em.v : 50 }; }); // 사전에 없는 태그(가져오기 등)도 어색하지 않게
+  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "", v: em && em.v != null ? em.v : 50 }; }); // 사전에 없는 태그(가져오기 등)도 어색하지 않게
   if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면 자주 느낀 감정을 빈도로 보여드려요.</p>'; return; }
   const total = rows.reduce((s, r) => s + r.n, 0);
   rows.sort((a, b) => b.n - a.n);
@@ -3197,11 +3197,11 @@ function checkBadges() {
     // 일괄 유입(백업 가져오기·클라우드 동기화·첫 로드)으로 배지가 한꺼번에 잡히면
     // 축하 연출이 폭죽 스팸이 됨 — 3개 이상은 조용한 요약 토스트만
     if (fresh.length >= 3) {
-      if (typeof toast === "function") toast(`🏅 배지 ${fresh.length}개를 획득했어요! (기록 탭에서 확인)`);
+      if (typeof toast === "function") toast(`배지 ${fresh.length}개를 획득했어요! (기록 탭에서 확인)`);
       return;
     }
     const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
-    if (typeof toast === "function") toast("🏅 새 배지 획득: " + titles);
+    if (typeof toast === "function") toast("새 배지 획득: " + titles);
     if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
     if (newLevel > prevLevel) { // 목표 도달로 레벨업
       const lv = levelInfo(earned.length);
@@ -3251,8 +3251,8 @@ function computeInsightMsgs(entries, list) {
   // R6: 추세 — weekTrend 단일 기준(캘린더 7일·표본 게이트 통과 시에만 발화)
   const tr = weekTrend(entries);
   if (tr) {
-    if (tr.delta >= 5) msgs.push("최근 7일, 그 전보다 마음이 한결 나아지고 있어요. 스스로를 꾸준히 돌봐온 작은 변화들이 쌓이고 있어요 ☀️");
-    else if (tr.delta <= -5) msgs.push("최근 7일은 조금 더 지쳐 보여요. 스스로를 더 아껴줄 때예요. 무리하지 말아요 🫂");
+    if (tr.delta >= 5) msgs.push("최근 7일, 그 전보다 마음이 한결 나아지고 있어요. 스스로를 꾸준히 돌봐온 작은 변화들이 쌓이고 있어요");
+    else if (tr.delta <= -5) msgs.push("최근 7일은 조금 더 지쳐 보여요. 스스로를 더 아껴줄 때예요. 무리하지 말아요");
   }
 
   // 요일 패턴 — 표본 3회 이상 요일만, 0-100 척도
@@ -3286,7 +3286,7 @@ function renderDist(list, entriesArg) {
   const keys = []; for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   // 흐름 차트와 분포를 '같은 30일 키'에서 집계 — 캡션 N과 차트 점 개수가 어긋나지 않게
   const recent = keys.map((k) => entries[k]).filter((e) => e && entryScore(e) != null);
-  if (!recent.length) { wrap.innerHTML = '<p class="empty">기록이 쌓이면 최근 30일 기분의 흐름과 분포를 보여드려요 🌱</p>'; return; }
+  if (!recent.length) { wrap.innerHTML = '<p class="empty">기록이 쌓이면 최근 30일 기분의 흐름과 분포를 보여드려요</p>'; return; }
   const chart = reportChartSvg(keys, entries);
   const counts = {}; recent.forEach((e) => { const m = e.mood || scoreToMood(entryScore(e)); counts[m] = (counts[m] || 0) + 1; });
   const total = recent.length;
@@ -3300,11 +3300,11 @@ function renderDist(list, entriesArg) {
 
 /* ===================== 설정 ===================== */
 const settings = Object.assign(
-  { theme: "warm", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0, statOrder: null, statHidden: [], statPinned: [] },
+  { theme: "garden", sfx: true, breathSound: true, haptics: true, reminderOn: false, reminderTime: "21:00", ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], sleepBreath: false, breathCount: 0, journeyCount: 0, bestStreak: 0, statOrder: null, statHidden: [], statPinned: [] },
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-function resolveTheme() { return settings.theme === "auto" ? (darkMq && darkMq.matches ? "dark" : "warm") : settings.theme; }
+function resolveTheme() { return settings.theme === "auto" ? (darkMq && darkMq.matches ? "midnight" : "garden") : settings.theme; }
 function applySettings() {
   _scoreColorCache = null; // 테마가 바뀌면 점수 팔레트 다시 읽기
   document.documentElement.setAttribute("data-theme", resolveTheme());
@@ -3359,16 +3359,16 @@ function fireReminder() {
   const undone = loadChs().filter((h) => tk >= h.startDate && !h.done[tk]);
   const streak = calcStreak(loadEntries());
   let body;
-  if (!done) body = streak >= 2 ? `🔥 ${streak}일 연속 중이에요! 오늘 한 줄이면 ${streak + 1}일로 이어져요 💛` : "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요 💛";
+  if (!done) body = streak >= 2 ? `${streak}일 연속 중이에요! 오늘 한 줄이면 ${streak + 1}일로 이어져요` : "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요";
   else if (undone.length) {
     const h = undone[0];
     body = `오늘 기록 고마워요 🌿 ${h.emoji} ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
-  } else body = "오늘도 다 해냈어요. 푹 쉬어요 🌙";
+  } else body = "오늘도 다 해냈어요. 푹 쉬어요";
   if ("Notification" in window && Notification.permission === "granted") {
-    const n = new Notification("오늘의 쉼 ☕", { body });
+    const n = new Notification("오늘의 쉼", { body });
     n.onclick = () => { try { window.focus(); } catch (e) {} activateTab("today"); if (!done) openJourney(); n.close(); };
   } else {
-    reminderMsg.textContent = body + (done ? "" : "  ›  눌러서 시작하기");
+    reminderMsg.textContent = body + (done ? "" : " › 눌러서 시작하기");
     reminderMsg.hidden = false; reminderMsg.style.cursor = done ? "default" : "pointer";
     reminderMsg.onclick = done ? null : () => { activateTab("today"); openJourney(); };
     setTimeout(() => { reminderMsg.hidden = true; }, 8000);
@@ -3425,7 +3425,7 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
     }
     if (!nEntry && !nCh) throw new Error("복원할 기록이 없어요");
     Sound.success(); loadToday(); renderChallenge();
-    toast(`복원 완료! 기록 ${nEntry}개${nCh ? ` · 습관 ${nCh}개` : ""}를 기존 데이터와 합쳤어요 🌿`);
+    toast(`복원 완료! 기록 ${nEntry}개${nCh ? ` · 습관 ${nCh}개` : ""}를 기존 데이터와 합쳤어요`);
   } catch (err) {
     alert(`불러오기에 실패했어요. 올바른 백업 파일(JSON)인지 확인해주세요.\n(${err && err.message ? err.message : "형식 오류"})`);
   }
@@ -3444,7 +3444,7 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   clearJDraft();
   Sound.tap();
   expandedIds.clear(); renderChallenge(); loadToday();
-  toast("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요 🌱");
+  toast("기록을 모두 비웠어요. 언제든 다시 시작할 수 있어요");
 });
 
 /* 빠른 호흡 — 어디서든 + 수면 모드 */
@@ -3455,7 +3455,7 @@ let wakeLock = null;
 
 async function requestWake() { try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {} }
 function releaseWake() { try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {} }
-function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "🌙 수면 모드 켜짐 (자동 종료·화면 유지)" : "🌙 수면 모드 끔"; }
+function updateSleepLabel() { sleepToggle.textContent = sleepMode ? "수면 모드 켜짐 (자동 종료·화면 유지)" : "수면 모드 끔"; }
 updateSleepLabel();
 
 const qbCircleEl = document.getElementById("qbCircle");
@@ -3464,14 +3464,14 @@ const qbBreather = makeBreather(qbCircleEl, document.getElementById("qbText"), "
   sleep: () => sleepMode,
   maxCycles: 12,
   onPhase: (cls) => { if (cls === "inhale") tbResetDot(qbCircleEl); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
-  onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요 🌙"; if (!sleepMode) Sound.chime(); setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
+  onAutoEnd: () => { releaseWake(); document.getElementById("qbText").innerHTML = "편안한 밤 되세요"; if (!sleepMode) Sound.chime(); setTimeout(() => { breathOverlay.hidden = true; }, 2800); },
 });
 function openBreath() {
   breathOverlay.hidden = false;
   breathOverlay.classList.toggle("sleep", sleepMode);
-  Sound.unlock();                // iOS: 사용자 제스처 안에서 오디오 컨텍스트 확실히 재개
-  autoAmbient();                 // 선택한 배경음 자동 재생
-  requestWake();                 // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
+  Sound.unlock(); // iOS: 사용자 제스처 안에서 오디오 컨텍스트 확실히 재개
+  autoAmbient(); // 선택한 배경음 자동 재생
+  requestWake(); // 화면을 켜둬 오디오가 끊기지 않게 (특히 모바일)
   if (qbBreather.isRunning()) qbBreather.stop(); // 이전 세션이 남아있으면 정리 후 새로 시작
   qbBreather.start();
   syncAppInert();
@@ -3512,7 +3512,7 @@ function medCycleTarget() { return Math.max(2, Math.round(medMinutes * 60 / brea
 function renderMedStat() {
   const el = document.getElementById("medStat"); if (!el) return;
   const mins = Math.round((settings.medSeconds || 0) / 60), sess = settings.medSessions || 0;
-  el.textContent = sess > 0 ? `🧘 지금까지 ${mins}분 · ${sess}회 명상했어요` : "오늘 첫 명상을 시작해보세요";
+  el.textContent = sess > 0 ? `지금까지 ${mins}분 · ${sess}회 명상했어요` : "오늘 첫 명상을 시작해보세요";
 }
 function medRecord() {
   if (!medActive || !medBreather) return;
@@ -3527,7 +3527,7 @@ function medRecord() {
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
   onPhase: (cls) => { if (cls === "inhale") tbResetDot(medCircle); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
-  onAutoEnd: () => { medPhase = "done"; medClockStop(); medRecord(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요 🌿"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); }, // 완주 즉시 기록(닫기 전에 앱을 꺼도 세션이 남게 · medActive 가드로 중복 없음)
+  onAutoEnd: () => { medPhase = "done"; medClockStop(); medRecord(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); }, // 완주 즉시 기록(닫기 전에 앱을 꺼도 세션이 남게 · medActive 가드로 중복 없음)
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
 // 시간 직접 조절(스텝퍼) + 야간 모드 + 남은 시간 카운트다운
@@ -3592,7 +3592,7 @@ applyBreathPattern();
 
 // 명상 오버레이 하단 사운드 컨트롤(세션 중에도 배경음 on/off + 볼륨)
 const medAmbBtn = document.getElementById("medAmbBtn"), medVol = document.getElementById("medVol");
-function medSyncAmbIcon() { if (medAmbBtn) medAmbBtn.textContent = (Sound.state.ambientType && Sound.state.ambientType !== "off") ? "🔊" : "🔈"; }
+function medSyncAmbIcon() { if (medAmbBtn) medAmbBtn.textContent = (Sound.state.ambientType && Sound.state.ambientType !== "off") ? "" : ""; }
 if (medAmbBtn) medAmbBtn.addEventListener("click", () => {
   Sound.unlock();
   if (Sound.state.ambientType && Sound.state.ambientType !== "off") { Sound.stopAmbient(); settings.ambientType = "off"; }
@@ -3641,7 +3641,7 @@ function openMedGuide() {
   if (!medOverlay) return;
   medOverlay.hidden = false; Sound.unlock();
   medOverlay.classList.toggle("sleep", medNight); // 야간 모드 → 어두운 우주 팔레트
-  if (medNight) requestWake();                    // 화면 켜둠(야간 명상)
+  if (medNight) requestWake(); // 화면 켜둠(야간 명상)
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
   medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
   medClockStop();
@@ -3714,7 +3714,7 @@ function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 8
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
   const pastDate = jData.date && jData.date !== todayKey(); // 지난 날짜 기록 편집
-  const lite = !!jData.editLite;                            // 오늘 재편집 축약 경로(한마디·호흡만 생략)
+  const lite = !!jData.editLite; // 오늘 재편집 축약 경로(한마디·호흡만 생략)
   const s = [];
   if (!pastDate && !lite) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
   s.push("feel");
@@ -3761,18 +3761,18 @@ function stepHtml(id) {
         <div class="dial-center"><span class="dial-emoji" id="jDialEmoji">😐</span><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
-      ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">⚡ 바쁜 날엔 여기까지만 저장</button>' : ""}
+      ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">바쁜 날엔 여기까지만 저장</button>' : ""}
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}">${e.e} ${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
       <p class="energy-out" id="jEnergyOut"></p>`;
   }
   if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
-    <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">🌬️ 호흡 시작하기</button>
+    <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">호흡 시작하기</button>
     <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
   if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
     <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
-  if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요 🌱</p>
+  if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요</p>
     <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">`;
   if (id === "habits") {
     const today = todayKey();
@@ -3786,19 +3786,19 @@ function stepHtml(id) {
     return `<div class="js-emoji">💌</div><p class="j-q">시작하기 전, 나를 위한 한마디</p>
       <blockquote class="j-quote" id="jQuote">“${formatQuote(jData.quote)}”</blockquote>
       <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ↻</button>
-      <p class="field-label" style="text-align:center;margin-top:22px">✨ 오늘의 작은 미션</p>
+      <p class="field-label" style="text-align:center;margin-top:22px">오늘의 작은 미션</p>
       <p class="mission" id="jMission">${escapeHtml(jData.mission)}</p>
       <button type="button" class="reflect-toggle" id="jMissionMore">다른 미션 ↻</button>`;
   }
   if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
-    <p class="field-label">🌤️ 가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
-    <p class="field-label">🌧️ 힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
+    <p class="field-label">가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
+    <p class="field-label">힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
   const ins = quickInsight();
   const isToday = (jData.date || todayKey()) === todayKey();
   return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>${isToday ? "오늘도 잘 기록했어요" : "기록을 정리했어요"}</h3>
     <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
     ${journeyFinishStatsHtml()}
-    ${ins ? `<div class="j-insight"><span class="j-insight-h">🧭 오늘의 인사이트</span>${ins}</div>` : ""}
+    ${ins ? `<div class="j-insight"><span class="j-insight-h">오늘의 인사이트</span>${ins}</div>` : ""}
     <p class="hint">아래 버튼을 누르면 저장돼요.</p></div>`;
 }
 // 완료 직전, 저장 후의 성취를 미리 보여줘 보상감을 준다(연속·이번 주)
@@ -3817,7 +3817,7 @@ function renderStep() {
   jBar.style.width = pct + "%";
   const jp = document.getElementById("jProgress"); if (jp) jp.setAttribute("aria-valuenow", pct);
   jPrev.hidden = i <= 0;
-  jNext.textContent = curId === "finish" ? "기록 저장하기 💾" : "다음";
+  jNext.textContent = curId === "finish" ? "기록 저장하기" : "다음";
   jBody.innerHTML = stepHtml(curId);
   if (curId === "feel") {
     const range = jBody.querySelector("#jScore");
@@ -3826,7 +3826,7 @@ function renderStep() {
     function updateEnergyOut() {
       const o = jBody.querySelector("#jEnergyOut"); if (!o) return;
       const hasTags = (jData.tags || []).some((t) => emoByKey(t));
-      o.innerHTML = `⚡ 활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "활력은 고른 감정에서 계산돼요 (점수와 별개 축)" : "감정을 고르면 활력이 더 정확해져요"}</span>`;
+      o.innerHTML = `활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "활력은 고른 감정에서 계산돼요 (점수와 별개 축)" : "감정을 고르면 활력이 더 정확해져요"}</span>`;
     }
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
@@ -3870,7 +3870,7 @@ function renderStep() {
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
-    if (qs) qs.addEventListener("click", () => { if (!jData.touched) { toast("먼저 다이얼로 지금 기분을 표현해 주세요 🙂"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
+    if (qs) qs.addEventListener("click", () => { if (!jData.touched) { toast("먼저 다이얼로 지금 기분을 표현해 주세요"); return; } Sound.tap(); saveJourney(); }); // 1화면 빠른 기록
     setScore(jData.score != null ? jData.score : 50, true);
   } else if (curId === "care") {
     const qm = jBody.querySelector("#jQuoteMore");
@@ -3923,7 +3923,7 @@ function openJourney(dateKey) {
   curId = (resumed && jSteps().includes(draft.curId)) ? draft.curId : jSteps()[0];
   journey.hidden = false; requestAnimationFrame(() => { journey.classList.add("show"); syncAppInert(); }); renderStep();
   const jc = document.getElementById("jClose"); if (jc) jc.focus();
-  if (resumed) toast("이어서 작성해요 ✍️");
+  if (resumed) toast("이어서 작성해요");
 }
 function closeJourney() { journey.classList.remove("show"); setTimeout(() => { journey.hidden = true; syncAppInert(); }, 300); }
 // 오버레이(여정·명상·호흡)가 하나라도 열려 있으면 배경(main·탭바)을 보조기기·포커스에서 제외
@@ -3961,10 +3961,10 @@ function saveJourney() {
   if (!document.getElementById("tab-stats").hidden) renderStats(); // 기록 탭 진입 시 어차피 렌더 — 저장 직후 무거운 전체 분석(워드웹 등) 재계산 생략
   if (!document.getElementById("tab-calendar").hidden) renderMoodCalendar(loadEntries()); // 달력 보고 있을 때만 즉시 갱신
   if (detectCrisis([jData.note, jData.hard, jData.good, jData.praise].filter(Boolean).join(" "))) showSafety();
-  toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. ☁️ 동기화 중이에요 💛" : "기록을 수정했어요. ☁️ 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요 💛" : "기록을 수정했어요 💛"));
+  toast(loggedIn ? (isToday ? "오늘 기록을 마쳤어요. 동기화 중이에요" : "기록을 수정했어요. 동기화 중") : (isToday ? "오늘 기록을 마쳤어요. 고마워요" : "기록을 수정했어요"));
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)
-function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요 ✍️"); }
+function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요"); }
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {
@@ -4015,7 +4015,7 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => {
     reg.addEventListener("updatefound", () => {
       const nw = reg.installing; if (!nw) return;
       nw.addEventListener("statechange", () => {
-        if (nw.state === "activated" && hadController) toast("새 버전으로 업데이트했어요 ✨");
+        if (nw.state === "activated" && hadController) toast("새 버전으로 업데이트했어요");
       });
     });
   }).catch(() => {});
@@ -4050,7 +4050,7 @@ function comebackCheck() {
   const last = list[list.length - 1].date;
   if (last === todayKey()) return;
   const gap = daysSince(last);
-  if (gap >= 4) setTimeout(() => toast(`${gap}일 만이네요. 다시 와줘서 반가워요 🌿 쉬어간 날들도 괜찮아요. 오늘은 기분 하나만 눌러도 충분해요.`), 1300);
+  if (gap >= 4) setTimeout(() => toast(`${gap}일 만이네요. 다시 와줘서 반가워요 쉬어간 날들도 괜찮아요. 오늘은 기분 하나만 눌러도 충분해요.`), 1300);
 }
 // 알림 캐치업 — 설정 시각이 지났는데 오늘 미기록이면 앱 열 때 살며시 안내(웹 백그라운드 알림 한계 보완)
 function reminderCatchup() {
@@ -4095,7 +4095,7 @@ function backupReminderCheck() {
   if (total < 14) return;
   const last = settings.lastExport;
   const stale = !last || daysSince(last) >= 21;
-  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요 🌿 설정 → '기록 내보내기'로 가끔 백업하면 더 안전해요."), 2600);
+  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요 설정 → '기록 내보내기'로 가끔 백업하면 더 안전해요."), 2600);
 }
 
 /* 자정 넘김 처리 — 앱을 켜둔 채 날짜가 바뀌면 '오늘'을 갱신 */

@@ -369,7 +369,7 @@ try {
   window.localStorage.setItem("challenges_v2", JSON.stringify([{ id: "hc", emoji: "🚶", title: "산책", startDate: "2026-06-01", done: { ...doneMap, [hmToday]: true }, celebrated: [] }]));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
   check("기능 다이어트: 기록구성·실천매트릭스 제거(습관 분석은 요약+상관 2장)", !q("#habitHeatmap") && !q('[data-sec="heat"]') && !q('[data-sec="capture"]') && !q("#captureBody"));
-  check("습관 요약(실천률·연속) 표시", d.querySelectorAll("#habitSummary .hsum-row").length >= 1 && /%/.test(q("#habitSummary").textContent) && /🔥/.test(q("#habitSummary").textContent));
+  check("습관 요약(실천률·연속) 표시", d.querySelectorAll("#habitSummary .hsum-row").length >= 1 && /%/.test(q("#habitSummary").textContent) && /연속/.test(q("#habitSummary").textContent));
   check("요약 서브탭 습관 한눈에 표시", !q("#summaryHabitGlance").hasAttribute("hidden") && d.querySelectorAll("#summaryHabitList .hg-row").length >= 1 && /오늘 \d+\/\d+/.test(q("#summaryHabitCount").textContent));
   // 메인(오늘) 화면에도 습관 노출 + 거기서 바로 오늘 완료 체크
   q("[data-tab=today]").click();
@@ -518,7 +518,7 @@ try {
   check("리포트 처방에 의료 면책 문구", !!q("#subBody .sol-disclaimer") && /의료적/.test(q("#subBody .sol-disclaimer").textContent) && /전문가/.test(q("#subBody .sol-disclaimer").textContent));
   check("의료 프레이밍 회피(살펴보기·제안)", /살펴보기/.test(q("#subBody .diag-label").textContent) && /맞춤 제안/.test(q("#subBody .sol-card h2").textContent));
   check("리포트 습관 분석 카드 표시", !!q("#subBody .hrep-card") && d.querySelectorAll("#subBody .hrep-card .hrep-row").length >= 1);
-  check("리포트 습관 분석 결론·달성률 표시", !!q("#subBody .hrep-card .hrep-ins-row") && /%/.test(q("#subBody .hrep-card .hrep-avg").textContent) && /🔥/.test(q("#subBody .hrep-card").textContent));
+  check("리포트 습관 분석 결론·달성률 표시", !!q("#subBody .hrep-card .hrep-ins-row") && /%/.test(q("#subBody .hrep-card .hrep-avg").textContent) && /연속/.test(q("#subBody .hrep-card").textContent));
   q("#subBack").click();
   // 세분 진단 — 슬픔 테마 + '관계' 키워드 맥락
   const sadE = {};

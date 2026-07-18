@@ -161,11 +161,7 @@
 }
 
 /* ----- 보타니칼 공통 터치: 세리프 제목 + 모서리 잎 라인아트 ----- */
-:is([data-theme="garden"], [data-theme="midnight"]) .hero h1,
-:is([data-theme="garden"], [data-theme="midnight"]) .journey-hero h2 {
-  font-family: "Times New Roman", "Noto Serif KR", "Apple SD Gothic Neo", serif;
-  letter-spacing: 0.02em; font-weight: 600;
-}
+
 /* 좌상 유칼립투스 · 우상 고사리 — 배경 블롭 레이어에 라인아트(레이아웃 영향 0) */
 :is([data-theme="garden"], [data-theme="midnight"]) .bg-blobs::before,
 :is([data-theme="garden"], [data-theme="midnight"]) .bg-blobs::after {
@@ -188,44 +184,7 @@
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110"><g fill="none" stroke="%235f7258" stroke-width="1.5" stroke-linecap="round"><path d="M12 106 C 24 74, 34 44, 60 12"/><path d="M22 82 C 32 78, 40 78, 48 82"/><path d="M28 66 C 37 62, 45 62, 52 66"/><path d="M34 51 C 42 47, 49 47, 56 51"/><path d="M40 37 C 47 33, 53 33, 59 37"/></g></svg>');
 }
 
-/* ----- 보타니칼 마감 디테일 — 시안의 완성도 재현 (아이콘·타이포·프레임) ----- */
-/* 탭바: 이모지 대신 라인 아이콘 */
-.tb-ico { display: none; }
-:is([data-theme="garden"], [data-theme="midnight"]) .tabbtn .tb-emo { display: none; }
-:is([data-theme="garden"], [data-theme="midnight"]) .tabbtn .tb-ico {
-  display: block; width: 23px; height: 23px; margin: 2px 0 1px;
-  fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
-}
-:is([data-theme="garden"], [data-theme="midnight"]) .tabbtn span { letter-spacing: 0.08em; }
-/* 이모지 절제: 제목·통계 라벨·여정 이모지 */
-:is([data-theme="garden"], [data-theme="midnight"]) :is(.hero-emo, .lbl-emo) { display: none; }
-:is([data-theme="garden"], [data-theme="midnight"]) .journey-hero .js-emoji { display: none; }
-/* 히어로: 세리프 제목 아래 헤어라인 */
-:is([data-theme="garden"], [data-theme="midnight"]) .hero h1::after {
-  content: ""; display: block; width: 54px; height: 1px; margin: 7px auto 0;
-}
-[data-theme="garden"] .hero h1::after { background: linear-gradient(90deg, transparent, #c68a72, transparent); }
-[data-theme="midnight"] .hero h1::after { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
-:is([data-theme="garden"], [data-theme="midnight"]) .slim-hero .hero h1::after { display: none; }
-/* 오늘 통계: 점선 프레임 + 세리프 숫자 + 세로 구분선 */
-[data-theme="garden"] .today-stats { border: 1px dashed #b9c2a8; }
-[data-theme="midnight"] .today-stats { border: 1px dashed #46584a; }
-:is([data-theme="garden"], [data-theme="midnight"]) .ts-num {
-  font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; letter-spacing: 0;
-}
-:is([data-theme="garden"], [data-theme="midnight"]) .ts-item + .ts-item { border-left: 1px solid var(--line); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
-:is([data-theme="garden"], [data-theme="midnight"]) .ts-label { letter-spacing: 0.1em; }
-/* 여정 카드: 안쪽 헤어라인 프레임 + 레터스페이스 아이브로 */
-:is([data-theme="garden"], [data-theme="midnight"]) .journey-hero .jh-inner {
-  border: 1px solid var(--line); border-radius: 14px; padding: var(--s5) var(--s3) var(--s4);
-}
-:is([data-theme="garden"], [data-theme="midnight"]) .jh-eyebrow {
-  letter-spacing: 0.22em; font-size: var(--t-xs); font-weight: var(--w-bold);
-}
-[data-theme="garden"] .jh-eyebrow { color: #9c5636; }
-[data-theme="midnight"] .jh-eyebrow { color: var(--accent); }
-/* 가든: 은은한 도트 그리드 종이 질감 */
-[data-theme="garden"] { background-image: radial-gradient(rgba(125, 155, 118, 0.16) 1px, transparent 1.2px); background-size: 22px 22px; }
+
 
 
 /* ============================================================
@@ -993,7 +952,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey-hero {
   text-align: center;
   display: flex; align-items: center; justify-content: center;
-  padding: var(--s6) var(--s5); /* 1화면 목표 — 고정 min-height 제거 */
+  padding: var(--s4) var(--s5); /* 1화면 목표 — 안쪽 프레임이 여백을 겸함 */
   background:
     radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 60%),
     linear-gradient(170deg, var(--card), var(--card));
@@ -1496,3 +1455,39 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   #challengeList.compact .habit-check { width: 36px; height: 36px; }
   #challengeList.compact .habit-mini-bar { display: none; }
 }
+
+/* ===== 통일 디자인 언어 — 보타니칼 마감을 전 테마 공통으로 ===== */
+/* 세리프 제목 */
+.hero h1, .journey-hero h2 {
+  font-family: "Times New Roman", "Noto Serif KR", "Apple SD Gothic Neo", serif;
+  letter-spacing: 0.02em; font-weight: 600;
+}
+/* 탭바 라인 아이콘 */
+.tabbtn .tb-ico {
+  display: block; width: 23px; height: 23px; margin: 2px 0 1px;
+  fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.tabbtn span { letter-spacing: 0.08em; }
+/* 여정 카드 장식 이모지 숨김 */
+.journey-hero .js-emoji { display: none; }
+/* 제목 아래 헤어라인 */
+.hero h1::after {
+  content: ""; display: block; width: 54px; height: 1px; margin: 4px auto 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+[data-theme="garden"] .hero h1::after { background: linear-gradient(90deg, transparent, #c68a72, transparent); }
+.slim-hero .hero h1::after { display: none; }
+/* 오늘 통계: 점선 프레임 + 세리프 숫자 + 세로 구분선 */
+.today-stats { border: 1px dashed var(--line); }
+[data-theme="garden"] .today-stats { border-color: #b9c2a8; }
+[data-theme="midnight"] .today-stats { border-color: #46584a; }
+.ts-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; letter-spacing: 0; }
+.ts-item + .ts-item { border-left: 1px solid var(--line); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.ts-label { letter-spacing: 0.1em; }
+/* 여정 카드: 안쪽 헤어라인 프레임 + 레터스페이스 아이브로 */
+.journey-hero .jh-inner { border: 1px solid var(--line); border-radius: 14px; padding: var(--s4) var(--s3) var(--s3); }
+.jh-eyebrow { letter-spacing: 0.22em; font-size: var(--t-xs); font-weight: var(--w-bold); color: var(--accent-deep); }
+[data-theme="garden"] .jh-eyebrow { color: #9c5636; }
+[data-theme="midnight"] .jh-eyebrow { color: var(--accent); }
+/* 가든: 은은한 도트 그리드 종이 질감 */
+[data-theme="garden"] { background-image: radial-gradient(rgba(125, 155, 118, 0.16) 1px, transparent 1.2px); background-size: 22px 22px; }
