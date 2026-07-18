@@ -174,7 +174,7 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
     radial-gradient(0.9px 0.9px at 38% 58%, rgba(230,238,255,0.35), transparent 60%),
     radial-gradient(1.5px 1.5px at 66% 22%, rgba(255,246,220,0.65), transparent 60%),
     radial-gradient(1px 1px at 84% 48%, rgba(230,238,255,0.42), transparent 60%);
-  animation: twinkle 5s ease-in-out infinite alternate;
+  animation: twinkle 3.6s ease-in-out infinite alternate;
 }
 /* 두 번째 별 겹 + 은하수 — 서로 다른 주기로 깜빡여 실제 밤하늘처럼 */
 [data-theme="midnight"] .bg-blobs::after {
@@ -195,7 +195,7 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
     radial-gradient(1.1px 1.1px at 82% 82%, rgba(255,246,220,0.48), transparent 60%),
     radial-gradient(0.8px 0.8px at 10% 92%, rgba(230,238,255,0.4), transparent 60%),
     radial-gradient(1px 1px at 46% 90%, rgba(255,246,220,0.38), transparent 60%);
-  animation: twinkle 8s ease-in-out 1.6s infinite alternate-reverse;
+  animation: twinkle 5.8s ease-in-out 1.4s infinite alternate-reverse;
 }
 /* 낮 · 연보라 하늘 — 부드러운 구름 빛무리 */
 [data-theme="garden"] .bg-blobs { display: block; }
@@ -213,12 +213,20 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 [data-theme="garden"] .blob3 { display: none; }
 @keyframes cloudDrift { from { transform: translateX(-8%); } to { transform: translateX(110vw); } }
 @media (prefers-reduced-motion: reduce) { [data-theme="garden"] .blob { animation: none; } }
-@keyframes twinkle { from { opacity: 0.65; } to { opacity: 1; } }
+@keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
 [data-theme="midnight"] .blob { display: block; opacity: 0; filter: none; border-radius: 0;
   width: 96px; height: 1.6px; background: linear-gradient(90deg, rgba(255,248,222,0.95), rgba(255,248,222,0)); }
 [data-theme="midnight"] .blob1 { top: 12%; left: 58%; animation: shoot1 9s linear infinite 2.5s; }
 [data-theme="midnight"] .blob2 { top: 42%; left: 8%; animation: shoot2 13s linear infinite 7s; }
-[data-theme="midnight"] .blob3 { display: none; }
+[data-theme="midnight"] .blob3 { display: block; width: 3px; height: 3px; border-radius: 50%;
+  top: 21%; left: 76%; background: #fff8e0; filter: none; opacity: 1;
+  box-shadow: 0 0 9px 2px rgba(255, 246, 215, 0.9);
+  animation: starSparkle 3.2s ease-in-out infinite; }
+[data-theme="midnight"] .blob3::before, [data-theme="midnight"] .blob3::after {
+  content: ""; position: absolute; left: 50%; top: 50%; background: linear-gradient(rgba(255,248,222,0), rgba(255,248,222,0.85), rgba(255,248,222,0)); }
+[data-theme="midnight"] .blob3::before { width: 1px; height: 16px; transform: translate(-50%, -50%); }
+[data-theme="midnight"] .blob3::after { width: 16px; height: 1px; background: linear-gradient(90deg, rgba(255,248,222,0), rgba(255,248,222,0.85), rgba(255,248,222,0)); transform: translate(-50%, -50%); }
+@keyframes starSparkle { 0%, 100% { transform: scale(0.65); opacity: 0.45; } 50% { transform: scale(1.35); opacity: 1; } }
 @keyframes shoot1 {
   0%, 91% { opacity: 0; transform: rotate(32deg) translateX(0); }
   92% { opacity: 1; }
@@ -244,7 +252,7 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
 .app { max-width: 600px; margin: 0 auto; padding: calc(var(--s5) + env(safe-area-inset-top, 0px)) var(--s4) calc(84px + env(safe-area-inset-bottom, 0px)); }
 
 /* ----- 히어로 ----- */
-.hero { text-align: center; margin-bottom: var(--s6); }
+.hero { text-align: center; margin-bottom: var(--s7); }
 .sun-dot { width: 11px; height: 11px; border-radius: 50%; margin: 0 auto var(--s3);
   background: radial-gradient(circle at 35% 30%, #cdd3f2, #97a0d6);
   box-shadow: 0 0 16px rgba(151, 160, 214, 0.55); }
@@ -963,22 +971,22 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ts-num i { font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
 .ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
 .ts-cheer { margin: var(--s2) 0 0; padding-top: var(--s2); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.5; word-break: keep-all; }
-.wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
+.wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); }
 .wk-goal-bar { flex: 1; height: 6px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
 .wk-goal-bar > i { display: block; height: 100%; width: 0; border-radius: var(--r-pill); background: var(--accent-deep); transition: width 0.7s var(--ease-soft), background 0.4s; }
 .wk-goal-cap { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); }
 /* 오늘 통계 카드에 합친 습관 섹션 */
-.ts-habits { margin-top: var(--s2); padding-top: var(--s2); border-top: 1px solid var(--line); text-align: left; }
+.ts-habits { margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--line); text-align: left; }
 .ts-habits-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s1); }
 .ts-habits-title { font-size: var(--t-sm); font-weight: var(--w-bold); color: var(--ink); }
 .ts-habits .hg-count { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); white-space: nowrap; }
-.ts-habits .hg-row { padding: var(--s1) 0; }
+.ts-habits .hg-row { padding: var(--s2) 0; }
 .ts-habits .hg-insight { margin-bottom: var(--s2); }
 
 .journey-hero {
   text-align: center;
   display: flex; align-items: center; justify-content: center;
-  padding: var(--s3) var(--s5); /* 1화면 목표 — 안쪽 프레임이 여백을 겸함 */
+  padding: var(--s4) var(--s5); /* 1화면 목표 — 안쪽 프레임이 여백을 겸함 */
   background:
     radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 60%),
     linear-gradient(170deg, var(--card), var(--card));
@@ -1500,7 +1508,8 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* 제목 아래 헤어라인 */
 
 /* 오늘 통계: 점선 프레임 + 세리프 숫자 + 세로 구분선 */
-.today-stats { background: transparent; box-shadow: none; border: none; margin-top: var(--s3); }
+.today-stats { background: transparent; box-shadow: none; border: none; margin-top: var(--s5); }
+.today-stats:has(.hg-more) .ts-cheer { display: none; }
 /* 습관 3줄이면 응원 문구는 쉬어감 — 여백 우선 */
 .today-stats:has(#todayHabitList .hg-row:nth-child(3)) .ts-cheer { display: none; }
 .ts-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; letter-spacing: 0; }
@@ -1564,3 +1573,12 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .hg-wd { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-sunken); border: 1px solid var(--line-strong); }
 .hg-wd.on { background: var(--accent); border-color: var(--accent); }
 .hg-wd.td:not(.on) { border-color: var(--accent-deep); }
+
+/* ===== 오늘 탭 = 제호 + 여정 버튼만 — 여백의 미 ===== */
+#tab-today .today-stats { display: none; }
+#tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: var(--s8) 0 0; margin: 0; }
+#tab-today .journey-hero .jh-inner { padding: 0; border: none; }
+#tab-today .journey-hero h2 { display: none; }
+#tab-today .jh-sub { display: none; }
+#tab-today .journey-hero .hint { font-size: var(--t-sm); color: var(--soft); margin: 0 auto var(--s5); }
+#tab-today .foot { margin-top: var(--s8); }
