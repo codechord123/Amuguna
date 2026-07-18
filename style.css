@@ -60,54 +60,9 @@
   --ease-breath: cubic-bezier(0.37, 0, 0.63, 1);
 }
 
-[data-theme="calm"] {
-  --bg: #eef3f2;
-  --card: #ffffff;
-  --ink: #24302c;
-  --ink-2: #4c5b56;
-  --soft: #55655f; /* 대비 상향(WCAG AA) */
-  --line: #dde8e5;
-  --line-strong: #cddedb;
-  --bg-sunken: #e5efec;
-  --accent: #5fb6a3;
-  --accent-2: #cdebe3;
-  --accent-deep: #27745f; /* WCAG AA — 밝은 배경들에서 4.6:1 이상 */
-  --success: #38775f; /* 텍스트 용도 4.5:1 이상(WCAG AA) */
-  --danger: #9e5147;  /* 텍스트 용도 4.5:1 이상 */
-  --energy: #e79a52;
-  --ring: rgba(47, 138, 118, 0.16);
-  --blob-a: #c4e6dd; --blob-b: #aedbe6; --blob-c: #dcebcd;
-  --shadow-sm: 0 2px 5px rgba(60, 110, 100, 0.08);
-  --shadow: 0 10px 24px rgba(70, 120, 110, 0.13), 0 3px 8px rgba(70, 120, 110, 0.08);
-  --shadow-lg: 0 22px 50px rgba(60, 110, 100, 0.18), 0 6px 16px rgba(60, 110, 100, 0.10);
-  --card-hi: rgba(255, 255, 255, 0.75);
-}
 
-[data-theme="dark"] {
-  color-scheme: dark;
-  /* 다크 배경에서 뭉개지지 않게 점수 팔레트 채도·명도 상향 */
-  --score-0: #f0977c; --score-1: #f7bd85; --score-2: #ece0a4; --score-3: #a8e4bd; --score-4: #6fd9c2;
-  --bg: #17161d;
-  --card: #221f2b;
-  --ink: #ece9f2;
-  --ink-2: #c2bccf;
-  --soft: #a39cb5; /* 다크 배경 대비 상향(WCAG AA) */
-  --line: #322f3e;
-  --line-strong: #3d3a4b;
-  --bg-sunken: #1d1b25;
-  --accent: #ac95f0;
-  --accent-2: #38324a;
-  --accent-deep: #c4b1f6;
-  --success: #74bf9e;
-  --danger: #e08a82;
-  --energy: #63d4be;
-  --ring: rgba(172, 149, 240, 0.24);
-  --blob-a: #463a66; --blob-b: #553758; --blob-c: #2c4a53;
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.34);
-  --shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 3px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 22px 52px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.4);
-  --card-hi: rgba(255, 255, 255, 0.06);
-}
+
+
 
 /* ===== 보타니칼 🌿 (A안 · 프레스드 가든 — 크림 종이 + 세이지 + 마른 장미) ===== */
 [data-theme="garden"] {
@@ -1289,7 +1244,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ============================================================
    설정
    ============================================================ */
-.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
+.theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s3); }
 .theme-btn { border: 1.5px solid var(--line); background: var(--bg-sunken); border-radius: var(--r-sm); padding: var(--s4) var(--s1); cursor: pointer; font-size: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: var(--s2); font-family: inherit; color: var(--ink); transition: border-color 0.2s, background 0.2s; }
 .theme-btn span { font-size: var(--t-sm); color: var(--soft); font-weight: var(--w-semi); }
 .theme-btn.active { border-color: var(--accent); border-width: 2px; background: var(--card); }
@@ -1508,14 +1463,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .snd-ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: block; margin: 0 auto; }
 .vol-ico .snd-ico { width: 18px; height: 18px; }
 .med-snd-btn .snd-ico { width: 20px; height: 20px; }
-/* 테마 스와치 — 이모지 대신 각 테마의 배경+포인트 색 */
-.theme-btn::before { content: ""; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); flex-shrink: 0; }
-.theme-btn[data-theme="warm"]::before { background: linear-gradient(135deg, #f7f1ea 50%, #e8836a 50%); }
-.theme-btn[data-theme="calm"]::before { background: linear-gradient(135deg, #eef3f2 50%, #5fb6a3 50%); }
-.theme-btn[data-theme="dark"]::before { background: linear-gradient(135deg, #17161d 50%, #ac95f0 50%); }
-.theme-btn[data-theme="garden"]::before { background: linear-gradient(135deg, #f5f2e8 50%, #7d9b76 50%); }
-.theme-btn[data-theme="midnight"]::before { background: linear-gradient(135deg, #16211b 50%, #cda86a 50%); }
-.theme-btn[data-theme="auto"]::before { background: linear-gradient(135deg, #f5f2e8 25%, #7d9b76 25% 50%, #16211b 50% 75%, #cda86a 75%); }
 /* 축하 꽃잎 파티클 — 이모지 대체 */
 .confetti.petal { width: 11px; height: 15px; border-radius: 62% 38% 60% 40% / 60% 60% 42% 40%; opacity: 0.9; }
 .confetti.petal.p0 { background: #a9b89b; }
@@ -1523,3 +1470,10 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .confetti.petal.p2 { background: #c68a72; }
 .confetti.petal.p3 { background: #7d9b76; }
 .confetti.petal.p4 { background: #e8cf9e; }
+
+/* 테마 타일 — 각 테마의 실제 배경/잉크색으로 미리보기 (아이콘 없음) */
+.theme-btn { padding: var(--s5) var(--s2); }
+.theme-btn[data-theme="garden"] { background: #f5f2e8; }
+.theme-btn[data-theme="garden"] span { color: #44603f; }
+.theme-btn[data-theme="midnight"] { background: #16211b; }
+.theme-btn[data-theme="midnight"] span { color: #e8cf9e; }

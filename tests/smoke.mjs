@@ -68,6 +68,7 @@ try {
   check("빈 기록 탭 첫 사용자 안내 표시", !q("#statsEmptyHero").hasAttribute("hidden"));
   q("[data-tab=today]").click();
   check("탭바 aria-current 갱신", q('.tabbtn[data-tab="today"]').getAttribute("aria-current") === "page");
+  check("오늘 탭: 여정 카드가 통계보다 위", !!q("#tab-today") && q("#tab-today").innerHTML.indexOf("journeyStartCard") < q("#tab-today").innerHTML.indexOf("todayStats"));
 
   // 1) 오늘의 여정으로 기록 (입력은 여정 하나로 통일)
   const tk = (() => { const dt = new Date(); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`; })();
@@ -213,15 +214,11 @@ try {
 
   // 7) 설정: 테마/글자크기/톤
   q("[data-tab=settings]").click();
-  q("[data-theme=dark]").click();
-  check("다크 테마 적용", d.documentElement.getAttribute("data-theme") === "dark");
-  check("보타니칼 테마 버튼 존재", !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]"));
+  check("테마는 보타니칼·미드나잇 2종만", d.querySelectorAll(".theme-btn").length === 2 && !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]"));
+  q("[data-theme=midnight]").click();
+  check("미드나잇 테마 적용", d.documentElement.getAttribute("data-theme") === "midnight");
   q("[data-theme=garden]").click();
   check("보타니칼 테마 적용", d.documentElement.getAttribute("data-theme") === "garden");
-  q("[data-theme=midnight]").click();
-  check("나이트 테마 적용", d.documentElement.getAttribute("data-theme") === "midnight");
-  q("[data-theme=warm]").click();
-  check("따뜻함 테마 복귀", d.documentElement.getAttribute("data-theme") === "warm");
   q("#textSizeSeg button[data-size=xl]").click();
   check("글자 크기 적용", d.documentElement.getAttribute("data-textsize") === "xl");
   q("#toneSeg button[data-tone=plain]").click();

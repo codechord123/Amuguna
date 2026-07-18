@@ -3318,7 +3318,13 @@ const settings = Object.assign(
   loadSettings()
 );
 const darkMq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-function resolveTheme() { return settings.theme === "auto" ? (darkMq && darkMq.matches ? "midnight" : "garden") : settings.theme; }
+function resolveTheme() {
+  const t = settings.theme;
+  if (t === "garden" || t === "midnight") return t;
+  if (t === "dark") return "midnight"; // 구버전 테마 → 가장 가까운 쪽으로
+  if (t === "auto") return (darkMq && darkMq.matches) ? "midnight" : "garden";
+  return "garden";
+}
 function applySettings() {
   _scoreColorCache = null; // 테마가 바뀌면 점수 팔레트 다시 읽기
   document.documentElement.setAttribute("data-theme", resolveTheme());
