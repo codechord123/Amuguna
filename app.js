@@ -277,7 +277,7 @@ function entryDetailHtml(e) {
   return `
     <div class="card rpt-hero">
       <div class="gauge-wrap">${sc != null ? moodGaugeSvg(sc) : '<div class="gauge-empty">기분<br>없음</div>'}</div>
-      <div class="rpt-hero-side"><p class="rpt-hero-cap">${moodTxt}</p><div class="hero-stats">${hs(e.energy || "—", "활력/5")}${hs((e.tags && e.tags.length) || 0, "감정 태그")}</div></div>
+      <div class="rpt-hero-side"><p class="rpt-hero-cap">${moodTxt}</p><div class="hero-stats">${hs((e.tags && e.tags.length) || 0, "감정 태그")}${hs(e.praise ? 1 : 0, "잘한 일")}</div></div>
     </div>
     ${tags ? `<div class="card">${tags}</div>` : ""}
     ${e.note ? `<div class="card"><h2>일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
@@ -851,9 +851,18 @@ function fillHabitGrid(h) {
     else if (key === today) cls += " today";
     else if (key < today) cls += " miss"; // 비처벌: 빈 구멍이 아니라 회색
     else cls += " future";
-    html += `<div class="${cls}" title="${i + 1}일째"></div>`;
+    html += `<div class="${cls}" data-k="${key}" data-day="${i + 1}" title="${i + 1}일째"></div>`;
   }
   grid.innerHTML = html;
+  if (!grid._dateTap) {
+    grid._dateTap = true;
+    grid.addEventListener("click", (e) => {
+      const c = e.target.closest(".ch-cell"); if (!c || !c.dataset.k) return;
+      const p = c.dataset.k.split("-");
+      const state = c.classList.contains("done") ? "완료" : c.classList.contains("today") ? "오늘" : c.classList.contains("miss") ? "쉬어감" : "예정";
+      toast(`${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(c.dataset.k)}) · Day ${c.dataset.day} · ${state}`);
+    });
+  }
 }
 
 // 목록 카드: 누르면 상세 페이지로 전환, 체크 버튼은 바로 완료 토글
@@ -1292,7 +1301,6 @@ function renderWeekly(entries) {
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 주 ${days.length}일 기록.` : `이번 주 ${days.length}일이나 마음을 남겼어요.`);
   if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 '${topMood[0]}'` : ""}.`);
-  if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal} 칸 채웠어요.`);
   if (!plain) parts.push(days.length >= 5 ? "스스로를 참 잘 돌본 한 주예요" : "조금씩이어도 충분해요. 다음 주도 곁에 있을게요.");
   weekData = { range, summary: parts.join(" "), daysLogged: days.length, avgMood, avgEnergy, habDone, habTotal, topMood: topMood ? topMood[0] : null, moodSeries: keys.map((k) => entries[k] ? entryScore(entries[k]) : null) };
@@ -1322,7 +1330,6 @@ function renderMonthly(entries) {
   const plain = settings.tone === "plain", parts = [];
   parts.push(plain ? `이번 달 ${recs.length}일 기록.` : `이번 달 ${recs.length}일 마음을 남겼어요.`);
   if (avgMood != null) parts.push(`평균 기분 ${Math.round(avgMood)}/100${topMood ? `, 가장 자주 '${topMood[0]}'` : ""}.`);
-  if (avgEnergy != null) parts.push(`평균 활력 ${avgEnergy.toFixed(1)}/5.`);
   if (habTotal > 0) parts.push(plain ? `습관 달성 ${habDone}/${habTotal}.` : `습관도 ${habDone}/${habTotal}칸 채웠어요.`);
   if (reflections > 0) parts.push(`저녁 회고 ${reflections}번.`);
   if (!plain) parts.push("한 달을 차곡차곡 살아냈어요");
@@ -2397,7 +2404,6 @@ function reportDetailHtml(kind, off = 0) {
   const hs = (b, s, dd, u) => `<div class="hs"><b>${b}</b><span>${s}</span>${sdlt(dd, u)}</div>`;
   const heroStats = [
     hs(`${cur.days}`, "기록일", cmpOk ? cur.days - prev.days : null, "일"),
-    hs(cur.avgEnergy != null ? cur.avgEnergy.toFixed(1) : "—", "활력/5", (cmpOk && cur.avgEnergy != null && prev.avgEnergy != null) ? cur.avgEnergy - prev.avgEnergy : null),
     cur.habPct != null ? hs(`${cur.habPct}%`, "습관", (cmpOk && prev.habPct != null) ? cur.habPct - prev.habPct : null, "%") : hs(`${cur.gratCount}`, "잘한 일"),
   ].join("");
   const deltaChip = dMood != null ? `<span class="kpi-delta ${dMood >= 1 ? "up" : dMood <= -1 ? "down" : "flat"}">${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(Math.round(dMood))} 지난 ${unit}</span>` : "";
@@ -3053,7 +3059,7 @@ function renderWeekGlance(entries) {
   const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
   el.innerHTML = `<div class="rpt-hero" style="margin:0">
     <div class="gauge-wrap">${moodGaugeSvg(avg)}</div>
-    <div class="rpt-hero-side"><p class="rpt-hero-cap">최근 7일 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${hs(avgEn, "활력")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(top, "대표")}</div></div>
+    <div class="rpt-hero-side"><p class="rpt-hero-cap">최근 7일 평균 기분</p><div class="hero-stats">${hs(recs.length, "기록일")}${habPct != null ? hs(`${habPct}%`, "습관") : hs(top, "대표")}</div></div>
   </div>`;
 }
 // 습관 분석 한 줄 — 한눈에 카드/홈에서 가장 의미 있는 인사이트 1개 (기분 연관 > 모멘텀 > 꾸준함)

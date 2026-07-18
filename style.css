@@ -1504,3 +1504,18 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .theme-btn[data-theme="midnight"] { background: #14131e; }
 .theme-btn[data-theme="midnight"] span { color: #ecd08e; }
 
+/* ===== 첫 화면 등장 — 순차 페이드업 + 해 점 숨쉬기 ===== */
+@keyframes riseIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes sunBreath { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.22); filter: brightness(1.14); } }
+.hero .sun-dot { animation: riseIn 0.5s var(--ease-soft) both, sunBreath 4.2s ease-in-out 1.2s infinite; }
+.hero h1 { animation: riseIn 0.55s var(--ease-soft) 0.06s both; }
+.hero .greeting { animation: riseIn 0.55s var(--ease-soft) 0.14s both; }
+#tab-today .journey-hero { animation: riseIn 0.6s var(--ease-soft) 0.22s both; }
+#tab-today .today-stats { animation: riseIn 0.6s var(--ease-soft) 0.34s both; }
+#tab-today .foot { animation: riseIn 0.6s var(--ease-soft) 0.46s both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero .sun-dot, .hero h1, .hero .greeting,
+  #tab-today .journey-hero, #tab-today .today-stats, #tab-today .foot { animation: none; }
+}
+/* 습관 90일 그리드 칸 — 누를 수 있음을 암시 */
+.ch-cell { cursor: pointer; }
