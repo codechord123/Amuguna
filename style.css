@@ -835,7 +835,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .habit-check { width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--line); background: var(--bg-sunken); font-size: 1.4rem; cursor: pointer; transition: transform 0.15s var(--ease-soft), background 0.2s, border-color 0.2s; color: var(--soft); }
 .habit-check:hover { transform: scale(1.06); border-color: var(--line-strong); }
 .habit-check:active { transform: scale(0.9); }
-.habit-check.done { background: var(--success); border-color: var(--success); color: #fff; }
+.habit-check.done { background: var(--accent); border-color: var(--accent); color: #fff; }
 .habit-mini-bar { height: 6px; border-radius: var(--r-pill); background: var(--bg-sunken); margin-top: var(--s3); overflow: hidden; }
 .habit-mini-bar > i { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); transition: width 0.7s var(--ease-soft); }
 .habit-cue { color: var(--soft); font-size: var(--t-sm); margin: var(--s3) 0 0; }
@@ -952,8 +952,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .j-habits { display: flex; flex-direction: column; gap: var(--s3); }
 .j-habit { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); border: 1.5px solid var(--line); background: var(--bg-sunken); color: var(--ink); border-radius: var(--r-md); padding: var(--s4) var(--s5); font-family: inherit; font-size: var(--t-base); font-weight: var(--w-semi); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
 .j-habit b { font-size: 1.3rem; color: var(--soft); }
-.j-habit.done { border-color: var(--success); background: var(--card); }
-.j-habit.done b { color: var(--success); }
+.j-habit.done { border-color: var(--accent); background: var(--card); }
+.j-habit.done b { color: var(--accent-deep); }
 .j-finish { text-align: center; }
 .j-finish h3 { font-size: var(--t-xl); margin: var(--s2) 0 var(--s3); }
 .j-finish p { color: var(--ink-2); }

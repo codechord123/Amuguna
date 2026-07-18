@@ -3800,7 +3800,7 @@ function stepHtml(id) {
     const today = todayKey();
     const chs = loadChs();
     return `<p class="j-q">오늘의 습관, 했나요?</p>
-      <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}" aria-pressed="${!!h.done[today]}"><span>${h.emoji} ${escapeHtml(h.title)}</span><b aria-hidden="true">${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
+      <div class="j-habits">${chs.map((h) => `<button class="j-habit ${h.done[today] ? "done" : ""}" data-hid="${h.id}" aria-pressed="${!!h.done[today]}"><span>${ICONS.leaf} ${escapeHtml(h.title)}</span><b aria-hidden="true">${h.done[today] ? "✓" : "○"}</b></button>`).join("")}</div>`;
   }
   if (id === "care") {
     if (!jData.quote) jData.quote = pickQuote();
