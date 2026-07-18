@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v162" />
+  <meta name="app-version" content="v163" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -38,7 +38,7 @@
   <main class="app">
     <header class="hero">
       <p class="greeting" id="greeting">안녕, 오늘도 와줘서 고마워요</p>
-      <h1>오늘의 쉼 ☕</h1>
+      <h1>오늘의 쉼 <span class="hero-emo">☕</span></h1>
       <p class="subtitle">매일 마음을 기록하고, 나를 조금씩 이해해가요.</p>
     </header>
 
@@ -62,13 +62,13 @@
     <section class="tab" id="tab-today">
       <div class="card today-stats" id="todayStats">
         <div class="ts-row">
-          <button class="ts-item" data-jump="calendar"><span class="ts-num" id="tsStreak">0</span><span class="ts-label">🔥 연속</span></button>
-          <button class="ts-item" data-jump="weekreport"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label">📅 최근 7일</span></button>
-          <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label">🌿 전체</span></button>
+          <button class="ts-item" data-jump="calendar"><span class="ts-num" id="tsStreak">0</span><span class="ts-label"><i class="lbl-emo">🔥</i> 연속</span></button>
+          <button class="ts-item" data-jump="weekreport"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label"><i class="lbl-emo">📅</i> 최근 7일</span></button>
+          <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label"><i class="lbl-emo">🌿</i> 전체</span></button>
         </div>
         <div class="wk-goal"><div class="wk-goal-bar"><i id="wkGoalFill"></i></div><span class="wk-goal-cap" id="wkGoalCap"></span></div>
         <div class="ts-habits" id="todayHabitGlance" hidden data-hg-wrap>
-          <div class="ts-habits-head"><span class="ts-habits-title">🎯 오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
+          <div class="ts-habits-head"><span class="ts-habits-title"><i class="lbl-emo">🎯</i> 오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>
           <div id="todayHabitList"></div>
         </div>
         <p class="ts-cheer" id="tsCheer" aria-live="polite">오늘도 나를 위한 한 걸음을 남겨봐요.</p>
@@ -547,12 +547,12 @@
   </div>
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
-    <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today">📔<span>오늘</span></button>
-    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar">🗓️<span>달력</span></button>
-    <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest">🌿<span>쉼</span></button>
-    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge">🎯<span>습관</span></button>
-    <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats">📊<span>기록</span></button>
-    <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings">⚙️<span>설정</span></button>
+    <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><i class="tb-emo">📔</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
+    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><i class="tb-emo">🗓️</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>달력</span></button>
+    <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><i class="tb-emo">🌿</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
+    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge"><i class="tb-emo">🎯</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg><span>습관</span></button>
+    <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><i class="tb-emo">📊</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
+    <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><i class="tb-emo">⚙️</i><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>
   </nav>
 
   <script src="config.js"></script>
