@@ -1078,7 +1078,11 @@ body.slim-hero .fav-sky { display: none; }
 .fav-star:active::before { transform: scale(1.5); }
 /* 낮하늘의 즐겨찾기는 종이비행기 — 밤의 별과 짝을 이루는 존재 */
 .fav-star .fs-plane { display: none; }
+.fav-star .fs-sway { display: block; }
 [data-theme="garden"] .fav-star::before { display: none; }
+/* 산들바람 — 바람결에 흔들리는 잔물결 (배회·기수 회전과 별개의 빠른 층) */
+[data-theme="garden"] .fav-star .fs-sway { animation: planeSway var(--sway, 4.6s) ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
+@keyframes planeSway { from { transform: translateY(calc(var(--swayA, 3px) * -1)) rotate(-2.5deg); } to { transform: translateY(var(--swayA, 3px)) rotate(2.5deg); } }
 [data-theme="garden"] .fav-star .fs-plane { display: block; width: 19px; height: 19px; margin: 5px auto 0; fill: none; stroke: var(--star-c); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--star-c) 40%, transparent));
   transform: rotate(var(--rot, -8deg)); animation: planeTurn var(--fly, 55s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
@@ -1830,3 +1834,12 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .emo-tag.selected { background: transparent; box-shadow: none; color: var(--ink); font-weight: var(--w-bold); border-bottom-color: var(--accent); }
 /* 빠른 저장 — 링크 톤으로 */
 .j-quick { border: none; background: none; text-decoration: underline; text-underline-offset: 3px; color: var(--soft); }
+
+/* ===== v196 — 기분 화면: 이중 컨트롤 정리(다이얼 링 제거, 숫자+슬라이더 하나로) ===== */
+.journey .dial { display: none; }
+.journey .dial-wrap { width: auto; height: auto; margin: var(--s3) auto 0; }
+.journey .dial-center { position: static; inset: auto; }
+.journey .dial-num { font-size: 3.6rem; }
+.journey .dial-label { margin-top: 2px; }
+.journey .dial-range { margin-top: var(--s6); }
+@media (prefers-reduced-motion: reduce) { .fav-star .fs-sway { animation: none; } }

@@ -339,19 +339,24 @@ function renderFavStars() {
   const clash = (x, y) => placed.some((q) => Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 10); // y는 레이어(화면 44%) 기준 %
   layer.innerHTML = favs.map((k) => {
     let h = 7; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) >>> 0; // 날짜 고유 해시 — 별자리가 매번 같은 자리에
-    let x = 7 + (h % 86), y = 36 + ((h >> 7) % 52), tries = 0; // y 36~88% = 화면의 16~39% — 제호 아래 하늘
+    let x = 7 + (h % 86), y = 36 + ((h >>> 7) % 52), tries = 0; // y 36~88% = 화면의 16~39% — 제호 아래 하늘
     while (clash(x, y) && tries < 60) {
-      h = (h * 2654435761 + 1) >>> 0; x = 7 + (h % 86); y = 36 + ((h >> 7) % 52); tries++;
+      h = (h * 2654435761 + 1) >>> 0; x = 7 + (h % 86); y = 36 + ((h >>> 7) % 52); tries++;
     }
     placed.push({ x, y });
     const sc = entryScore(entries[k]);
     const col = sc != null ? scoreColor(sc) : "#fdf6e3";
     const p = k.split("-");
     // 밤하늘에선 별, 낮하늘에선 종이비행기 (CSS가 테마별로 골라 보여줌)
-    // 비행 경유지 3곳을 해시로 뽑아 저마다 다른 방향·궤적으로 떠다니게
-    const o = (sh, span, min) => { const v = ((h >> sh) % span) - (span >> 1); return (v < 0 ? -1 : 1) * (min + Math.abs(v)); };
-    const path = `--dx1:${o(2, 120, 24)}px;--dy1:${o(5, 70, 14)}px;--dx2:${o(9, 150, 20)}px;--dy2:${o(11, 84, 16)}px;--dx3:${o(13, 120, 22)}px;--dy3:${o(15, 70, 14)}px;${(h & 1) ? "animation-direction:reverse;" : ""}`;
-    return `<button class="fav-star" style="left:${x}%;top:${y}%;${path}--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg;--fly:${40 + ((h >> 6) % 32)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
+    // 비행 경유지 3곳을 해시로 뽑아 저마다 다른 방향·궤적으로 — 단, 화면 밖으로는 나가지 않게 클램프
+    const o = (sh, span, min) => { const v = ((h >>> sh) % span) - (span >> 1); return (v < 0 ? -1 : 1) * (min + Math.abs(v)); };
+    const W = window.innerWidth || 390, LH = (window.innerHeight || 844) * 0.44;
+    const xPx = x / 100 * W, yPx = y / 100 * LH;
+    const cx = (v) => Math.max(-(xPx - 34), Math.min(W - 34 - xPx, v));   // 좌우 여백 34px 안쪽
+    const cy = (v) => Math.max(-Math.max(0, yPx - 138), Math.min(LH - 26 - yPx, v)); // 위로는 제호 아래, 아래로는 레이어 안
+    const path = `--dx1:${cx(o(2, 120, 24))}px;--dy1:${cy(o(5, 70, 14))}px;--dx2:${cx(o(9, 150, 20))}px;--dy2:${cy(o(11, 84, 16))}px;--dx3:${cx(o(13, 120, 22))}px;--dy3:${cy(o(15, 70, 14))}px;${(h & 1) ? "animation-direction:reverse;" : ""}`;
+    const sway = `--sway:${(32 + ((h >>> 8) % 34)) / 10}s;--swayA:${2 + ((h >>> 10) % 4)}px;`;
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;${path}${sway}--star-c:${col};--twd:${((h >>> 3) % 36) / 10}s;--rot:${-16 + ((h >>> 4) % 30)}deg;--fly:${34 + ((h >>> 6) % 46)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><span class="fs-sway"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></span></button>`;
   }).join("");
 }
 {
@@ -3903,7 +3908,7 @@ function stepHtml(id) {
     { const cut = new Date(); cut.setDate(cut.getDate() - 90); const ck = todayKey(cut);
       Object.values(loadEntries()).forEach((e) => { if (!e.date || e.date < ck || e.date === jData.date) return; (e.tags || []).forEach((t) => tagFreq[t] = (tagFreq[t] || 0) + 1); }); }
     return `<p class="j-q">지금 마음, 몇 점인가요?</p>
-      <p class="hint" style="text-align:center;margin:-10px 0 6px">동그라미를 돌리거나 아래 막대로 0~100점을 표현해요.</p>
+      <p class="hint" style="text-align:center;margin:-10px 0 6px">막대를 움직여 0~100점으로 표현해요.</p>
       <div class="dial-wrap">
         <svg class="dial" viewBox="0 0 200 200" id="jDial" aria-hidden="true">
           <path class="dial-track" id="jDialTrack" d="${dialArc(100)}"></path>
@@ -3916,7 +3921,7 @@ function stepHtml(id) {
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">바쁜 날엔 여기까지만 저장</button>' : ""}
       <p class="field-label" style="text-align:center;margin-top:18px">어떤 감정인가요? <span class="opt">(여러 개 선택 가능 · 점수와 별개로 기록돼요)</span></p>
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}"><i class="band-dot ${e.band}"></i>${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
-      <p class="energy-out" id="jEnergyOut"></p>`;
+`;
   }
   if (id === "breathe") return `<div class="js-ico">${ICONS.wind}</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
@@ -3975,11 +3980,6 @@ function renderStep() {
     const range = jBody.querySelector("#jScore");
     const dial = jBody.querySelector("#jDial");
     const fill = jBody.querySelector("#jDialFill"), thumb = jBody.querySelector("#jDialThumb");
-    function updateEnergyOut() {
-      const o = jBody.querySelector("#jEnergyOut"); if (!o) return;
-      const hasTags = (jData.tags || []).some((t) => emoByKey(t));
-      o.innerHTML = `활력(에너지) <b>${jData.energy}/5 · ${ENERGY_WORD[jData.energy]}</b><br><span class="opt">${hasTags ? "활력은 고른 감정에서 계산돼요 (점수와 별개 축)" : "감정을 고르면 활력이 더 정확해져요"}</span>`;
-    }
     function setScore(v, silent) {
       v = Math.max(0, Math.min(100, Math.round(v)));
       jData.score = v; jData.mood = scoreToMood(v); jComputeEnergy();
@@ -3990,7 +3990,6 @@ function renderStep() {
       jBody.querySelector("#jDialNum").textContent = v;
       // 점수 축은 점수 자체를 표현(감정과 독립). 감정은 아래 태그로 따로 기록.
       jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
-      updateEnergyOut();
     }
     function fromPointer(ev) {
       const r = dial.getBoundingClientRect();
@@ -4017,7 +4016,7 @@ function renderStep() {
       const on = jData.tags.includes(k);
       b.classList.toggle("selected", on); b.setAttribute("aria-pressed", on);
       // 2축 독립: 감정은 점수를 바꾸지 않는다(점수=별도 다이얼). 감정에서 활력만 계산.
-      jComputeEnergy(); updateEnergyOut();
+      jComputeEnergy();
       saveJDraft();
     });
     const qs = jBody.querySelector("#jQuickSave");
