@@ -4142,7 +4142,12 @@ function backupReminderCheck() {
   if (total < 14) return;
   const last = settings.lastExport;
   const stale = !last || daysSince(last) >= 21;
-  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요. 설정 → '기록 내보내기'로 가끔 백업해 주세요."), 2600);
+  // 매 실행마다 뜨면 잔소리 — 한 번 안내하면 7일은 조용히
+  const nudged = settings.lastBackupNudge;
+  if (stale && (!nudged || daysSince(nudged) >= 7)) {
+    settings.lastBackupNudge = todayKey(); saveSettingsObj(settings);
+    setTimeout(() => toast("기록이 소중히 쌓였어요. 설정 → '기록 내보내기'로 가끔 백업해 주세요."), 2600);
+  }
 }
 
 /* 자정 넘김 처리 — 앱을 켜둔 채 날짜가 바뀌면 '오늘'을 갱신 */

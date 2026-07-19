@@ -305,7 +305,9 @@ body.slim-hero .foot { display: none; }
 .btn.primary { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 16px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .btn.primary:hover { box-shadow: 0 10px 24px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .btn.block { display: block; width: 100%; margin-top: var(--s5); }
-.btn.danger { color: #fff; background: var(--danger); }
+/* 파괴적 동작은 조용하게 — 주 동작(수정 등)과 시각 위계 분리, 실수 유도 방지 */
+.btn.danger { color: var(--danger); background: transparent; border: 1px solid var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); box-shadow: none; }
+.btn.danger:active { background: color-mix(in srgb, var(--danger) 10%, transparent); }
 :is([data-theme="dark"], [data-theme="midnight"]) .btn.primary { color: #17161d; }
 
 /* ============================================================
