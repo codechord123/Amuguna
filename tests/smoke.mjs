@@ -156,15 +156,17 @@ try {
 
   // 3d) 여정 진행 임시저장(중간에 닫아도 이어서) — 오늘 재편집은 축약 경로라 기분 단계부터 시작
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
-  check("오늘 재편집은 축약 경로(기분부터 바로)", !!q("#jBody #jScore"));
+  check("오늘 재편집에도 한마디·미션 단계 포함", !!q("#jBody #jQuote") && !!q("#jBody #jMission"));
+  q("#jNext").click(); // 한마디 → 기분 단계로
   q('#jBody .emo-tag[data-tag="복잡해요"]').click();
   q("#jClose").click();
   q("#journeyStart").click();
   check("여정 진행 임시저장 복원", !!q('#jBody .emo-tag[data-tag="복잡해요"]') && q('#jBody .emo-tag[data-tag="복잡해요"]').getAttribute("aria-pressed") === "true");
   q("#jClose").click(); window.localStorage.removeItem("journey_draft_v1");
 
-  // 3e) 빠른 기록 (1화면 저장) — 재편집 축약 경로에선 첫 화면이 곧 기분
+  // 3e) 빠른 기록 (1화면 저장) — 한마디 다음의 기분 화면에서
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q("#jNext").click(); // 한마디 → 기분
   { const s = q("#jBody #jScore"); s.value = "82"; s.dispatchEvent(new window.Event("input")); }
   check("빠른 저장 버튼 노출", !!q("#jBody #jQuickSave"));
   q("#jBody #jQuickSave").click();
@@ -172,6 +174,7 @@ try {
 
   // 3f) 오늘 재편집 축약 경로에도 습관 체크 단계는 유지 (여정에서 습관이 사라졌다는 피드백)
   q("[data-tab=today]").click(); window.localStorage.removeItem("journey_draft_v1"); q("#journeyStart").click();
+  q("#jNext").click(); // 한마디 → 기분
   { const s = q("#jBody #jScore"); s.value = "70"; s.dispatchEvent(new window.Event("input")); }
   { let liteHabit = false, lg = 0;
     while (q("#jNext").textContent.indexOf("저장") < 0 && lg++ < 10) { if (q("#jBody .j-habit")) liteHabit = true; q("#jNext").click(); }

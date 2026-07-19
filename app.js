@@ -3867,14 +3867,13 @@ function dialPt(v) { const a = (135 + v * 2.7) * Math.PI / 180; return [(100 + 8
 function dialArc(v) { const [sx, sy] = dialPt(0), [ex, ey] = dialPt(v); const large = (v * 2.7) > 180 ? 1 : 0; return `M${sx} ${sy} A80 80 0 ${large} 1 ${ex} ${ey}`; }
 function jSteps() {
   const pastDate = jData.date && jData.date !== todayKey(); // 지난 날짜 기록 편집
-  const lite = !!jData.editLite; // 오늘 재편집 축약 경로(한마디·호흡만 생략)
   const s = [];
-  if (!pastDate && !lite) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 시작
+  if (!pastDate) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 — 재편집에도 항상
   s.push("feel");
   s.push("note", "praise");
   if (!pastDate && loadChs().length) s.push("habits"); // 오늘이면 재편집이어도 습관 체크는 유지
   s.push("reflect"); // 저녁 회고는 항상 경로에 포함
-  if (!pastDate && !lite) s.push("breathe"); // 명상(호흡)은 마음을 가라앉히는 마지막 마무리 단계로
+  if (!pastDate) s.push("breathe"); // 명상은 마음을 가라앉히는 마지막 마무리 단계 — 재편집에도 항상
   s.push("finish");
   return s;
 }
@@ -4066,7 +4065,6 @@ function openJourney(dateKey) {
     jData.note = t.note; jData.praise = t.praise; jData.tags = t.tags || [];
     if (t.reflection) { jData.good = t.reflection.good; jData.hard = t.reflection.hard; }
     jData.touched = true; // 기존 기록 편집은 점수 확인 불필요
-    if (k === todayKey() && t.mood) jData.editLite = true; // 오늘 재편집은 축약 경로(기분부터 바로)
   }
   // 중간에 닫았던 진행분이 있으면 이어서 (과거 날짜 편집도 유실 없이 복원)
   const draft = loadJDraft();

@@ -1081,7 +1081,15 @@ body.slim-hero .fav-sky { display: none; }
 [data-theme="garden"] .fav-star::before { display: none; }
 [data-theme="garden"] .fav-star .fs-plane { display: block; width: 19px; height: 19px; margin: 5px auto 0; fill: none; stroke: var(--star-c); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--star-c) 40%, transparent));
-  transform: rotate(var(--rot, -8deg)); animation: planeFloat 6.5s var(--ease-breath) infinite; animation-delay: var(--twd, 0s); }
+  transform: rotate(var(--rot, -8deg)); animation: planeTurn var(--fly, 55s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
+/* 경유지를 돌 때마다 기수도 함께 돌아간다 */
+@keyframes planeTurn {
+  0%   { transform: rotate(var(--rot, -8deg)); }
+  25%  { transform: rotate(calc(var(--rot, -8deg) + 65deg)); }
+  50%  { transform: rotate(calc(var(--rot, -8deg) - 35deg)); }
+  75%  { transform: rotate(calc(var(--rot, -8deg) + 30deg)); }
+  100% { transform: rotate(var(--rot, -8deg)); }
+}
 @keyframes planeFloat { 50% { transform: translateY(-4px) rotate(var(--rot, -8deg)); } }
 @media (prefers-reduced-motion: reduce) { .fav-star::before, .fav-star .fs-plane { animation: none; } }
 /* 하루 요약 — '이 날을 별로' 토글 */
@@ -1796,3 +1804,29 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* ===== v194 — 나만의 문구 추가 소형화, 비행기 경쾌하게 ===== */
 .comfort-add summary { font-size: var(--t-xs); color: var(--soft); opacity: 0.85; padding: var(--s1) 0; }
 .comfort-tools { font-size: var(--t-xs); }
+
+/* ===== v195 — 위로 탭 가운데 칸 정리 · 미션 존재감 회복 · 도움 카드 초소형 ===== */
+/* 문구 도구를 한 줄의 작은 컨트롤로 (구분선·큰 간격 제거) */
+.comfort-tools { justify-content: center; gap: var(--s5); border-top: none; padding-top: 0; margin-top: var(--s2); }
+.comfort-add { margin: 0; }
+.comfort-add summary { display: inline-block; padding: 0; }
+.comfort-tools + .comfort-add, .comfort-card .comfort-add { text-align: center; margin-top: var(--s1); }
+/* 미션 — 너무 작아졌던 것을 섹션의 주인공답게 */
+#tab-rest .mission { font-size: var(--t-lg); font-weight: var(--w-bold); color: var(--ink); line-height: 1.6; }
+/* 도움 정보 — 최소한의 존재감만 */
+.card.help-always { padding: var(--s2) var(--s3); background: transparent; border: 1px solid var(--line); }
+#tab-rest .card.help-always h2 { font-size: var(--t-xs); color: var(--soft); margin-bottom: 2px; }
+.help-always .safety-list li { font-size: 0.68rem; }
+.help-always .safety-list a { border-bottom-width: 0.5px; }
+
+/* ===== v195 — 여정 기분 화면 미니멀 ===== */
+/* 다이얼은 가는 선으로 — 숫자가 주인공 */
+.dial-track { stroke-width: 7; }
+.dial-fill { stroke-width: 7; }
+.dial-thumb { r: 8; stroke-width: 2; }
+.dial-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 700; font-size: 3rem; letter-spacing: 0; }
+/* 감정 칩 — 상자 없이 점+글자, 선택은 밑줄과 또렷한 잉크로 */
+.emo-tag { background: transparent; border: none; border-radius: 0; padding: var(--s2) var(--s1); color: var(--ink-2); border-bottom: 2px solid transparent; }
+.emo-tag.selected { background: transparent; box-shadow: none; color: var(--ink); font-weight: var(--w-bold); border-bottom-color: var(--accent); }
+/* 빠른 저장 — 링크 톤으로 */
+.j-quick { border: none; background: none; text-decoration: underline; text-underline-offset: 3px; color: var(--soft); }
