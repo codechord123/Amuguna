@@ -262,8 +262,11 @@ body.slim-hero .hero h1 { font-size: var(--t-md); }
 body.slim-hero .foot { display: none; }
 .greeting { color: var(--soft); font-weight: var(--w-medium, 500); margin: var(--s2) 0 0; font-size: var(--t-sm); letter-spacing: 0.01em; }
 .hero h1 { font-size: 2.7rem; margin: 0; font-weight: var(--w-semi); line-height: 1.15; letter-spacing: 0.05em; }
-/* 오늘 탭 — 제호는 하늘 꼭대기의 속삭임으로 물러난다 (하늘이 주인공) */
-body:not(.slim-hero) .hero h1 { font-size: 0.84rem; font-weight: var(--w-bold); letter-spacing: 0.42em; text-indent: 0.42em; color: var(--soft); opacity: 0.85; }
+/* 오늘 탭 — 제호는 하늘 꼭대기의 속삭임으로, 별빛처럼 은은히 빛나게 */
+body:not(.slim-hero) .hero h1 { font-size: 1.05rem; font-weight: var(--w-bold); letter-spacing: 0.42em; text-indent: 0.42em; color: var(--ink-2); opacity: 0.95;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 25%, transparent); }
+[data-theme="midnight"] body:not(.slim-hero) .hero h1 { color: #efe9d8;
+  text-shadow: 0 0 12px rgba(236, 216, 142, 0.5), 0 0 30px rgba(236, 216, 142, 0.22), 0 0 60px rgba(236, 216, 142, 0.1); }
 body:not(.slim-hero) .sun-dot { display: none; }
 body:not(.slim-hero) .greeting { font-size: var(--t-xs); opacity: 0.62; letter-spacing: 0.06em; margin-top: var(--s2); }
 .subtitle { display: none; }
@@ -633,6 +636,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ----- 토스트 ----- */
 .toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); z-index: 130; /* 여정(85)·서브페이지(80)·호흡(90)·온보딩(100) 위에서도 보이는 알림 레이어 */ max-width: 90%; width: max-content; background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-lg); border-radius: var(--r-md); padding: var(--s3) var(--s5); font-size: var(--t-sm); font-weight: var(--w-med); opacity: 0; transition: opacity 0.4s var(--ease-soft), transform 0.4s var(--ease-soft); text-align: center; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+#tipToast { transition-duration: 0.16s; } /* 그리드 날짜 즉답 — 굼뜨지 않게 */
 
 /* ============================================================
    기분 달력 (히트맵)
@@ -1196,9 +1200,6 @@ body.slim-hero .mystar, [data-theme="garden"] .mystar { display: none; }
 /* ============================================================
    통계
    ============================================================ */
-.stat-row { display: flex; justify-content: space-around; text-align: center; }
-.stat { display: flex; flex-direction: column; gap: 2px; }
-.stat-num { font-size: var(--t-xl); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; }
 .am-emoji { font-size: 1.05rem; margin-right: 1px; }
 .trend { font-size: 0.95rem; margin-left: 1px; vertical-align: middle; }
 .trend.up { color: var(--success); } .trend.down { color: var(--danger); } .trend.flat { color: var(--soft); }
@@ -1315,7 +1316,6 @@ body.slim-hero .mystar, [data-theme="garden"] .mystar { display: none; }
 .grat-item:last-child { border-bottom: none; }
 .grat-date { flex: 0 0 38px; font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
 .grat-text { flex: 1; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; word-break: keep-all; }
-.stat-label { font-size: var(--t-xs); color: var(--soft); white-space: nowrap; }
 #chart { width: 100%; display: block; margin-top: var(--s2); }
 .legend { display: flex; gap: var(--s5); justify-content: center; margin-top: var(--s3); font-size: var(--t-sm); color: var(--soft); }
 .chart-nav { display: flex; align-items: center; justify-content: space-between; margin-top: var(--s2); }
@@ -1486,7 +1486,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .sound-btn { font-size: 1.05rem; padding: var(--s1); }
   .disc + .disc { display: none; } /* 발견 카드는 1장만 */
   .gauge { width: 72px; height: 72px; }
-  .stat-num { font-size: var(--t-lg); }
   .med-setup { margin: var(--s2) 0; }
   .safety-list { line-height: 1.5; font-size: var(--t-sm); margin-bottom: 0; }
   /* 쉼: 배경음 카드 축약 */
@@ -1506,7 +1505,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .report-tile { padding: var(--s2) var(--s3); }
   .stats-seg { margin-bottom: var(--s2); }
   /* 기록 요약: 상단 KPI 카드·최근7일 압축 */
-  .stat-row.card, .card.stat-row { padding: var(--s2) var(--s4); }
   .stat { gap: 0; }
   .stat span { font-size: 0.62rem; }
   .weekGlance, #weekGlanceCard { padding-top: var(--s2); padding-bottom: var(--s2); }

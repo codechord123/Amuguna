@@ -914,7 +914,7 @@ function fillHabitGrid(h) {
       const c = e.target.closest(".ch-cell"); if (!c || !c.dataset.k) return;
       const p = c.dataset.k.split("-");
       const state = c.classList.contains("done") ? "완료" : c.classList.contains("today") ? "오늘" : c.classList.contains("miss") ? "쉬어감" : "예정";
-      toast(`${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(c.dataset.k)}) · Day ${c.dataset.day} · ${state}`);
+      tipToast(`${+p[1]}월 ${+p[2]}일 (${dayOfWeekKo(c.dataset.k)}) · Day ${c.dataset.day} · ${state}`);
     });
   }
 }
@@ -1114,11 +1114,8 @@ function renderStats() {
   // 첫 사용자 빈 화면 안내 — 기록 0개면 잠긴 지표 대신 안내+CTA 하나만
   const hero = document.getElementById("statsEmptyHero");
   if (hero) hero.hidden = list.length > 0;
-  const _st = calcStreak(entries); syncBestStreak(_st);
-  document.getElementById("streakNum").textContent = _st;
-  document.getElementById("totalNum").textContent = list.length;
-  const sb = document.getElementById("statBadge");
-  if (sb) sb.textContent = `${earnedBadgeIds().length}/${BADGES.length}`;
+  // 상단 숫자 스트립 제거(v186) — 연속·전체·배지는 각 섹션(오늘 문장·요약·배지 카드)에 이미 있음
+  syncBestStreak(calcStreak(entries));
   renderAnalyzeKpis(entries, list);
   renderDiscoveries(entries, list);
   renderWeekly(entries);
@@ -4132,6 +4129,20 @@ window.addEventListener("storage", (e) => {
 // 토스트 — 한 번에 하나씩 순차 표시(겹침 방지)
 let _toastQ = [], _toastBusy = false;
 function toast(msg) { _toastQ.push(msg); if (!_toastBusy) _toastNext(); }
+// 즉답 토스트 — 큐를 거치지 않고 그 자리에서 내용만 갈아끼움 (연타에도 지연 없음)
+let _tipT;
+function tipToast(msg) {
+  let t = document.getElementById("tipToast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "tipToast"; t.className = "toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite");
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(() => t.classList.add("show"));
+  clearTimeout(_tipT);
+  _tipT = setTimeout(() => t.classList.remove("show"), 1800);
+}
 function _toastNext() {
   if (!_toastQ.length) { _toastBusy = false; return; }
   _toastBusy = true;
