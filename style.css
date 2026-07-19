@@ -206,11 +206,18 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
     radial-gradient(52% 34% at 84% 24%, rgba(255,255,255,0.45), transparent 70%),
     radial-gradient(64% 42% at 50% 86%, rgba(214, 205, 242, 0.4), transparent 72%);
 }
-[data-theme="garden"] .blob { display: block; opacity: 0.5; border-radius: 50%;
-  filter: blur(22px); background: radial-gradient(closest-side, rgba(255,255,255,0.65), transparent); }
-[data-theme="garden"] .blob1 { width: 300px; height: 120px; top: 8%; left: -12%; animation: cloudDrift 84s linear infinite; }
-[data-theme="garden"] .blob2 { width: 240px; height: 100px; top: 30%; left: 55%; animation: cloudDrift 110s linear infinite -40s; }
-[data-theme="garden"] .blob3 { display: none; }
+[data-theme="garden"] .blob { display: block; opacity: 0.85; border-radius: 50%;
+  filter: blur(14px); background: radial-gradient(closest-side, rgba(255,255,255,0.95), rgba(255,255,255,0.4) 58%, transparent); }
+[data-theme="garden"] .blob1 { width: 330px; height: 110px; top: 12%; left: -14%; animation: cloudDrift 84s linear infinite; }
+[data-theme="garden"] .blob2 { width: 260px; height: 92px; top: 28%; left: 55%; animation: cloudDrift 110s linear infinite -40s; }
+/* 낮의 해 — 밤의 별과 대칭이 되는 존재. 구름이 그 앞을 천천히 지나간다 */
+[data-theme="garden"] .blob3 { display: block; width: 230px; height: 230px; left: 58%; top: 6%; filter: none; opacity: 1;
+  background: radial-gradient(closest-side, rgba(255, 250, 226, 0.95) 0%, rgba(255, 240, 196, 0.5) 24%, rgba(255, 240, 196, 0.16) 47%, transparent 70%);
+  animation: sunGlow 7s var(--ease-breath) infinite; }
+@keyframes sunGlow { 50% { opacity: 0.8; } }
+/* 먼 하늘의 낮은 구름층 */
+[data-theme="garden"] .bg-blobs::after { content: ""; position: absolute; left: -10%; right: -10%; top: 40%; height: 18%;
+  background: radial-gradient(60% 80% at 30% 50%, rgba(255,255,255,0.4), transparent 75%), radial-gradient(50% 70% at 75% 40%, rgba(255,255,255,0.32), transparent 75%); }
 @keyframes cloudDrift { from { transform: translateX(-8%); } to { transform: translateX(110vw); } }
 @media (prefers-reduced-motion: reduce) { [data-theme="garden"] .blob { animation: none; } }
 @keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
@@ -1671,4 +1678,4 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] { background-image: linear-gradient(180deg, #1a1b2e 0%, #14131e 48%, #0e0d16 100%); background-attachment: fixed; }
 /* 여백 정돈 */
 #tab-today .today-stats { margin-top: var(--s7); }
-[data-theme="midnight"] .blob3, [data-theme="garden"] .blob3 { display: none; }
+[data-theme="midnight"] .blob3 { display: none; }
