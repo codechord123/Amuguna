@@ -1728,13 +1728,13 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .badge.earned { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid var(--line-strong); box-shadow: none; }
 :is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: rgba(236, 220, 180, 0.06); }
 .habit-add { padding: var(--s3) var(--s4); font-size: var(--t-base); }
-/* 낮의 종이비행기 — 나른하게 하늘을 배회한다 (느리게 자리를 옮기며) */
+/* 낮의 종이비행기 — 저마다 다른 방향으로 나른하게 배회한다 (경유지·방향은 날짜 해시로 개별화) */
 [data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 110s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
 @keyframes planeRoam {
   0%   { transform: translate(0, 0); }
-  25%  { transform: translate(52px, -30px); }
-  50%  { transform: translate(14px, -58px); }
-  75%  { transform: translate(-44px, -22px); }
+  25%  { transform: translate(var(--dx1, 52px), var(--dy1, -30px)); }
+  50%  { transform: translate(var(--dx2, 14px), var(--dy2, -58px)); }
+  75%  { transform: translate(var(--dx3, -44px), var(--dy3, -22px)); }
   100% { transform: translate(0, 0); }
 }
 /* 밤의 별 — 또렷하게 반짝인다 */
@@ -1761,3 +1761,18 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* 일기 단계는 가운데 맞춤 대신 위에서부터 써 내려간다 */
 .journey-body:has(#jNote) { justify-content: flex-start; }
 .journey-body:has(#jNote) .j-q { text-align: left; margin-bottom: var(--s3); }
+
+/* ===== v192 — 쉼·위로 결 정리, 리포트 타일 정렬, 도움 카드 슬림 ===== */
+/* 미션은 큰 알약 대신 담백한 한 줄 + 링크형 버튼 (섹션 간 위계 분리) */
+#tab-rest .mission { background: transparent; border-radius: 0; padding: var(--s1) 0; margin: var(--s2) 0 var(--s1); font-size: var(--t-md); font-weight: var(--w-semi); color: var(--ink); }
+#missionBtn { background: none; border: none; box-shadow: none; color: var(--accent-deep); font-size: var(--t-sm); font-weight: var(--w-semi); text-decoration: underline; text-underline-offset: 3px; padding: var(--s2) var(--s3); }
+/* 하단 도움 카드 — 항상 보이되 작게, 한 줄 흐름으로 */
+.card.help-always { padding: var(--s3) var(--s4); border-width: 1px; background: color-mix(in srgb, var(--accent-2) 55%, transparent); }
+.help-always h2 { font-size: var(--t-sm); margin: 0 0 var(--s1); color: var(--ink-2); }
+.help-always .safety-list { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); margin: 0; padding: 0; }
+.help-always .safety-list li { list-style: none; font-size: var(--t-xs); color: var(--soft); }
+/* 리포트 타일 — 세로 어긋남 수정: 한 줄 가운데 정렬 + 미니멀 고스트 */
+.report-tile { background: transparent; border: 1px solid var(--line-strong); border-radius: var(--r-pill); box-shadow: none; padding: var(--s3) var(--s5); font-weight: var(--w-semi); }
+.report-tile:hover { transform: none; box-shadow: none; background: var(--bg-sunken); }
+.report-tiles .report-tile { flex-direction: row; align-items: center; gap: var(--s2); }
+.report-tiles .report-tile .rt-go { align-self: auto; margin-top: 0; line-height: 1; }

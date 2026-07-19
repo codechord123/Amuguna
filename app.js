@@ -348,7 +348,10 @@ function renderFavStars() {
     const col = sc != null ? scoreColor(sc) : "#fdf6e3";
     const p = k.split("-");
     // 밤하늘에선 별, 낮하늘에선 종이비행기 (CSS가 테마별로 골라 보여줌)
-    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg;--fly:${88 + ((h >> 6) % 64)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
+    // 비행 경유지 3곳을 해시로 뽑아 저마다 다른 방향·궤적으로 떠다니게
+    const o = (sh, span, min) => { const v = ((h >> sh) % span) - (span >> 1); return (v < 0 ? -1 : 1) * (min + Math.abs(v)); };
+    const path = `--dx1:${o(2, 90, 18)}px;--dy1:${o(5, 54, 10)}px;--dx2:${o(9, 110, 14)}px;--dy2:${o(11, 64, 12)}px;--dx3:${o(13, 90, 16)}px;--dy3:${o(15, 54, 10)}px;${(h & 1) ? "animation-direction:reverse;" : ""}`;
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;${path}--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg;--fly:${88 + ((h >> 6) % 64)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
   }).join("");
 }
 {
