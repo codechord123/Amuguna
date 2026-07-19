@@ -1776,3 +1776,19 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .report-tile:hover { transform: none; box-shadow: none; background: var(--bg-sunken); }
 .report-tiles .report-tile { flex-direction: row; align-items: center; gap: var(--s2); }
 .report-tiles .report-tile .rt-go { align-self: auto; margin-top: 0; line-height: 1; }
+
+/* ===== v193 — 쉼 탭 섹션 결: '라벨 ── 선' 헤더로 확실하게 가른다 ===== */
+#tab-rest .card > h2, #tab-rest .card > .card-head h2 {
+  display: flex; align-items: center; gap: var(--s3); text-align: left;
+  font-family: inherit; font-size: var(--t-xs); font-weight: var(--w-bold);
+  letter-spacing: 0.2em; color: var(--soft); margin-bottom: var(--s4);
+}
+#tab-rest .card > h2::after, #tab-rest .card > .card-head h2::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
+#tab-rest .card { padding-top: var(--s6); padding-bottom: var(--s6); }
+#tab-rest .card:not(:last-child)::after { display: none; } /* 섹션 선이 역할을 대신 */
+/* 도움 카드는 상자 유지 — 라벨 선 없이 */
+#tab-rest .card.help-always h2 { display: block; letter-spacing: 0; font-size: var(--t-sm); color: var(--ink-2); margin-bottom: var(--s1); }
+#tab-rest .card.help-always h2::after { display: none; }
+/* 미션 문장은 인용문과 목소리 분리 — 담백한 본문 톤 */
+#tab-rest .mission { font-weight: var(--w-med); color: var(--ink-2); font-size: var(--t-base); }
+@media (max-height: 700px) { #tab-rest .card { padding-top: var(--s4); padding-bottom: var(--s4); } }
