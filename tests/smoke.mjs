@@ -397,8 +397,8 @@ try {
     const many = [1, 2, 3, 4, 5].map((n) => ({ id: "hm" + n, emoji: "✅", title: "습관" + n, startDate: rk(10), done: n <= 2 ? { [tk]: true } : {}, doneAt: {}, celebrated: [] }));
     window.localStorage.setItem("challenges_v2", JSON.stringify(many));
     window.renderTodayHabitGlance();
-    check("습관 5개면 한눈에 2개 + 더보기", d.querySelectorAll("#todayHabitList .hg-row").length === 2 && !!q("#todayHabitList .hg-more"));
-    check("오늘 안 한 습관 우선 노출", [...d.querySelectorAll("#todayHabitList .hg-check")].every((b) => !b.classList.contains("done")));
+    check("습관 5개면 한눈에 전부 표시", d.querySelectorAll("#todayHabitList .hg-row").length === 5 && !q("#todayHabitList .hg-more"));
+    check("오늘 안 한 습관 우선 노출", ![...d.querySelectorAll("#todayHabitList .hg-check")].slice(0, 2).some((b) => b.classList.contains("done")));
     window.localStorage.setItem("challenges_v2", _chBak); window.renderTodayHabitGlance();
   }
   q("#todayHabitList .hg-check").click();

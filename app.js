@@ -348,15 +348,13 @@ function renderFavStars() {
     const col = sc != null ? scoreColor(sc) : "#fdf6e3";
     const p = k.split("-");
     // 밤하늘에선 별, 낮하늘에선 종이비행기 (CSS가 테마별로 골라 보여줌)
-    // 비행 경유지 3곳을 해시로 뽑아 저마다 다른 방향·궤적으로 — 단, 화면 밖으로는 나가지 않게 클램프
-    const o = (sh, span, min) => { const v = ((h >>> sh) % span) - (span >> 1); return (v < 0 ? -1 : 1) * (min + Math.abs(v)); };
-    const W = window.innerWidth || 390, LH = (window.innerHeight || 844) * 0.44;
-    const xPx = x / 100 * W, yPx = y / 100 * LH;
-    const cx = (v) => Math.max(-(xPx - 34), Math.min(W - 34 - xPx, v));   // 좌우 여백 34px 안쪽
-    const cy = (v) => Math.max(-Math.max(0, yPx - 138), Math.min(LH - 26 - yPx, v)); // 위로는 제호 아래, 아래로는 레이어 안
-    const path = `--dx1:${cx(o(2, 120, 24))}px;--dy1:${cy(o(5, 70, 14))}px;--dx2:${cx(o(9, 150, 20))}px;--dy2:${cy(o(11, 84, 16))}px;--dx3:${cx(o(13, 120, 22))}px;--dy3:${cy(o(15, 70, 14))}px;${(h & 1) ? "animation-direction:reverse;" : ""}`;
+    // 바람을 타는 활공 — 좌우로 크게 실려 갔다 돌아오는 흐름, 진폭은 화면 안으로 클램프
+    const W = window.innerWidth || 390;
+    const xPx = x / 100 * W;
+    const wA = Math.round(Math.min(xPx - 34, W - 34 - xPx, 46 + ((h >>> 9) % 60))); // 개체별 40~106px, 가장자리 안전
+    const wind = `--wA:${Math.max(24, wA)}px;${(h & 1) ? "animation-direction:alternate-reverse;" : ""}`;
     const sway = `--sway:${(32 + ((h >>> 8) % 34)) / 10}s;--swayA:${2 + ((h >>> 10) % 4)}px;`;
-    return `<button class="fav-star" style="left:${x}%;top:${y}%;${path}${sway}--star-c:${col};--twd:${((h >>> 3) % 36) / 10}s;--rot:${-16 + ((h >>> 4) % 30)}deg;--fly:${34 + ((h >>> 6) % 46)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><span class="fs-sway"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></span></button>`;
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;${wind}${sway}--star-c:${col};--twd:${((h >>> 3) % 36) / 10}s;--rot:${-16 + ((h >>> 4) % 30)}deg;--fly:${26 + ((h >>> 6) % 34)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><span class="fs-sway"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></span></button>`;
   }).join("");
 }
 {
@@ -452,8 +450,6 @@ function updateJourneyHero() {
     show("jhMirror", true);
     if (star) { star.hidden = !starry; if (col) star.style.setProperty("--star-c", col); }
     set("journeyStart", "오늘 기록 다시 보기");
-    show("jhNightBtn", tb === "evening" || tb === "night");
-    set("jhNightBtn", starry ? "잠들기 전, 10분 별빛 명상" : "잠들기 전, 10분 명상");
     show("journeySub", false);
     if (startBtn) startBtn.classList.remove("primary");
   } else {
@@ -463,7 +459,6 @@ function updateJourneyHero() {
       : { morning: "하늘이 밝아왔어요.\n오늘은 어떤 마음인가요?", day: "하늘 한 번 올려다봤나요?\n잠시 쉬었다 가요.", evening: "해가 낮게 기울었어요.\n오늘 하루, 어땠나요?", night: "고요한 밤이에요.\n잠들기 전, 마음을 남겨볼까요?" };
     if (hintEl) { hintEl.hidden = false; hintEl.textContent = invites[tb]; }
     show("jhMirror", false);
-    show("jhNightBtn", false);
     if (star) star.hidden = true;
     set("journeyStart", "오늘 마음 남기기");
     show("journeySub", false);
@@ -908,7 +903,7 @@ function habitCardHtml(h) {
     <div class="habit-top">
       <div class="habit-info" data-act="open" role="button" tabindex="0">
         <div class="habit-title">${ICONS.leaf} ${escapeHtml(h.title)} <span class="go">›</span></div>
-        <div class="habit-meta">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일</div>
+        <div class="habit-meta">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · ${streak >= 3 ? `<span class="streak-hot">${ICONS.star} 연속 ${streak}일</span>` : `연속 ${streak}일`}</div>
       </div>
       <button class="habit-check ${todayDone ? "done" : ""}" data-act="check" aria-label="오늘 완료 체크">${todayDone ? "✓" : "○"}</button>
     </div>
@@ -924,7 +919,7 @@ function detailHabitHtml(h) {
   const reached = Object.keys(MILESTONES).map(Number).filter((m) => doneCount >= m);
   const ms = reached.length ? MILESTONES[Math.max(...reached)] : "";
   return `
-    <p class="detail-stat">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · 연속 ${streak}일 · 남은 ${Math.max(CH_TARGET - doneCount, 0)}일</p>
+    <p class="detail-stat">Day ${dayNum}/${CH_TARGET} · 달성 ${doneCount}일 · ${streak >= 3 ? `<span class="streak-hot">${ICONS.star} 연속 ${streak}일</span>` : `연속 ${streak}일`} · 남은 ${Math.max(CH_TARGET - doneCount, 0)}일</p>
     <div class="ch-progress"><div class="ch-bar" style="width:${Math.min(100, (doneCount / CH_TARGET) * 100)}%"></div></div>
     <button class="btn ${todayDone ? "" : "primary"} block" data-act="check">${todayDone ? "오늘 완료함 ✓ (취소하려면 누르기)" : "오늘 완료 체크 ✓"}</button>
     ${ms ? `<p class="ch-milestone">${ms}</p>` : ""}
@@ -3212,16 +3207,15 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
   const ha = computeHabitAnalysis(w.keys, w.prevKeys, (typeof loadEntries === "function") ? loadEntries() : {});
   const insTxt = withInsight ? topHabitInsight(ha) : "";
   const insHtml = insTxt ? `<p class="hg-insight">${insTxt}</p>` : "";
-  // 3개 이상이면 '오늘 안 한 습관' 우선으로 2개까지만 — 여백의 미 + 스크롤 제로, 나머지는 습관 탭으로
-  // 정렬은 최초 1회만 고정 — 체크 직후 재정렬로 방금 누른 항목이 점프하지 않게(반응성 체감)
+  // 습관은 전부 표시 — 정렬은 최초 1회만 고정(체크 직후 재정렬 점프 방지)
   const idsKey = chs.map((h) => h.id).join(",");
   const cache = renderHabitGlanceInto._order || (renderHabitGlanceInto._order = {});
   if (!cache[listId] || cache[listId].key !== idsKey) {
     cache[listId] = { key: idsKey, ids: chs.slice().sort((a, b) => (!!(a.done && a.done[tk])) - (!!(b.done && b.done[tk]))).map((h) => h.id) };
   }
   const stable = cache[listId].ids.map((id) => chs.find((h) => h.id === id)).filter(Boolean);
-  const glanceChs = chs.length > 2 ? stable.slice(0, 2) : stable;
-  const moreHtml = chs.length > 2 ? `<button class="hg-more" data-hgmore>＋ ${chs.length - 2}개 더 — 습관 탭에서 보기 ›</button>` : "";
+  const glanceChs = stable;
+  const moreHtml = "";
   const week7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); week7.push(todayKey(d)); }
   list.innerHTML = insHtml + glanceChs.map((h) => {
     const doneCount = habitDoneCount(h); // 90일 창 기준 — 상세·카드와 수치 일치(창 밖 키 왜곡 방지)
@@ -4116,9 +4110,6 @@ function saveJourney() {
 // 완료 없이 닫기 = 일시정지(진행분 보존)
 function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요"); }
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
-// 밤의 마무리 — 수면 명상으로 하루를 닫는다 (쉼 탭 명상으로 연결)
-const _jhNightBtn = document.getElementById("jhNightBtn");
-if (_jhNightBtn) _jhNightBtn.addEventListener("click", () => { Sound.tap(); activateTab("rest"); });
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {
   collectStep();

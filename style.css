@@ -1085,16 +1085,13 @@ body.slim-hero .fav-sky { display: none; }
 @keyframes planeSway { from { transform: translateY(calc(var(--swayA, 3px) * -1)) rotate(-2.5deg); } to { transform: translateY(var(--swayA, 3px)) rotate(2.5deg); } }
 [data-theme="garden"] .fav-star .fs-plane { display: block; width: 19px; height: 19px; margin: 5px auto 0; fill: none; stroke: var(--star-c); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--star-c) 40%, transparent));
-  transform: rotate(var(--rot, -8deg)); animation: planeTurn var(--fly, 55s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
-/* 경유지를 돌 때마다 기수도 함께 돌아간다 */
+  transform: rotate(var(--rot, -8deg)); animation: planeTurn calc(var(--fly, 40s) / 2) ease-in-out infinite; animation-delay: var(--twd, 0s); }
+/* 바람결 피치 — 기수가 물결처럼 오르내린다 */
 @keyframes planeTurn {
-  0%   { transform: rotate(var(--rot, -8deg)); }
-  25%  { transform: rotate(calc(var(--rot, -8deg) + 65deg)); }
-  50%  { transform: rotate(calc(var(--rot, -8deg) - 35deg)); }
-  75%  { transform: rotate(calc(var(--rot, -8deg) + 30deg)); }
-  100% { transform: rotate(var(--rot, -8deg)); }
+  0%   { transform: rotate(calc(var(--rot, -8deg) + 9deg)); }
+  50%  { transform: rotate(calc(var(--rot, -8deg) - 11deg)); }
+  100% { transform: rotate(calc(var(--rot, -8deg) + 9deg)); }
 }
-@keyframes planeFloat { 50% { transform: translateY(-4px) rotate(var(--rot, -8deg)); } }
 @media (prefers-reduced-motion: reduce) { .fav-star::before, .fav-star .fs-plane { animation: none; } }
 /* 하루 요약 — '이 날을 별로' 토글 */
 .fav-day { background: transparent; border: 1px solid var(--line-strong); color: var(--soft); }
@@ -1740,14 +1737,13 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .badge.earned { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid var(--line-strong); box-shadow: none; }
 :is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: rgba(236, 220, 180, 0.06); }
 .habit-add { padding: var(--s3) var(--s4); font-size: var(--t-base); }
-/* 낮의 종이비행기 — 저마다 다른 방향으로 나른하게 배회한다 (경유지·방향은 날짜 해시로 개별화) */
-[data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 110s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
+/* 낮의 종이비행기 — 바람을 타고 실려 갔다 되돌아오는 활공 (alternate) */
+[data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 40s) ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
 @keyframes planeRoam {
-  0%   { transform: translate(0, 0); }
-  25%  { transform: translate(var(--dx1, 52px), var(--dy1, -30px)); }
-  50%  { transform: translate(var(--dx2, 14px), var(--dy2, -58px)); }
-  75%  { transform: translate(var(--dx3, -44px), var(--dy3, -22px)); }
-  100% { transform: translate(0, 0); }
+  0%   { transform: translate(calc(var(--wA, 60px) * -1), 10px); }
+  35%  { transform: translate(calc(var(--wA, 60px) * -0.25), -9px); }
+  65%  { transform: translate(calc(var(--wA, 60px) * 0.3), 7px); }
+  100% { transform: translate(var(--wA, 60px), -8px); }
 }
 /* 밤의 별 — 또렷하게 반짝인다 */
 [data-theme="midnight"] .fav-star::before { animation: starTwinkle 3.4s ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
@@ -1843,3 +1839,18 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .journey .dial-label { margin-top: 2px; }
 .journey .dial-range { margin-top: var(--s6); }
 @media (prefers-reduced-motion: reduce) { .fav-star .fs-sway { animation: none; } }
+
+/* ===== v197 — 리포트 타일 가운데 정렬 ===== */
+.report-tiles .report-tile { justify-content: center; }
+.report-tile .rt-label { flex: 0 0 auto; text-align: center; }
+
+/* ===== v197 — 연속 기록은 특별하게 + 타일에 은은한 글로우 ===== */
+.streak-hot { color: var(--accent-deep); font-weight: var(--w-bold);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent-deep) 40%, transparent); }
+.streak-hot .ic-line { width: 0.9em; height: 0.9em; vertical-align: -0.1em; }
+[data-theme="midnight"] .streak-hot { color: #ecd9a8; text-shadow: 0 0 12px rgba(236, 216, 142, 0.55); }
+/* 리포트 타일 — 별빛 유리 질감 */
+.report-tile { background: color-mix(in srgb, var(--accent) 5%, transparent); border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 13%, transparent), inset 0 0 14px color-mix(in srgb, var(--accent) 5%, transparent); }
+[data-theme="midnight"] .report-tile { background: rgba(236, 220, 180, 0.04); border-color: rgba(236, 220, 180, 0.3);
+  box-shadow: 0 0 22px rgba(236, 216, 142, 0.12), inset 0 0 14px rgba(236, 216, 142, 0.05); }
