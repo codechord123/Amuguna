@@ -1586,3 +1586,42 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 #tab-today .jh-sub { display: none; }
 #tab-today .journey-hero .hint { font-size: var(--t-sm); color: var(--soft); margin: 0 auto var(--s5); }
 #tab-today .foot { margin-top: var(--s8); }
+
+/* ===== R3: 달무리 링 여정 버튼 + 나의 별자리 ===== */
+#tab-today .journey-hero { padding: var(--s5) 0 0; }
+#tab-today .journey-hero .hint { margin-bottom: var(--s5); }
+#tab-today #journeyStart {
+  width: 174px; height: 174px; border-radius: 50%; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: transparent; border: 1.5px solid var(--accent);
+  box-shadow: 0 0 30px var(--ring), inset 0 0 30px var(--ring);
+  color: var(--ink); position: relative; padding: 0;
+  animation: ringBreath 4.5s ease-in-out infinite;
+}
+#tab-today #journeyStart::before {
+  content: ""; position: absolute; inset: 14px; border-radius: 50%;
+  border: 1px solid var(--accent); opacity: 0.3;
+}
+#tab-today #journeyStart::after {
+  content: ""; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent-deep);
+  box-shadow: 0 0 10px 2px var(--ring);
+}
+#tab-today #journeyStart b { font-size: 1.15rem; font-weight: var(--w-bold); }
+#tab-today #journeyStart span { margin-top: 7px; font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
+#tab-today .journey-hero.done #journeyStart { border-color: var(--line-strong); animation: none; }
+@keyframes ringBreath {
+  0%, 100% { box-shadow: 0 0 30px var(--ring), inset 0 0 30px var(--ring); }
+  50% { box-shadow: 0 0 46px var(--ring), inset 0 0 40px var(--ring); }
+}
+/* 별자리 */
+#constWrap { margin: var(--s3) 0 0; }
+#constWrap svg { width: 100%; height: auto; display: block; }
+#constWrap line { stroke: var(--accent); stroke-opacity: 0.4; stroke-width: 1; stroke-dasharray: 3 5; }
+#constWrap circle { fill: var(--accent); }
+#constWrap circle.c-today { fill: none; stroke: var(--accent-deep); stroke-width: 1.5; }
+#constWrap circle.c-today.on { fill: var(--accent); stroke: none; }
+#constWrap .const-cap { text-align: center; font-size: var(--t-xs); letter-spacing: 0.1em; color: var(--soft); margin: var(--s2) 0 0; }
+/* 통계는 별자리 아래에 더 작게 */
+#tab-today .today-stats { margin-top: var(--s4); }
+@media (prefers-reduced-motion: reduce) { #tab-today #journeyStart { animation: none; } }
