@@ -1586,27 +1586,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* ===== 고요한 밤하늘 — 아름다움은 배경에, UI는 최소로 ===== */
 /* 하늘의 깊이 (위가 밝고 아래로 깊어짐) */
 [data-theme="midnight"] { background-image: linear-gradient(180deg, #1a1b2e 0%, #14131e 48%, #0e0d16 100%); background-attachment: fixed; }
-/* 배경의 달 — 버튼이 아니라 하늘에 떠 있는 존재 */
-[data-theme="midnight"] .blob3 {
-  display: block; width: 72px; height: 72px; border-radius: 50%;
-  top: 57%; left: auto; right: 12%; opacity: 1; filter: none;
-  background: radial-gradient(circle at 36% 30%, #f6e5b6, #e0bf7c 62%, #c09a52);
-  box-shadow: 0 0 44px 10px rgba(217, 179, 106, 0.26), 0 0 130px 48px rgba(217, 179, 106, 0.09),
-    inset -8px -10px 24px rgba(120, 80, 20, 0.35);
-  animation: moonGlow 6s ease-in-out infinite;
-}
-@keyframes moonGlow {
-  0%, 100% { box-shadow: 0 0 44px 10px rgba(217, 179, 106, 0.26), 0 0 130px 48px rgba(217, 179, 106, 0.09), inset -8px -10px 24px rgba(120, 80, 20, 0.35); }
-  50% { box-shadow: 0 0 58px 14px rgba(217, 179, 106, 0.34), 0 0 150px 58px rgba(217, 179, 106, 0.13), inset -8px -10px 24px rgba(120, 80, 20, 0.35); }
-}
-/* 낮 — 연보라 하늘의 해무리 */
-[data-theme="garden"] .blob3 {
-  display: block; width: 88px; height: 88px; border-radius: 50%;
-  top: 55%; left: auto; right: 11%; opacity: 0.8; filter: blur(2px);
-  background: radial-gradient(circle at 38% 32%, #ffffff, #dfe3f8 55%, rgba(199, 205, 240, 0));
-  box-shadow: 0 0 60px 24px rgba(255, 255, 255, 0.35);
-  animation: none;
-}
 /* 여백 정돈 */
 #tab-today .today-stats { margin-top: var(--s7); }
-@media (prefers-reduced-motion: reduce) { [data-theme="midnight"] .blob3 { animation: none; } }
+[data-theme="midnight"] .blob3, [data-theme="garden"] .blob3 { display: none; }
