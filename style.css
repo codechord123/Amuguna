@@ -759,7 +759,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .sol-card .sol:last-child { border-bottom: none; padding-bottom: 0; }
 .sol-t { margin: 0 0 var(--s1); font-weight: var(--w-bold); font-size: var(--t-base); color: var(--ink); }
 .sol-b { margin: 0 0 var(--s2); padding-left: var(--s4); position: relative; font-size: var(--t-base); line-height: 1.65; color: var(--ink); word-break: keep-all; }
-.sol-b::before { content: "💊"; position: absolute; left: 0; top: 0; font-size: 0.95rem; }
+.sol-b::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-deep); }
 .sol-c { margin: 0 0 0 var(--s4); font-size: var(--t-xs); color: var(--soft); line-height: 1.5; }
 
 /* ----- 리포트 상세 날짜별 ----- */
@@ -869,7 +869,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 #statPinned { display: flex; flex-direction: column; gap: 0; }
 #statPinned:not(:empty) { margin-bottom: var(--s2); }
 .card.sec-pinned { border: 1.5px solid var(--accent-soft, var(--line-strong)); }
-.card.sec-pinned > h2::before, .card.sec-pinned > .card-head h2::before { content: "📌 "; }
+.card.sec-pinned > h2::before, .card.sec-pinned > .card-head h2::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-deep); margin-right: 8px; vertical-align: 0.08em; }
 .card.sec-pulse { animation: secPulse 0.6s var(--ease-soft); }
 @keyframes secPulse { 0% { box-shadow: 0 0 0 0 rgba(94,200,176,0.45); } 100% { box-shadow: 0 0 0 14px rgba(94,200,176,0); } }
 .badge-cat { margin-bottom: var(--s4); }
@@ -882,7 +882,7 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .badge.earned { background: linear-gradient(160deg, var(--accent-2), var(--card) 75%); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm), inset 0 1px 0 var(--card-hi); }
 :is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: var(--card); }
 .badge.earned:hover { transform: translateY(-2px); box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi); }
-.badge.locked { filter: grayscale(1); } /* 통짜 opacity는 제목 글자까지 흐려져 대비 미달(1.7:1) — 이모지만 흐리게 */
+/* 잠긴 배지 — grayscale 필터는 라벤더 배경을 탁하게 만들어 아이콘·글자색으로만 구분 */
 .badge.locked .badge-emoji { opacity: 0.4; }
 .badge.locked .badge-title { color: var(--soft); }
 .badge-emoji { font-size: 1.5rem; }
@@ -1021,6 +1021,8 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .journey-foot .btn.primary { flex: 2; }
 .j-q { font-size: var(--t-xl); font-weight: var(--w-bold); text-align: center; margin: 0 0 var(--s5); line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; }
 .journey .js-emoji { font-size: 3rem; text-align: center; margin-bottom: var(--s2); }
+.journey .js-ico { text-align: center; margin-bottom: var(--s4); }
+.journey .js-ico .ic-line { width: 46px; height: 46px; stroke-width: 1.25; color: var(--accent-deep); opacity: 0.9; }
 .journey .mood-grid { gap: var(--s3); }
 .journey .energy { margin-top: var(--s3); }
 .entry-date-row { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s2); }
@@ -1118,9 +1120,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ch-progress { background: var(--bg-sunken); border-radius: var(--r-pill); height: 14px; overflow: hidden; margin: var(--s4) 0 var(--s3); position: relative; }
 .ch-bar { height: 100%; width: 0; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width 0.7s var(--ease-soft); }
 .ch-stat { margin: 0; color: var(--soft); font-size: var(--t-sm); }
-.ch-milestone { margin: var(--s4) 0 0; padding: var(--s4); border-radius: var(--r-sm); text-align: center; font-weight: var(--w-bold); background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff; }
-.ch-milestone:not([hidden]) { animation: fade 0.4s var(--ease-soft), glow-pulse 1.4s var(--ease-soft) 0.4s; }
-:is([data-theme="dark"], [data-theme="midnight"]) .ch-milestone { color: #17161d; }
+/* 축하 배너 — 버튼과 혼동되지 않게 은은한 카드 톤(위 완료 버튼과 시각 위계 분리) */
+.ch-milestone { margin: var(--s4) 0 0; padding: var(--s3) var(--s4); border-radius: var(--r-sm); text-align: center; font-weight: var(--w-bold); font-size: var(--t-sm); background: var(--accent-2); color: var(--accent-deep); border: 1px solid var(--line-strong); }
+.ch-milestone:not([hidden]) { animation: fade 0.4s var(--ease-soft); }
+:is([data-theme="dark"], [data-theme="midnight"]) .ch-milestone { color: var(--accent-deep); }
 @keyframes glow-pulse { 0%,100% { box-shadow: var(--shadow); } 50% { box-shadow: 0 0 0 4px var(--ring), var(--shadow); } }
 .ch-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: var(--s1); margin-top: var(--s4); }
 .ch-cell { aspect-ratio: 1; border-radius: var(--s1); background: var(--bg-sunken); border: 1px solid var(--line); }
@@ -1519,6 +1522,11 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 
 /* ===== 이모지 대체 아이콘 시스템 ===== */
 .ic-line { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: -0.2em; }
+.cal-nav button .ic-line { width: 17px; height: 17px; vertical-align: -0.24em; }
+.onboard-emoji > .ic-line { width: 52px; height: 52px; stroke-width: 1.2; color: var(--accent-deep); }
+.reflect-toggle .ic-line, .rpt-nav-btn .ic-line { width: 0.95em; height: 0.95em; vertical-align: -0.12em; }
+.disc-toggle .ic-line { width: 1em; height: 1em; vertical-align: -0.16em; }
+.sec-btn .ic-line { width: 1.1em; height: 1.1em; }
 .habit-title .ic-line, .hsum-name .ic-line, .hg-title .ic-line, .corr-top .ic-line { color: var(--accent-deep); }
 .disc-ico .ic-line { width: 1.4em; height: 1.4em; }
 .badge-emoji .ic-line { width: 1em; height: 1em; stroke-width: 1.5; vertical-align: -0.12em; }

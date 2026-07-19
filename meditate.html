@@ -137,7 +137,7 @@
     </div>
 
     <div class="controls" id="controls">
-      <button class="btn primary" id="playBtn">▶ 시작</button>
+      <button class="btn primary" id="playBtn">시작</button>
       <div class="presets" id="presets">
         <button class="preset sel" data-p="easy">쉽게 4·4·4</button>
         <button class="preset" data-p="calm">차분히 4·7·8</button>
@@ -365,7 +365,7 @@
       stopAmbient();       // 배경 화음 페이드아웃
       stage.className = "scaler idle";
       stage.style.transitionDuration = "0.8s"; stage.style.transform = "scale(0.94)";
-      $("playBtn").innerHTML = "▶ 시작";
+      $("playBtn").innerHTML = "시작";
       const done = cycle > 0 ? cycle + "번 호흡" + (sessionSec > 0 ? " · 총 " + fmtTime(sessionSec) : "") : "";
       clockEl.textContent = "";
       cycEl.textContent = done ? "잘했어요 · " + done : "";

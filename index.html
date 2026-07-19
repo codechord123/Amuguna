@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v179" />
+  <meta name="app-version" content="v182" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -63,7 +63,6 @@
     <section class="tab" id="tab-today">
       <div class="card journey-hero" id="journeyStartCard">
         <div class="jh-inner">
-          <div class="js-emoji" id="journeyEmoji">✨</div>
           <p class="jh-eyebrow" id="journeyEyebrow"></p>
           <h2>오늘의 여정</h2>
           <p class="hint" id="journeyStartHint" aria-live="polite">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
@@ -93,7 +92,7 @@
       <div class="card">
         <div class="card-head">
           <h2>마음 달력</h2>
-          <div class="cal-nav"><button id="calPrev" aria-label="이전 달">◀</button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달">▶</button></div>
+          <div class="cal-nav"><button id="calPrev" aria-label="이전 달"><svg class="ic-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 L8 12 L14.5 18.5"/></svg></button><span class="today-date" id="calMonth"></span><button id="calNext" aria-label="다음 달"><svg class="ic-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5 L16 12 L9.5 18.5"/></svg></button></div>
         </div>
         <p class="hint">날짜 색이 그날의 기분이에요. 날짜를 누르면 그날 여정을 한눈에 보고 수정할 수 있어요.</p>
         <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
@@ -303,7 +302,7 @@
         <div class="card" id="badgeCard">
           <h2>배지 & 레벨 <span class="badge-rate" id="badgeRate"></span></h2>
           <div class="level-row">
-            <span class="level-emoji" id="levelEmoji">🌰</span>
+            <span class="level-emoji" id="levelEmoji"></span>
             <div class="level-info">
               <div class="level-top"><b id="levelName">Lv.1</b><span id="levelNext"></span></div>
               <div class="badge-bar"><i id="badgeBarFill"></i></div>
@@ -325,10 +324,10 @@
         <div id="discoveries"></div>
         <div id="statPinned"></div>
         <div class="stat-tools">
-          <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 ▾</button>
+          <button class="disc-toggle" id="allAnalysisToggle" aria-expanded="false">모든 분석 자세히 보기 <svg class="ic-line" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9.5 L12 16 L18.5 9.5"/></svg></button>
           <button class="sec-edit-btn" id="statEditBtn" aria-pressed="false">맞춤</button>
         </div>
-        <p class="sec-edit-hint" id="statEditHint" hidden><b>메인에 올리기</b>로 분석을 이 화면 위쪽에 바로 띄울 수 있어요. ▲▼로 순서,로 숨김. 완료를 누르면 적용돼요.</p>
+        <p class="sec-edit-hint" id="statEditHint" hidden><b>핀</b>으로 분석을 이 화면 위쪽에 바로 띄우고, 화살표로 순서를, 눈 모양으로 보임·숨김을 바꿔요. 완료를 누르면 적용돼요.</p>
         <div id="allAnalysis" hidden>
           <div class="card" data-sec="rhythm">
             <div class="card-head"><h2>마음 리듬</h2><span class="today-date">요일 × 시간대</span></div>

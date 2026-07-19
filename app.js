@@ -19,6 +19,16 @@ const ICONS = {
   trendDown: IC('<path d="M4 8 L10 14 L13.5 10.5 L20 16"/><path d="M20 11.5 V16 H15.5"/>'),
   clock: IC('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5 V12 L15.2 14"/>'),
   tag: IC('<path d="M12.6 3.5 H20.5 V11.4 L11.9 20 C11.2 20.7, 10.1 20.7, 9.4 20 L4 14.6 C 3.3 13.9, 3.3 12.8, 4 12.1 Z"/><circle cx="16.4" cy="7.6" r="1.3"/>'),
+  chevL: IC('<path d="M14.5 5.5 L8 12 L14.5 18.5"/>'),
+  chevR: IC('<path d="M9.5 5.5 L16 12 L9.5 18.5"/>'),
+  chevU: IC('<path d="M5.5 14.5 L12 8 L18.5 14.5"/>'),
+  chevD: IC('<path d="M5.5 9.5 L12 16 L18.5 9.5"/>'),
+  refresh: IC('<path d="M18.6 13.2 A6.8 6.8 0 1 1 17 7.2"/><path d="M17.4 3.6 V7.6 H13.4"/>'),
+  letter: IC('<rect x="3.5" y="5.5" width="17" height="13" rx="2.2"/><path d="M4.5 7.5 L12 13 L19.5 7.5"/>'),
+  wind: IC('<path d="M3.5 9.5 H12.5 C14.4 9.5, 15.4 8.4, 15.4 7 C15.4 5.7, 14.4 4.8, 13.2 4.8"/><path d="M3.5 14 H17.8 C19.7 14, 20.7 15.1, 20.7 16.5 C20.7 17.9, 19.6 19, 18.2 19"/>'),
+  pin: IC('<path d="M9.5 3.5 H14.5 L14 9.5 C16 10.4, 17.2 11.8, 17.5 13.7 H6.5 C6.8 11.8, 8 10.4, 10 9.5 Z"/><path d="M12 13.7 V20.5"/>'),
+  eye: IC('<path d="M3 12 C5.4 7.8, 8.4 5.8, 12 5.8 C15.6 5.8, 18.6 7.8, 21 12 C18.6 16.2, 15.6 18.2, 12 18.2 C8.4 18.2, 5.4 16.2, 3 12 Z"/><circle cx="12" cy="12" r="2.6"/>'),
+  eyeOff: IC('<path d="M4.5 8.4 C3.9 9.4, 3.4 10.6, 3 12 C5.4 16.2, 8.4 18.2, 12 18.2 C13.5 18.2, 14.9 17.9, 16.2 17.2 M19.4 15.7 C20 14.6, 20.5 13.4, 21 12 C18.6 7.8, 15.6 5.8, 12 5.8 C10.9 5.8, 9.9 6, 8.9 6.4"/><path d="M4.5 4 L19.5 20"/>'),
 };
 const CH_TARGET = 90;
 
@@ -285,7 +295,7 @@ function entryDetailHtml(e) {
     ${refl ? `<div class="card"><h2>저녁 회고</h2>${e.reflection.good ? `<p class="h-note">${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
     ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
     <div class="data-btns" style="margin-top:18px">
-      <button class="btn primary" data-eact="edit">✏️ 수정</button>
+      <button class="btn primary" data-eact="edit">수정</button>
       <button class="btn danger" data-eact="del">삭제</button>
     </div>`;
 }
@@ -349,13 +359,11 @@ function updateJourneyHero() {
   const done = !!(e && e.mood);
   card.classList.toggle("done", done);
   if (done) {
-    set("journeyEmoji", "🌿");
     set("journeyStartHint", `오늘 '${e.mood}' 마음을 남겼어요. 잘 해냈어요.`);
     set("journeyStart", "오늘 여정 다시 하기");
     const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
     set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
   } else {
-    set("journeyEmoji", "✨");
     set("journeyStartHint", "한 걸음씩 따라가며 오늘 마음을 남겨봐요.");
     set("journeyStart", "오늘의 여정 시작하기");
     set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
@@ -1137,7 +1145,7 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
   const box = document.getElementById("allAnalysis"); const open = box.hidden;
   box.hidden = !open; Sound.tap();
   _allAnalysisToggle.setAttribute("aria-expanded", open ? "true" : "false");
-  _allAnalysisToggle.textContent = open ? "모든 분석 접기 ▴" : "모든 분석 자세히 보기 ▾";
+  _allAnalysisToggle.innerHTML = open ? `모든 분석 접기 ${ICONS.chevU}` : `모든 분석 자세히 보기 ${ICONS.chevD}`;
 });
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
@@ -1171,10 +1179,10 @@ function applyStatLayout() {
       if (!bar) { bar = document.createElement("div"); bar.className = "sec-ctrl"; }
       card.insertBefore(bar, card.firstChild);
       bar.innerHTML = `<span class="sec-ctrl-name">${STAT_SEC_NAME[id]}</span>`
-        + `<button class="sec-btn ${isPinned ? "on" : ""}" data-act="pin" data-secid="${id}" aria-pressed="${isPinned}" aria-label="메인에 올리기"></button>`
-        + `<button class="sec-btn" data-act="up" data-secid="${id}" aria-label="위로">▲</button>`
-        + `<button class="sec-btn" data-act="down" data-secid="${id}" aria-label="아래로">▼</button>`
-        + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? "" : ""}</button>`;
+        + `<button class="sec-btn ${isPinned ? "on" : ""}" data-act="pin" data-secid="${id}" aria-pressed="${isPinned}" aria-label="메인에 올리기">${ICONS.pin}</button>`
+        + `<button class="sec-btn" data-act="up" data-secid="${id}" aria-label="위로">${ICONS.chevU}</button>`
+        + `<button class="sec-btn" data-act="down" data-secid="${id}" aria-label="아래로">${ICONS.chevD}</button>`
+        + `<button class="sec-btn" data-act="vis" data-secid="${id}" aria-pressed="${isHidden}" aria-label="보임/숨김">${isHidden ? ICONS.eyeOff : ICONS.eye}</button>`;
     } else if (bar) { bar.remove(); }
   });
   drawer.classList.toggle("stat-editing", statEditing);
@@ -2382,15 +2390,15 @@ function reportDetailHtml(kind, off = 0) {
   const unit = kind === "month" ? "달" : "주";
   // 기간 이동 내비 — 지난 주/달을 되짚어 볼 수 있게
   const navRow = `<div class="rpt-nav">
-    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off + 1}" ${off >= maxOff ? "disabled" : ""} aria-label="지난 ${unit} 보기">◀ 지난 ${unit}</button>
+    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off + 1}" ${off >= maxOff ? "disabled" : ""} aria-label="지난 ${unit} 보기">${ICONS.chevL} 지난 ${unit}</button>
     <span class="detail-stat rpt-period">${period}${off === 0 ? ` · 이번 ${unit}` : ""}</span>
-    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off - 1}" ${off <= 0 ? "disabled" : ""} aria-label="다음 ${unit} 보기">다음 ${unit} ▶</button>
+    <button class="btn rpt-nav-btn" data-ract="nav" data-kind="${kind}" data-off="${off - 1}" ${off <= 0 ? "disabled" : ""} aria-label="다음 ${unit} 보기">다음 ${unit} ${ICONS.chevR}</button>
   </div>`;
   // 저장·공유 캔버스는 현재 기간 요약 기준 — 과거 기간에서는 숨겨 오해 방지
   const actRow = off === 0 ? `<div class="data-btns"><button class="btn" data-ract="img" data-kind="${kind}">이미지로 저장</button><button class="btn" data-ract="share" data-kind="${kind}">공유</button></div>` : "";
 
   if (cur.recs.length === 0) {
-    return `${navRow}<div class="card center"><div class="onboard-emoji">🌱</div><p class="empty">이 기간엔 기록이 없어요.<br>◀ 버튼으로 다른 ${unit}을 볼 수 있어요.</p></div>${actRow}`;
+    return `${navRow}<div class="card center"><div class="onboard-emoji">${ICONS.sprout}</div><p class="empty">이 기간엔 기록이 없어요.<br>위 버튼으로 다른 ${unit}을 볼 수 있어요.</p></div>${actRow}`;
   }
 
   // 기간 비교 게이트 — 두 기간 모두 최소 3일 기록일 때만 ▲▼ 비교(1일 vs 7일 같은 편향 비교 차단)
@@ -2429,7 +2437,7 @@ function reportDetailHtml(kind, off = 0) {
   const solItems = selectSolutions(diag, trend, keys[keys.length - 1]);
   // 의료 프레이밍 회피 — '진단/처방' 대신 '살펴보기/제안' (심리측정 감사 반영)
   const diagCard = diag ? `<div class="card diag-card ${diag.band.tone}"><span class="diag-ico"></span><div class="diag-body"><p class="diag-label">${off === 0 ? "이번" : "이"} ${unit} 마음 살펴보기 · ${diag.label} <b>${Math.round(cur.avgMood)}점</b></p><p class="diag-dx">${diag.dx}</p></div></div>` : "";
-  const solCard = `<div class="card sol-card"><h2>맞춤 제안</h2><p class="hint">살펴본 내용(기분 구간 × 감정 × 일기 맥락)에 맞춘 제안이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">${s.c}</p></div>`).join("")}<p class="sol-disclaimer">ℹ의료적 진단·치료가 아닌 셀프케어 참고용이에요. 힘들 땐 전문가의 도움을 받아요.</p></div>`;
+  const solCard = `<div class="card sol-card"><h2>맞춤 제안</h2><p class="hint">살펴본 내용(기분 구간 × 감정 × 일기 맥락)에 맞춘 제안이에요. 검증된 심리·행동과학 연구에 근거해요.</p>${solItems.map((s) => `<div class="sol"><p class="sol-b">${s.txt}</p><p class="sol-c">${s.c}</p></div>`).join("")}<p class="sol-disclaimer">의료적 진단·치료가 아닌 셀프케어 참고용이에요. 힘들 땐 전문가의 도움을 받아요.</p></div>`;
 
   // --- 자세히(접기): 안정성 · (월간)주차별 · 습관별 달성 · 날짜별 ---
   let stabSec = "";
@@ -3170,7 +3178,7 @@ function renderHabitSummary() {
 // 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)
 function renderRhythm(entries) {
   const el = document.getElementById("rhythmGrid"); if (!el) return;
-  const buckets = [{ k: "아침", e: "🌅", lo: 5, hi: 11 }, { k: "오후", e: "☀️", lo: 12, hi: 17 }, { k: "저녁", e: "🌇", lo: 18, hi: 21 }, { k: "밤", e: "🌙", lo: 22, hi: 4 }];
+  const buckets = [{ k: "아침", lo: 5, hi: 11 }, { k: "오후", lo: 12, hi: 17 }, { k: "저녁", lo: 18, hi: 21 }, { k: "밤", lo: 22, hi: 4 }];
   const days = ["일", "월", "화", "수", "목", "금", "토"];
   const cell = buckets.map(() => days.map(() => ({ sum: 0, n: 0 })));
   let total = 0;
@@ -3195,7 +3203,7 @@ function renderRhythm(entries) {
   let html = '<div class="rhythm"><span class="rh-corner"></span>';
   days.forEach((d, i) => html += `<span class="rh-dh${i === 0 || i === 6 ? " rh-we" : ""}">${d}</span>`);
   buckets.forEach((b, bi) => {
-    html += `<span class="rh-tl">${b.e}<i>${b.k}</i>${rowAvg[bi] != null ? `<b>${Math.round(rowAvg[bi])}</b>` : ""}</span>`;
+    html += `<span class="rh-tl"><i>${b.k}</i>${rowAvg[bi] != null ? `<b>${Math.round(rowAvg[bi])}</b>` : ""}</span>`;
     days.forEach((d, di) => { const c = cell[bi][di]; html += cellHtml(c.n ? c.sum / c.n : null, c.n, c.n ? `${b.k} ${d}요일 · ${c.n}회 · 평균 ${Math.round(c.sum / c.n)}점` : "", false); });
   });
   html += '<span class="rh-tl rh-ml">전체<i>요일</i></span>';
@@ -3209,14 +3217,14 @@ function renderTagInsight(entries) {
   const el = document.getElementById("tagInsight"); if (!el) return;
   const cnt = {};
   Object.values(entries).forEach((e) => { if (!e.tags || !e.tags.length) return; e.tags.forEach((t) => cnt[t] = (cnt[t] || 0) + 1); });
-  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, e: em ? em.e : "", v: em && em.v != null ? em.v : 50 }; }); // 사전에 없는 태그(가져오기 등)도 어색하지 않게
+  const rows = Object.entries(cnt).map(([t, n]) => { const em = emoByKey(t); return { t, n, band: em ? em.band : "neu", v: em && em.v != null ? em.v : 50 }; }); // 사전에 없는 태그(가져오기 등)도 어색하지 않게
   if (rows.length < 2) { el.innerHTML = '<p class="empty">감정 태그가 더 쌓이면 자주 느낀 감정을 빈도로 보여드려요.</p>'; return; }
   const total = rows.reduce((s, r) => s + r.n, 0);
   rows.sort((a, b) => b.n - a.n);
   const max = rows[0].n;
   el.innerHTML = `<div class="freq">` + rows.slice(0, 12).map((r) => {
     const col = scoreColor(r.v), pct = Math.round(r.n / total * 100);
-    return `<div class="dist-row"><span class="cap-name">${r.e} ${escapeHtml(r.t)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.max(6, Math.round(r.n / max * 100))}%;background:${col}"></div></div><span class="dist-count">${r.n}<small>회·${pct}%</small></span></div>`;
+    return `<div class="dist-row"><span class="cap-name"><i class="band-dot ${r.band}"></i>${escapeHtml(r.t)}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${Math.max(6, Math.round(r.n / max * 100))}%;background:${col}"></div></div><span class="dist-count">${r.n}<small>회·${pct}%</small></span></div>`;
   }).join("") + `</div><p class="hint" style="margin-top:10px">막대 길이 = 그 감정을 느낀 <b>빈도</b> · 색 = 그 감정의 긍·부정(빨강 낮음 ~ 초록 높음). 기분 점수와는 <b>별개</b>로 집계돼요.</p>`;
 }
 
@@ -3232,7 +3240,7 @@ function checkBadges() {
       if (typeof toast === "function") toast(`배지 ${fresh.length}개를 획득했어요! (기록 탭에서 확인)`);
       return;
     }
-    const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return `${b.e} ${b.t}`; }).join(", ");
+    const titles = fresh.map((id) => { const b = BADGES.find((x) => x.id === id); return b.t; }).join(", ");
     if (typeof toast === "function") toast("새 배지 획득: " + titles);
     if (Sound.celebrate) Sound.celebrate(); confetti(); Haptic.success();
     if (newLevel > prevLevel) { // 목표 도달로 레벨업
@@ -3325,7 +3333,7 @@ function renderDist(list, entriesArg) {
   const order = Object.keys(moodMeta).filter((m) => counts[m]);
   const col = (m) => scoreColor((mInfo(m).score - 1) / 4 * 100);
   const seg = order.map((m) => { const pct = Math.round(counts[m] / total * 100); return `<div class="db-seg" style="width:${(counts[m] / total) * 100}%;background:${col(m)}" title="${m} ${pct}%">${pct >= 10 ? pct + "%" : ""}</div>`; }).join("");
-  const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${mInfo(m).emoji} ${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
+  const legend = order.sort((a, b) => counts[b] - counts[a]).map((m) => `<span class="db-leg"><i style="background:${col(m)}"></i>${m} <b>${Math.round(counts[m] / total * 100)}%</b></span>`).join("");
   const lowN = total < 5 ? ' <small class="fd-lown">· 표본이 적어 아직 경향으로 보긴 일러요</small>' : "";
   wrap.innerHTML = `${chart}<p class="fd-cap">위 흐름의 ${total}일이 이렇게 채워졌어요${lowN}</p><div class="dist-stack">${seg}</div><div class="db-legend">${legend}</div>`;
 }
@@ -3401,7 +3409,7 @@ function fireReminder() {
   if (!done) body = streak >= 2 ? `${streak}일 연속 중이에요! 오늘 한 줄이면 ${streak + 1}일로 이어져요` : "오늘 마음은 어땠나요? 한 줄만 남겨도 충분해요";
   else if (undone.length) {
     const h = undone[0];
-    body = `오늘 기록 고마워요 🌿 ${h.emoji} ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
+    body = `오늘 기록 고마워요. ${h.title}${h.cue ? ` (${h.cue})` : ""}, 아직이라면 지금 어때요?`;
   } else body = "오늘도 다 해냈어요. 푹 쉬어요";
   if ("Notification" in window && Notification.permission === "granted") {
     const n = new Notification("오늘의 쉼", { body });
@@ -3806,7 +3814,7 @@ function stepHtml(id) {
       <div class="emo-tags" id="jEmoTags">${EMOTIONS.map((e) => { const on = tagsSel.includes(e.k); const fq = tagFreq[e.k] || 0; return `<button type="button" class="emo-tag ${on ? "selected" : ""}" data-tag="${e.k}" aria-pressed="${on}"><i class="band-dot ${e.band}"></i>${e.k}${fq ? `<i class="emo-freq" title="최근 90일 ${fq}번">·${fq}</i>` : ""}</button>`; }).join("")}</div>
       <p class="energy-out" id="jEnergyOut"></p>`;
   }
-  if (id === "breathe") return `<div class="js-emoji">🫧</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
+  if (id === "breathe") return `<div class="js-ico">${ICONS.wind}</div><p class="j-q">마지막으로, 숨 한 번 고르고 마칠까요?</p>
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
     <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">호흡 시작하기</button>
     <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
@@ -3823,19 +3831,19 @@ function stepHtml(id) {
   if (id === "care") {
     if (!jData.quote) jData.quote = pickQuote();
     if (!jData.mission) jData.mission = pickMission();
-    return `<div class="js-emoji">💌</div><p class="j-q">시작하기 전, 나를 위한 한마디</p>
+    return `<div class="js-ico">${ICONS.letter}</div><p class="j-q">시작하기 전, 나를 위한 한마디</p>
       <blockquote class="j-quote" id="jQuote">“${formatQuote(jData.quote)}”</blockquote>
-      <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ↻</button>
+      <button type="button" class="reflect-toggle" id="jQuoteMore">다른 한마디 ${ICONS.refresh}</button>
       <p class="field-label" style="text-align:center;margin-top:22px">오늘의 작은 미션</p>
       <p class="mission" id="jMission">${escapeHtml(jData.mission)}</p>
-      <button type="button" class="reflect-toggle" id="jMissionMore">다른 미션 ↻</button>`;
+      <button type="button" class="reflect-toggle" id="jMissionMore">다른 미션 ${ICONS.refresh}</button>`;
   }
   if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
     <p class="field-label">가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
     <p class="field-label">힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
   const ins = quickInsight();
   const isToday = (jData.date || todayKey()) === todayKey();
-  return `<div class="j-finish"><div class="js-emoji">🌿</div><h3>${isToday ? "오늘도 잘 기록했어요" : "기록을 정리했어요"}</h3>
+  return `<div class="j-finish"><div class="js-ico">${ICONS.leaf}</div><h3>${isToday ? "오늘도 잘 기록했어요" : "기록을 정리했어요"}</h3>
     <p>${jData.mood ? curReplies()[jData.mood] : "와줘서 고마워요."}</p>
     ${journeyFinishStatsHtml()}
     ${ins ? `<div class="j-insight"><span class="j-insight-h">오늘의 인사이트</span>${ins}</div>` : ""}
@@ -3927,7 +3935,7 @@ function renderStep() {
       h.done[k] ? Sound.success() : Sound.tap();
     }));
   } else if (curId === "finish") {
-    const em = jBody.querySelector(".js-emoji"); // 마무리 화면에 잔잔한 반짝임(아기자기)
+    const em = jBody.querySelector(".js-ico"); // 마무리 화면에 잔잔한 반짝임(아기자기)
     if (em && window.Anim) setTimeout(() => Anim.sparkle(em, { count: 12, spread: 78 }), 240);
   }
   jBody.scrollTop = 0;
