@@ -1728,10 +1728,36 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .badge.earned { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid var(--line-strong); box-shadow: none; }
 :is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: rgba(236, 220, 180, 0.06); }
 .habit-add { padding: var(--s3) var(--s4); font-size: var(--t-base); }
-/* 낮의 종이비행기 — 아주 느리게 하늘을 건너간다 */
-[data-theme="garden"] .fav-star { animation: planeDrift 56s var(--ease-breath) infinite alternate; animation-delay: var(--twd, 0s); }
-@keyframes planeDrift { to { transform: translate(30px, -12px); } }
+/* 낮의 종이비행기 — 나른하게 하늘을 배회한다 (느리게 자리를 옮기며) */
+[data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 110s) ease-in-out infinite; animation-delay: var(--twd, 0s); }
+@keyframes planeRoam {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(52px, -30px); }
+  50%  { transform: translate(14px, -58px); }
+  75%  { transform: translate(-44px, -22px); }
+  100% { transform: translate(0, 0); }
+}
 /* 밤의 별 — 또렷하게 반짝인다 */
 [data-theme="midnight"] .fav-star::before { animation: starTwinkle 3.4s ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
 @keyframes starTwinkle { from { opacity: 0.35; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .fav-star, .fav-star::before { animation: none; } }
+
+/* ===== v191 — 섹션 결 또렷하게 + 일상 탭 서브탭 ===== */
+/* 상자 없는 섹션의 경계가 흐릿하던 문제: 제목은 포인트색, 구분선은 가운데 짧게 또렷이 */
+.card h2 { color: var(--accent-deep); }
+.tab .card:not(:last-child)::after, .stats-panel .card:not(:last-child)::after, .subpage .card:not(:last-child)::after { left: 40%; right: 40%; background: var(--line-strong); }
+/* 위로 문구는 명조 결로 — 미션 안내와 목소리가 다르게 */
+.quote { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; }
+/* 달력 판 — 한 화면에 여유 있게 */
+.cal-cell { aspect-ratio: auto; height: 40px; }
+.mood-cal { gap: 5px; }
+.cal-panel { animation: fade 0.35s var(--ease-soft) both; }
+
+/* 일기 쓰기 — 노션처럼 한 장의 빈 페이지 (v191) */
+.journey #jNote { background: transparent; border: none; box-shadow: none; border-radius: 0; width: 100%; min-height: 46vh; resize: none;
+  font-size: var(--t-md); line-height: 1.9; padding: var(--s3) 2px; color: var(--ink); field-sizing: content; }
+.journey #jNote:focus { outline: none; border: none; background: transparent; }
+.journey #jNote::placeholder { color: var(--soft); opacity: 0.7; }
+/* 일기 단계는 가운데 맞춤 대신 위에서부터 써 내려간다 */
+.journey-body:has(#jNote) { justify-content: flex-start; }
+.journey-body:has(#jNote) .j-q { text-align: left; margin-bottom: var(--s3); }

@@ -102,8 +102,10 @@ try {
   check("일기 저장", te.note === "야근하고 지침");
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
 
-  // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
+  // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집 — 일상 탭의 '습관' 서브탭
   q("[data-tab=calendar]").click();
+  q('#calSeg [data-cseg="habits"]').click();
+  check("일상 탭 습관 서브탭 전환", !q('[data-cpanel="habits"]').hidden && q('[data-cpanel="calendar"]').hidden);
   check("빈 상태 표시", !q("#chEmpty").hasAttribute("hidden"));
   q("#addHabitBtn").click();
   check("새 습관 추가 페이지 열림", !q("#subpage").hasAttribute("hidden") && !!q("#subBody #challengeTitle"));

@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v190" />
+  <meta name="app-version" content="v191" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -93,6 +93,11 @@
 
     <!-- ========== 탭: 달력 ========== -->
     <section class="tab" id="tab-calendar" hidden>
+      <div class="seg stats-seg" id="calSeg">
+        <button data-cseg="calendar" class="active">달력</button>
+        <button data-cseg="habits">습관</button>
+      </div>
+      <div class="cal-panel" data-cpanel="calendar">
       <div class="card">
         <div class="card-head">
           <h2>마음 달력</h2>
@@ -103,8 +108,9 @@
         <div class="mood-cal" id="moodCal"></div>
         <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
       </div>
+      </div>
+      <div class="cal-panel" data-cpanel="habits" hidden>
       <div class="card" id="habitsMerged">
-        <h2>습관</h2>
       <p class="ch-summary" id="chSummary" hidden></p>
       <div id="challengeList"></div>
 
@@ -146,6 +152,7 @@
 
         <p class="intention-preview" id="intentionPreview"></p>
         <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
+      </div>
       </div>
       </div>
     </section>
@@ -533,7 +540,7 @@
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="화면 전환">
     <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
-    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>달력</span></button>
+    <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>일상</span></button>
     <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
     <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
     <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>

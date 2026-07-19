@@ -262,12 +262,13 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 const tabbar = document.getElementById("tabbar");
 const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
-  if (name === "challenge") name = "calendar"; // v190: 습관 탭은 달력 탭으로 통합
+  let calSegTo = null;
+  if (name === "challenge") { name = "calendar"; calSegTo = "habits"; } // v190: 습관은 일상 탭의 서브탭
   document.body.classList.toggle("slim-hero", name !== "today"); // 오늘 외 탭은 히어로 슬림 + 푸터 생략(1화면)
   document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
-  if (name === "calendar") { renderMoodCalendar(loadEntries()); renderChallenge(); }
+  if (name === "calendar") { const cur = document.querySelector("#calSeg button.active"); showCalSeg(calSegTo || (cur ? cur.dataset.cseg : "calendar")); }
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -276,6 +277,17 @@ tabbar.addEventListener("click", (e) => {
   if (!btn) return;
   Sound.tap(); activateTab(btn.dataset.tab);
 });
+// 일상 탭 서브탭 — 달력 | 습관 (각각 한 화면씩)
+function showCalSeg(name) {
+  const seg = document.getElementById("calSeg"); if (!seg) return;
+  seg.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.cseg === name));
+  document.querySelectorAll(".cal-panel").forEach((p) => { p.hidden = p.dataset.cpanel !== name; });
+  if (name === "calendar") renderMoodCalendar(loadEntries()); else renderChallenge();
+}
+{
+  const seg = document.getElementById("calSeg");
+  if (seg) seg.addEventListener("click", (e) => { const b = e.target.closest("button[data-cseg]"); if (!b) return; Sound.tap(); showCalSeg(b.dataset.cseg); });
+}
 // 지난 기록을 탭/달력에서 눌러 바로 그 날짜를 편집
 function openEntryDetail(dateKey) {
   const e = loadEntries()[dateKey]; if (!e) return;
@@ -336,7 +348,7 @@ function renderFavStars() {
     const col = sc != null ? scoreColor(sc) : "#fdf6e3";
     const p = k.split("-");
     // 밤하늘에선 별, 낮하늘에선 종이비행기 (CSS가 테마별로 골라 보여줌)
-    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg;--fly:${88 + ((h >> 6) % 64)}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
   }).join("");
 }
 {
