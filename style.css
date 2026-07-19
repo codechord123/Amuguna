@@ -1881,5 +1881,11 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] .ch-cell.done { box-shadow: 0 0 8px rgba(236, 216, 142, 0.35); }
 [data-theme="midnight"] .ch-milestone { box-shadow: 0 0 18px rgba(236, 216, 142, 0.16); }
 [data-theme="midnight"] #subBody .btn.primary { box-shadow: 0 0 26px rgba(236, 216, 142, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
+/* 상세 페이지 전체 — 보조 버튼도 은은한 별빛 테두리, 진행바·오늘칸·탭 통일 */
+[data-theme="midnight"] #subBody .btn:not(.primary):not(.danger) { box-shadow: 0 0 16px rgba(236, 216, 142, 0.1); border-color: rgba(236, 220, 180, 0.22); }
+[data-theme="midnight"] #subBody .ch-bar { box-shadow: 0 0 12px rgba(236, 216, 142, 0.35); }
+[data-theme="midnight"] #subBody .ch-cell.today { box-shadow: 0 0 12px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] #subBody .detail-stat b, [data-theme="midnight"] #subBody .streak-hot { text-shadow: 0 0 10px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] #subBody .hs b, [data-theme="midnight"] #subBody .rpt-hero-cap { text-shadow: 0 0 10px rgba(236, 216, 142, 0.3); }
 [data-theme="midnight"] .streak-hot .ic-line { filter: drop-shadow(0 0 5px rgba(236, 216, 142, 0.6)); }
 [data-theme="midnight"] .subhead h2, [data-theme="midnight"] #subTitle { text-shadow: 0 0 12px rgba(236, 216, 142, 0.26); }
