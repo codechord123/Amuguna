@@ -34,10 +34,11 @@ for (const vp of VIEWPORTS) {
     localStorage.setItem("settings_v2", JSON.stringify({ theme: "warm", sfx: false, breathSound: false, haptics: false, ambientVol: 55, ambientType: "off", textSize: "m", tone: "warm", myQuotes: [], favQuotes: [], journeyCount: 24 }));
   }, { entries: demo(), habit });
   await page.goto(BASE + "/index.html", { waitUntil: "networkidle" });
-  const report = (label, sh, ih) => { const ok = sh <= ih + 4; if (!ok) bad++; console.log(`[${vp.name}] ${label}: ${sh}px ${ok ? "✅" : `❌ +${sh - ih}px`}`); };
+  const SCROLL_OK = new Set(["calendar"]); // v190: 달력+습관 통합 탭은 두 화면 분량 — 자연 스크롤 허용
+  const report = (label, sh, ih) => { const allow = SCROLL_OK.has(label); const ok = allow || sh <= ih + 4; if (!ok) bad++; console.log(`[${vp.name}] ${label}: ${sh}px ${ok ? (allow && sh > ih + 4 ? "✅ (스크롤 허용)" : "✅") : `❌ +${sh - ih}px`}`); };
   const measureDoc = async (label) => { const m = await page.evaluate(() => ({ sh: document.documentElement.scrollHeight, ih: window.innerHeight })); report(label, m.sh, m.ih); };
 
-  for (const t of ["today", "calendar", "rest", "challenge", "stats", "settings"]) {
+  for (const t of ["today", "calendar", "rest", "stats", "settings"]) {
     await page.click(`[data-tab="${t}"]`); await page.waitForTimeout(700); await measureDoc(t);
   }
   await page.click('[data-tab="stats"]'); await page.waitForTimeout(300);

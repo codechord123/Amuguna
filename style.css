@@ -1715,3 +1715,23 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .rpt-summary { background: transparent; border: none; }
 /* 오늘 탭은 여백의 미 그대로 — 구분선 없이 */
 #tab-today .card::after { display: none; }
+
+/* ===== v190 — 통합·축소·움직임 ===== */
+/* 달력+습관 한 탭: 습관 머리글 */
+#habitsMerged > h2 { margin-bottom: var(--s3); }
+/* 요소 크기 절제 — 큼직한 느낌 걷어내기 */
+.habit-check { width: 46px; height: 46px; font-size: 1.2rem; }
+.cal-cell.m0:not(.today) { background: transparent; }
+.cal-nav button { background: transparent; border: none; }
+.badge { background: transparent; border: 1px solid var(--line); }
+.badge-emoji { font-size: 1.1rem; }
+.badge.earned { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid var(--line-strong); box-shadow: none; }
+:is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: rgba(236, 220, 180, 0.06); }
+.habit-add { padding: var(--s3) var(--s4); font-size: var(--t-base); }
+/* 낮의 종이비행기 — 아주 느리게 하늘을 건너간다 */
+[data-theme="garden"] .fav-star { animation: planeDrift 56s var(--ease-breath) infinite alternate; animation-delay: var(--twd, 0s); }
+@keyframes planeDrift { to { transform: translate(30px, -12px); } }
+/* 밤의 별 — 또렷하게 반짝인다 */
+[data-theme="midnight"] .fav-star::before { animation: starTwinkle 3.4s ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
+@keyframes starTwinkle { from { opacity: 0.35; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fav-star, .fav-star::before { animation: none; } }

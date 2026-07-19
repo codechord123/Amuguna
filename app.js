@@ -30,6 +30,7 @@ const ICONS = {
   eye: IC('<path d="M3 12 C5.4 7.8, 8.4 5.8, 12 5.8 C15.6 5.8, 18.6 7.8, 21 12 C18.6 16.2, 15.6 18.2, 12 18.2 C8.4 18.2, 5.4 16.2, 3 12 Z"/><circle cx="12" cy="12" r="2.6"/>'),
   eyeOff: IC('<path d="M4.5 8.4 C3.9 9.4, 3.4 10.6, 3 12 C5.4 16.2, 8.4 18.2, 12 18.2 C13.5 18.2, 14.9 17.9, 16.2 17.2 M19.4 15.7 C20 14.6, 20.5 13.4, 21 12 C18.6 7.8, 15.6 5.8, 12 5.8 C10.9 5.8, 9.9 6, 8.9 6.4"/><path d="M4.5 4 L19.5 20"/>'),
   star: IC('<path d="M12 3.8 L14.35 8.9 L19.9 9.55 L15.8 13.35 L16.9 18.85 L12 16.1 L7.1 18.85 L8.2 13.35 L4.1 9.55 L9.65 8.9 Z"/>'),
+  plane: IC('<path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/>'),
 };
 const CH_TARGET = 90;
 
@@ -259,14 +260,14 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", challenge: "tab-challenge", stats: "tab-stats", settings: "tab-settings" };
+const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
+  if (name === "challenge") name = "calendar"; // v190: 습관 탭은 달력 탭으로 통합
   document.body.classList.toggle("slim-hero", name !== "today"); // 오늘 외 탭은 히어로 슬림 + 푸터 생략(1화면)
   document.querySelectorAll(".tabbtn").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false"); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   Object.entries(tabs).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
   if (name === "stats") renderStats();
-  if (name === "calendar") renderMoodCalendar(loadEntries());
-  if (name === "challenge") renderChallenge();
+  if (name === "calendar") { renderMoodCalendar(loadEntries()); renderChallenge(); }
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -299,7 +300,7 @@ function entryDetailHtml(e) {
     ${e.praise ? `<div class="card"><h2>잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
     ${refl ? `<div class="card"><h2>저녁 회고</h2>${e.reflection.good ? `<p class="h-note">${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
     ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
-    <button class="btn block fav-day ${e.fav ? "on" : ""}" data-eact="fav" aria-pressed="${!!e.fav}" style="margin-top:18px">${ICONS.star} ${e.fav ? "별이 된 날" : "이 날을 별로 남기기"}</button>
+    <button class="btn block fav-day ${e.fav ? "on" : ""}" data-eact="fav" aria-pressed="${!!e.fav}" style="margin-top:18px">${(() => { const st = document.documentElement.getAttribute("data-theme") === "midnight"; return `${st ? ICONS.star : ICONS.plane} ${e.fav ? (st ? "별이 된 날" : "하늘에 날린 날") : (st ? "이 날을 별로 남기기" : "종이비행기로 날리기")}`; })()}</button>
     <div class="data-btns" style="margin-top:10px">
       <button class="btn primary" data-eact="edit">수정</button>
       <button class="btn danger" data-eact="del">삭제</button>
@@ -973,8 +974,8 @@ function openSubpage(title, html, mode) {
   subAnim++; subMode = mode || null; subTitle.textContent = title; subBody.innerHTML = html; subpage.hidden = false;
   requestAnimationFrame(() => subpage.classList.add("show"));
 }
-function stowSetup() { // 폼 노드를 탭으로 되돌려 숨김 (리스너 보존)
-  if (setup.parentNode === subBody) { setup.hidden = true; document.getElementById("tab-challenge").appendChild(setup); }
+function stowSetup() { // 폼 노드를 원래 자리(습관 구역)로 되돌려 숨김 (리스너 보존)
+  if (setup.parentNode === subBody) { setup.hidden = true; (document.getElementById("habitsMerged") || document.getElementById("tab-calendar")).appendChild(setup); }
 }
 function closeSubpage() {
   subpage.classList.remove("show"); openHabitId = null; subMode = null;
@@ -1019,7 +1020,10 @@ subBody.addEventListener("click", (e) => {
       Sound.tap(); if (en.fav) Haptic.tap();
       subBody.innerHTML = entryDetailHtml(en);
       renderFavStars(); // 첫 화면 하늘에 바로 반영
-      tipToast(en.fav ? "이 날이 하늘의 별이 되었어요" : "별에서 내려왔어요");
+      const _st = document.documentElement.getAttribute("data-theme") === "midnight";
+      tipToast(en.fav
+        ? (_st ? "이 날이 하늘의 별이 되었어요" : "이 날이 종이비행기가 되어 하늘을 날아요")
+        : (_st ? "별에서 내려왔어요" : "비행기를 다시 접어두었어요"));
     }
     else if (el.dataset.eact === "del") {
       if (!confirm("이 기록을 지울까요?")) return;
@@ -4215,7 +4219,7 @@ function reminderCatchup() {
 window.__getLocalData = () => ({ entries: loadEntries(), challenges: loadChs(), settings: loadSettings(), tombstones: loadTomb() });
 function refreshAll() {
   loadToday();
-  if (!document.getElementById("tab-challenge").hidden) renderChallenge();
+  if (!document.getElementById("tab-calendar").hidden) { renderMoodCalendar(loadEntries()); renderChallenge(); }
   if (!document.getElementById("tab-stats").hidden) renderStats();
 }
 window.__applyData = (data) => {

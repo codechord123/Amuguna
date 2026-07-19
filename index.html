@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v189" />
+  <meta name="app-version" content="v190" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -102,6 +102,51 @@
         <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
         <div class="mood-cal" id="moodCal"></div>
         <div class="cal-legend"><span>지쳐요</span><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i><i class="m5"></i><span>좋아요</span></div>
+      </div>
+      <div class="card" id="habitsMerged">
+        <h2>습관</h2>
+      <p class="ch-summary" id="chSummary" hidden></p>
+      <div id="challengeList"></div>
+
+      <div class="card" id="chEmpty" hidden>
+        <div class="setup-empty">
+          <div class="onboard-emoji"><svg class="ob-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg></div>
+          <h2>한 가지 작은 습관부터요</h2>
+          <p class="hint">거창하지 않아도 괜찮아요. 매일 한 칸씩이면 충분해요. <strong>습관은 여러 개 등록할 수 있어요</strong> — 부담되면 하나부터 시작해도 좋아요.</p>
+        </div>
+      </div>
+
+      <button class="habit-add" id="addHabitBtn">＋ 새 습관 만들기</button>
+
+      <!-- 추가 폼 (누르면 슬라이드 페이지로 열림) -->
+      <div class="card" id="challengeSetup" hidden>
+        <p class="field-label">어떤 습관을 만들고 싶어요?</p>
+        <div class="preset-grid" id="presetGrid">
+          <button class="preset" data-h="10분 산책하기" data-e="🚶">10분 산책</button>
+          <button class="preset" data-h="감사한 일 3가지 적기" data-e="🙏">감사 3가지</button>
+          <button class="preset" data-h="물 8잔 마시기" data-e="💧">물 8잔</button>
+          <button class="preset" data-h="10분 스트레칭하기" data-e="🧘">10분 스트레칭</button>
+          <button class="preset" data-h="자기 전 휴대폰 멀리 두기" data-e="📵">자기 전 폰 멀리</button>
+          <button class="preset" data-h="한 줄 일기 쓰기" data-e="📔">한 줄 일기</button>
+        </div>
+        <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요 (무엇을 할까요?)" maxlength="40" aria-label="습관 이름" />
+
+        <p class="field-label">언제 할까요? <span class="opt">(기존 습관에 붙이면 더 잘 지켜져요)</span></p>
+        <div class="cue-grid" id="cueGrid">
+          <button class="cue" data-c="기상 후">기상 후</button>
+          <button class="cue" data-c="아침 식사 후">아침 식사 후</button>
+          <button class="cue" data-c="양치 후">양치 후</button>
+          <button class="cue" data-c="점심 후">점심 후</button>
+          <button class="cue" data-c="퇴근 후">퇴근 후</button>
+          <button class="cue" data-c="자기 전">자기 전</button>
+        </div>
+
+        <p class="field-label">컨디션 낮은 날 '최소 버전' <span class="opt">(선택 · 2분이면 돼요)</span></p>
+        <input type="text" id="challengeMin" class="text-input" placeholder="예: 운동화 신고 현관 나가기" maxlength="40" aria-label="습관 최소 버전" />
+
+        <p class="intention-preview" id="intentionPreview"></p>
+        <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
+      </div>
       </div>
     </section>
 
@@ -212,51 +257,6 @@
     </section>
 
     <!-- ========== 탭: 챌린지 ========== -->
-    <section class="tab" id="tab-challenge" hidden>
-      <p class="ch-summary" id="chSummary" hidden></p>
-      <div id="challengeList"></div>
-
-      <div class="card" id="chEmpty" hidden>
-        <div class="setup-empty">
-          <div class="onboard-emoji"><svg class="ob-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg></div>
-          <h2>한 가지 작은 습관부터요</h2>
-          <p class="hint">거창하지 않아도 괜찮아요. 매일 한 칸씩이면 충분해요. <strong>습관은 여러 개 등록할 수 있어요</strong> — 부담되면 하나부터 시작해도 좋아요.</p>
-        </div>
-      </div>
-
-      <button class="habit-add" id="addHabitBtn">＋ 새 습관 만들기</button>
-
-      <!-- 추가 폼 (누르면 슬라이드 페이지로 열림) -->
-      <div class="card" id="challengeSetup" hidden>
-        <p class="field-label">어떤 습관을 만들고 싶어요?</p>
-        <div class="preset-grid" id="presetGrid">
-          <button class="preset" data-h="10분 산책하기" data-e="🚶">10분 산책</button>
-          <button class="preset" data-h="감사한 일 3가지 적기" data-e="🙏">감사 3가지</button>
-          <button class="preset" data-h="물 8잔 마시기" data-e="💧">물 8잔</button>
-          <button class="preset" data-h="10분 스트레칭하기" data-e="🧘">10분 스트레칭</button>
-          <button class="preset" data-h="자기 전 휴대폰 멀리 두기" data-e="📵">자기 전 폰 멀리</button>
-          <button class="preset" data-h="한 줄 일기 쓰기" data-e="📔">한 줄 일기</button>
-        </div>
-        <input type="text" id="challengeTitle" class="text-input" placeholder="직접 입력해도 좋아요 (무엇을 할까요?)" maxlength="40" aria-label="습관 이름" />
-
-        <p class="field-label">언제 할까요? <span class="opt">(기존 습관에 붙이면 더 잘 지켜져요)</span></p>
-        <div class="cue-grid" id="cueGrid">
-          <button class="cue" data-c="기상 후">기상 후</button>
-          <button class="cue" data-c="아침 식사 후">아침 식사 후</button>
-          <button class="cue" data-c="양치 후">양치 후</button>
-          <button class="cue" data-c="점심 후">점심 후</button>
-          <button class="cue" data-c="퇴근 후">퇴근 후</button>
-          <button class="cue" data-c="자기 전">자기 전</button>
-        </div>
-
-        <p class="field-label">컨디션 낮은 날 '최소 버전' <span class="opt">(선택 · 2분이면 돼요)</span></p>
-        <input type="text" id="challengeMin" class="text-input" placeholder="예: 운동화 신고 현관 나가기" maxlength="40" aria-label="습관 최소 버전" />
-
-        <p class="intention-preview" id="intentionPreview"></p>
-        <button class="btn primary block" id="startChallenge">90일 챌린지 시작하기</button>
-      </div>
-    </section>
-
     <!-- ========== 탭: 기록 ========== -->
     <section class="tab" id="tab-stats" hidden>
       <div class="card center" id="statsEmptyHero" hidden>
@@ -535,7 +535,6 @@
     <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
     <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>달력</span></button>
     <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
-    <button class="tabbtn" data-tab="challenge" role="tab" aria-selected="false" aria-controls="tab-challenge"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg><span>습관</span></button>
     <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
     <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>
   </nav>

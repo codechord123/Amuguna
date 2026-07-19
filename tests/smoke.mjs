@@ -103,7 +103,7 @@ try {
   check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
 
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집
-  q("[data-tab=challenge]").click();
+  q("[data-tab=calendar]").click();
   check("빈 상태 표시", !q("#chEmpty").hasAttribute("hidden"));
   q("#addHabitBtn").click();
   check("새 습관 추가 페이지 열림", !q("#subpage").hasAttribute("hidden") && !!q("#subBody #challengeTitle"));
@@ -204,7 +204,7 @@ try {
   q('#todayStats [data-jump="calendar"]').click();
   check("홈 문장 통계→달력 탭 점프", !q("#tab-calendar").hasAttribute("hidden"));
   q("[data-tab=today]").click();
-  check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
+  check("프로젝트 탭/카드 제거됨", !q("#tab-calendar").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 
   // 6) 달력 탭 (통합 마음 달력)
   q("[data-tab=calendar]").click();
@@ -596,7 +596,7 @@ try {
   check("안전 카드 핫라인 109 표기", /\b109\b/.test(q("#safetyCard").textContent));
 
   // 13d) 접근성/하드닝: 탭 ARIA · aria-live · CSP
-  check("접근성: 탭바 tablist 역할 + tab 6개", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 6);
+  check("접근성: 탭바 tablist 역할 + tab 5개(달력·습관 통합)", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 5);
   q("[data-tab=stats]").click();
   check("접근성: 활성 탭 aria-selected 갱신", q('#tabbar [data-tab="stats"]').getAttribute("aria-selected") === "true" && q('#tabbar [data-tab="today"]').getAttribute("aria-selected") === "false");
   check("접근성: 응원문구 aria-live", q("#tsCheer").getAttribute("aria-live") === "polite");
