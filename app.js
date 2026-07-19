@@ -335,6 +335,10 @@ function renderFavStars() {
   const layer = document.getElementById("favSky"); if (!layer) return;
   const entries = loadEntries();
   const favs = Object.keys(entries).filter((k) => entries[k] && entries[k].fav).sort().slice(-28); // 최근 28개까지 — 하늘이 어수선해지지 않게
+  // 같은 내용이면 다시 그리지 않는다 — innerHTML 재생성은 비행 애니메이션을 리셋해 위치가 뚝 끊긴다
+  const sig = document.documentElement.getAttribute("data-theme") + "|" + favs.map((k) => k + ":" + entryScore(entries[k])).join(",");
+  if (layer._sig === sig) return;
+  layer._sig = sig;
   const placed = []; // 별이 겹치면 서로 가리고 누를 수 없으므로, 터치 타깃 간격만큼 비켜 앉힌다
   const clash = (x, y) => placed.some((q) => Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 10); // y는 레이어(화면 44%) 기준 %
   layer.innerHTML = favs.map((k) => {

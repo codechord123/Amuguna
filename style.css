@@ -1081,11 +1081,11 @@ body.slim-hero .fav-sky { display: none; }
 .fav-star .fs-sway { display: block; }
 [data-theme="garden"] .fav-star::before { display: none; }
 /* 산들바람 — 바람결에 흔들리는 잔물결 (배회·기수 회전과 별개의 빠른 층) */
-[data-theme="garden"] .fav-star .fs-sway { animation: planeSway var(--sway, 4.6s) ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
+[data-theme="garden"] .fav-star .fs-sway { animation: planeSway var(--sway, 4.6s) ease-in-out infinite alternate; animation-delay: calc(var(--twd, 0s) * -1.7); }
 @keyframes planeSway { from { transform: translateY(calc(var(--swayA, 3px) * -1)) rotate(-2.5deg); } to { transform: translateY(var(--swayA, 3px)) rotate(2.5deg); } }
 [data-theme="garden"] .fav-star .fs-plane { display: block; width: 19px; height: 19px; margin: 5px auto 0; fill: none; stroke: var(--star-c); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--star-c) 40%, transparent));
-  transform: rotate(var(--rot, -8deg)); animation: planeTurn calc(var(--fly, 40s) / 2) ease-in-out infinite; animation-delay: var(--twd, 0s); }
+  transform: rotate(var(--rot, -8deg)); animation: planeTurn calc(var(--fly, 40s) / 2) ease-in-out infinite; animation-delay: calc(var(--twd, 0s) * -5); }
 /* 바람결 피치 — 기수가 물결처럼 오르내린다 */
 @keyframes planeTurn {
   0%   { transform: rotate(calc(var(--rot, -8deg) + 9deg)); }
@@ -1738,7 +1738,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 :is([data-theme="dark"], [data-theme="midnight"]) .badge.earned { background: rgba(236, 220, 180, 0.06); }
 .habit-add { padding: var(--s3) var(--s4); font-size: var(--t-base); }
 /* 낮의 종이비행기 — 바람을 타고 실려 갔다 되돌아오는 활공 (alternate) */
-[data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 40s) ease-in-out infinite alternate; animation-delay: var(--twd, 0s); }
+[data-theme="garden"] .fav-star { animation: planeRoam var(--fly, 40s) ease-in-out infinite alternate; animation-delay: calc(var(--twd, 0s) * -9); }
 @keyframes planeRoam {
   0%   { transform: translate(calc(var(--wA, 60px) * -1), 10px); }
   35%  { transform: translate(calc(var(--wA, 60px) * -0.25), -9px); }
