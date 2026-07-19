@@ -1422,7 +1422,7 @@ function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Ma
 // 평균 기분 게이지 링 (0-100) — 리포트 히어로 비주얼
 function moodGaugeSvg(v) {
   const R = 52, C = 2 * Math.PI * R, off = C * (1 - Math.max(0, Math.min(100, v)) / 100), col = scoreColor(v);
-  return `<div class="gauge"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="${R}"/><circle class="g-fill" cx="60" cy="60" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="g-center"><span class="g-emoji">${scoreEmoji(v)}</span><span class="g-num" style="color:${col}">${Math.round(v)}</span><span class="g-unit">/100</span></div></div>`;
+  return `<div class="gauge"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="${R}"/><circle class="g-fill" cx="60" cy="60" r="${R}" stroke="${col}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/></svg><div class="g-center"><span class="g-num" style="color:${col}">${Math.round(v)}</span><span class="g-unit">/100</span></div></div>`;
 }
 // 인라인 SVG 추이 차트 (기분 실선 + 에너지 점선) — 테마 색상은 CSS 클래스로
 function reportChartSvg(keys, entries) {
@@ -3037,7 +3037,7 @@ function renderAnalyzeKpis(entries, list) {
   const topTag = Object.entries(tagCount).sort((x, y) => y[1] - x[1])[0];
   const tile = (val, label) => `<div class="as-kpi"><span class="as-k-val">${val}</span><span class="as-k-lab">${label}</span></div>`;
   // 라벨에 집계 기간 명시 — 카드마다 다른 '평균 기분'이 서로 모순처럼 보이지 않게
-  el.innerHTML = tile(moodVal + deltaHtml, "평균 기분·7일") + tile(recDays + "일", "최근 7일 기록") + tile(enVal, "평균 활력·7일") + tile(topTag ? escapeHtml(topTag[0]) : "—", "으뜸 감정·30일");
+  el.innerHTML = tile(moodVal + deltaHtml, "평균 기분·7일") + tile(recDays + "일", "최근 7일 기록") + tile(topTag ? escapeHtml(topTag[0]) : "—", "으뜸 감정·30일");
 }
 // 이번 주 한눈에 — 미니 통계 + 스파크라인
 function renderWeekGlance(entries) {
@@ -3727,7 +3727,6 @@ let jData = {}, curId = "feel";
 // 100점 기분 점수 ↔ 기존 분류/에너지 매핑 (통계 호환)
 function scoreToMood(s) { return s < 20 ? "우울해요" : s < 40 ? "지쳤어요" : s < 60 ? "그럭저럭" : s < 80 ? "괜찮아요" : "활기차요"; }
 function scoreLabel(s) { return s < 20 ? "많이 힘들어요" : s < 40 ? "지쳐 있어요" : s < 60 ? "그럭저럭이에요" : s < 80 ? "괜찮아요" : "좋아요"; }
-function scoreEmoji(s) { return s < 20 ? "😢" : s < 40 ? "😮‍💨" : s < 60 ? "😐" : s < 80 ? "🙂" : "😄"; }
 function scoreToEnergy(s) { return Math.max(1, Math.min(5, Math.round(s / 20))); }
 // 에너지(활력) = 고른 감정 태그의 각성도 평균. 태그 없으면 점수에서 환산.
 function jComputeEnergy() {
@@ -3799,7 +3798,7 @@ function stepHtml(id) {
           <path class="dial-fill" id="jDialFill"></path>
           <circle class="dial-thumb" id="jDialThumb" r="11"></circle>
         </svg>
-        <div class="dial-center"><span class="dial-emoji" id="jDialEmoji">😐</span><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
+        <div class="dial-center"><span class="dial-num" id="jDialNum">50</span><span class="dial-label" id="jDialLabel">보통</span></div>
       </div>
       <input type="range" id="jScore" class="dial-range" min="0" max="100" step="1" value="${sc}" aria-label="기분 점수 0부터 100까지" />
       ${(jData.date || todayKey()) === todayKey() ? '<button type="button" class="j-quick" id="jQuickSave">바쁜 날엔 여기까지만 저장</button>' : ""}
@@ -3878,7 +3877,6 @@ function renderStep() {
       const col = scoreColor(v); fill.style.stroke = col; thumb.style.fill = col;
       jBody.querySelector("#jDialNum").textContent = v;
       // 점수 축은 점수 자체를 표현(감정과 독립). 감정은 아래 태그로 따로 기록.
-      jBody.querySelector("#jDialEmoji").textContent = scoreEmoji(v);
       jBody.querySelector("#jDialLabel").textContent = scoreLabel(v);
       updateEnergyOut();
     }
@@ -4136,7 +4134,7 @@ function backupReminderCheck() {
   if (total < 14) return;
   const last = settings.lastExport;
   const stale = !last || daysSince(last) >= 21;
-  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요 설정 → '기록 내보내기'로 가끔 백업하면 더 안전해요."), 2600);
+  if (stale) setTimeout(() => toast("기록이 소중히 쌓였어요. 설정 → '기록 내보내기'로 가끔 백업해 주세요."), 2600);
 }
 
 /* 자정 넘김 처리 — 앱을 켜둔 채 날짜가 바뀌면 '오늘'을 갱신 */

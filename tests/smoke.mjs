@@ -396,7 +396,7 @@ try {
   check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
   check("리듬 표본1회 셀은 경향처럼 색칠 안 함", d.querySelectorAll("#rhythmGrid .rh-dim").length >= 1);
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
-  check("분석 탭 핵심 지표 4종 표시", d.querySelectorAll("#analyzeKpis .as-kpi").length === 4);
+  check("분석 탭 핵심 지표 3종 표시(활력 제거)", d.querySelectorAll("#analyzeKpis .as-kpi").length === 3);
   check("기본 카드 순서 1차 지표(dist) 우선", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === "dist");
   check("1차 지표 카드는 기본 펼침", !q('[data-sec="dist"]').classList.contains("collapsed"));
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
