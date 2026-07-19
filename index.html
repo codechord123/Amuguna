@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v183" />
+  <meta name="app-version" content="v184" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -65,18 +65,20 @@
         <div class="jh-inner">
           <p class="jh-eyebrow" id="journeyEyebrow"></p>
           <h2>오늘의 여정</h2>
-          <p class="hint" id="journeyStartHint" aria-live="polite">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+          <p class="hint jh-invite" id="journeyStartHint" aria-live="polite">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
+          <div class="jh-mirror" id="jhMirror" hidden>
+            <p class="jm-word"><i class="jm-dot" id="jmDot"></i><span id="jmWord"></span></p>
+            <p class="jm-score" id="jmScore"></p>
+            <blockquote class="jm-quote" id="jmQuote" hidden></blockquote>
+          </div>
+          <button class="btn quiet block jh-night" id="jhNightBtn" hidden>10분 수면 명상</button>
           <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
           <p class="jh-sub" id="journeySub">3분이면 충분해요 · 한 번에 하나씩</p>
         </div>
       </div>
 
             <div class="card today-stats" id="todayStats">
-        <div class="ts-row">
-          <button class="ts-item" data-jump="calendar"><span class="ts-num" id="tsStreak">0</span><span class="ts-label">연속</span></button>
-          <button class="ts-item" data-jump="weekreport"><span class="ts-num" id="tsWeek">0<i>/7</i></span><span class="ts-label">최근 7일</span></button>
-          <button class="ts-item" data-jump="log"><span class="ts-num" id="tsTotal">0</span><span class="ts-label">전체</span></button>
-        </div>
+        <button class="ts-prose" id="tsProse" data-jump="calendar" hidden></button>
         <div class="wk-goal"><div class="wk-goal-bar"><i id="wkGoalFill"></i></div><span class="wk-goal-cap" id="wkGoalCap"></span></div>
         <div class="ts-habits" id="todayHabitGlance" hidden data-hg-wrap>
           <div class="ts-habits-head"><span class="ts-habits-title">오늘의 습관</span><span class="hg-count" id="todayHabitCount"></span></div>

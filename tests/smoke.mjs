@@ -199,9 +199,10 @@ try {
   check("레벨 표시", /Lv\.\d/.test(q("#levelName").textContent));
   check("배지 다음 목표 표시", q("#badgeNext").textContent.trim().length > 0);
   q("[data-tab=today]").click();
-  check("첫 화면 통계+응원 표시", Number(q("#tsTotal").textContent) >= 1 && q("#tsCheer").textContent.length > 0);
+  check("첫 화면 문장 통계+응원 표시", /\d/.test(q("#tsProse").textContent) && q("#tsCheer").textContent.length > 0);
+  check("기록 후 '오늘의 거울' 표시", !q("#jhMirror").hidden && q("#jmWord").textContent.trim().length > 0);
   q('#todayStats [data-jump="calendar"]').click();
-  check("홈 연속→달력 탭 점프", !q("#tab-calendar").hasAttribute("hidden"));
+  check("홈 문장 통계→달력 탭 점프", !q("#tab-calendar").hasAttribute("hidden"));
   q("[data-tab=today]").click();
   check("프로젝트 탭/카드 제거됨", !q("#tab-challenge").querySelector("#projectSetup") && !d.getElementById("projStatsCard"));
 

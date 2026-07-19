@@ -216,6 +216,10 @@ function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&
 })();
 
 /* ===================== 인사말 ===================== */
+// 시간대 구분 — 첫 화면이 하루의 결을 따라가게 (새벽 0~4시는 '밤'으로)
+function timeBucket(h = new Date().getHours()) {
+  return h < 5 ? "night" : h < 12 ? "morning" : h < 18 ? "day" : h < 22 ? "evening" : "night";
+}
 (function greet() {
   const h = new Date().getHours();
   let msg = "안녕, 오늘도 와줘서 고마워요", sun = "sun-day";
@@ -323,9 +327,17 @@ function updateTodayStats() {
   const keys = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); keys.push(todayKey(d)); }
   const week = keys.filter((k) => entries[k] && entries[k].mood).length;
   const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-  set("tsStreak", streak);
-  set("tsWeek", `${week}<i>/7</i>`);
-  set("tsTotal", list.length);
+  // 숫자 대시보드 대신 한 문장 — 셀프케어의 목소리로 (C안)
+  const proseEl = document.getElementById("tsProse");
+  if (proseEl) {
+    let prose = "";
+    if (list.length > 0) {
+      prose = streak >= 2 ? `<b>${streak}일째</b> 이어지고 있어요` : `지금까지 <b>${list.length}번</b> 기록했어요`;
+      if (week >= 1 && list.length > 1) prose += ` · 최근 7일, <b>${week}번</b> 만났어요`;
+    }
+    proseEl.innerHTML = prose;
+    proseEl.hidden = !prose;
+  }
   const doneToday = !!(entries[tk] && entries[tk].mood);
   const plain = settings.tone === "plain"; // 담백 모드: 손실 프레이밍·기록경쟁·축하 압박을 덜어낸 담담한 문구
   let cheer;
@@ -357,20 +369,57 @@ function updateJourneyHero() {
   set("heroDate", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일 · `);
   const e = loadEntries()[tk];
   const done = !!(e && e.mood);
+  const tb = timeBucket();
+  const show = (id, on) => { const el = document.getElementById(id); if (el) el.hidden = !on; };
+  const hintEl = document.getElementById("journeyStartHint");
+  const startBtn = document.getElementById("journeyStart");
   card.classList.toggle("done", done);
+  card.classList.toggle("night-close", done && tb === "night");
   if (done) {
-    set("journeyStartHint", `오늘 '${e.mood}' 마음을 남겼어요. 잘 해냈어요.`);
-    set("journeyStart", "오늘 여정 다시 하기");
-    const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
-    set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
+    // B안 '오늘의 거울' — 남긴 마음이 첫 화면의 주인공이 된다
+    const sc = entryScore(e);
+    set("jmWord", e.mood);
+    const dot = document.getElementById("jmDot");
+    if (dot) dot.style.background = sc != null ? scoreColor(sc) : "var(--accent)";
+    set("jmScore", sc != null ? `오늘의 마음 · ${Math.round(sc)}점` : "오늘의 마음");
+    const q = (e.note || "").split(/\n/)[0].trim();
+    const qEl = document.getElementById("jmQuote");
+    if (qEl) { qEl.textContent = q.length > 64 ? q.slice(0, 63) + "…" : q; qEl.hidden = !q; }
+    show("jhMirror", true);
+    if (tb === "night") {
+      // A안 밤 — 하루를 닫아주는 화면
+      if (hintEl) { hintEl.hidden = false; hintEl.textContent = "오늘은 여기까지.\n수고했어요, 이제 쉬어요."; }
+      show("jhNightBtn", true);
+      set("journeyStart", "오늘 기록 다시 보기");
+      show("journeySub", false);
+    } else {
+      if (hintEl) hintEl.hidden = true;
+      show("jhNightBtn", false);
+      set("journeyStart", "오늘 여정 다시 하기");
+      const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
+      show("journeySub", true);
+      set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
+    }
+    if (startBtn) startBtn.classList.remove("primary");
   } else {
-    set("journeyStartHint", "한 걸음씩 따라가며 오늘 마음을 남겨봐요.");
-    set("journeyStart", "오늘의 여정 시작하기");
+    // A안 — 시간대가 말을 건네는 초대
+    const invites = {
+      morning: "좋은 아침이에요.\n오늘은 어떤 마음으로 시작할까요?",
+      day: "잠시 쉬어가요.\n지금 마음은 어떤가요?",
+      evening: "하루가 저물어가요.\n오늘 하루, 어땠나요?",
+      night: "고요한 밤이에요.\n잠들기 전, 마음을 남겨볼까요?",
+    };
+    if (hintEl) { hintEl.hidden = false; hintEl.textContent = invites[tb]; }
+    show("jhMirror", false);
+    show("jhNightBtn", false);
+    set("journeyStart", "오늘 마음 남기기");
+    show("journeySub", true);
     set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
+    if (startBtn) startBtn.classList.add("primary");
   }
   // 첫 주 온보딩 미션 — 습관 형성 가속(작은 목표)
   const total = sortedEntries(loadEntries()).length;
-  if (total < 3) set("journeySub", `첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`);
+  if (total < 3 && !(done && tb === "night")) { show("journeySub", true); set("journeySub", `첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`); }
 }
 // 위기 신호 직후의 부정 표현 — "죽고 싶지 않아", "자해 안 해" 등은 위기로 보지 않음
 const CRISIS_NEG = /^(지않|진않|지는않|지말|지마|하지않|안[하해했할함]|은아니|는아니|아니)/;
@@ -4013,6 +4062,9 @@ function saveJourney() {
 // 완료 없이 닫기 = 일시정지(진행분 보존)
 function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요"); }
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
+// 밤의 마무리 — 수면 명상으로 하루를 닫는다 (쉼 탭 명상으로 연결)
+const _jhNightBtn = document.getElementById("jhNightBtn");
+if (_jhNightBtn) _jhNightBtn.addEventListener("click", () => { Sound.tap(); activateTab("rest"); });
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {
   collectStep();

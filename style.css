@@ -961,6 +961,10 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 /* ----- 여정 시작 카드 (오늘 탭의 단일 주제) ----- */
 /* ----- 첫 화면 통계 + 응원 ----- */
 .today-stats { padding: var(--s3) var(--s4); }
+/* 숫자 대신 한 문장 (C안) — 탭하면 달력으로 */
+.ts-prose { display: block; width: 100%; background: none; border: none; font-family: inherit; text-align: center; color: var(--soft); font-size: var(--t-sm); line-height: 1.7; cursor: pointer; padding: var(--s2); border-radius: var(--r-sm); transition: background 0.2s; }
+.ts-prose:hover { background: var(--bg-sunken); }
+.ts-prose b { color: var(--accent-deep); font-weight: 700; }
 .ts-row { display: flex; justify-content: space-around; text-align: center; gap: var(--s2); }
 .ts-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; border: none; background: transparent; font-family: inherit; cursor: pointer; border-radius: var(--r-sm); padding: var(--s1) var(--s1); transition: background 0.2s; }
 .ts-item:hover { background: var(--bg-sunken); }
@@ -999,6 +1003,22 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .jh-eyebrow { color: var(--accent-deep); font-weight: var(--w-bold); font-size: var(--t-sm); letter-spacing: 0.02em; margin: 0 0 var(--s1); }
 .journey-hero h2 { font-size: 1.55rem; margin: 0 0 var(--s2); font-weight: var(--w-bold); letter-spacing: -0.02em; }
 .journey-hero .hint { margin: 0 auto var(--s4); font-size: var(--t-base); line-height: 1.5; }
+/* 시간대 초대문 — 첫 화면이 말을 건네는 목소리 (A안) */
+.jh-invite { white-space: pre-line; }
+#tab-today .jh-invite { font-size: var(--t-md); color: var(--accent-deep); font-weight: var(--w-semi); line-height: 1.7; margin-bottom: var(--s5); }
+/* 오늘의 거울 — 기록 후엔 남긴 마음이 주인공 (B안) */
+.jh-mirror { margin: 0 0 var(--s5); }
+.jm-word { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.9rem; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
+.jm-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-right: 9px; vertical-align: 0.12em; }
+.jm-score { margin: var(--s2) 0 0; color: var(--soft); font-size: var(--t-sm); }
+.jm-quote { margin: var(--s4) auto 0; max-width: 21em; color: var(--ink-2); font-size: var(--t-base); line-height: 1.7; word-break: keep-all; }
+.jm-quote::before { content: "“"; } .jm-quote::after { content: "”"; }
+/* 기록 후의 버튼은 조용히 물러난다 */
+.btn.quiet { background: transparent; color: var(--accent-deep); border: 1.5px solid var(--line-strong); box-shadow: none; }
+.journey-hero.done #journeyStart { background: transparent; color: var(--accent-deep); border: 1.5px solid var(--line-strong); box-shadow: none; }
+.jh-night { margin-bottom: var(--s3); }
+/* 밤 마무리 — 수면 명상이 주 동작, 기록 다시 보기는 조용한 링크로 */
+.journey-hero.night-close #journeyStart { border: none; background: none; font-size: var(--t-sm); font-weight: var(--w-semi); text-decoration: underline; text-underline-offset: 3px; padding: var(--s2); }
 .journey-hero .btn.block { margin-top: 0; padding: 14px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .jh-sub { color: var(--soft); font-size: var(--t-xs); margin: var(--s3) 0 0; }
 .journey-hero.done .js-emoji { animation: none; }
