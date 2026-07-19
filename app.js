@@ -29,6 +29,7 @@ const ICONS = {
   pin: IC('<path d="M9.5 3.5 H14.5 L14 9.5 C16 10.4, 17.2 11.8, 17.5 13.7 H6.5 C6.8 11.8, 8 10.4, 10 9.5 Z"/><path d="M12 13.7 V20.5"/>'),
   eye: IC('<path d="M3 12 C5.4 7.8, 8.4 5.8, 12 5.8 C15.6 5.8, 18.6 7.8, 21 12 C18.6 16.2, 15.6 18.2, 12 18.2 C8.4 18.2, 5.4 16.2, 3 12 Z"/><circle cx="12" cy="12" r="2.6"/>'),
   eyeOff: IC('<path d="M4.5 8.4 C3.9 9.4, 3.4 10.6, 3 12 C5.4 16.2, 8.4 18.2, 12 18.2 C13.5 18.2, 14.9 17.9, 16.2 17.2 M19.4 15.7 C20 14.6, 20.5 13.4, 21 12 C18.6 7.8, 15.6 5.8, 12 5.8 C10.9 5.8, 9.9 6, 8.9 6.4"/><path d="M4.5 4 L19.5 20"/>'),
+  star: IC('<path d="M12 3.8 L14.35 8.9 L19.9 9.55 L15.8 13.35 L16.9 18.85 L12 16.1 L7.1 18.85 L8.2 13.35 L4.1 9.55 L9.65 8.9 Z"/>'),
 };
 const CH_TARGET = 90;
 
@@ -298,7 +299,8 @@ function entryDetailHtml(e) {
     ${e.praise ? `<div class="card"><h2>잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
     ${refl ? `<div class="card"><h2>저녁 회고</h2>${e.reflection.good ? `<p class="h-note">${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
     ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
-    <div class="data-btns" style="margin-top:18px">
+    <button class="btn block fav-day ${e.fav ? "on" : ""}" data-eact="fav" aria-pressed="${!!e.fav}" style="margin-top:18px">${ICONS.star} ${e.fav ? "별이 된 날" : "이 날을 별로 남기기"}</button>
+    <div class="data-btns" style="margin-top:10px">
       <button class="btn primary" data-eact="edit">수정</button>
       <button class="btn danger" data-eact="del">삭제</button>
     </div>`;
@@ -313,7 +315,35 @@ function openEntryEditor(dateKey) {
 // 입력은 '오늘의 여정' 하나로 통일됨(옛 직접기록 폼 제거).
 function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
 function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
-function loadToday() { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); if (typeof checkSafetySignals === "function") checkSafetySignals(); }
+function loadToday() { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); renderFavStars(); if (typeof checkSafetySignals === "function") checkSafetySignals(); }
+
+/* 별이 된 날들 — 즐겨찾기한 기록이 첫 화면 하늘에 뜬다. 별을 누르면 그날로 바로가기. */
+function renderFavStars() {
+  const layer = document.getElementById("favSky"); if (!layer) return;
+  const entries = loadEntries();
+  const favs = Object.keys(entries).filter((k) => entries[k] && entries[k].fav).sort().slice(-28); // 최근 28개까지 — 하늘이 어수선해지지 않게
+  const placed = []; // 별이 겹치면 서로 가리고 누를 수 없으므로, 터치 타깃 간격만큼 비켜 앉힌다
+  const clash = (x, y) => placed.some((q) => Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 5);
+  layer.innerHTML = favs.map((k) => {
+    let h = 7; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) >>> 0; // 날짜 고유 해시 — 별자리가 매번 같은 자리에
+    let x = 7 + (h % 86), y = 11 + ((h >> 7) % 26), tries = 0;
+    while (clash(x, y) && tries < 60) {
+      h = (h * 2654435761 + 1) >>> 0; x = 7 + (h % 86); y = 11 + ((h >> 7) % 26); tries++;
+    }
+    placed.push({ x, y });
+    const sc = entryScore(entries[k]);
+    const col = sc != null ? scoreColor(sc) : "#fdf6e3";
+    const p = k.split("-");
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 별 — 그날 기록 보기"></button>`;
+  }).join("");
+}
+{
+  const _favSky = document.getElementById("favSky");
+  if (_favSky) _favSky.addEventListener("click", (e) => {
+    const b = e.target.closest(".fav-star"); if (!b) return;
+    Sound.tap(); openEntryDetail(b.dataset.day);
+  });
+}
 
 // 첫 화면 통계 + 응원 — 동기 부여
 function updateTodayStats() {
@@ -980,11 +1010,21 @@ subBody.addEventListener("click", (e) => {
   } else if (subMode === "entry") {
     const el = e.target.closest("[data-eact]"); if (!el) return;
     if (el.dataset.eact === "edit") { closeSubpage(); openEntryEditor(subEntryDate); }
+    else if (el.dataset.eact === "fav") {
+      const entries = loadEntries(), en = entries[subEntryDate]; if (!en) return;
+      if (en.fav) delete en.fav; else en.fav = true;
+      saveEntries(entries);
+      if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
+      Sound.tap(); if (en.fav) Haptic.tap();
+      subBody.innerHTML = entryDetailHtml(en);
+      renderFavStars(); // 첫 화면 하늘에 바로 반영
+      tipToast(en.fav ? "이 날이 하늘의 별이 되었어요" : "별에서 내려왔어요");
+    }
     else if (el.dataset.eact === "del") {
       if (!confirm("이 기록을 지울까요?")) return;
       const entries = loadEntries(); delete entries[subEntryDate]; saveEntries(entries); tombstoneEntry(subEntryDate);
       if (window.Cloud && window.Cloud.markDirty) window.Cloud.markDirty();
-      Sound.tap(); closeSubpage(); renderStats();
+      Sound.tap(); closeSubpage(); renderStats(); renderFavStars();
     }
   } else if (subMode === "report") {
     const el = e.target.closest("[data-ract]"); if (!el) return;
@@ -3413,7 +3453,7 @@ function applySettings() {
   document.querySelectorAll(".sound-btn").forEach((b) => { const on = settings.ambientType && settings.ambientType !== "off" && b.dataset.sound === settings.ambientType; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
   Sound.setSfx(settings.sfx); Sound.setBreath(settings.breathSound); Sound.state.ambientVol = settings.ambientVol / 100;
   // 테마가 바뀌면 첫 화면의 하늘 문구·별도 함께 갈아입는다
-  if (document.getElementById("journeyStartCard")) { updateJourneyHero(); updateTodayStats(); }
+  if (document.getElementById("journeyStartCard")) { updateJourneyHero(); updateTodayStats(); renderFavStars(); }
 }
 if (darkMq) darkMq.addEventListener("change", () => { if (settings.theme === "auto") applySettings(); });
 document.getElementById("themeGrid").addEventListener("click", (e) => {
@@ -4034,6 +4074,7 @@ function saveJourney() {
     score: jData.score != null ? jData.score : moodToScore(jData.mood),
     note: (jData.note || "").trim().slice(0, 4000), praise: (jData.praise || "").trim().slice(0, 1000), // 백업 가져오기 한도와 일치(왕복 무손실)
     tags: jData.tags || prev.tags || [], reflection: { good: jData.good || "", hard: jData.hard || "" },
+    fav: prev.fav ? true : undefined, // 별이 된 날 표시는 재편집에도 유지
     createdAt: prev.createdAt || new Date().toISOString(), // 최초 작성 시각 — 시간대 분석은 이 값 기준(수정해도 왜곡 없음)
     updatedAt: new Date().toISOString(),
   };

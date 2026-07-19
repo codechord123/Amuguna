@@ -258,11 +258,14 @@ body.slim-hero .sun-dot { display: none; }
 /* 오늘 외 탭은 히어로를 한 줄로 슬림하게 + 푸터 숨김 — 스크롤 없는 1화면 목표 */
 body.slim-hero .hero { margin-bottom: var(--s3); }
 body.slim-hero .greeting { display: none; }
-body.slim-hero .hero h1 { font-size: var(--t-md); }
+body.slim-hero .hero h1 { font-size: 0.86rem; font-weight: var(--w-bold); letter-spacing: 0.34em; text-indent: 0.34em; color: var(--ink-2); opacity: 0.9;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent); }
+[data-theme="midnight"] body.slim-hero .hero h1 { color: #efe9d8; text-shadow: 0 0 10px rgba(236, 216, 142, 0.4), 0 0 26px rgba(236, 216, 142, 0.16); }
 body.slim-hero .foot { display: none; }
 .greeting { color: var(--soft); font-weight: var(--w-medium, 500); margin: var(--s2) 0 0; font-size: var(--t-sm); letter-spacing: 0.01em; }
 .hero h1 { font-size: 2.7rem; margin: 0; font-weight: var(--w-semi); line-height: 1.15; letter-spacing: 0.05em; }
-/* 오늘 탭 — 제호는 하늘 꼭대기의 속삭임으로, 별빛처럼 은은히 빛나게 */
+/* 오늘 탭 — 제호는 하늘 위 속삭임으로, 별빛처럼 은은히 빛나게 (너무 꼭대기에 붙지 않게 내려앉힘) */
+body:not(.slim-hero) .hero { padding-top: clamp(30px, 7vh, 76px); }
 body:not(.slim-hero) .hero h1 { font-size: 1.05rem; font-weight: var(--w-bold); letter-spacing: 0.42em; text-indent: 0.42em; color: var(--ink-2); opacity: 0.95;
   text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 25%, transparent); }
 [data-theme="midnight"] body:not(.slim-hero) .hero h1 { color: #efe9d8;
@@ -286,6 +289,8 @@ body:not(.slim-hero) .greeting { font-size: var(--t-xs); opacity: 0.62; letter-s
   box-shadow: var(--shadow), inset 0 1px 0 var(--card-hi);
 }
 .card.center { text-align: center; }
+/* 오늘 탭의 하늘 문법을 앱 전체로 — 섹션 제목은 명조 속삭임의 결로 */
+.card h2, #subTitle, .onboard-card h2, .j-q { font-family: "Times New Roman", "Noto Serif KR", serif; letter-spacing: 0.01em; }
 .card h2 { margin: 0 0 var(--s2); font-size: var(--t-md); font-weight: var(--w-bold); }
 .hint { color: var(--soft); font-size: var(--t-sm); margin: 0 0 var(--s3); line-height: 1.55; }
 .hint code { background: var(--bg-sunken); padding: 1px 6px; border-radius: 6px; font-size: 0.85em; }
@@ -397,6 +402,11 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .comfort-add { margin-top: var(--s3); }
 .comfort-add summary { list-style: none; cursor: pointer; color: var(--soft); font-size: var(--t-sm); font-weight: var(--w-semi); padding: var(--s2) 0; }
 .comfort-add summary::-webkit-details-marker { display: none; }
+/* 명상 카드 접기 — 기본 ▶ 마커 대신 라인 셰브런 */
+.med-howto summary, .med-adv summary { list-style: none; cursor: pointer; }
+.med-howto summary::-webkit-details-marker, .med-adv summary::-webkit-details-marker { display: none; }
+.med-howto summary::before, .med-adv summary::before { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(-45deg); margin-right: 9px; vertical-align: 0.12em; transition: transform 0.2s var(--ease-soft); }
+.med-howto[open] summary::before, .med-adv[open] summary::before { transform: rotate(45deg); vertical-align: 0.22em; }
 .comfort-add summary::before { content: "＋ "; }
 .comfort-add[open] summary::before { content: "－ "; }
 .comfort-add[open] summary { margin-bottom: var(--s3); }
@@ -1050,6 +1060,22 @@ body.slim-hero .skyline { display: none; }
 body.slim-hero .mystar, [data-theme="garden"] .mystar { display: none; }
 @keyframes starBreath { 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) { .mystar { animation: none; } }
+/* 별이 된 날들 — 즐겨찾기한 기록이 하늘에 떠 있고, 누르면 그날로 간다 */
+.fav-sky { position: fixed; left: 0; right: 0; top: 0; height: 44%; z-index: 2; pointer-events: none; }
+body.slim-hero .fav-sky { display: none; }
+.fav-star { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; background: transparent; border: none; padding: 0; cursor: pointer; pointer-events: auto; --star-c: #fdf6e3; }
+.fav-star::before { content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%;
+  background: var(--star-c);
+  box-shadow: 0 0 6px 1.5px color-mix(in srgb, var(--star-c) 80%, transparent), 0 0 18px 5px color-mix(in srgb, var(--star-c) 22%, transparent);
+  animation: starBreath 4.6s var(--ease-breath) infinite; animation-delay: var(--twd, 0s); }
+.fav-star:active::before { transform: scale(1.5); }
+[data-theme="garden"] .fav-star::before { opacity: 0.7; box-shadow: 0 0 5px 1px color-mix(in srgb, var(--star-c) 60%, transparent), 0 0 14px 4px color-mix(in srgb, var(--star-c) 16%, transparent); }
+@media (prefers-reduced-motion: reduce) { .fav-star::before { animation: none; } }
+/* 하루 요약 — '이 날을 별로' 토글 */
+.fav-day { background: transparent; border: 1px solid var(--line-strong); color: var(--soft); }
+.fav-day .ic-line { width: 1em; height: 1em; vertical-align: -0.14em; }
+.fav-day.on { color: var(--accent-deep); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+[data-theme="midnight"] .fav-day.on { color: #ecd9a8; border-color: rgba(236, 220, 180, 0.4); background: rgba(236, 220, 180, 0.06); box-shadow: 0 0 18px rgba(236, 216, 142, 0.1); }
 .journey-hero .btn.block { margin-top: 0; padding: 14px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .jh-sub { color: var(--soft); font-size: var(--t-xs); margin: var(--s3) 0 0; }
 .journey-hero.done .js-emoji { animation: none; }
@@ -1631,9 +1657,9 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 #tab-today .ts-num { font-size: 1.3rem; }
 #tab-today .ts-label { font-size: 10px; letter-spacing: 0.2em; }
 #tab-today .ts-item { padding: var(--s1); }
-/* 위쪽은 하늘의 여백 — 올려다보는 시선 (짧은 화면에선 얕게) */
-#tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: clamp(90px, 28vh, 290px) 0 0; margin: 0; }
-@media (max-height: 700px) { #tab-today .journey-hero { padding-top: clamp(50px, 13vh, 110px); } }
+/* 위쪽은 하늘의 여백 — 올려다보는 시선 (제호가 내려온 만큼 살짝 얕게) */
+#tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: clamp(80px, 23vh, 250px) 0 0; margin: 0; }
+@media (max-height: 700px) { #tab-today .journey-hero { padding-top: clamp(40px, 10vh, 90px); } }
 #tab-today .journey-hero .jh-inner { padding: 0; border: none; }
 #tab-today .journey-hero h2 { display: none; }
 #tab-today .jh-sub { display: none; }

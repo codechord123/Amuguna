@@ -213,6 +213,19 @@ try {
   check("달력 이전 달로 이동", q("#calMonth").textContent !== calBefore);
   q("#calNext").click();
 
+  // 6-1) 별이 된 날 — 즐겨찾기 토글 → 첫 화면 하늘의 별 → 별 클릭 바로가기
+  { const todayCell = q(`#moodCal [data-cal="${rk(0)}"]`); todayCell.click(); }
+  check("하루 요약에 별 토글 버튼", !!q('#subBody [data-eact="fav"]'));
+  q('#subBody [data-eact="fav"]').click();
+  check("즐겨찾기 저장(fav=true)", ls("entries_v2")[rk(0)].fav === true);
+  check("하늘에 별이 떴다", d.querySelectorAll("#favSky .fav-star").length === 1);
+  q("#subBack").click();
+  q("#favSky .fav-star").click();
+  check("별 클릭 → 그날 기록 바로가기", !q("#subpage").hasAttribute("hidden") && q("#subTitle").textContent.includes("일"));
+  q('#subBody [data-eact="fav"]').click();
+  check("별 해제 시 하늘에서 사라짐", !ls("entries_v2")[rk(0)].fav && d.querySelectorAll("#favSky .fav-star").length === 0);
+  q("#subBack").click();
+
   // 7) 설정: 테마/글자크기/톤
   q("[data-tab=settings]").click();
   check("테마 2종(낮 종이·밤 먹)", d.querySelectorAll(".theme-btn").length === 2 && !!q(".theme-btn[data-theme=garden]") && !!q(".theme-btn[data-theme=midnight]"));
