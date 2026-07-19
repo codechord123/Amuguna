@@ -3838,9 +3838,8 @@ function jSteps() {
   const s = [];
   if (!pastDate) s.push("care"); // 나를 위한 한마디·미션으로 정서적 안정부터 — 재편집에도 항상
   s.push("feel");
-  s.push("note", "praise");
+  s.push("praise", "note"); // 조각(잘한 일·속상한 일)을 먼저 줍고, 일기로 풀어쓴다
   if (!pastDate && loadChs().length) s.push("habits"); // 오늘이면 재편집이어도 습관 체크는 유지
-  s.push("reflect"); // 저녁 회고는 항상 경로에 포함
   if (!pastDate) s.push("breathe"); // 명상은 마음을 가라앉히는 마지막 마무리 단계 — 재편집에도 항상
   s.push("finish");
   return s;
@@ -3871,7 +3870,7 @@ function stepHtml(id) {
     { const cut = new Date(); cut.setDate(cut.getDate() - 90); const ck = todayKey(cut);
       Object.values(loadEntries()).forEach((e) => { if (!e.date || e.date < ck || e.date === jData.date) return; (e.tags || []).forEach((t) => tagFreq[t] = (tagFreq[t] || 0) + 1); }); }
     return `<p class="j-q">지금 마음, 몇 점인가요?</p>
-      <p class="hint" style="text-align:center;margin:-10px 0 6px">막대를 움직여 0~100점으로 표현해요.</p>
+      <p class="hint" style="text-align:center;margin:-10px 0 6px">동그라미를 돌리거나 아래 막대로 0~100점을 표현해요.</p>
       <div class="dial-wrap">
         <svg class="dial" viewBox="0 0 200 200" id="jDial" aria-hidden="true">
           <path class="dial-track" id="jDialTrack" d="${dialArc(100)}"></path>
@@ -3890,10 +3889,22 @@ function stepHtml(id) {
     <p class="hint">코로 천천히 들이쉬고… 입으로 길게 내쉬어요.</p>
     <button class="btn primary block" id="jBreatheBtn" style="margin-top:14px">호흡 시작하기</button>
     <p class="hint" style="text-align:center;margin-top:10px">준비되면 아래 '다음'을 눌러요.</p>`;
-  if (id === "note") return `<p class="j-q">${notePrompt(jData.mood)}</p>
-    <textarea id="jNote" rows="5" placeholder="편하게 적어요. 비워둬도 괜찮아요.">${escapeHtml(jData.note || "")}</textarea>`;
-  if (id === "praise") return `<p class="j-q">오늘 잘한 일이나 고마웠던 일 하나만요</p>
-    <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">`;
+  if (id === "note") {
+    const bits = [];
+    if (jData.praise) bits.push(`<span class="np-chip pos">${escapeHtml(jData.praise)}</span>`);
+    if (jData.hard) bits.push(`<span class="np-chip neg">${escapeHtml(jData.hard)}</span>`);
+    const react = jData.praise && jData.hard ? "좋은 것도 속상한 것도 하나씩 — 오늘을 참 정직하게 바라봤네요."
+      : jData.praise ? "작은 잘한 일을 놓치지 않았네요. 오늘의 나, 꽤 괜찮았어요."
+      : jData.hard ? "속상한 마음을 꺼내줘서 고마워요. 여기에 더 풀어놔도 돼요." : "";
+    return `<p class="j-q">${notePrompt(jData.mood)}</p>
+    ${bits.length ? `<div class="note-pieces">${bits.join("")}</div><p class="note-react">${react}</p>` : ""}
+    <textarea id="jNote" rows="5" placeholder="${bits.length ? "위 조각을 이어서, 편하게 풀어써 봐요." : "편하게 적어요. 비워둬도 괜찮아요."}">${escapeHtml(jData.note || "")}</textarea>`;
+  }
+  if (id === "praise") return `<p class="j-q">오늘의 조각을 하나씩 남겨볼까요?</p>
+    <p class="field-label">잘한 일이나 고마웠던 일 하나</p>
+    <input type="text" id="jPraise" class="text-input" maxlength="120" value="${escapeHtml(jData.praise || "")}" placeholder="아주 사소해도 좋아요">
+    <p class="field-label" style="margin-top:16px">속상했던 일이 있었다면 하나</p>
+    <input type="text" id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}" placeholder="없으면 비워둬도 괜찮아요">`;
   if (id === "habits") {
     const today = todayKey();
     const chs = loadChs();
@@ -3910,9 +3921,6 @@ function stepHtml(id) {
       <p class="mission" id="jMission">${escapeHtml(jData.mission)}</p>
       <button type="button" class="reflect-toggle" id="jMissionMore">다른 미션 ${ICONS.refresh}</button>`;
   }
-  if (id === "reflect") return `<p class="j-q">하루를 돌아볼까요?</p>
-    <p class="field-label">가장 좋았던 순간</p><input id="jGood" class="text-input" maxlength="120" value="${escapeHtml(jData.good || "")}">
-    <p class="field-label">힘들었던 순간</p><input id="jHard" class="text-input" maxlength="120" value="${escapeHtml(jData.hard || "")}">`;
   const ins = quickInsight();
   const isToday = (jData.date || todayKey()) === todayKey();
   return `<div class="j-finish"><div class="js-ico">${ICONS.leaf}</div><h3>${isToday ? "오늘도 잘 기록했어요" : "기록을 정리했어요"}</h3>
@@ -4009,8 +4017,7 @@ function renderStep() {
 }
 function collectStep() {
   if (curId === "note") { const r = jBody.querySelector("#jNote"); if (r) jData.note = r.value.trim(); }
-  else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); }
-  else if (curId === "reflect") { const g = jBody.querySelector("#jGood"), h = jBody.querySelector("#jHard"); if (g) jData.good = g.value.trim(); if (h) jData.hard = h.value.trim(); }
+  else if (curId === "praise") { const r = jBody.querySelector("#jPraise"); if (r) jData.praise = r.value.trim(); const h = jBody.querySelector("#jHard"); if (h) jData.hard = h.value.trim(); }
 }
 // 여정 진행 임시저장 (중간에 닫아도 이어서 작성)
 function saveJDraft() { try { localStorage.setItem(DB.JDRAFT, JSON.stringify({ date: jData.date || todayKey(), curId, data: jData })); } catch (e) {} }

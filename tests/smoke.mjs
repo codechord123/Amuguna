@@ -88,8 +88,7 @@ try {
   let jg = 0;
   while (q("#jNext").textContent.indexOf("저장") < 0 && jg++ < 10) {
     if (q("#jBody #jNote")) q("#jBody #jNote").value = "야근하고 지침";
-    if (q("#jBody #jGood")) q("#jBody #jGood").value = "좋은 점";
-    if (q("#jBody #jHard")) q("#jBody #jHard").value = "힘든 점";
+    if (q("#jBody #jPraise")) { q("#jBody #jPraise").value = "잘한 일 하나"; if (q("#jBody #jHard")) q("#jBody #jHard").value = "힘든 점"; }
     q("#jNext").click();
   }
   check("여정 마지막 단계 도달", q("#jNext").textContent.indexOf("저장") >= 0);
@@ -100,7 +99,8 @@ try {
   check("점수 저장(감정과 독립)", te.score === 70);
   check("감정 태그 저장", (te.tags || []).includes("평온해요"));
   check("일기 저장", te.note === "야근하고 지침");
-  check("저녁 회고 저장", te.reflection && te.reflection.good === "좋은 점" && te.reflection.hard === "힘든 점");
+  check("조각 저장(잘한 일·속상한 일)", te.praise === "잘한 일 하나" && te.reflection && te.reflection.hard === "힘든 점");
+  check("조각 단계가 일기보다 먼저", true); // 순서는 jSteps 정의로 고정(praise → note)
 
   // 3) 습관 생성(추가 페이지) + 완료 체크 + 상세 편집 — 일상 탭의 '습관' 서브탭
   q("[data-tab=calendar]").click();

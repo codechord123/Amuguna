@@ -1826,18 +1826,15 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .dial-thumb { r: 8; stroke-width: 2; }
 .dial-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 700; font-size: 3rem; letter-spacing: 0; }
 /* 감정 칩 — 상자 없이 점+글자, 선택은 밑줄과 또렷한 잉크로 */
-.emo-tag { background: transparent; border: none; border-radius: 0; padding: var(--s2) var(--s1); color: var(--ink-2); border-bottom: 2px solid transparent; }
-.emo-tag.selected { background: transparent; box-shadow: none; color: var(--ink); font-weight: var(--w-bold); border-bottom-color: var(--accent); }
+.emo-tag { background: transparent; border: none; border-radius: var(--r-pill); padding: var(--s2) var(--s3); color: var(--ink-2); }
+.emo-tag.selected { color: var(--ink); font-weight: var(--w-bold); background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 20%, transparent); }
+[data-theme="midnight"] .emo-tag.selected { background: rgba(236, 220, 180, 0.09); box-shadow: 0 0 14px rgba(236, 216, 142, 0.22); }
 /* 빠른 저장 — 링크 톤으로 */
 .j-quick { border: none; background: none; text-decoration: underline; text-underline-offset: 3px; color: var(--soft); }
 
-/* ===== v196 — 기분 화면: 이중 컨트롤 정리(다이얼 링 제거, 숫자+슬라이더 하나로) ===== */
-.journey .dial { display: none; }
-.journey .dial-wrap { width: auto; height: auto; margin: var(--s3) auto 0; }
-.journey .dial-center { position: static; inset: auto; }
-.journey .dial-num { font-size: 3.6rem; }
-.journey .dial-label { margin-top: 2px; }
-.journey .dial-range { margin-top: var(--s6); }
+/* ===== v200 — 원형 휠 복원(점수색 링 + 명조 숫자) ===== */
+.journey .dial-range { margin-top: var(--s5); }
 @media (prefers-reduced-motion: reduce) { .fav-star .fs-sway { animation: none; } }
 
 /* ===== v197 — 리포트 타일 가운데 정렬 ===== */
@@ -1860,3 +1857,22 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] .rc-dot { fill: #ecd9a8; opacity: 0.5; }
 /* 위로 문구 — 줄바꿈을 양쪽 균형 있게 (어색한 한 단어 낙오 방지) */
 .quote, .j-quote, #tab-today .jh-invite, .mission { text-wrap: balance; }
+
+/* ===== v200 — 리포트 타일 간격 · 일기 조각·리액션 · 밤 테마 별빛 글로우 패스 ===== */
+.report-tiles { margin-top: var(--s6); }
+/* 일기 앞 조각과 다정한 반응 */
+.note-pieces { display: flex; flex-wrap: wrap; gap: var(--s2); justify-content: center; margin: 0 0 var(--s2); }
+.np-chip { max-width: 100%; padding: var(--s2) var(--s3); border-radius: var(--r-pill); font-size: var(--t-sm); font-weight: var(--w-semi); color: var(--ink-2); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.np-chip.neg { background: color-mix(in srgb, var(--danger) 9%, transparent); }
+.note-react { text-align: center; color: var(--accent-deep); font-size: var(--t-sm); font-weight: var(--w-semi); margin: 0 0 var(--s4); text-wrap: balance; }
+/* 밤 테마 — 오늘 탭처럼 전체가 별빛으로 은은하게 빛난다 */
+[data-theme="midnight"] .card h2 { text-shadow: 0 0 12px rgba(236, 216, 142, 0.26); }
+[data-theme="midnight"] .seg button.active { text-shadow: 0 0 10px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] .btn.primary { box-shadow: 0 0 26px rgba(236, 216, 142, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22); }
+[data-theme="midnight"] .habit-check.done, [data-theme="midnight"] .hg-check.done { box-shadow: 0 0 16px rgba(236, 216, 142, 0.35); }
+[data-theme="midnight"] .badge.earned { box-shadow: 0 0 16px rgba(236, 216, 142, 0.14); }
+[data-theme="midnight"] .ch-bar, [data-theme="midnight"] .hg-bar > i, [data-theme="midnight"] .badge-bar > i, [data-theme="midnight"] .wk-goal-bar > i { box-shadow: 0 0 12px rgba(236, 216, 142, 0.3); }
+[data-theme="midnight"] .hg-wd.on { box-shadow: 0 0 8px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] .cal-cell.today { box-shadow: 0 0 14px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] .ts-prose b { text-shadow: 0 0 10px rgba(236, 216, 142, 0.4); }
+[data-theme="midnight"] .jm-line, [data-theme="midnight"] .hg-count { text-shadow: 0 0 8px rgba(236, 216, 142, 0.18); }
