@@ -262,6 +262,10 @@ body.slim-hero .hero h1 { font-size: var(--t-md); }
 body.slim-hero .foot { display: none; }
 .greeting { color: var(--soft); font-weight: var(--w-medium, 500); margin: var(--s2) 0 0; font-size: var(--t-sm); letter-spacing: 0.01em; }
 .hero h1 { font-size: 2.7rem; margin: 0; font-weight: var(--w-semi); line-height: 1.15; letter-spacing: 0.05em; }
+/* 오늘 탭 — 제호는 하늘 꼭대기의 속삭임으로 물러난다 (하늘이 주인공) */
+body:not(.slim-hero) .hero h1 { font-size: 0.84rem; font-weight: var(--w-bold); letter-spacing: 0.42em; text-indent: 0.42em; color: var(--soft); opacity: 0.85; }
+body:not(.slim-hero) .sun-dot { display: none; }
+body:not(.slim-hero) .greeting { font-size: var(--t-xs); opacity: 0.62; letter-spacing: 0.06em; margin-top: var(--s2); }
 .subtitle { display: none; }
 
 .tab { animation: fade 0.45s var(--ease-soft) both; }
@@ -1003,22 +1007,45 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .jh-eyebrow { color: var(--accent-deep); font-weight: var(--w-bold); font-size: var(--t-sm); letter-spacing: 0.02em; margin: 0 0 var(--s1); }
 .journey-hero h2 { font-size: 1.55rem; margin: 0 0 var(--s2); font-weight: var(--w-bold); letter-spacing: -0.02em; }
 .journey-hero .hint { margin: 0 auto var(--s4); font-size: var(--t-base); line-height: 1.5; }
-/* 시간대 초대문 — 첫 화면이 말을 건네는 목소리 (A안) */
+/* ===== 올려다본 하늘 — 오늘 탭의 문법 =====
+   하늘이 화면의 주인공. 글은 명조 속삭임, 버튼은 별빛 테두리. */
 .jh-invite { white-space: pre-line; }
-#tab-today .jh-invite { font-size: var(--t-md); color: var(--accent-deep); font-weight: var(--w-semi); line-height: 1.7; margin-bottom: var(--s5); }
-/* 오늘의 거울 — 기록 후엔 남긴 마음이 주인공 (B안) */
-.jh-mirror { margin: 0 0 var(--s5); }
-.jm-word { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.9rem; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.01em; }
-.jm-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-right: 9px; vertical-align: 0.12em; }
-.jm-score { margin: var(--s2) 0 0; color: var(--soft); font-size: var(--t-sm); }
-.jm-quote { margin: var(--s4) auto 0; max-width: 21em; color: var(--ink-2); font-size: var(--t-base); line-height: 1.7; word-break: keep-all; }
-.jm-quote::before { content: "“"; } .jm-quote::after { content: "”"; }
-/* 기록 후의 버튼은 조용히 물러난다 */
+#tab-today .jh-invite { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.32rem; line-height: 2; color: var(--ink); font-weight: 600; letter-spacing: 0.02em; margin-bottom: var(--s6); word-break: keep-all; }
+[data-theme="midnight"] #tab-today .jh-invite { color: #f0ede4; text-shadow: 0 0 24px rgba(120, 130, 200, 0.35); }
+/* 나의 별 아래 — 오늘 남긴 마음 한 줄 */
+.jh-mirror { margin: 0 0 var(--s4); }
+.jm-line { margin: 0; color: var(--ink-2); font-size: var(--t-sm); letter-spacing: 0.03em; }
+[data-theme="midnight"] .jm-line { color: rgba(236, 231, 218, 0.62); }
+.jm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 0.02em; box-shadow: 0 0 8px color-mix(in srgb, currentColor 0%, transparent); }
+[data-theme="midnight"] .jm-dot { box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent-deep) 45%, transparent); }
+/* 별빛 버튼 — 기록 전 초대와 밤 명상 */
+#tab-today #journeyStart, #tab-today .jh-night { width: auto; display: inline-block; padding: 13px 34px; border-radius: var(--r-pill); font-weight: var(--w-semi); font-size: var(--t-base); letter-spacing: 0.02em; }
+#tab-today #journeyStart.primary { background: rgba(255, 255, 255, 0.4); color: var(--accent-deep); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); box-shadow: 0 6px 22px var(--ring); }
+[data-theme="midnight"] #tab-today #journeyStart.primary { background: rgba(236, 220, 180, 0.05); color: #ecd9a8; border-color: rgba(236, 220, 180, 0.35); box-shadow: 0 0 22px rgba(236, 216, 142, 0.12), inset 0 0 14px rgba(236, 216, 142, 0.05); }
+#tab-today .jh-night { background: rgba(255, 255, 255, 0.35); color: var(--accent-deep); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 6px 20px var(--ring); margin-top: var(--s4); }
+[data-theme="midnight"] #tab-today .jh-night { background: rgba(236, 220, 180, 0.05); color: #ecd9a8; border-color: rgba(236, 220, 180, 0.32); box-shadow: 0 0 22px rgba(236, 216, 142, 0.1); }
 .btn.quiet { background: transparent; color: var(--accent-deep); border: 1.5px solid var(--line-strong); box-shadow: none; }
-.journey-hero.done #journeyStart { background: transparent; color: var(--accent-deep); border: 1.5px solid var(--line-strong); box-shadow: none; }
-.jh-night { margin-bottom: var(--s3); }
-/* 밤 마무리 — 수면 명상이 주 동작, 기록 다시 보기는 조용한 링크로 */
-.journey-hero.night-close #journeyStart { border: none; background: none; font-size: var(--t-sm); font-weight: var(--w-semi); text-decoration: underline; text-underline-offset: 3px; padding: var(--s2); }
+/* 기록 후 — '다시 보기'는 속삭이는 링크로 */
+#tab-today .journey-hero.done #journeyStart { background: none; border: none; box-shadow: none; font-size: var(--t-sm); color: var(--soft); text-decoration: underline; text-underline-offset: 4px; padding: var(--s2); }
+[data-theme="midnight"] #tab-today .journey-hero.done #journeyStart { color: rgba(236, 231, 218, 0.45); }
+/* 하늘을 올려다보는 시선 — 위쪽은 하늘의 여백 */
+/* 언덕 실루엣 — 풀밭에 누운 지평선 */
+.skyline { position: fixed; left: 0; right: 0; bottom: calc(46px + env(safe-area-inset-bottom, 0px)); height: 92px; z-index: 0; pointer-events: none; color: #ccd1ea; }
+[data-theme="midnight"] .skyline { color: #060710; }
+.skyline svg { display: block; width: 100%; height: 100%; }
+body.slim-hero .skyline { display: none; }
+.app { position: relative; z-index: 1; }
+/* 나의 별 — 오늘의 마음이 뜨는 자리 */
+.mystar { --star-c: #fdf6e3; position: fixed; left: 50%; top: 23%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; z-index: 0; pointer-events: none;
+  background: var(--star-c);
+  box-shadow: 0 0 8px 2px var(--star-c), 0 0 28px 8px color-mix(in srgb, var(--star-c) 35%, transparent), 0 0 70px 22px color-mix(in srgb, var(--star-c) 12%, transparent);
+  animation: starBreath 5.2s var(--ease-breath) infinite; }
+.mystar::before, .mystar::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.mystar::before { width: 1px; height: 34px; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
+.mystar::after { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
+body.slim-hero .mystar, [data-theme="garden"] .mystar { display: none; }
+@keyframes starBreath { 50% { opacity: 0.72; } }
+@media (prefers-reduced-motion: reduce) { .mystar { animation: none; } }
 .journey-hero .btn.block { margin-top: 0; padding: 14px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .jh-sub { color: var(--soft); font-size: var(--t-xs); margin: var(--s3) 0 0; }
 .journey-hero.done .js-emoji { animation: none; }
@@ -1606,7 +1633,9 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 #tab-today .ts-num { font-size: 1.3rem; }
 #tab-today .ts-label { font-size: 10px; letter-spacing: 0.2em; }
 #tab-today .ts-item { padding: var(--s1); }
-#tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: var(--s8) 0 0; margin: 0; }
+/* 위쪽은 하늘의 여백 — 올려다보는 시선 (짧은 화면에선 얕게) */
+#tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: clamp(90px, 28vh, 290px) 0 0; margin: 0; }
+@media (max-height: 700px) { #tab-today .journey-hero { padding-top: clamp(50px, 13vh, 110px); } }
 #tab-today .journey-hero .jh-inner { padding: 0; border: none; }
 #tab-today .journey-hero h2 { display: none; }
 #tab-today .jh-sub { display: none; }

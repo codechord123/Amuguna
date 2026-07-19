@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v184" />
+  <meta name="app-version" content="v185" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -22,6 +22,9 @@
     <span class="blob blob2"></span>
     <span class="blob blob3"></span>
   </div>
+  <!-- 오늘 탭 — 올려다본 하늘: 낮은 언덕 실루엣 + 나의 별 -->
+  <div class="skyline" aria-hidden="true"><svg viewBox="0 0 390 90" preserveAspectRatio="none"><path d="M0,58 C60,42 120,54 180,48 C250,40 300,56 390,46 L390,90 L0,90 Z" fill="currentColor"/></svg></div>
+  <div class="mystar" id="myStar" aria-hidden="true" hidden></div>
 
   <!-- ========== 온보딩 ========== -->
   <div class="onboard" id="onboard" role="dialog" aria-modal="true" aria-label="앱 소개" hidden>
@@ -67,12 +70,10 @@
           <h2>오늘의 여정</h2>
           <p class="hint jh-invite" id="journeyStartHint" aria-live="polite">한 걸음씩 따라가며 오늘 마음을 남겨봐요.</p>
           <div class="jh-mirror" id="jhMirror" hidden>
-            <p class="jm-word"><i class="jm-dot" id="jmDot"></i><span id="jmWord"></span></p>
-            <p class="jm-score" id="jmScore"></p>
-            <blockquote class="jm-quote" id="jmQuote" hidden></blockquote>
+            <p class="jm-line"><i class="jm-dot" id="jmDot"></i><span id="jmWord"></span><span id="jmScore"></span></p>
           </div>
-          <button class="btn quiet block jh-night" id="jhNightBtn" hidden>10분 수면 명상</button>
           <button class="btn primary block" id="journeyStart">오늘의 여정 시작하기</button>
+          <button class="btn quiet block jh-night" id="jhNightBtn" hidden>잠들기 전, 10분 별빛 명상</button>
           <p class="jh-sub" id="journeySub">3분이면 충분해요 · 한 번에 하나씩</p>
         </div>
       </div>

@@ -330,10 +330,14 @@ function updateTodayStats() {
   // 숫자 대시보드 대신 한 문장 — 셀프케어의 목소리로 (C안)
   const proseEl = document.getElementById("tsProse");
   if (proseEl) {
+    const starry = document.documentElement.getAttribute("data-theme") === "midnight";
     let prose = "";
     if (list.length > 0) {
-      prose = streak >= 2 ? `<b>${streak}일째</b> 이어지고 있어요` : `지금까지 <b>${list.length}번</b> 기록했어요`;
-      if (week >= 1 && list.length > 1) prose += ` · 최근 7일, <b>${week}번</b> 만났어요`;
+      if (starry) prose = streak >= 2 ? `<b>${streak}일째</b> 별을 보러 오고 있어요` : `지금까지 <b>${list.length}번</b> 별을 보러 왔어요`;
+      else {
+        prose = streak >= 2 ? `<b>${streak}일째</b> 이어지고 있어요` : `지금까지 <b>${list.length}번</b> 기록했어요`;
+        if (week >= 1 && list.length > 1) prose += ` · 최근 7일, <b>${week}번</b> 만났어요`;
+      }
     }
     proseEl.innerHTML = prose;
     proseEl.hidden = !prose;
@@ -366,60 +370,53 @@ function updateJourneyHero() {
   const tk = todayKey(), p = tk.split("-");
   const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   set("journeyEyebrow", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일`);
-  set("heroDate", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일 · `);
   const e = loadEntries()[tk];
   const done = !!(e && e.mood);
   const tb = timeBucket();
+  const starry = document.documentElement.getAttribute("data-theme") === "midnight"; // 별하늘 테마인가
   const show = (id, on) => { const el = document.getElementById(id); if (el) el.hidden = !on; };
   const hintEl = document.getElementById("journeyStartHint");
   const startBtn = document.getElementById("journeyStart");
+  // 제호 아래는 날짜와 시간의 결만 속삭인다
+  const bucketKo = { morning: "아침", day: "낮", evening: "저녁", night: "밤" };
+  set("heroDate", `${+p[1]}월 ${+p[2]}일 ${dayOfWeekKo(tk)}요일 `);
+  const g = document.getElementById("greeting"); if (g) g.textContent = bucketKo[tb];
   card.classList.toggle("done", done);
-  card.classList.toggle("night-close", done && tb === "night");
+  const star = document.getElementById("myStar");
   if (done) {
-    // B안 '오늘의 거울' — 남긴 마음이 첫 화면의 주인공이 된다
+    // 나의 별 — 오늘의 마음이 하늘의 별이 된다
     const sc = entryScore(e);
-    set("jmWord", e.mood);
-    const dot = document.getElementById("jmDot");
-    if (dot) dot.style.background = sc != null ? scoreColor(sc) : "var(--accent)";
-    set("jmScore", sc != null ? `오늘의 마음 · ${Math.round(sc)}점` : "오늘의 마음");
-    const q = (e.note || "").split(/\n/)[0].trim();
-    const qEl = document.getElementById("jmQuote");
-    if (qEl) { qEl.textContent = q.length > 64 ? q.slice(0, 63) + "…" : q; qEl.hidden = !q; }
-    show("jhMirror", true);
-    if (tb === "night") {
-      // A안 밤 — 하루를 닫아주는 화면
-      if (hintEl) { hintEl.hidden = false; hintEl.textContent = "오늘은 여기까지.\n수고했어요, 이제 쉬어요."; }
-      show("jhNightBtn", true);
-      set("journeyStart", "오늘 기록 다시 보기");
-      show("journeySub", false);
-    } else {
-      if (hintEl) hintEl.hidden = true;
-      show("jhNightBtn", false);
-      set("journeyStart", "오늘 여정 다시 하기");
-      const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
-      show("journeySub", true);
-      set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
+    const col = sc != null ? scoreColor(sc) : "";
+    if (hintEl) {
+      hintEl.hidden = false;
+      hintEl.textContent = starry
+        ? "오늘의 마음이\n저기, 별이 되었어요."
+        : "오늘의 마음을 잘 남겨두었어요.\n남은 하루도 부드럽게.";
     }
+    set("jmWord", e.mood);
+    set("jmScore", sc != null ? ` · ${Math.round(sc)}` : "");
+    const dot = document.getElementById("jmDot");
+    if (dot) dot.style.background = col || "var(--accent)";
+    show("jhMirror", true);
+    if (star) { star.hidden = !starry; if (col) star.style.setProperty("--star-c", col); }
+    set("journeyStart", "오늘 기록 다시 보기");
+    show("jhNightBtn", tb === "evening" || tb === "night");
+    set("jhNightBtn", starry ? "잠들기 전, 10분 별빛 명상" : "잠들기 전, 10분 명상");
+    show("journeySub", false);
     if (startBtn) startBtn.classList.remove("primary");
   } else {
-    // A안 — 시간대가 말을 건네는 초대
-    const invites = {
-      morning: "좋은 아침이에요.\n오늘은 어떤 마음으로 시작할까요?",
-      day: "잠시 쉬어가요.\n지금 마음은 어떤가요?",
-      evening: "하루가 저물어가요.\n오늘 하루, 어땠나요?",
-      night: "고요한 밤이에요.\n잠들기 전, 마음을 남겨볼까요?",
-    };
+    // 올려다본 하늘 — 하늘이 말을 건네는 초대
+    const invites = starry
+      ? { morning: "오늘도 별이 떠 있어요.\n잠시, 멀리 바라볼까요.", day: "오늘도 별이 떠 있어요.\n잠시, 멀리 바라볼까요.", evening: "오늘도 별이 떴어요.\n잠시, 멀리 바라볼까요.", night: "오늘도 별이 떴어요.\n잠시, 멀리 바라볼까요." }
+      : { morning: "하늘이 밝아왔어요.\n오늘은 어떤 마음인가요?", day: "하늘 한 번 올려다봤나요?\n잠시 쉬었다 가요.", evening: "해가 낮게 기울었어요.\n오늘 하루, 어땠나요?", night: "고요한 밤이에요.\n잠들기 전, 마음을 남겨볼까요?" };
     if (hintEl) { hintEl.hidden = false; hintEl.textContent = invites[tb]; }
     show("jhMirror", false);
     show("jhNightBtn", false);
+    if (star) star.hidden = true;
     set("journeyStart", "오늘 마음 남기기");
-    show("journeySub", true);
-    set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
+    show("journeySub", false);
     if (startBtn) startBtn.classList.add("primary");
   }
-  // 첫 주 온보딩 미션 — 습관 형성 가속(작은 목표)
-  const total = sortedEntries(loadEntries()).length;
-  if (total < 3 && !(done && tb === "night")) { show("journeySub", true); set("journeySub", `첫 주 미션 · 3일 기록하기 (${total}/3) — 작게 시작해요`); }
 }
 // 위기 신호 직후의 부정 표현 — "죽고 싶지 않아", "자해 안 해" 등은 위기로 보지 않음
 const CRISIS_NEG = /^(지않|진않|지는않|지말|지마|하지않|안[하해했할함]|은아니|는아니|아니)/;
@@ -3418,6 +3415,8 @@ function applySettings() {
   document.getElementById("ambientVol").value = settings.ambientVol;
   document.querySelectorAll(".sound-btn").forEach((b) => { const on = settings.ambientType && settings.ambientType !== "off" && b.dataset.sound === settings.ambientType; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
   Sound.setSfx(settings.sfx); Sound.setBreath(settings.breathSound); Sound.state.ambientVol = settings.ambientVol / 100;
+  // 테마가 바뀌면 첫 화면의 하늘 문구·별도 함께 갈아입는다
+  if (document.getElementById("journeyStartCard")) { updateJourneyHero(); updateTodayStats(); }
 }
 if (darkMq) darkMq.addEventListener("change", () => { if (settings.theme === "auto") applySettings(); });
 document.getElementById("themeGrid").addEventListener("click", (e) => {
