@@ -323,18 +323,19 @@ function renderFavStars() {
   const entries = loadEntries();
   const favs = Object.keys(entries).filter((k) => entries[k] && entries[k].fav).sort().slice(-28); // 최근 28개까지 — 하늘이 어수선해지지 않게
   const placed = []; // 별이 겹치면 서로 가리고 누를 수 없으므로, 터치 타깃 간격만큼 비켜 앉힌다
-  const clash = (x, y) => placed.some((q) => Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 5);
+  const clash = (x, y) => placed.some((q) => Math.abs(q.x - x) < 9 && Math.abs(q.y - y) < 10); // y는 레이어(화면 44%) 기준 %
   layer.innerHTML = favs.map((k) => {
     let h = 7; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) >>> 0; // 날짜 고유 해시 — 별자리가 매번 같은 자리에
-    let x = 7 + (h % 86), y = 11 + ((h >> 7) % 26), tries = 0;
+    let x = 7 + (h % 86), y = 36 + ((h >> 7) % 52), tries = 0; // y 36~88% = 화면의 16~39% — 제호 아래 하늘
     while (clash(x, y) && tries < 60) {
-      h = (h * 2654435761 + 1) >>> 0; x = 7 + (h % 86); y = 11 + ((h >> 7) % 26); tries++;
+      h = (h * 2654435761 + 1) >>> 0; x = 7 + (h % 86); y = 36 + ((h >> 7) % 52); tries++;
     }
     placed.push({ x, y });
     const sc = entryScore(entries[k]);
     const col = sc != null ? scoreColor(sc) : "#fdf6e3";
     const p = k.split("-");
-    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 별 — 그날 기록 보기"></button>`;
+    // 밤하늘에선 별, 낮하늘에선 종이비행기 (CSS가 테마별로 골라 보여줌)
+    return `<button class="fav-star" style="left:${x}%;top:${y}%;--star-c:${col};--twd:${((h >> 3) % 36) / 10}s;--rot:${-16 + ((h >> 4) % 30)}deg" data-day="${k}" aria-label="${+p[1]}월 ${+p[2]}일의 기록 — 바로 보기"><svg class="fs-plane" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.2 L20.5 4.2 L14 19.8 L11.2 13.2 Z"/><path d="M11.2 13.2 L20.5 4.2"/></svg></button>`;
   }).join("");
 }
 {

@@ -1076,8 +1076,14 @@ body.slim-hero .fav-sky { display: none; }
   box-shadow: 0 0 6px 1.5px color-mix(in srgb, var(--star-c) 80%, transparent), 0 0 18px 5px color-mix(in srgb, var(--star-c) 22%, transparent);
   animation: starBreath 4.6s var(--ease-breath) infinite; animation-delay: var(--twd, 0s); }
 .fav-star:active::before { transform: scale(1.5); }
-[data-theme="garden"] .fav-star::before { opacity: 0.7; box-shadow: 0 0 5px 1px color-mix(in srgb, var(--star-c) 60%, transparent), 0 0 14px 4px color-mix(in srgb, var(--star-c) 16%, transparent); }
-@media (prefers-reduced-motion: reduce) { .fav-star::before { animation: none; } }
+/* 낮하늘의 즐겨찾기는 종이비행기 — 밤의 별과 짝을 이루는 존재 */
+.fav-star .fs-plane { display: none; }
+[data-theme="garden"] .fav-star::before { display: none; }
+[data-theme="garden"] .fav-star .fs-plane { display: block; width: 19px; height: 19px; margin: 5px auto 0; fill: none; stroke: var(--star-c); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--star-c) 40%, transparent));
+  transform: rotate(var(--rot, -8deg)); animation: planeFloat 6.5s var(--ease-breath) infinite; animation-delay: var(--twd, 0s); }
+@keyframes planeFloat { 50% { transform: translateY(-4px) rotate(var(--rot, -8deg)); } }
+@media (prefers-reduced-motion: reduce) { .fav-star::before, .fav-star .fs-plane { animation: none; } }
 /* 하루 요약 — '이 날을 별로' 토글 */
 .fav-day { background: transparent; border: 1px solid var(--line-strong); color: var(--soft); }
 .fav-day .ic-line { width: 1em; height: 1em; vertical-align: -0.14em; }
@@ -1679,3 +1685,33 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* 여백 정돈 */
 #tab-today .today-stats { margin-top: var(--s7); }
 [data-theme="midnight"] .blob3 { display: none; }
+
+/* ============================================================
+   하늘 위 미니멀 (v189) — 카드 상자를 벗기고, 내용이 하늘에 떠 있게.
+   오늘 탭의 문법(부유 섹션 + 헤어라인 구분선)을 앱 전체로.
+   ============================================================ */
+.card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: var(--s5) var(--s2); margin: 0; position: relative; }
+@media (max-height: 700px) { .card { padding: var(--s4) var(--s2); } }
+.tab .card:not(:last-child)::after, .subpage .card:not(:last-child)::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: 0; height: 1px; background: var(--line); }
+.stats-panel .card:not(:last-child)::after { content: ""; position: absolute; left: 6%; right: 6%; bottom: 0; height: 1px; background: var(--line); }
+/* 안전 안내는 반드시 눈에 띄어야 하므로 상자 유지 */
+.card.safety, .card.help-always { background: var(--accent-2); border: 1.5px solid var(--accent); border-radius: var(--r-md); padding: var(--s5); }
+.card.safety::after, .card.help-always::after { display: none; }
+/* 세그먼트 — 알약 대신 밑줄 텍스트 탭 */
+.seg { background: transparent; padding: 0; gap: var(--s6); justify-content: center; border-radius: 0; box-shadow: none; }
+.seg button { flex: 0 0 auto; padding: var(--s2) 2px; border-radius: 0; border-bottom: 2px solid transparent; color: var(--soft); font-size: var(--t-base); }
+.seg button.active { background: transparent; box-shadow: none; color: var(--accent-deep); border-bottom-color: var(--accent); }
+.badge-seg { justify-content: flex-start; gap: var(--s5); }
+/* 습관 목록 — 상자 대신 결 따라 나뉘는 행 */
+.habit-card { background: transparent; border: none; box-shadow: none; border-radius: 0; padding: var(--s5) var(--s2); margin-bottom: 0; border-bottom: 1px solid var(--line); }
+#challengeList .habit-card:last-child { border-bottom: none; }
+#challengeList.compact .habit-card { padding: var(--s3) var(--s2); border-radius: 0; }
+/* 설정 — 알약 그리드 대신 한 줄 목록 */
+.settings-grid { grid-template-columns: 1fr; gap: 0; }
+.settings-grid .card { padding: var(--s4) var(--s2); }
+.settings-grid .card:not(:last-child)::after { content: ""; position: absolute; left: 6%; right: 6%; bottom: 0; height: 1px; background: var(--line); }
+/* 리포트 요약 그라데이션 상자도 하늘에 맡긴다 */
+.rpt-summary { background: transparent; border: none; }
+/* 오늘 탭은 여백의 미 그대로 — 구분선 없이 */
+#tab-today .card::after { display: none; }
