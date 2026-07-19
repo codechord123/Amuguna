@@ -348,17 +348,16 @@ function updateJourneyHero() {
   const e = loadEntries()[tk];
   const done = !!(e && e.mood);
   card.classList.toggle("done", done);
-  try { renderConstellation(); } catch (err) {}
   if (done) {
     set("journeyEmoji", "🌿");
     set("journeyStartHint", `오늘 '${e.mood}' 마음을 남겼어요. 잘 해냈어요.`);
-    { const jb = document.getElementById("journeyStart"); if (jb) jb.innerHTML = "<b>오늘의 여정</b><span>다시 돌아보기</span>"; }
+    set("journeyStart", "오늘 여정 다시 하기");
     const ins = quickInsight(); // 데이터 인사이트를 첫 화면에 노출
     set("journeySub", ins || "원하면 언제든 다시 돌아볼 수 있어요");
   } else {
     set("journeyEmoji", "✨");
     set("journeyStartHint", "한 걸음씩 따라가며 오늘 마음을 남겨봐요.");
-    { const jb = document.getElementById("journeyStart"); if (jb) jb.innerHTML = "<b>오늘의 여정</b><span>눌러서 시작 · 3분</span>"; }
+    set("journeyStart", "오늘의 여정 시작하기");
     set("journeySub", "3분이면 충분해요 · 한 번에 하나씩");
   }
   // 첫 주 온보딩 미션 — 습관 형성 가속(작은 목표)
@@ -4007,32 +4006,6 @@ function saveJourney() {
 }
 // 완료 없이 닫기 = 일시정지(진행분 보존)
 function pauseJourney() { collectStep(); saveJDraft(); closeJourney(); toast("여기까지 임시저장했어요 · 언제든 이어서 쓸 수 있어요"); }
-/* 나의 별자리 — 연속 기록이 별이 되어 이어짐 (오늘의 별은 여정을 마치면 채워짐) */
-function renderConstellation() {
-  const el = document.getElementById("constWrap"); if (!el) return;
-  const entries = loadEntries();
-  const tk = todayKey();
-  const doneToday = !!(entries[tk] && entries[tk].mood);
-  const si = calcStreakInfo(entries);
-  const streak = si.streak; // 오늘 기록 시 오늘 포함
-  const pastCount = Math.min(doneToday ? streak - 1 : streak, 5); // 과거 별 최대 5개
-  const XS = [52, 118, 186, 252, 318], YS = [104, 72, 90, 56, 76];
-  const stars = [];
-  for (let i = 0; i < pastCount; i++) stars.push({ x: XS[5 - pastCount + i], y: YS[5 - pastCount + i] });
-  const todayStar = { x: 350, y: 40 };
-  let svg = '<svg viewBox="0 0 390 150" aria-hidden="true">';
-  const chain = stars.concat([todayStar]);
-  for (let i = 0; i < chain.length - 1; i++) svg += `<line x1="${chain[i].x}" y1="${chain[i].y}" x2="${chain[i + 1].x}" y2="${chain[i + 1].y}"/>`;
-  stars.forEach((s, i) => { svg += `<circle cx="${s.x}" cy="${s.y}" r="${3.2 + i * 0.3}"/>`; });
-  svg += doneToday
-    ? `<circle cx="${todayStar.x}" cy="${todayStar.y}" r="6" class="c-today on"/>`
-    : `<circle cx="${todayStar.x}" cy="${todayStar.y}" r="6" class="c-today"/>`;
-  svg += "</svg>";
-  const cap = streak >= 2
-    ? `${streak}일째 이어지는 나의 별자리${doneToday ? "" : " · 오늘의 별이 기다려요"}`
-    : (doneToday ? "오늘, 첫 별을 켰어요" : "오늘 첫 별을 켜볼까요");
-  el.innerHTML = svg + `<p class="const-cap">${cap}</p>`;
-}
 document.getElementById("journeyStart").addEventListener("click", () => { Sound.tap(); openJourney(); });
 document.getElementById("jClose").addEventListener("click", () => { Sound.tap(); pauseJourney(); });
 jNext.addEventListener("click", () => {

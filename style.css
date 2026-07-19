@@ -222,11 +222,7 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
   top: 21%; left: 76%; background: #fff8e0; filter: none; opacity: 1;
   box-shadow: 0 0 9px 2px rgba(255, 246, 215, 0.9);
   animation: starSparkle 3.2s ease-in-out infinite; }
-[data-theme="midnight"] .blob3::before, [data-theme="midnight"] .blob3::after {
-  content: ""; position: absolute; left: 50%; top: 50%; background: linear-gradient(rgba(255,248,222,0), rgba(255,248,222,0.85), rgba(255,248,222,0)); }
-[data-theme="midnight"] .blob3::before { width: 1px; height: 16px; transform: translate(-50%, -50%); }
-[data-theme="midnight"] .blob3::after { width: 16px; height: 1px; background: linear-gradient(90deg, rgba(255,248,222,0), rgba(255,248,222,0.85), rgba(255,248,222,0)); transform: translate(-50%, -50%); }
-@keyframes starSparkle { 0%, 100% { transform: scale(0.65); opacity: 0.45; } 50% { transform: scale(1.35); opacity: 1; } }
+ 50% { transform: scale(1.35); opacity: 1; } }
 @keyframes shoot1 {
   0%, 91% { opacity: 0; transform: rotate(32deg) translateX(0); }
   92% { opacity: 1; }
@@ -1587,41 +1583,30 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 #tab-today .journey-hero .hint { font-size: var(--t-sm); color: var(--soft); margin: 0 auto var(--s5); }
 #tab-today .foot { margin-top: var(--s8); }
 
-/* ===== R3: 달무리 링 여정 버튼 + 나의 별자리 ===== */
-#tab-today .journey-hero { padding: var(--s5) 0 0; }
-#tab-today .journey-hero .hint { margin-bottom: var(--s5); }
-#tab-today #journeyStart {
-  width: 174px; height: 174px; border-radius: 50%; margin: 0 auto;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: transparent; border: 1.5px solid var(--accent);
-  box-shadow: 0 0 30px var(--ring), inset 0 0 30px var(--ring);
-  color: var(--ink); position: relative; padding: 0;
-  animation: ringBreath 4.5s ease-in-out infinite;
+/* ===== 고요한 밤하늘 — 아름다움은 배경에, UI는 최소로 ===== */
+/* 하늘의 깊이 (위가 밝고 아래로 깊어짐) */
+[data-theme="midnight"] { background-image: linear-gradient(180deg, #1a1b2e 0%, #14131e 48%, #0e0d16 100%); background-attachment: fixed; }
+/* 배경의 달 — 버튼이 아니라 하늘에 떠 있는 존재 */
+[data-theme="midnight"] .blob3 {
+  display: block; width: 72px; height: 72px; border-radius: 50%;
+  top: 57%; left: auto; right: 12%; opacity: 1; filter: none;
+  background: radial-gradient(circle at 36% 30%, #f6e5b6, #e0bf7c 62%, #c09a52);
+  box-shadow: 0 0 44px 10px rgba(217, 179, 106, 0.26), 0 0 130px 48px rgba(217, 179, 106, 0.09),
+    inset -8px -10px 24px rgba(120, 80, 20, 0.35);
+  animation: moonGlow 6s ease-in-out infinite;
 }
-#tab-today #journeyStart::before {
-  content: ""; position: absolute; inset: 14px; border-radius: 50%;
-  border: 1px solid var(--accent); opacity: 0.3;
+@keyframes moonGlow {
+  0%, 100% { box-shadow: 0 0 44px 10px rgba(217, 179, 106, 0.26), 0 0 130px 48px rgba(217, 179, 106, 0.09), inset -8px -10px 24px rgba(120, 80, 20, 0.35); }
+  50% { box-shadow: 0 0 58px 14px rgba(217, 179, 106, 0.34), 0 0 150px 58px rgba(217, 179, 106, 0.13), inset -8px -10px 24px rgba(120, 80, 20, 0.35); }
 }
-#tab-today #journeyStart::after {
-  content: ""; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
-  width: 5px; height: 5px; border-radius: 50%; background: var(--accent-deep);
-  box-shadow: 0 0 10px 2px var(--ring);
+/* 낮 — 연보라 하늘의 해무리 */
+[data-theme="garden"] .blob3 {
+  display: block; width: 88px; height: 88px; border-radius: 50%;
+  top: 55%; left: auto; right: 11%; opacity: 0.8; filter: blur(2px);
+  background: radial-gradient(circle at 38% 32%, #ffffff, #dfe3f8 55%, rgba(199, 205, 240, 0));
+  box-shadow: 0 0 60px 24px rgba(255, 255, 255, 0.35);
+  animation: none;
 }
-#tab-today #journeyStart b { font-size: 1.15rem; font-weight: var(--w-bold); }
-#tab-today #journeyStart span { margin-top: 7px; font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
-#tab-today .journey-hero.done #journeyStart { border-color: var(--line-strong); animation: none; }
-@keyframes ringBreath {
-  0%, 100% { box-shadow: 0 0 30px var(--ring), inset 0 0 30px var(--ring); }
-  50% { box-shadow: 0 0 46px var(--ring), inset 0 0 40px var(--ring); }
-}
-/* 별자리 */
-#constWrap { margin: var(--s3) 0 0; }
-#constWrap svg { width: 100%; height: auto; display: block; }
-#constWrap line { stroke: var(--accent); stroke-opacity: 0.4; stroke-width: 1; stroke-dasharray: 3 5; }
-#constWrap circle { fill: var(--accent); }
-#constWrap circle.c-today { fill: none; stroke: var(--accent-deep); stroke-width: 1.5; }
-#constWrap circle.c-today.on { fill: var(--accent); stroke: none; }
-#constWrap .const-cap { text-align: center; font-size: var(--t-xs); letter-spacing: 0.1em; color: var(--soft); margin: var(--s2) 0 0; }
-/* 통계는 별자리 아래에 더 작게 */
-#tab-today .today-stats { margin-top: var(--s4); }
-@media (prefers-reduced-motion: reduce) { #tab-today #journeyStart { animation: none; } }
+/* 여백 정돈 */
+#tab-today .today-stats { margin-top: var(--s7); }
+@media (prefers-reduced-motion: reduce) { [data-theme="midnight"] .blob3 { animation: none; } }
