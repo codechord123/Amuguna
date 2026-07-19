@@ -1792,3 +1792,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* 미션 문장은 인용문과 목소리 분리 — 담백한 본문 톤 */
 #tab-rest .mission { font-weight: var(--w-med); color: var(--ink-2); font-size: var(--t-base); }
 @media (max-height: 700px) { #tab-rest .card { padding-top: var(--s4); padding-bottom: var(--s4); } }
+
+/* ===== v194 — 나만의 문구 추가 소형화, 비행기 경쾌하게 ===== */
+.comfort-add summary { font-size: var(--t-xs); color: var(--soft); opacity: 0.85; padding: var(--s1) 0; }
+.comfort-tools { font-size: var(--t-xs); }
