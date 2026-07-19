@@ -1854,3 +1854,9 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 13%, transparent), inset 0 0 14px color-mix(in srgb, var(--accent) 5%, transparent); }
 [data-theme="midnight"] .report-tile { background: rgba(236, 220, 180, 0.04); border-color: rgba(236, 220, 180, 0.3);
   box-shadow: 0 0 22px rgba(236, 216, 142, 0.12), inset 0 0 14px rgba(236, 216, 142, 0.05); }
+
+/* ===== v198 — 마음 흐름 그래프 정돈 ===== */
+.rc-dot { fill: var(--accent); opacity: 0.55; }
+[data-theme="midnight"] .rc-dot { fill: #ecd9a8; opacity: 0.5; }
+/* 위로 문구 — 줄바꿈을 양쪽 균형 있게 (어색한 한 단어 낙오 방지) */
+.quote, .j-quote, #tab-today .jh-invite, .mission { text-wrap: balance; }

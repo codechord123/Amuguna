@@ -1188,7 +1188,6 @@ function renderStats() {
   renderHabitSummary();
   renderWordWeb(entries);
   renderTagInsight(entries);
-  renderRhythm(entries);
   renderGratitude(list);
   renderDist(list, entries);
   if (typeof applyStatLayout === "function") applyStatLayout(); // 사용자 맞춤 순서/숨김 반영
@@ -1252,8 +1251,8 @@ if (_allAnalysisToggle) _allAnalysisToggle.addEventListener("click", () => {
 });
 
 /* 분석 카드 맞춤 — 보고 싶은 분석을 '메인'으로 올리거나(고정), 순서 변경/숨김 (자유도) */
-const STAT_SEC_DEFAULT = ["dist", "tags", "rhythm", "habitsum", "corr", "grat", "web"]; // 에센셜만 — 기록구성·실천매트릭스는 중복이라 정리(v150)
-const STAT_SEC_NAME = { rhythm: "마음 리듬", tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", web: "생각의 지도" };
+const STAT_SEC_DEFAULT = ["dist", "tags", "habitsum", "corr", "grat", "web"]; // 마음 리듬 제거(v198)
+const STAT_SEC_NAME = { tags: "자주 느낀 감정", dist: "마음 흐름·분포", grat: "잘한 일 모아보기", habitsum: "습관 요약", corr: "습관과 기분", web: "생각의 지도" };
 let statEditing = false;
 function statOrder() {
   const saved = (settings.statOrder || []).filter((id) => STAT_SEC_DEFAULT.includes(id));
@@ -1558,10 +1557,11 @@ function reportChartSvg(keys, entries) {
     }
     return d;
   };
-  const moodSegs = segsOf(mood);
-  const moodLine = moodSegs.map(curve).join(" ");
+  // 결측일이 있어도 흐름이 조각나 보이지 않게 — 기록된 점들을 하나의 곡선으로 잇는다
+  const allPts = mood.map((v, i) => v == null ? null : { x: xAt(i), y: yAt(v), v, i }).filter(Boolean);
+  const moodLine = curve(allPts);
   const baseY = (padT + plotH).toFixed(1);
-  const area = moodSegs.filter((p) => p.length > 1).map((p) => `${curve(p)} L${p[p.length - 1].x.toFixed(1)} ${baseY} L${p[0].x.toFixed(1)} ${baseY} Z`).join(" ");
+  const area = allPts.length > 1 ? `${curve(allPts)} L${allPts[allPts.length - 1].x.toFixed(1)} ${baseY} L${allPts[0].x.toFixed(1)} ${baseY} Z` : "";
   // 옅은 점선 가로 그리드 + 작은 눈금
   let grid = "", ylab = "";
   [0, 50, 100].forEach((v) => { const y = yAt(v).toFixed(1); grid += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="rc-grid"/>`; ylab += `<text x="${padL - 6}" y="${(+y + 3).toFixed(1)}" class="rc-ylabel">${v}</text>`; });
@@ -1569,10 +1569,12 @@ function reportChartSvg(keys, entries) {
   const valid = mood.map((v, i) => v == null ? null : { v, i }).filter(Boolean);
   let pts = "";
   if (valid.length) {
-    const peak = valid.reduce((a, b) => b.v > a.v ? b : a), valley = valid.reduce((a, b) => b.v < a.v ? b : a), last = valid[valid.length - 1];
+    // 기록된 날마다 작은 점 — 어떤 날이 실제 기록인지 보이게 (많으면 생략)
+    if (valid.length <= 20) valid.forEach((m) => { pts += `<circle cx="${xAt(m.i).toFixed(1)}" cy="${yAt(m.v).toFixed(1)}" r="2.4" class="rc-dot"/>`; });
+    const peak = valid.reduce((a, b) => b.v > a.v ? b : a), valley = valid.reduce((a, b) => b.v < a.v ? b : a);
     const seen = new Set();
-    const addPt = (m, lab) => { if (!m || seen.has(m.i)) return; seen.add(m.i); const x = xAt(m.i).toFixed(1), y = yAt(m.v).toFixed(1); pts += (lab ? `<text x="${x}" y="${(+y - 9).toFixed(1)}" class="rc-ptlab">${Math.round(m.v)}</text>` : "") + `<circle cx="${x}" cy="${y}" r="3.6" class="rc-pt"/>`; };
-    addPt(peak, true); addPt(valley, true); addPt(last, false);
+    const addPt = (m) => { if (!m || seen.has(m.i)) return; seen.add(m.i); const x = xAt(m.i).toFixed(1), y = yAt(m.v).toFixed(1); pts += `<text x="${x}" y="${(+y - 9).toFixed(1)}" class="rc-ptlab">${Math.round(m.v)}</text><circle cx="${x}" cy="${y}" r="3.4" class="rc-pt"/>`; };
+    if (peak.i !== valley.i) { addPt(peak); addPt(valley); } else addPt(peak);
   }
   // x 라벨 (드물게)
   let labels = ""; const step = n <= 7 ? 1 : Math.ceil(n / 5);
@@ -3275,43 +3277,6 @@ function renderHabitSummary() {
     + `<span class="hsum-rate">${r.rate}%</span>`
     + `<span class="hsum-meta">연속 ${r.streak}일${r.bestDow ? ` · ${r.bestDow}↑` : ""}</span></div>`).join("")
     + `<p class="hint" style="margin-top:10px">실천율=최근 30일 · 연속=현재 연속일 · 요일↑=가장 잘 지키는 요일.</p>`;
-}
-// 마음 리듬 — 요일(7) × 시간대(4) 평균 기분 히트맵 (요일별·시간대별 막대를 한 그래픽으로 통합)
-// 가장자리 숫자로 요일·시간대 한계평균까지 제공 (Tufte식 punch-card + margins)
-function renderRhythm(entries) {
-  const el = document.getElementById("rhythmGrid"); if (!el) return;
-  const buckets = [{ k: "아침", lo: 5, hi: 11 }, { k: "오후", lo: 12, hi: 17 }, { k: "저녁", lo: 18, hi: 21 }, { k: "밤", lo: 22, hi: 4 }];
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const cell = buckets.map(() => days.map(() => ({ sum: 0, n: 0 })));
-  let total = 0;
-  Object.values(entries).forEach((e) => {
-    const ts = e.createdAt || e.updatedAt;
-    if (!e.mood || !e.date || !ts) return;
-    const td = new Date(ts); if (todayKey(td) !== e.date) return; // 그날 작성된 기록만 — 나중에 수정한 기록의 시각 왜곡 배제
-    const h = td.getHours();
-    const bi = buckets.findIndex((b) => b.lo <= b.hi ? (h >= b.lo && h <= b.hi) : (h >= b.lo || h <= b.hi));
-    if (bi < 0) return;
-    const di = new Date(e.date + "T00:00:00").getDay();
-    cell[bi][di].sum += entryScore(e); cell[bi][di].n++; total++;
-  });
-  if (total < 3) { el.innerHTML = '<p class="empty">기록이 더 쌓이면 요일·시간대별 마음 리듬을 보여드려요</p>'; return; }
-  const rowAvg = buckets.map((_, bi) => { let s = 0, n = 0; days.forEach((_, di) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
-  const colAvg = days.map((_, di) => { let s = 0, n = 0; buckets.forEach((_, bi) => { s += cell[bi][di].sum; n += cell[bi][di].n; }); return n ? s / n : null; });
-  const cellHtml = (avg, n, label, marg) => avg == null
-    ? `<span class="rh-cell rh-empty${marg ? " rh-marg" : ""}"></span>`
-    : (n === 1 && !marg)
-      ? `<span class="rh-cell rh-dim" title="${label} · 표본 1회라 아직 경향으로 보긴 일러요">·</span>` // 관측 1회 셀은 '패턴'처럼 색칠하지 않음
-      : `<span class="rh-cell${marg ? " rh-marg" : ""}" style="background:${scoreColor(avg)}"${label ? ` title="${label}"` : ""}>${Math.round(avg)}</span>`;
-  let html = '<div class="rhythm"><span class="rh-corner"></span>';
-  days.forEach((d, i) => html += `<span class="rh-dh${i === 0 || i === 6 ? " rh-we" : ""}">${d}</span>`);
-  buckets.forEach((b, bi) => {
-    html += `<span class="rh-tl"><i>${b.k}</i>${rowAvg[bi] != null ? `<b>${Math.round(rowAvg[bi])}</b>` : ""}</span>`;
-    days.forEach((d, di) => { const c = cell[bi][di]; html += cellHtml(c.n ? c.sum / c.n : null, c.n, c.n ? `${b.k} ${d}요일 · ${c.n}회 · 평균 ${Math.round(c.sum / c.n)}점` : "", false); });
-  });
-  html += '<span class="rh-tl rh-ml">전체<i>요일</i></span>';
-  days.forEach((d, di) => html += cellHtml(colAvg[di], 0, colAvg[di] != null ? `${d}요일 평균 ${Math.round(colAvg[di])}점` : "", true));
-  html += "</div>";
-  el.innerHTML = html;
 }
 // 감정 빈도 — 감정 축(점수와 독립). 어떤 감정을 얼마나 '자주' 느꼈는지 막대로 표기.
 // 색은 그 감정의 고유 긍·부정(intrinsic valence)이라 점수 축과 섞이지 않음.

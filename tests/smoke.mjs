@@ -412,8 +412,7 @@ try {
   [rk(7), rk(6), rk(5), rk(4)].forEach((dt, i) => { rh[dt] = { date: dt, mood: i % 2 ? "활기차요" : "지쳤어요", updatedAt: dt + "T09:30:00" }; });
   window.localStorage.setItem("entries_v2", JSON.stringify(rh));
   q("[data-tab=today]").click(); q("[data-tab=stats]").click();
-  check("마음 리듬 히트맵 표시", d.querySelectorAll("#rhythmGrid .rh-cell:not(.rh-empty)").length >= 4);
-  check("리듬 표본1회 셀은 경향처럼 색칠 안 함", d.querySelectorAll("#rhythmGrid .rh-dim").length >= 1);
+  check("마음 리듬 섹션 제거됨(v198)", !d.getElementById("rhythmGrid") && !d.querySelector('[data-sec="rhythm"]'));
   check("분석 탭 발견 영역 표시", d.querySelectorAll("#discoveries .disc").length >= 1);
   check("분석 탭 핵심 지표 3종 표시(활력 제거)", d.querySelectorAll("#analyzeKpis .as-kpi").length === 3);
   check("기본 카드 순서 1차 지표(dist) 우선", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === "dist");
@@ -421,7 +420,7 @@ try {
   // 분석 맞춤(커스터마이징): 편집 진입 → 순서 올리기 → 숨김
   check("분석 맞춤 버튼 존재", !!q("#statEditBtn"));
   q("#statEditBtn").click(); // 편집 진입
-  check("맞춤 편집 컨트롤 표시", d.querySelectorAll("#allAnalysis .sec-ctrl").length >= 7);
+  check("맞춤 편집 컨트롤 표시", d.querySelectorAll("#allAnalysis .sec-ctrl").length >= 6);
   const secondSec = d.querySelectorAll("#allAnalysis > [data-sec]")[1].getAttribute("data-sec");
   q(`.sec-btn[data-act=up][data-secid="${secondSec}"]`).click();
   check("분석 섹션 위로 이동", q("#allAnalysis > [data-sec]").getAttribute("data-sec") === secondSec);
