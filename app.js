@@ -237,7 +237,7 @@ function timeBucket(h = new Date().getHours()) {
 const obSlides = [
   { e: "cup", t: "여긴 잘 쉬려고 온 곳이에요", d: "잘하려고 애쓰지 않아도 돼요. 그냥 와준 것만으로 충분해요." },
   { e: "path", t: "'오늘의 여정'으로 기록해요", d: "동그라미를 돌려 오늘 기분을 0~100점으로, 감정도 골라요. 한 걸음씩 따라가면 끝나요." },
-  { e: "bars", t: "기록이 쌓이면 나를 알게 돼요", d: "기분·활력 흐름, 요일 패턴, 감정과 습관의 관계까지 '기록' 탭이 분석해줘요." },
+  { e: "bars", t: "기록이 쌓이면 나를 알게 돼요", d: "마음 흐름, 자주 느낀 감정, 감정과 습관의 관계까지 '기록' 탭이 분석해줘요." },
   { e: "leaf", t: "지칠 땐 '쉼' 탭에서 숨 한 번", d: "위로 한마디, 호흡 명상, 잔잔한 소리. 언제든 도망 와도 돼요." },
 ];
 let obIndex = 0;
@@ -1496,7 +1496,7 @@ function drawReportCanvas(kind) {
     y += 36; ctx.font = "bold 42px sans-serif"; const numStr = `${Math.round(cur.avgMood || 0)}`; if (render) { ctx.fillStyle = scoreColor(cur.avgMood || 0); ctx.fillText(numStr, padX, y); }
     const numW = ctx.measureText(numStr).width; ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = soft; ctx.fillText("/100", padX + numW + 5, y); }
     if (dMood != null) { ctx.font = "bold 12px sans-serif"; if (render) { ctx.fillStyle = dMood > 0 ? accentDeep : soft; ctx.fillText(`${dMood > 0 ? "▲" : dMood < 0 ? "▼" : "–"}${Math.abs(dMood)} 지난 ${unit}`, padX + numW + 44, y); } }
-    y += 22; const stats = [`기록 ${cur.days}일`]; if (cur.avgEnergy != null) stats.push(`활력 ${cur.avgEnergy.toFixed(1)}/5`); if (cur.habPct != null) stats.push(`습관 ${cur.habPct}%`);
+    y += 22; const stats = [`기록 ${cur.days}일`]; if (cur.habPct != null) stats.push(`습관 ${cur.habPct}%`);
     ctx.font = "13px sans-serif"; if (render) { ctx.fillStyle = ink2; ctx.fillText(stats.join(" · "), padX, y); }
     y += 22; if (render) { ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke(); } y += 24;
     if (headline) { ctx.font = "bold 13px sans-serif"; if (render) ctx.fillStyle = accentDeep; y = wrap("" + headline, padX, y, contentW, 19, render); y += 14; }
