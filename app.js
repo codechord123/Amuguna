@@ -297,21 +297,19 @@ function openEntryDetail(dateKey) {
 }
 function entryDetailHtml(e) {
   const sc = entryScore(e);
-  const moodTxt = e.mood ? e.mood : "기분 기록 없음";
+  const moodTxt = e.mood ? e.mood : "";
   const refl = e.reflection && (e.reflection.good || e.reflection.hard);
-  const hs = (b, s) => `<div class="hs"><b>${b}</b><span>${s}</span></div>`;
-  const tags = (e.tags && e.tags.length) ? `<h2>감정 태그</h2><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div>` : "";
-  // 한 페이지 한눈에 — 게이지(점수) + 기분/활력/태그 + 일기·잘한일·회고
+  const col = sc != null ? scoreColor(sc) : "var(--accent)";
+  const tags = (e.tags && e.tags.length) ? `<div class="ed-sec ed-tagsec"><h3>감정 태그</h3><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div></div>` : "";
+  const hasBody = e.note || e.praise || refl;
+  // 일기가 주인공 — 기분·점수는 위에 조용한 한 줄, 감정 태그는 아래 메타로
   return `
-    <div class="card rpt-hero">
-      <div class="gauge-wrap">${sc != null ? moodGaugeSvg(sc) : '<div class="gauge-empty">기분<br>없음</div>'}</div>
-      <div class="rpt-hero-side"><p class="rpt-hero-cap">${moodTxt}</p><div class="hero-stats">${hs((e.tags && e.tags.length) || 0, "감정 태그")}${hs(e.praise ? 1 : 0, "잘한 일")}</div></div>
-    </div>
-    ${tags ? `<div class="card">${tags}</div>` : ""}
-    ${e.note ? `<div class="card"><h2>일기</h2><p class="h-note">${escapeHtml(e.note)}</p></div>` : ""}
-    ${e.praise ? `<div class="card"><h2>잘한 일</h2><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
-    ${refl ? `<div class="card"><h2>저녁 회고</h2>${e.reflection.good ? `<p class="h-note">${escapeHtml(e.reflection.good)}</p>` : ""}${e.reflection.hard ? `<p class="h-note" style="margin-top:8px">${escapeHtml(e.reflection.hard)}</p>` : ""}</div>` : ""}
-    ${(!e.note && !e.praise && !refl) ? '<p class="empty">이날은 기분만 남겼어요.</p>' : ""}
+    <p class="ed-mood"><i class="jm-dot" style="background:${col}"></i>${moodTxt ? `${escapeHtml(moodTxt)}` : "기분 기록"}${sc != null ? ` · ${Math.round(sc)}` : ""}</p>
+    ${e.note ? `<div class="ed-diary"><p class="ed-note">${escapeHtml(e.note)}</p></div>` : (hasBody ? "" : '<p class="empty">이날은 기분만 남겼어요.</p>')}
+    ${e.praise ? `<div class="ed-sec"><h3>잘한 일</h3><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
+    ${refl && e.reflection.hard ? `<div class="ed-sec"><h3>속상했던 일</h3><p class="h-note">${escapeHtml(e.reflection.hard)}</p></div>` : ""}
+    ${refl && e.reflection.good ? `<div class="ed-sec"><h3>가장 좋았던 순간</h3><p class="h-note">${escapeHtml(e.reflection.good)}</p></div>` : ""}
+    ${tags}
     <button class="btn block fav-day ${e.fav ? "on" : ""}" data-eact="fav" aria-pressed="${!!e.fav}" style="margin-top:18px">${(() => { const st = document.documentElement.getAttribute("data-theme") === "midnight"; return `${st ? ICONS.star : ICONS.plane} ${e.fav ? (st ? "별이 된 날" : "하늘에 날린 날") : (st ? "이 날을 별로 남기기" : "종이비행기로 날리기")}`; })()}</button>
     <div class="data-btns" style="margin-top:10px">
       <button class="btn primary" data-eact="edit">수정</button>

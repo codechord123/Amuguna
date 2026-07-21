@@ -1889,3 +1889,23 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] #subBody .hs b, [data-theme="midnight"] #subBody .rpt-hero-cap { text-shadow: 0 0 10px rgba(236, 216, 142, 0.3); }
 [data-theme="midnight"] .streak-hot .ic-line { filter: drop-shadow(0 0 5px rgba(236, 216, 142, 0.6)); }
 [data-theme="midnight"] .subhead h2, [data-theme="midnight"] #subTitle { text-shadow: 0 0 12px rgba(236, 216, 142, 0.26); }
+
+/* ===== v204 — 기록 상세: 일기가 주인공 ===== */
+/* 기분·점수는 조용한 한 줄로 위에 */
+.ed-mood { display: flex; align-items: center; gap: 9px; color: var(--soft); font-size: var(--t-sm);
+  font-weight: var(--w-semi); letter-spacing: 0.02em; margin: var(--s2) 0 var(--s5); }
+.ed-mood .jm-dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto;
+  box-shadow: 0 0 8px color-mix(in srgb, currentColor 0%, transparent); }
+[data-theme="midnight"] .ed-mood .jm-dot { box-shadow: 0 0 10px 1px rgba(236, 216, 142, 0.3); }
+/* 일기 — 큰 본문이 화면의 중심 */
+.ed-diary { margin: 0 0 var(--s6); }
+.ed-note { font-size: var(--t-md); line-height: 2; color: var(--ink); white-space: pre-wrap;
+  word-break: keep-all; overflow-wrap: break-word; }
+/* 잘한 일·속상했던 일·감정 태그는 라벨 헤더의 조용한 하위 섹션 */
+.ed-sec { margin: var(--s5) 0 0; }
+.ed-sec h3 { font-size: var(--t-xs); letter-spacing: 0.16em; text-indent: 0.16em; color: var(--soft);
+  font-weight: var(--w-bold); margin: 0 0 var(--s2); }
+[data-theme="midnight"] .ed-sec h3 { text-shadow: 0 0 10px rgba(236, 216, 142, 0.2); }
+.ed-sec .h-note { margin-top: 0; }
+.ed-tagsec { margin-top: var(--s6); }
+.ed-tagsec .hist-tags { margin-top: 0; }
