@@ -1057,16 +1057,26 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 body.slim-hero .skyline { display: none; }
 .app { position: relative; z-index: 1; }
 /* 나의 별 — 오늘의 마음이 뜨는 자리 */
-.mystar { --star-c: #fdf6e3; position: fixed; left: 50%; top: 23%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; z-index: 0; pointer-events: none;
-  background: var(--star-c);
+.mystar { --star-c: #fdf6e3; position: fixed; left: 50%; top: 23%; transform: translateX(-50%);
+  width: 60px; height: 60px; padding: 0; border: none; background: none; cursor: pointer; z-index: 2;
+  display: flex; align-items: center; justify-content: center; }
+.mystar[hidden], body.slim-hero .mystar { display: none; }
+/* 밤 — 별(가운데 점 + 십자 광선) */
+.ms-core { width: 7px; height: 7px; border-radius: 50%; background: var(--star-c); position: relative;
   box-shadow: 0 0 8px 2px var(--star-c), 0 0 28px 8px color-mix(in srgb, var(--star-c) 35%, transparent), 0 0 70px 22px color-mix(in srgb, var(--star-c) 12%, transparent);
   animation: starBreath 5.2s var(--ease-breath) infinite; }
-.mystar::before, .mystar::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-.mystar::before { width: 1px; height: 34px; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
-.mystar::after { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
-body.slim-hero .mystar, [data-theme="garden"] .mystar { display: none; }
+.ms-core::before, .ms-core::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.ms-core::before { width: 1px; height: 34px; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
+.ms-core::after { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--star-c) 55%, transparent), transparent); }
+/* 낮 — 종이비행기(오늘의 마음 색) */
+.ms-plane { display: none; width: 30px; height: 30px; fill: none; stroke: var(--star-c); stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 3px 8px color-mix(in srgb, var(--star-c) 45%, transparent));
+  transform: rotate(-10deg); animation: planeSway 4.4s ease-in-out infinite alternate; }
+[data-theme="garden"] .ms-core { display: none; }
+[data-theme="garden"] .ms-plane { display: block; }
+.mystar:active { transform: translateX(-50%) scale(1.12); }
 @keyframes starBreath { 50% { opacity: 0.72; } }
-@media (prefers-reduced-motion: reduce) { .mystar { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ms-core, .ms-plane { animation: none; } }
 /* 별이 된 날들 — 즐겨찾기한 기록이 하늘에 떠 있고, 누르면 그날로 간다 */
 .fav-sky { position: fixed; left: 0; right: 0; top: 0; height: 44%; z-index: 2; pointer-events: none; }
 body.slim-hero .fav-sky { display: none; }
@@ -1890,17 +1900,27 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 [data-theme="midnight"] .streak-hot .ic-line { filter: drop-shadow(0 0 5px rgba(236, 216, 142, 0.6)); }
 [data-theme="midnight"] .subhead h2, [data-theme="midnight"] #subTitle { text-shadow: 0 0 12px rgba(236, 216, 142, 0.26); }
 
-/* ===== v204 — 기록 상세: 일기가 주인공 ===== */
-/* 기분·점수는 조용한 한 줄로 위에 */
-.ed-mood { display: flex; align-items: center; gap: 9px; color: var(--soft); font-size: var(--t-sm);
-  font-weight: var(--w-semi); letter-spacing: 0.02em; margin: var(--s2) 0 var(--s5); }
-.ed-mood .jm-dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto;
-  box-shadow: 0 0 8px color-mix(in srgb, currentColor 0%, transparent); }
-[data-theme="midnight"] .ed-mood .jm-dot { box-shadow: 0 0 10px 1px rgba(236, 216, 142, 0.3); }
-/* 일기 — 큰 본문이 화면의 중심 */
-.ed-diary { margin: 0 0 var(--s6); }
-.ed-note { font-size: var(--t-md); line-height: 2; color: var(--ink); white-space: pre-wrap;
-  word-break: keep-all; overflow-wrap: break-word; }
+/* ===== v205 — 기록 상세: 일기가 주인공, 심심하지 않게 결을 더함 ===== */
+/* 상단 — 작은 점수 링 + 기분 단어(색감은 남기되 작게) */
+.ed-head { display: flex; align-items: center; gap: var(--s4); margin: var(--s2) 0 var(--s5); }
+.ed-ring { flex: 0 0 auto; width: 62px; height: 62px; }
+.ed-ring .gauge { width: 62px; height: 62px; }
+.ed-ring .g-num { font-size: 1.15rem; }
+.ed-ring .g-unit { font-size: 0.5rem; }
+.ed-moodword { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.5rem;
+  font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin: 0; }
+[data-theme="midnight"] .ed-moodword { text-shadow: 0 0 14px rgba(236, 216, 142, 0.18); }
+.ed-score { font-weight: 700; }
+/* 일기 — 일기장 결의 큰 본문. 여는 따옴표로 페이지 느낌 */
+.ed-diary { position: relative; margin: 0 0 var(--s6); padding: var(--s2) 0 var(--s2) var(--s5);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+[data-theme="midnight"] .ed-diary { border-left-color: rgba(236, 220, 180, 0.28); }
+.ed-diary::before { content: "\201C"; position: absolute; left: -2px; top: -18px;
+  font-family: "Times New Roman", serif; font-size: 3rem; color: color-mix(in srgb, var(--accent) 34%, transparent);
+  line-height: 1; }
+[data-theme="midnight"] .ed-diary::before { color: rgba(236, 216, 142, 0.4); text-shadow: 0 0 16px rgba(236, 216, 142, 0.25); }
+.ed-note { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.16rem; line-height: 2.05;
+  color: var(--ink); white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; }
 /* 잘한 일·속상했던 일·감정 태그는 라벨 헤더의 조용한 하위 섹션 */
 .ed-sec { margin: var(--s5) 0 0; }
 .ed-sec h3 { font-size: var(--t-xs); letter-spacing: 0.16em; text-indent: 0.16em; color: var(--soft);

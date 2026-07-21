@@ -302,9 +302,12 @@ function entryDetailHtml(e) {
   const col = sc != null ? scoreColor(sc) : "var(--accent)";
   const tags = (e.tags && e.tags.length) ? `<div class="ed-sec ed-tagsec"><h3>감정 태그</h3><div class="hist-tags">${e.tags.map((t) => `<span class="link-tag">#${escapeHtml(t)}</span>`).join("")}</div></div>` : "";
   const hasBody = e.note || e.praise || refl;
-  // 일기가 주인공 — 기분·점수는 위에 조용한 한 줄, 감정 태그는 아래 메타로
+  // 일기가 주인공 — 작은 점수 링으로 색감만 곁들이고, 일기는 일기장 결의 큰 본문
   return `
-    <p class="ed-mood"><i class="jm-dot" style="background:${col}"></i>${moodTxt ? `${escapeHtml(moodTxt)}` : "기분 기록"}${sc != null ? ` · ${Math.round(sc)}` : ""}</p>
+    <div class="ed-head">
+      <div class="ed-ring">${sc != null ? moodGaugeSvg(sc) : ""}</div>
+      <p class="ed-moodword">${moodTxt ? escapeHtml(moodTxt) : "기분 기록 없음"}${sc != null ? `<span class="ed-score" style="color:${col}"> · ${Math.round(sc)}</span>` : ""}</p>
+    </div>
     ${e.note ? `<div class="ed-diary"><p class="ed-note">${escapeHtml(e.note)}</p></div>` : (hasBody ? "" : '<p class="empty">이날은 기분만 남겼어요.</p>')}
     ${e.praise ? `<div class="ed-sec"><h3>잘한 일</h3><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
     ${refl && e.reflection.hard ? `<div class="ed-sec"><h3>속상했던 일</h3><p class="h-note">${escapeHtml(e.reflection.hard)}</p></div>` : ""}
@@ -364,6 +367,11 @@ function renderFavStars() {
   if (_favSky) _favSky.addEventListener("click", (e) => {
     const b = e.target.closest(".fav-star"); if (!b) return;
     Sound.tap(); openEntryDetail(b.dataset.day);
+  });
+  // 가운데 나의 별/비행기 — 오늘 기록으로 바로가기
+  const _myStar = document.getElementById("myStar");
+  if (_myStar) _myStar.addEventListener("click", () => {
+    const tk = todayKey(); if (loadEntries()[tk]) { Sound.tap(); openEntryDetail(tk); }
   });
 }
 
@@ -443,14 +451,15 @@ function updateJourneyHero() {
       hintEl.hidden = false;
       hintEl.textContent = starry
         ? "오늘의 마음이\n저기, 별이 되었어요."
-        : "오늘의 마음을 잘 남겨두었어요.\n남은 하루도 부드럽게.";
+        : "오늘의 마음이\n저기, 하늘로 날아올랐어요.";
     }
     set("jmWord", e.mood);
     set("jmScore", sc != null ? ` · ${Math.round(sc)}` : "");
     const dot = document.getElementById("jmDot");
     if (dot) dot.style.background = col || "var(--accent)";
     show("jhMirror", true);
-    if (star) { star.hidden = !starry; if (col) star.style.setProperty("--star-c", col); }
+    // 나의 별/비행기 — 낮·밤 모두 가운데에 뜨고, 누르면 오늘 기록으로
+    if (star) { star.hidden = false; if (col) star.style.setProperty("--star-c", col); }
     set("journeyStart", "오늘 기록 다시 보기");
     show("journeySub", false);
     if (startBtn) startBtn.classList.remove("primary");
