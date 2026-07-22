@@ -1873,7 +1873,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .ed-moodword { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.5rem;
   font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin: 0; }
 [data-theme="midnight"] .ed-moodword { text-shadow: 0 0 14px rgba(236, 216, 142, 0.18); }
-.ed-score { font-weight: 700; }
+.ed-score { font-weight: 700; color: var(--accent-deep); }
 /* 일기 — 일기장 결의 큰 본문. 여는 따옴표로 페이지 느낌 */
 .ed-diary { position: relative; margin: 0 0 var(--s6); padding: var(--s2) 0 var(--s2) var(--s5);
   border-left: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); }

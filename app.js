@@ -306,7 +306,7 @@ function entryDetailHtml(e) {
   return `
     <div class="ed-head">
       <div class="ed-ring">${sc != null ? moodGaugeSvg(sc) : ""}</div>
-      <p class="ed-moodword">${moodTxt ? escapeHtml(moodTxt) : "기분 기록 없음"}${sc != null ? `<span class="ed-score" style="color:${col}"> · ${Math.round(sc)}</span>` : ""}</p>
+      <p class="ed-moodword">${moodTxt ? escapeHtml(moodTxt) : "기분 기록 없음"}${sc != null ? `<span class="ed-score"> · ${Math.round(sc)}</span>` : ""}</p>
     </div>
     ${e.note ? `<div class="ed-diary"><p class="ed-note">${escapeHtml(e.note)}</p></div>` : (hasBody ? "" : '<p class="empty">이날은 기분만 남겼어요.</p>')}
     ${e.praise ? `<div class="ed-sec"><h3>잘한 일</h3><p class="h-note">${escapeHtml(e.praise)}</p></div>` : ""}
