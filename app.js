@@ -328,7 +328,6 @@ function openEntryEditor(dateKey) {
 /* ===================== 오늘 화면 ===================== */
 // 입력은 '오늘의 여정' 하나로 통일됨(옛 직접기록 폼 제거).
 function curReplies() { return settings.tone === "plain" ? plainReplies : moodReplies; }
-function parseTags(s) { return (s || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean); }
 function loadToday() { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); renderFavStars(); if (typeof checkSafetySignals === "function") checkSafetySignals(); }
 
 /* 별이 된 날들 — 즐겨찾기한 기록이 첫 화면 하늘에 뜬다. 별을 누르면 그날로 바로가기. */
@@ -1538,8 +1537,6 @@ function openReport(kind) {
   renderWeekly(loadEntries()); renderMonthly(loadEntries());
   openSubpage(kind === "month" ? "월간 리포트" : "주간 리포트", reportDetailHtml(kind), "report");
 }
-const SCORE_FACES = ["", "", "", "", ""];
-function faceForScore(v) { return v == null ? "—" : SCORE_FACES[Math.min(4, Math.max(0, Math.round(v) - 1))]; }
 // 평균 기분 게이지 링 (0-100) — 리포트 히어로 비주얼
 function moodGaugeSvg(v) {
   const R = 52, C = 2 * Math.PI * R, off = C * (1 - Math.max(0, Math.min(100, v)) / 100), col = scoreColor(v);
@@ -3250,7 +3247,6 @@ function renderHabitGlanceInto(listId, countId, withInsight) {
 }
 function renderTodayHabitGlance() { renderHabitGlanceInto("todayHabitList", "todayHabitCount", false); } // 오늘 화면은 체크 중심 — 인사이트는 기록 요약에서
 function renderSummaryHabitGlance() { renderHabitGlanceInto("summaryHabitList", "summaryHabitCount", true); }
-function refreshHabitGlances() { renderTodayHabitGlance(); renderSummaryHabitGlance(); }
 // 습관 한눈에 카드 동작 — 오늘 완료 토글(어느 화면에서든) · 이름 누르면 상세
 document.addEventListener("click", (e) => {
   const chk = e.target.closest("[data-hgcheck]");

@@ -229,7 +229,7 @@ h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.3; }
   top: 21%; left: 76%; background: #fff8e0; filter: none; opacity: 1;
   box-shadow: 0 0 9px 2px rgba(255, 246, 215, 0.9);
   animation: starSparkle 3.2s ease-in-out infinite; }
- 50% { transform: scale(1.35); opacity: 1; } }
+@keyframes starSparkle { from, to { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.35); opacity: 1; } }
 @keyframes shoot1 {
   0%, 91% { opacity: 0; transform: rotate(32deg) translateX(0); }
   92% { opacity: 1; }
@@ -990,13 +990,6 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .ts-prose { display: block; width: 100%; background: none; border: none; font-family: inherit; text-align: center; color: var(--soft); font-size: var(--t-sm); line-height: 1.7; cursor: pointer; padding: var(--s2); border-radius: var(--r-sm); transition: background 0.2s; }
 .ts-prose:hover { background: var(--bg-sunken); }
 .ts-prose b { color: var(--accent-deep); font-weight: 700; }
-.ts-row { display: flex; justify-content: space-around; text-align: center; gap: var(--s2); }
-.ts-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; border: none; background: transparent; font-family: inherit; cursor: pointer; border-radius: var(--r-sm); padding: var(--s1) var(--s1); transition: background 0.2s; }
-.ts-item:hover { background: var(--bg-sunken); }
-.ts-item:active { transform: scale(0.96); }
-.ts-num { font-size: var(--t-lg); font-weight: 800; color: var(--accent-deep); letter-spacing: -0.02em; line-height: 1.1; }
-.ts-num i { font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--soft); font-style: normal; }
-.ts-label { font-size: var(--t-xs); color: var(--soft); font-weight: var(--w-semi); }
 .ts-cheer { margin: var(--s2) 0 0; padding-top: var(--s2); border-top: 1px solid var(--line); text-align: center; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); line-height: 1.5; word-break: keep-all; }
 .wk-goal { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); }
 .wk-goal-bar { flex: 1; height: 6px; background: var(--bg-sunken); border-radius: var(--r-pill); overflow: hidden; }
@@ -1024,7 +1017,6 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 }
 :is([data-theme="dark"], [data-theme="midnight"]) .journey-hero { background: radial-gradient(120% 80% at 50% 0%, var(--accent-2), transparent 65%), var(--card); }
 .jh-inner { width: 100%; max-width: 24em; margin: 0 auto; }
-.journey-hero .js-emoji { font-size: 2.2rem; line-height: 1; margin-bottom: var(--s2); animation: floaty 3.4s var(--ease-breath) infinite; }
 .jh-eyebrow { color: var(--accent-deep); font-weight: var(--w-bold); font-size: var(--t-sm); letter-spacing: 0.02em; margin: 0 0 var(--s1); }
 .journey-hero h2 { font-size: 1.55rem; margin: 0 0 var(--s2); font-weight: var(--w-bold); letter-spacing: -0.02em; }
 .journey-hero .hint { margin: 0 auto var(--s4); font-size: var(--t-base); line-height: 1.5; }
@@ -1040,11 +1032,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .jm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 0.02em; box-shadow: 0 0 8px color-mix(in srgb, currentColor 0%, transparent); }
 [data-theme="midnight"] .jm-dot { box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent-deep) 45%, transparent); }
 /* 별빛 버튼 — 기록 전 초대와 밤 명상 */
-#tab-today #journeyStart, #tab-today .jh-night { width: auto; display: inline-block; padding: 13px 34px; border-radius: var(--r-pill); font-weight: var(--w-semi); font-size: var(--t-base); letter-spacing: 0.02em; }
+#tab-today #journeyStart { width: auto; display: inline-block; padding: 13px 34px; border-radius: var(--r-pill); font-weight: var(--w-semi); font-size: var(--t-base); letter-spacing: 0.02em; }
 #tab-today #journeyStart.primary { background: rgba(255, 255, 255, 0.4); color: var(--accent-deep); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); box-shadow: 0 6px 22px var(--ring); }
 [data-theme="midnight"] #tab-today #journeyStart.primary { background: rgba(236, 220, 180, 0.05); color: #ecd9a8; border-color: rgba(236, 220, 180, 0.35); box-shadow: 0 0 22px rgba(236, 216, 142, 0.12), inset 0 0 14px rgba(236, 216, 142, 0.05); }
-#tab-today .jh-night { background: rgba(255, 255, 255, 0.35); color: var(--accent-deep); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 6px 20px var(--ring); margin-top: var(--s4); }
-[data-theme="midnight"] #tab-today .jh-night { background: rgba(236, 220, 180, 0.05); color: #ecd9a8; border-color: rgba(236, 220, 180, 0.32); box-shadow: 0 0 22px rgba(236, 216, 142, 0.1); }
 .btn.quiet { background: transparent; color: var(--accent-deep); border: 1.5px solid var(--line-strong); box-shadow: none; }
 /* 기록 후 — '다시 보기'는 속삭이는 링크로 */
 #tab-today .journey-hero.done #journeyStart { background: none; border: none; box-shadow: none; font-size: var(--t-sm); color: var(--soft); text-decoration: underline; text-underline-offset: 4px; padding: var(--s2); }
@@ -1110,10 +1100,8 @@ body.slim-hero .fav-sky { display: none; }
 [data-theme="midnight"] .fav-day.on { color: #ecd9a8; border-color: rgba(236, 220, 180, 0.4); background: rgba(236, 220, 180, 0.06); box-shadow: 0 0 18px rgba(236, 216, 142, 0.1); }
 .journey-hero .btn.block { margin-top: 0; padding: 14px 22px; font-size: var(--t-md); box-shadow: 0 10px 26px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
 .jh-sub { color: var(--soft); font-size: var(--t-xs); margin: var(--s3) 0 0; }
-.journey-hero.done .js-emoji { animation: none; }
 /* 하위호환: 구버전 마크업 */
 .journey-start { display: flex; align-items: center; gap: var(--s4); }
-.journey-start .js-emoji { font-size: 2rem; }
 .journey-start .js-text { flex: 1; }
 .journey-start .js-text h2 { margin: 0 0 2px; font-size: var(--t-md); }
 .journey-start .js-text .hint { margin: 0; }
@@ -1131,7 +1119,6 @@ body.slim-hero .fav-sky { display: none; }
 .journey-foot .btn { flex: 1; }
 .journey-foot .btn.primary { flex: 2; }
 .j-q { font-size: var(--t-xl); font-weight: var(--w-bold); text-align: center; margin: 0 0 var(--s5); line-height: 1.5; word-break: keep-all; overflow-wrap: break-word; }
-.journey .js-emoji { font-size: 3rem; text-align: center; margin-bottom: var(--s2); }
 .journey .js-ico { text-align: center; margin-bottom: var(--s4); }
 .journey .js-ico .ic-line { width: 46px; height: 46px; stroke-width: 1.25; color: var(--accent-deep); opacity: 0.9; }
 .journey .mood-grid { gap: var(--s3); }
@@ -1283,21 +1270,6 @@ body.slim-hero .fav-sky { display: none; }
 .mx-q { fill: var(--soft); font-size: 9px; font-family: inherit; }
 .mx-al { fill: var(--soft); font-size: 9px; font-weight: 700; font-family: inherit; }
 
-/* 마음 리듬 — 요일×시간대 히트맵(punch-card) */
-.rhythm { display: grid; grid-template-columns: 2.6em repeat(7, 1fr); gap: 4px; align-items: stretch; }
-.rh-corner { }
-.rh-dh { align-self: end; text-align: center; font-size: 0.64rem; color: var(--soft); font-weight: 800; padding-bottom: 2px; }
-.rh-dh.rh-we { color: var(--accent-deep); }
-.rh-tl { display: flex; flex-direction: column; justify-content: center; line-height: 1.12; font-size: 0.66rem; font-weight: 700; color: var(--ink-2); }
-.rh-tl i { font-style: normal; color: var(--soft); }
-.rh-tl b { font-weight: 800; font-size: 0.92em; color: var(--soft); }
-.rh-tl.rh-ml { color: var(--soft); }
-.rh-cell { aspect-ratio: 1; min-height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 800; color: rgba(22, 17, 12, 0.72); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28); transition: transform 0.12s var(--ease-soft); }
-.rh-cell:active { transform: scale(0.92); }
-.rh-cell.rh-dim { background: var(--bg-sunken); color: var(--soft); font-weight: 600; } /* 표본 1회 셀 — 패턴처럼 색칠하지 않음 */
-.rh-empty { background: var(--bg-sunken); box-shadow: none; }
-.rh-marg { border-radius: 7px; opacity: 0.55; }
-:is([data-theme="dark"], [data-theme="midnight"]) .rh-cell { color: rgba(18, 16, 22, 0.82); }
 
 /* 생각의 지도 — 단어 연결망 (옵시디언 풍) */
 .ww-cy { width: 100%; height: 330px; margin-top: var(--s2); border-radius: var(--r-lg); overflow: hidden; background: radial-gradient(120% 90% at 50% 40%, var(--bg-sunken), transparent 75%); touch-action: none; animation: wwFadeIn 0.55s var(--ease-soft); }
@@ -1536,7 +1508,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .hero h1 { font-size: var(--t-lg); }
   .card { padding: var(--s3) var(--s4); margin-bottom: var(--s2); }
   .journey-hero { padding: var(--s4); }
-  .journey-hero .js-emoji { font-size: 1.6rem; margin-bottom: var(--s1); }
   .journey-hero h2 { font-size: 1.3rem; }
   .journey-hero .hint { margin-bottom: var(--s3); }
   .journey-hero .btn.block { padding: 12px 20px; }
@@ -1608,7 +1579,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 }
 .tabbtn span { letter-spacing: 0.08em; }
 /* 여정 카드 장식 이모지 숨김 */
-.journey-hero .js-emoji { display: none; }
 /* 제목 아래 헤어라인 */
 
 /* 오늘 통계: 점선 프레임 + 세리프 숫자 + 세로 구분선 */
@@ -1616,9 +1586,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .today-stats:has(.hg-more) .ts-cheer { display: none; }
 /* 습관 3줄이면 응원 문구는 쉬어감 — 여백 우선 */
 .today-stats:has(#todayHabitList .hg-row:nth-child(3)) .ts-cheer { display: none; }
-.ts-num { font-family: "Times New Roman", "Noto Serif KR", serif; font-weight: 600; letter-spacing: 0; }
-.ts-item + .ts-item { border-left: 1px solid var(--line); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
-.ts-label { letter-spacing: 0.1em; }
 /* 여정 카드: 안쪽 헤어라인 프레임 + 레터스페이스 아이브로 */
 .journey-hero .jh-inner { padding: var(--s3) 0; }
 .jh-eyebrow { display: none; /* 날짜는 마스트헤드로 이동 */ }
@@ -1686,9 +1653,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* ===== 오늘 탭 = 큰 제호 + 여정 버튼 + 작은 통계 한 줄 — 여백의 미 ===== */
 #tab-today .today-stats .ts-habits, #tab-today .ts-cheer, #tab-today .wk-goal { display: none; }
 #tab-today .today-stats { margin-top: var(--s7); }
-#tab-today .ts-num { font-size: 1.3rem; }
-#tab-today .ts-label { font-size: 10px; letter-spacing: 0.2em; }
-#tab-today .ts-item { padding: var(--s1); }
 /* 위쪽은 하늘의 여백 — 올려다보는 시선 (제호가 내려온 만큼 살짝 얕게) */
 #tab-today .journey-hero { background: transparent; box-shadow: none; border: none; padding: clamp(80px, 23vh, 250px) 0 0; margin: 0; }
 @media (max-height: 700px) { #tab-today .journey-hero { padding-top: clamp(40px, 10vh, 90px); } }
@@ -1702,7 +1666,6 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* 하늘의 깊이 (위가 밝고 아래로 깊어짐) */
 [data-theme="midnight"] { background-image: linear-gradient(180deg, #1a1b2e 0%, #14131e 48%, #0e0d16 100%); background-attachment: fixed; }
 /* 여백 정돈 */
-#tab-today .today-stats { margin-top: var(--s7); }
 [data-theme="midnight"] .blob3 { display: none; }
 
 /* ============================================================
@@ -1919,7 +1882,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   font-family: "Times New Roman", serif; font-size: 3rem; color: color-mix(in srgb, var(--accent) 34%, transparent);
   line-height: 1; }
 [data-theme="midnight"] .ed-diary::before { color: rgba(236, 216, 142, 0.4); text-shadow: 0 0 16px rgba(236, 216, 142, 0.25); }
-.ed-note { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.16rem; line-height: 2.05;
+.ed-note { font-family: "Times New Roman", "Noto Serif KR", serif; font-size: 1.02rem; line-height: 1.9;
   color: var(--ink); white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; }
 /* 잘한 일·속상했던 일·감정 태그는 라벨 헤더의 조용한 하위 섹션 */
 .ed-sec { margin: var(--s5) 0 0; }
