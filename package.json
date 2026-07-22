@@ -6,9 +6,18 @@
   "type": "module",
   "scripts": {
     "test": "node tests/smoke.mjs",
-    "beta": "node beta/simulate.mjs"
+    "beta": "node beta/simulate.mjs",
+    "build:ios": "node tools/build-ios.mjs",
+    "ios": "npm run build:ios && npx cap sync ios"
   },
   "devDependencies": {
-    "jsdom": "^24.0.0"
+    "jsdom": "^24.0.0",
+    "@capacitor/cli": "^6.1.2"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/local-notifications": "^6.1.0"
   }
 }

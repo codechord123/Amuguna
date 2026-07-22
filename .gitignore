@@ -2,3 +2,7 @@ node_modules/
 package-lock.json
 *.log
 .DS_Store
+
+# Capacitor 생성물
+www/
+ios/

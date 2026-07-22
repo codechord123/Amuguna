@@ -9,26 +9,29 @@
 ## B. App Store 정식 출시: Capacitor로 네이티브 래핑
 웹 코드를 그대로 감싸 네이티브 앱으로 빌드합니다. **macOS + Xcode + Apple Developer 계정($99/년)** 필요.
 
-> 이미 저장소에 `capacitor.config.json`(appId `app.oneulshim.care`, appName `오늘의 쉼`, webDir `.`)이 들어 있어요. 아래는 그 설정을 그대로 사용하는 순서입니다.
+> 이미 저장소에 `capacitor.config.json`(appId `app.oneulshim.care`, appName `오늘의 쉼`, **webDir `www`**)과 빌드 스크립트가 들어 있어요. 웹 파일을 `www/`로 모아 앱에 담습니다(.git·node_modules·tests는 제외). 아래 순서를 **맥에서** 그대로 실행하세요.
 
 ```bash
-# 1) Capacitor 추가 (프로젝트 루트에서)
-npm i @capacitor/core @capacitor/ios
-npm i -D @capacitor/cli
-# (init 불필요 — capacitor.config.json 이미 존재)
+# 0) 저장소 받기
+git clone <저장소 주소> && cd Amuguna
 
-# 2) 네이티브 기능 플러그인 (권장)
-npm i @capacitor/local-notifications @capacitor/haptics
+# 1) 의존성 설치 (package.json에 Capacitor 이미 명시됨)
+npm install
 
-# 3) iOS 플랫폼 추가
+# 2) 웹 자산을 www/ 로 빌드 (코드 고칠 때마다 반복)
+npm run build:ios          # = node tools/build-ios.mjs
+
+# 3) iOS 플랫폼 추가 (최초 1회)
 npx cap add ios
 
-# 4) 웹 자산 동기화 (코드 바뀔 때마다)
-npx cap copy ios   # 또는: npx cap sync ios
+# 4) 이후 코드 바뀔 때마다: 빌드+동기화 한 번에
+npm run ios                # = build:ios 후 npx cap sync ios
 
 # 5) Xcode 열기 → 서명(Team) 설정 → 실기기/시뮬레이터 빌드
 npx cap open ios
 ```
+
+> `www/`·`ios/`는 생성물이라 `.gitignore` 처리돼 있습니다 — 커밋되지 않습니다. 맥에서 위 순서대로 만들면 됩니다.
 
 ### 네이티브 기능 연결 (웹 폴백 → 네이티브로 교체)
 앱은 웹 기능으로 동작하되, 네이티브에서 더 좋아지는 두 가지를 플러그인으로 교체하세요.

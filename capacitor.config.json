@@ -1,7 +1,7 @@
 {
   "appId": "app.oneulshim.care",
   "appName": "오늘의 쉼",
-  "webDir": ".",
+  "webDir": "www",
   "ios": {
     "contentInset": "always",
     "backgroundColor": "#f7f1ea"
