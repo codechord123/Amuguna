@@ -1184,6 +1184,9 @@ function renderStats() {
   // 첫 사용자 빈 화면 안내 — 기록 0개면 잠긴 지표 대신 안내+CTA 하나만
   const hero = document.getElementById("statsEmptyHero");
   if (hero) hero.hidden = list.length > 0;
+  // 기록 0개면 빈 분석 뼈대(세그·요약·리포트 타일)를 숨겨 안내 하나만 남긴다
+  const statsTab = document.getElementById("tab-stats");
+  if (statsTab) statsTab.classList.toggle("stats-empty", list.length === 0);
   // 상단 숫자 스트립 제거(v186) — 연속·전체·배지는 각 섹션(오늘 문장·요약·배지 카드)에 이미 있음
   syncBestStreak(calcStreak(entries));
   renderAnalyzeKpis(entries, list);
