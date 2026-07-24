@@ -3628,6 +3628,23 @@ const medCircle = document.getElementById("medCircle"), medCircleText = document
 const medCaption = document.getElementById("medCaption"), medStepTitle = document.getElementById("medStepTitle"), medStepBody = document.getElementById("medStepBody");
 const medDots = document.getElementById("medDots"), medNextBtn = document.getElementById("medNext");
 const medSwipeHint = document.getElementById("medSwipeHint");
+const medTogetherEl = document.getElementById("medTogether"), medCompanionsEl = document.getElementById("medCompanions");
+// 함께 호흡 존재감 — 실시간 인원만 정직하게 표시(백엔드 없으면 '혼자'), 동행 별은 실제 인원-1 만큼.
+function medRenderTogether(state) {
+  if (!medTogetherEl) return;
+  if (medPhase !== "breathe") { medTogetherEl.hidden = true; if (medCompanionsEl) { medCompanionsEl.hidden = true; medCompanionsEl.innerHTML = ""; } return; }
+  const live = !!(state && state.live), n = (state && state.count) || 1;
+  medTogetherEl.textContent = (live && n >= 2) ? `지금 ${n}명이 함께 호흡하고 있어요`
+    : live ? "지금은 혼자예요 · 곧 누군가 함께할 거예요"
+    : "고요히 나에게 집중하는 시간";
+  medTogetherEl.hidden = false;
+  if (!medCompanionsEl) return;
+  if (live && n >= 2) {
+    const others = Math.min(8, n - 1);
+    medCompanionsEl.innerHTML = "<span class='mc-me'></span>" + "<span class='mc-dot'></span>".repeat(others);
+    medCompanionsEl.hidden = false;
+  } else { medCompanionsEl.innerHTML = ""; medCompanionsEl.hidden = true; }
+}
 let medIdx = 0, medTimer = null, medPhase = "teach";
 function breathCycleSec() { return BREATH_PHASES[0].dur + BREATH_PHASES[1].dur + BREATH_PHASES[2].dur; } // 사용자 패턴 반영
 let medMinutes = Math.min(60, Math.max(1, settings.medMinutes || 5));
@@ -3652,8 +3669,8 @@ function medRecord() {
 }
 const medOpts = {
   sleep: () => true, maxCycles: medCycleTarget(), // sleep:true는 maxCycles 자동 종료를 켜는 용도(시각 효과와 무관)
-  onPhase: (cls) => { if (cls === "inhale") tbResetDot(medCircle); if (cls === "hold") Haptic.success(); else Haptic.tap(); }, // 점 리셋 + 단계 햅틱
-  onAutoEnd: () => { medPhase = "done"; medClockStop(); medRecord(); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); }, // 완주 즉시 기록(닫기 전에 앱을 꺼도 세션이 남게 · medActive 가드로 중복 없음)
+  onPhase: (cls) => { if (cls === "inhale") tbResetDot(medCircle); if (cls === "hold") Haptic.success(); else Haptic.tap(); if (medCompanionsEl) medCompanionsEl.classList.toggle("inhale", cls === "inhale" || cls === "hold"); }, // 점 리셋 + 단계 햅틱 + 동행 별 호흡 동기
+  onAutoEnd: () => { medPhase = "done"; medClockStop(); medRecord(); if (window.MedNet) MedNet.leave(); medRenderTogether({ count: 1, live: false }); if (medCompanionsEl) medCompanionsEl.classList.remove("inhale"); medCaption.classList.remove("show"); void medCaption.offsetWidth; medStepTitle.textContent = "잘하셨어요"; medStepBody.textContent = "천천히 눈을 떠도 좋아요."; medCaption.classList.add("show"); medCircle.className = "cb-stage med-idle"; medCircleText.textContent = ""; medNextBtn.textContent = "닫기"; Haptic.success(); Sound.chime(); if (window.Anim) Anim.sparkle(medViz || medCircle, { count: 22, spread: 150 }); }, // 완주 즉시 기록(닫기 전에 앱을 꺼도 세션이 남게 · medActive 가드로 중복 없음)
 };
 const medBreather = medOverlay ? makeBreather(medCircle, medCircleText, "cb-stage", medOpts) : null;
 // 시간 직접 조절(스텝퍼) + 야간 모드 + 남은 시간 카운트다운
@@ -3754,15 +3771,18 @@ function medStartBreathing() {
   if (medPhase === "breathe") return;
   medPhase = "breathe";
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
-  if (medDots) medDots.innerHTML = "";
+  if (medDots) { medDots.innerHTML = ""; medDots.hidden = true; }
   if (medSwipeHint) medSwipeHint.hidden = true;
   medNextBtn.textContent = "그만하기";
   medCaption.classList.remove("show"); void medCaption.offsetWidth;
   medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = `${brIn}초 들이쉬고·${brHold}초 멈추고·${brEx}초 내쉬어요`;
   medCaption.classList.add("show");
   medCircle.classList.remove("med-idle");
+  if (medOverlay) medOverlay.classList.add("breathing"); // 간격 축소 → 함께 호흡 줄 자리
   medOpts.maxCycles = medCycleTarget(); medActive = true; // 선택한 시간만큼 자동 종료
   medClockStart(); // 화면에 남은 시간 카운트다운
+  medRenderTogether({ count: 1, live: false }); // 즉시 '고요히 나에게' 문구(연결 전)
+  if (window.MedNet) { MedNet.subscribe(medRenderTogether); MedNet.join().then(medRenderTogether); } // 함께 호흡 연결(연결되면 실시간 인원 반영)
   autoAmbient(); medBreather.start();
 }
 function openMedGuide() {
@@ -3771,19 +3791,23 @@ function openMedGuide() {
   medOverlay.classList.toggle("sleep", medNight); // 야간 모드 → 어두운 우주 팔레트
   if (medNight) requestWake(); // 화면 켜둠(야간 명상)
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
+  if (medOverlay) medOverlay.classList.remove("breathing");
   medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
   medClockStop();
   if (medVol) medVol.value = settings.ambientVol != null ? settings.ambientVol : 55;
   medSyncAmbIcon();
   if (medSwipeHint) medSwipeHint.hidden = false;
+  if (medDots) medDots.hidden = false;
   medShow(0); medResetTimer();
   syncAppInert(); const mc = document.getElementById("medClose"); if (mc) mc.focus();
 }
 function closeMedGuide() {
   if (medTimer) { clearInterval(medTimer); medTimer = null; }
   medClockStop(); medRecord(); releaseWake(); // 시계 정지 + 진행한 만큼 누적 기록(중복 방지) + 화면 잠금 복귀
+  if (window.MedNet) MedNet.leave(); // 함께 호흡 연결 해제
   try { medBreather && medBreather.stop(); } catch (e) {}
-  medPhase = "teach"; if (medOverlay) medOverlay.hidden = true;
+  medPhase = "teach"; medRenderTogether({ count: 1, live: false }); if (medCompanionsEl) medCompanionsEl.classList.remove("inhale");
+  if (medOverlay) medOverlay.hidden = true;
   syncAppInert();
 }
 if (medNextBtn) medNextBtn.addEventListener("click", () => { Sound.tap(); if (medPhase === "teach") medGoto(medIdx + 1); else closeMedGuide(); }); // 단계별 진행 → 마지막에 호흡 시작

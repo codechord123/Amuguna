@@ -478,6 +478,16 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
 .med-step-btn.sm { width: 44px; height: 44px; font-size: 1.1rem; }
 /* 명상 화면 위 남은 시간 카운트다운 */
 .med-clock { margin: 0; font-size: var(--t-lg); font-weight: var(--w-bold); letter-spacing: 0.06em; color: var(--med-text); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px var(--med-glow); }
+/* 함께 호흡 — 실시간 존재감(정직: 실제 인원만) */
+.med-presence { display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
+.breath-overlay.med-overlay:not(.breathing) .med-presence { display: none; } /* 교육 단계엔 자리 차지 안 함 */
+.med-together { margin: 0; font-size: var(--t-sm); letter-spacing: 0.02em; color: var(--med-text2); text-align: center; }
+.med-companions { display: flex; gap: 8px; justify-content: center; align-items: center; min-height: 10px; margin: 0; }
+.med-companions .mc-dot, .med-companions .mc-me { width: 6px; height: 6px; border-radius: 50%; background: var(--med-on-bg); opacity: 0.45; box-shadow: 0 0 6px var(--med-glow); transition: transform 1.4s var(--ease-soft), opacity 1.4s var(--ease-soft); }
+.med-companions .mc-me { opacity: 0.95; box-shadow: 0 0 10px var(--med-glow); }
+.med-companions.inhale .mc-dot { transform: scale(1.8); opacity: 0.8; }
+.med-companions.inhale .mc-me { transform: scale(1.8); opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .med-companions .mc-dot, .med-companions .mc-me { transition: none; } }
 /* 명상 오버레이 하단 사운드 컨트롤(세션 중에도 조절) */
 .med-sound { display: flex; align-items: center; gap: var(--s3); width: min(280px, 80%); opacity: 0.85; }
 .med-snd-btn { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--med-track); background: transparent; color: var(--med-text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
@@ -514,6 +524,9 @@ textarea:focus, .text-input:focus, input[type=time]:focus { outline: none; borde
   --med-on-ink: #ffffff; --med-on-bg: #54639c;
   gap: var(--s4); background: var(--med-bg); color: var(--med-text); overflow: hidden;
 }
+/* 호흡 단계에선 간격을 좁혀 함께 호흡 존재감 줄이 들어갈 자리 확보(작은 화면 zero-scroll) */
+.breath-overlay.med-overlay.breathing { gap: var(--s3); }
+.breath-overlay.med-overlay.breathing .med-caption { min-height: 60px; }
 :is([data-theme="dark"], [data-theme="midnight"]) .breath-overlay.med-overlay, .breath-overlay.med-overlay.sleep {
   /* 다크모드(및 수면 모드): 깊은 우주 + 황금 발광 */
   --med-bg: radial-gradient(140% 100% at 50% 38%, #1a1530 0%, #0b0a14 60%, #060509 100%);

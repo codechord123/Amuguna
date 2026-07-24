@@ -11,7 +11,7 @@ const WWW = join(ROOT, "www");
 // 앱이 실제로 로드/참조하는 파일 (index.html의 링크·script, app.js의 지연로드, manifest·science 참조 기준)
 const FILES = [
   "index.html", "style.css", "app.js", "sound.js", "config.js",
-  "monitor.js", "anim.js", "cloud.js", "sw.js", "manifest.json",
+  "monitor.js", "anim.js", "cloud.js", "mednet.js", "sw.js", "manifest.json",
   "meditate.html", "privacy.html", "terms.html", "science.html",
   "apple-touch-icon.png", "icon.svg",
   "icon-192.png", "icon-512.png", "icon-maskable-192.png", "icon-maskable-512.png",

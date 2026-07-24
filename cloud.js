@@ -182,6 +182,7 @@
     init, markDirty,
     isReady: () => ready,
     getUser: () => currentUser,
+    _sb: () => sb, // 함께 호흡(mednet)이 익명 Realtime presence에 재사용 — 미설정이면 null
     _merge: mergeData, // 테스트용
   };
 

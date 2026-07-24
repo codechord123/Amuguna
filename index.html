@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v208" />
+  <meta name="app-version" content="v209" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -500,6 +500,10 @@
       <div class="cb-bar" aria-hidden="true"><span class="cb-seg s-in">들이쉬기 4초</span><span class="cb-seg s-hold">멈춤 7초</span><span class="cb-seg s-out">내쉬기 8초</span></div>
     </div>
     <p class="med-clock" id="medClock" aria-live="polite" hidden></p>
+    <div class="med-presence" id="medPresence">
+      <p class="med-together" id="medTogether" aria-live="polite" hidden></p>
+      <div class="med-companions" id="medCompanions" aria-hidden="true" hidden></div>
+    </div>
     <div class="med-caption" id="medCaption"><b id="medStepTitle"></b><span id="medStepBody"></span></div>
     <div class="med-dots" id="medDots"></div>
     <p class="med-swipe-hint" id="medSwipeHint">← 넘기며 따라가요 →</p>
@@ -546,5 +550,6 @@
   <script src="anim.js"></script>
   <script src="app.js"></script>
   <script src="cloud.js"></script>
+  <script src="mednet.js"></script>
 </body>
 </html>
