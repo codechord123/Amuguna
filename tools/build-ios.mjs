@@ -18,7 +18,7 @@ const FILES = [
 ];
 // 디렉터리째 복사 (생각의 지도=vendor/cytoscape·lottie)
 const DIRS = ["vendor"];
-// 앱이 참조하는 docs 파일만 선별 복사 (내부 문서 ROADMAP·iOS-RELEASE 등은 제외)
+// 앱이 참조하는 docs 파일만 선별 복사 (내부 문서 ROADMAP·RELEASE 등은 제외)
 const DOCS = ["docs/SCIENCE.md", "docs/store"]; // science.html이 SCIENCE.md, manifest가 store 스크린샷 참조
 
 rmSync(WWW, { recursive: true, force: true });

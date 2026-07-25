@@ -121,7 +121,7 @@ python3 -m http.server 8000
 
 ## 문서
 - 📚 **[docs/SCIENCE.md](docs/SCIENCE.md)** — 각 기능의 과학적 근거(논문·이유) 데이터베이스
-- 🍏 **[docs/iOS-RELEASE.md](docs/iOS-RELEASE.md)** — 아이폰(App Store) 출시 가이드(Capacitor)
+- 📱 **[docs/RELEASE.md](docs/RELEASE.md)** — 앱 출시 가이드(iOS App Store · Android Google Play, Capacitor)
 
 ## 개발 / 테스트
 

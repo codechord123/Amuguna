@@ -7,14 +7,17 @@
   "scripts": {
     "test": "node tests/smoke.mjs",
     "beta": "node beta/simulate.mjs",
+    "build:web": "node tools/build-ios.mjs",
     "build:ios": "node tools/build-ios.mjs",
-    "ios": "npm run build:ios && npx cap sync ios"
+    "ios": "npm run build:web && npx cap sync ios",
+    "android": "npm run build:web && npx cap sync android"
   },
   "devDependencies": {
     "jsdom": "^24.0.0",
     "@capacitor/cli": "^6.1.2"
   },
   "dependencies": {
+    "@capacitor/android": "^6.1.2",
     "@capacitor/core": "^6.1.2",
     "@capacitor/haptics": "^6.0.2",
     "@capacitor/ios": "^6.1.2",

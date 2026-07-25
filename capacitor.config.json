@@ -6,6 +6,9 @@
     "contentInset": "always",
     "backgroundColor": "#f7f1ea"
   },
+  "android": {
+    "backgroundColor": "#f7f1ea"
+  },
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_icon",

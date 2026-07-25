@@ -6,3 +6,4 @@ package-lock.json
 # Capacitor 생성물
 www/
 ios/
+android/
