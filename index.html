@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v209" />
+  <meta name="app-version" content="v210" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -214,6 +214,8 @@
           </ol>
           <p class="med-bigscreen"><a href="meditate.html" target="_blank" rel="noopener">큰 화면(전자칠판·TV)용 명상 열기</a> — 여럿이 함께할 때 초대형 글씨로</p>
         </details>
+        <p class="med-rooms-label">함께 호흡하는 방</p>
+        <div class="med-rooms" id="medRooms" role="list" aria-label="함께 호흡하는 방 · 옆으로 넘겨 고르세요"></div>
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
             <button type="button" class="med-step-btn" data-d="-1" aria-label="1분 줄이기">−</button>
@@ -230,7 +232,6 @@
             <div class="med-pat-row"><span class="med-pat-label">날숨</span><button type="button" class="med-step-btn sm" data-p="ex" data-d="-1" aria-label="날숨 줄이기">−</button><b id="patEx">8</b><button type="button" class="med-step-btn sm" data-p="ex" data-d="1" aria-label="날숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
           </div>
         </details>
-        <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">따라하며 명상하기</button>
         <p class="med-stat" id="medStat"></p>
       </div>
       <div class="card">
