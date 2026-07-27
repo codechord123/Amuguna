@@ -1928,3 +1928,49 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 /* ===== v208 — 신규 사용자 기록 탭: 기록 0개면 안내만 ===== */
 #tab-stats.stats-empty #statsSeg, #tab-stats.stats-empty .stats-panel { display: none; }
 #tab-stats.stats-empty #statsEmptyHero { margin-top: var(--s8); }
+
+/* ============================================================
+   태블릿(아이패드 등) — 폰 레이아웃을 '늘린' 모습이 아니라 태블릿에 맞게
+   · 레이아웃 교정(탭바 필)은 모든 태블릿에
+   · 타이포·여백 확대는 세로 여유가 있을 때만 (가로 아이패드는 820px로
+     아이폰(844)보다 짧아서, 무턱대고 키우면 1화면이 깨짐)
+   ============================================================ */
+/* 폭·높이를 함께 봄 — 아이패드 미니(744)까지 포함하고, 폰 가로(높이 ~400)는 제외 */
+@media (min-width: 700px) and (min-height: 700px) {
+  /* 탭바 — 화면 양끝까지 벌어지지 않게 중앙 플로팅 필(손이 닿는 거리 + 콘텐츠와 한 덩어리) */
+  .tabbar {
+    left: 50%; right: auto; transform: translateX(-50%);
+    width: min(520px, calc(100% - 2 * var(--s7)));
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--s3));
+    padding: var(--s2) var(--s4);
+    border: 1px solid var(--line); border-radius: var(--r-pill);
+    box-shadow: var(--shadow-lg);
+  }
+  .app { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); } /* 떠 있는 탭바만큼 여백 확보 */
+  /* 도시 실루엣도 떠 있는 탭바 위로 */
+  .skyline { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* 세로 태블릿(높이 여유 있음) — 보는 거리가 멀어 타이포·여백을 키움 */
+@media (min-width: 700px) and (min-height: 900px) {
+  html { font-size: 17.5px; }
+  html[data-textsize="l"] { font-size: 19.5px; }   /* 접근성 설정 유지(특이도상 재선언 필요) */
+  html[data-textsize="xl"] { font-size: 22px; }
+  :root {
+    --s1: 5px;  --s2: 10px; --s3: 14px; --s4: 19px;
+    --s5: 24px; --s6: 28px; --s7: 38px; --s8: 52px;
+  }
+  .app { max-width: 680px; padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px)); }
+  .card { border-radius: var(--r-xl); }
+  .tabbar { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--s5)); } /* 여유 있으니 더 띄움 */
+  /* 하늘 장면도 큰 화면에 맞춰 — 별·종이비행기가 미아처럼 작지 않게 */
+  .mystar { transform: translateX(-50%) scale(1.35); }
+  .skyline { height: 120px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  /* 콘텐츠가 위쪽에만 몰리고 아래가 텅 비지 않게 세로 가운데로
+     (오늘 탭은 하늘 구도가 있으니 제외 — slim-hero = 오늘 외 탭) */
+  body.slim-hero .app { min-height: 100dvh; display: flex; flex-direction: column; justify-content: safe center; }
+  /* 명상 — 멀리서 보는 화면이라 호흡 삼각형·카운트를 크게 */
+  .tb-viz { width: 300px; height: 270px; }
+  .cb-stage:not(.med-idle) .cb-count b { font-size: 4.6rem; }
+  .med-overlay .med-caption { max-width: 420px; }
+}
