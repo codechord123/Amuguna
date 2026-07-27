@@ -1949,6 +1949,9 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .app { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); } /* 떠 있는 탭바만큼 여백 확보 */
   /* 도시 실루엣도 떠 있는 탭바 위로 */
   .skyline { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+  /* 콘텐츠가 위쪽에만 몰리고 아래가 텅 비지 않게 세로 가운데로
+     (오늘 탭은 하늘 구도가 있으니 제외 — slim-hero = 오늘 외 탭) */
+  body.slim-hero .app { min-height: 100dvh; display: flex; flex-direction: column; justify-content: safe center; }
 }
 
 /* 세로 태블릿(높이 여유 있음) — 보는 거리가 멀어 타이포·여백을 키움 */
@@ -1966,11 +1969,32 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   /* 하늘 장면도 큰 화면에 맞춰 — 별·종이비행기가 미아처럼 작지 않게 */
   .mystar { transform: translateX(-50%) scale(1.35); }
   .skyline { height: 120px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
-  /* 콘텐츠가 위쪽에만 몰리고 아래가 텅 비지 않게 세로 가운데로
-     (오늘 탭은 하늘 구도가 있으니 제외 — slim-hero = 오늘 외 탭) */
-  body.slim-hero .app { min-height: 100dvh; display: flex; flex-direction: column; justify-content: safe center; }
   /* 명상 — 멀리서 보는 화면이라 호흡 삼각형·카운트를 크게 */
   .tb-viz { width: 300px; height: 270px; }
   .cb-stage:not(.med-idle) .cb-count b { font-size: 4.6rem; }
   .med-overlay .med-caption { max-width: 420px; }
+}
+
+/* ============================================================
+   넓은 태블릿(가로 아이패드 등) — 남는 가로 공간을 카드 2단으로
+   가로는 폭이 남고 높이가 빠듯하므로, 2단이 공간도 살리고 세로도 줄인다.
+   (세로 아이패드 820px는 2단엔 좁아 단일 컬럼 유지)
+   ============================================================ */
+@media (min-width: 900px) and (min-height: 700px) {
+  .app { max-width: min(1040px, calc(100% - 2 * var(--s7))); }
+  /* 카드가 여러 장인 패널만 2단 — 행 우선(좌→우)이라 구분선 리듬이 유지됨 */
+  .stats-panel, .rest-panel {
+    display: grid; grid-template-columns: 1fr 1fr;
+    column-gap: var(--s7); align-items: start;
+  }
+  /* 그리드 자식 기본값 min-width:auto → 내용이 셀보다 넓으면 화면 밖으로 넘침(가로 스크롤).
+     0으로 낮춰 셀 안에서 줄어들게 (배경음 그리드·타이머 행 등) */
+  .stats-panel > *, .rest-panel > * { min-width: 0; }
+  /* 이미 가로로 꽉 쓰는 요소는 두 단 전체 */
+  .report-tiles { grid-column: 1 / -1; }
+  /* 목록·달력은 늘리거나 쪼개면 오히려 읽기 나빠져 — 편한 폭으로 가운데
+     (설정은 한 줄 목록이 정석: 라벨과 화살표가 멀어지면 스캔이 어려움) */
+  .cal-panel > .card, #tab-settings > .card, #tab-settings > .settings-grid { max-width: 700px; margin-inline: auto; width: 100%; }
+  /* 탭바도 넓어진 콘텐츠에 맞춰 살짝 넓게 */
+  .tabbar { width: min(600px, calc(100% - 2 * var(--s7))); }
 }
