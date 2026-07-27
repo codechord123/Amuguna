@@ -3613,7 +3613,7 @@ sleepToggle.addEventListener("click", () => {
   updateSleepLabel(); breathOverlay.classList.toggle("sleep", sleepMode);
 });
 // 화면 복귀 시 wake lock 재획득
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !breathOverlay.hidden) requestWake(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && (!breathOverlay.hidden || (medOverlay && !medOverlay.hidden))) requestWake(); }); // 앱 복귀 시 잠금 재획득(빠른 호흡·명상 둘 다)
 
 /* 명상 가이드 — 전체화면 전환 + 단계 애니메이션으로 따라하기 → 호흡으로 연결 */
 // 중앙은 발광 구체에 집중 — 단계마다 이모지(연꽃 등) 없이 비워 몰입감을 높임
@@ -3845,7 +3845,7 @@ function openMedGuide(roomId) {
   if (room) applyRoomPattern(room.pat); else restoreUserPattern(); // 방이면 방 패턴, 혼자면 내 패턴
   medOverlay.hidden = false; Sound.unlock();
   medOverlay.classList.toggle("sleep", medNight); // 야간 모드 → 어두운 우주 팔레트
-  if (medNight) requestWake(); // 화면 켜둠(야간 명상)
+  requestWake(); // 명상 내내 화면 꺼짐 방지 (야간 모드뿐 아니라 항상 · iPad Safari 16.4+ 포함)
   medPhase = "teach"; medIdx = 0; medNextBtn.textContent = "건너뛰고 호흡 시작 →";
   if (medOverlay) medOverlay.classList.remove("breathing");
   medCircle.className = "cb-stage med-idle"; medCircleText.textContent = "";
