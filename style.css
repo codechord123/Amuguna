@@ -1952,6 +1952,11 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   /* 콘텐츠가 위쪽에만 몰리고 아래가 텅 비지 않게 세로 가운데로
      (오늘 탭은 하늘 구도가 있으니 제외 — slim-hero = 오늘 외 탭) */
   body.slim-hero .app { min-height: 100dvh; display: flex; flex-direction: column; justify-content: safe center; }
+  /* 태블릿은 보는 거리가 멀어 기본 16px이 작음 — 가로(높이 빠듯)는 소폭만.
+     세로는 아래 블록에서 더 키움. */
+  html { font-size: 16.8px; }
+  html[data-textsize="l"] { font-size: 18.9px; }
+  html[data-textsize="xl"] { font-size: 21.5px; }
 }
 
 /* 세로 태블릿(높이 여유 있음) — 보는 거리가 멀어 타이포·여백을 키움 */
@@ -1982,19 +1987,32 @@ html[data-textsize="xl"] { font-size: 20.5px; }
    ============================================================ */
 @media (min-width: 900px) and (min-height: 700px) {
   .app { max-width: min(1040px, calc(100% - 2 * var(--s7))); }
-  /* 카드가 여러 장인 패널만 2단 — 행 우선(좌→우)이라 구분선 리듬이 유지됨 */
+  /* 고정 2단이 아니라 '들어갈 만큼' 나눔 — auto-fit이라 카드가 1장인 패널(배지)은
+     자동으로 한 단 전체를 쓰고, 여러 장이면 나란히. 최소 폭 미달이면 안 쪼갬. */
   .stats-panel, .rest-panel {
-    display: grid; grid-template-columns: 1fr 1fr;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     column-gap: var(--s7); align-items: start;
   }
   /* 그리드 자식 기본값 min-width:auto → 내용이 셀보다 넓으면 화면 밖으로 넘침(가로 스크롤).
      0으로 낮춰 셀 안에서 줄어들게 (배경음 그리드·타이머 행 등) */
   .stats-panel > *, .rest-panel > * { min-width: 0; }
-  /* 이미 가로로 꽉 쓰는 요소는 두 단 전체 */
-  .report-tiles { grid-column: 1 / -1; }
+  /* 가로로 넓어야 제 기능을 하는 블록은 단 전체를 차지 —
+     방 목록(가로 캐러셀)이 반쪽 칸에 갇히면 방이 잘려 보임 */
+  .report-tiles, .med-rooms-card { grid-column: 1 / -1; }
   /* 목록·달력은 늘리거나 쪼개면 오히려 읽기 나빠져 — 편한 폭으로 가운데
      (설정은 한 줄 목록이 정석: 라벨과 화살표가 멀어지면 스캔이 어려움) */
   .cal-panel > .card, #tab-settings > .card, #tab-settings > .settings-grid { max-width: 700px; margin-inline: auto; width: 100%; }
   /* 탭바도 넓어진 콘텐츠에 맞춰 살짝 넓게 */
   .tabbar { width: min(600px, calc(100% - 2 * var(--s7))); }
+}
+
+/* 명상 카드 분리(방 목록 / 설정)는 가로 태블릿 배치를 위한 것 —
+   폰·세로에선 원래처럼 한 덩어리로 보이게 경계 여백·구분선을 완전히 없앤다.
+   (#tab-rest .card가 ID 특이도라 같은 수준으로 맞춰야 이김) */
+#tab-rest .med-rooms-card { padding-bottom: 0; }
+#tab-rest .med-set-card { padding-top: 0; }
+.med-rooms-card::after { display: none; }
+/* 가로 태블릿에선 두 카드가 서로 다른 칸에 놓이므로 사이 여백을 되살림 */
+@media (min-width: 900px) and (min-height: 700px) {
+  #tab-rest .med-set-card { padding-top: var(--s5); }
 }

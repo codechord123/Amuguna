@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v213" />
+  <meta name="app-version" content="v214" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -201,7 +201,7 @@
       </div>
 
       <div class="rest-panel" data-rpanel="meditate">
-      <div class="card med-how">
+      <div class="card med-how med-rooms-card">
         <h2>명상</h2>
         <details class="med-howto">
           <summary>명상하는 법 · 5단계 보기</summary>
@@ -216,6 +216,8 @@
         </details>
         <p class="med-rooms-label">함께 호흡하는 방</p>
         <div class="med-rooms" id="medRooms" role="list" aria-label="함께 호흡하는 방 · 옆으로 넘겨 고르세요"></div>
+      </div>
+      <div class="card med-how med-set-card">
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
             <button type="button" class="med-step-btn" data-d="-1" aria-label="1분 줄이기">−</button>
