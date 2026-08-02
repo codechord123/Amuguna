@@ -2016,3 +2016,30 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 @media (min-width: 900px) and (min-height: 700px) {
   #tab-rest .med-set-card { padding-top: var(--s5); }
 }
+
+/* ===== 방 만들기 시트 + 내 방/추가 카드 (v215) ===== */
+.med-room.mr-add { border-style: dashed; color: var(--accent-deep); }
+.med-room.mr-add .mr-name { color: var(--accent-deep); }
+.med-room.mr-mine { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.med-room.mr-mine .mr-name::after { content: "내 방"; margin-left: 6px; font-size: 0.62rem; font-weight: var(--w-semi);
+  color: var(--accent-deep); background: var(--accent-2); border-radius: 999px; padding: 1px 6px; vertical-align: 0.12em; }
+.rs-sheet { text-align: left; }
+.rs-sheet .ip-title, .rs-sheet .ip-hint { text-align: center; }
+.rs-field { display: block; margin: var(--s3) 0; }
+.rs-field > span { display: block; font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); margin-bottom: 4px; }
+.rs-field input { width: 100%; box-sizing: border-box; padding: 10px var(--s3); font-family: inherit; font-size: var(--t-base);
+  color: var(--ink); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.rs-field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.rs-pat { display: flex; flex-direction: column; gap: 6px; margin: var(--s3) 0 var(--s4); }
+.rs-pat-row { display: flex; align-items: center; gap: var(--s2); }
+.rs-pat-label { flex: 0 0 42px; font-size: var(--t-sm); color: var(--ink-2); }
+.rs-pat-row b { min-width: 26px; text-align: center; font-variant-numeric: tabular-nums; }
+.rs-sep { display: flex; align-items: center; gap: var(--s3); margin: var(--s4) 0 var(--s3); color: var(--soft); font-size: var(--t-xs); }
+.rs-sep::before, .rs-sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.rs-mine { margin-top: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); }
+.rs-mine-t { margin: 0 0 var(--s2); font-size: var(--t-xs); font-weight: var(--w-semi); color: var(--ink-2); }
+.rs-row { display: flex; align-items: center; gap: var(--s2); padding: 5px 0; }
+.rs-row-n { flex: 1; min-width: 0; font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rs-row-n i { margin-left: 6px; font-style: normal; font-size: var(--t-xs); color: var(--soft); font-variant-numeric: tabular-nums; }
+.rs-sheet .btn.sm { padding: 5px 10px; font-size: var(--t-xs); min-height: 0; }
+.rs-sheet .rs-del { color: var(--danger, #c0392b); }
