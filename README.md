@@ -164,6 +164,22 @@ create table if not exists public.app_state (
 alter table public.app_state enable row level security;
 create policy "own state" on public.app_state
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- 함께 탭: 공개 방 목록 — 만들면 모두에게 보임. 읽기는 누구나, 만들기·수정·삭제는 로그인한 본인 방만.
+create table if not exists public.rooms (
+  id text primary key,
+  name text not null check (char_length(name) between 1 and 14),
+  mood text default '' check (char_length(mood) <= 24),
+  pat jsonb not null,
+  owner uuid not null references auth.users(id) on delete cascade,
+  owner_name text default '' check (char_length(owner_name) <= 12),
+  created_at timestamptz default now()
+);
+alter table public.rooms enable row level security;
+create policy "rooms readable by everyone" on public.rooms for select using (true);
+create policy "insert own rooms" on public.rooms for insert with check (auth.uid() = owner);
+create policy "update own rooms" on public.rooms for update using (auth.uid() = owner) with check (auth.uid() = owner);
+create policy "delete own rooms" on public.rooms for delete using (auth.uid() = owner);
 ```
 
 **4) 로그인 방식**

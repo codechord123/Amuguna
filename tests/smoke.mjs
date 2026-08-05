@@ -600,7 +600,7 @@ try {
   check("안전 카드 핫라인 109 표기", /\b109\b/.test(q("#safetyCard").textContent));
 
   // 13d) 접근성/하드닝: 탭 ARIA · aria-live · CSP
-  check("접근성: 탭바 tablist 역할 + tab 5개(달력·습관 통합)", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 5);
+  check("접근성: 탭바 tablist 역할 + tab 6개(함께 탭 포함)", q("#tabbar").getAttribute("role") === "tablist" && d.querySelectorAll('#tabbar [role="tab"]').length === 6);
   q("[data-tab=stats]").click();
   check("접근성: 활성 탭 aria-selected 갱신", q('#tabbar [data-tab="stats"]').getAttribute("aria-selected") === "true" && q('#tabbar [data-tab="today"]').getAttribute("aria-selected") === "false");
   check("접근성: 응원문구 aria-live", q("#tsCheer").getAttribute("aria-live") === "polite");
@@ -637,6 +637,21 @@ try {
   check("버전 표기(meta+설정 화면)", !!d.querySelector('meta[name="app-version"]') && q("#appVer").textContent.includes("v"));
   check("이용약관 페이지 + 설정 링크", fs.existsSync(path.join(root, "terms.html")) && read("terms.html").includes("의료") && !!q('a[href="terms.html"]'));
   check("manifest 스크린샷 등록 + 파일 존재", (manifest.screenshots || []).length >= 3 && manifest.screenshots.every((s) => fs.existsSync(path.join(root, s.src))));
+
+  // 13) 함께 탭 (커뮤니티 — 서버 공개 방)
+  check("탭 6개(함께 포함)", d.querySelectorAll(".tabbtn").length === 6 && !!q('.tabbtn[data-tab="social"]'));
+  q('.tabbtn[data-tab="social"]').click();
+  check("함께 탭 열림", !q("#tab-social").hidden);
+  check("서버 미설정 → 정직한 '연결 전' 안내", !q("#socialNotconf").hidden);
+  check("미설정 시 로그인 유도는 숨김(혼동 방지)", q("#socialLogin").hidden);
+  q("#socialCreate").click();
+  check("함께 탭에서 방 만들기 시트 열림", !!d.querySelector("#roomSheet.show"));
+  // 방 생성 → 함께 탭 목록에 '내 방 · 코드'로 표시
+  q("#rsName").value = "테스트방"; q('#roomSheet [data-rsact="create"]').click();
+  check("방 생성 후 시트 닫힘", !d.querySelector("#roomSheet.show"));
+  window.renderSocial && window.renderSocial();
+  check("함께 탭 목록에 내 방 표시", q("#srvRoomList") && q("#srvRoomList").innerHTML.includes("테스트방"));
+  q('.tabbtn[data-tab="today"]').click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));
 }

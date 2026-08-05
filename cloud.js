@@ -169,6 +169,7 @@
       currentUser = session ? session.user : null;
       if (currentUser) { setView("in"); const u = $("cloudUser"); if (u) u.textContent = "로그인됨: " + (currentUser.email || currentUser.id); authMsg(""); syncNow(true); }
       else setView("out");
+      try { window.dispatchEvent(new CustomEvent("cloud:auth")); } catch (e) {} // 함께 탭 등이 로그인 상태 변화를 반영
     });
     try {
       const { data } = await sb.auth.getSession();
@@ -176,6 +177,7 @@
     } catch (e) { currentUser = null; }
     if (currentUser) { setView("in"); const u = $("cloudUser"); if (u) u.textContent = "로그인됨: " + (currentUser.email || currentUser.id); syncNow(true); }
     else setView("out");
+    try { window.dispatchEvent(new CustomEvent("cloud:auth")); } catch (e) {}
   }
 
   window.Cloud = {

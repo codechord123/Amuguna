@@ -260,7 +260,7 @@ document.getElementById("obSkip").addEventListener("click", finishOnboard);
 
 /* ===================== 탭 전환 ===================== */
 const tabbar = document.getElementById("tabbar");
-const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", stats: "tab-stats", settings: "tab-settings" };
+const tabs = { today: "tab-today", calendar: "tab-calendar", rest: "tab-rest", social: "tab-social", stats: "tab-stats", settings: "tab-settings" };
 function activateTab(name, { scroll = true } = {}) {
   let calSegTo = null;
   if (name === "challenge") { name = "calendar"; calSegTo = "habits"; } // v190: 습관은 일상 탭의 서브탭
@@ -270,7 +270,8 @@ function activateTab(name, { scroll = true } = {}) {
   if (name === "stats") renderStats();
   if (name === "calendar") { const cur = document.querySelector("#calSeg button.active"); showCalSeg(calSegTo || (cur ? cur.dataset.cseg : "calendar")); }
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
-  if (name !== "rest" && typeof medObserveStop === "function") medObserveStop(); // 명상 탭 벗어나면 방 관찰 종료
+  if (name === "social") { refreshSocial(); if (typeof medObserveStart === "function") medObserveStart(); } // 함께 탭 — 방 목록(캐시→서버) + 실시간 인원 관찰
+  if (name !== "rest" && name !== "social" && typeof medObserveStop === "function") medObserveStop(); // 명상·함께 탭 벗어나면 방 관찰 종료
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -3643,7 +3644,8 @@ let medRoom = null; // 지금 들어간 방(null = 혼자 조용히)
 // id가 곧 초대 코드의 방 식별자라, 같은 코드를 받은 사람은 같은 방(=같은 presence 채널)에 들어온다.
 function loadMyRooms() { return Array.isArray(settings.myRooms) ? settings.myRooms : []; }
 function saveMyRooms(list) { settings.myRooms = list; saveSettingsObj(settings); if (window.Cloud) Cloud.markDirty(); }
-function allRooms() { return MED_ROOMS.concat(loadMyRooms()); }
+let _srvRooms = []; // 서버(모두의) 방 캐시 — 함께 탭에서 갱신
+function allRooms() { return MED_ROOMS.concat(loadMyRooms(), _srvRooms); }
 function newRoomId() { return "u" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
 const clampPat = (v, lo, hi) => Math.min(hi, Math.max(lo, v | 0));
 // 초대 코드 — 방 정의(이름·무드·패턴·id)를 그대로 담아 서버 없이도 친구가 같은 방을 만들 수 있게.
@@ -3784,9 +3786,9 @@ function medRoomsRender() {
     + loadMyRooms().map((r) => card(r, true)).join("") + add;
 }
 function medRoomsSyncCounts(state) {
-  if (!medRoomsEl) return;
   const live = !!(state && state.live), rooms = (state && state.rooms) || {};
-  medRoomsEl.querySelectorAll(".mr-live").forEach((el) => {
+  // 명상 캐러셀 + 함께 탭 서버 목록 — .mr-live를 문서 전체에서 갱신
+  document.querySelectorAll(".mr-live").forEach((el) => {
     const n = live ? (rooms[el.dataset.live] || 0) : 0;
     el.textContent = n > 0 ? `지금 ${n}명` : "";
     el.classList.toggle("on", n > 0);
@@ -3859,15 +3861,18 @@ function openRoomSheet() {
       if (!name) { toast("방 이름을 적어주세요."); return; }
       const list = loadMyRooms();
       if (list.length >= 8) { toast("방은 8개까지 만들 수 있어요."); return; }
-      list.push({ id: newRoomId(), name: name.slice(0, 14), mood: (mood || "나만의 호흡").slice(0, 24), pat: _roomDraft.pat.slice() });
+      const room = { id: newRoomId(), name: name.slice(0, 14), mood: (mood || "나만의 호흡").slice(0, 24), pat: _roomDraft.pat.slice() };
+      list.push(room);
       saveMyRooms(list); medRoomsRender(); closeRoomSheet(); toast(`'${name}' 방을 만들었어요.`); Haptic.success();
+      publishRoom(room); // 로그인·서버 연결 시 모두의 목록에 공개(아니면 조용히 로컬만)
+      renderSocial(); // 함께 탭 목록 즉시 반영
     } else if (act === "join") {
       const r = codeToRoom(document.getElementById("rsCode").value);
       if (!r) { toast("코드를 다시 확인해주세요."); return; }
       const list = loadMyRooms();
       if (list.some((x) => x.id === r.id)) { toast("이미 있는 방이에요."); return; }
       if (list.length >= 8) { toast("방은 8개까지 담을 수 있어요."); return; }
-      list.push(r); saveMyRooms(list); medRoomsRender(); closeRoomSheet(); toast(`'${r.name}' 방에 들어왔어요.`); Haptic.success();
+      list.push(r); saveMyRooms(list); medRoomsRender(); renderSocial(); closeRoomSheet(); toast(`'${r.name}' 방에 들어왔어요.`); Haptic.success();
     } else if (act === "share") {
       const r = loadMyRooms().find((x) => x.id === a.dataset.id); if (!r) return;
       const code = roomToCode(r);
@@ -3879,7 +3884,8 @@ function openRoomSheet() {
       const id = a.dataset.id;
       saveMyRooms(loadMyRooms().filter((x) => x.id !== id));
       if (medRoom === id) medRoom = null;
-      medRoomsRender(); ov.innerHTML = roomSheetHtml(); toast("방을 지웠어요.");
+      unpublishRoom(id); // 서버에 올라가 있던 방이면 목록에서도 내림
+      medRoomsRender(); renderSocial(); ov.innerHTML = roomSheetHtml(); toast("방을 지웠어요.");
     }
   };
 }
@@ -3887,6 +3893,96 @@ function closeRoomSheet() {
   const ov = document.getElementById("roomSheet"); if (!ov) return;
   ov.classList.remove("show"); ov.innerHTML = ""; syncAppInert();
 }
+
+/* ===== 함께 탭 — 아이디로 들어와 방을 만들면 서버(모두의 목록)에 뜬다 =====
+   서버: Supabase public.rooms 테이블(README SQL). 읽기는 누구나, 만들기·삭제는
+   로그인한 본인만(RLS). 서버 미설정이면 정직하게 '연결 전' 상태 + 코드 초대만. */
+function sbc() { try { return (window.Cloud && Cloud._sb && Cloud._sb()) || null; } catch (e) { return null; } }
+function sanitizeRoomRow(r) {
+  if (!r || !r.id || !r.name || !Array.isArray(r.pat) || r.pat.length !== 3) return null;
+  return { id: String(r.id).slice(0, 24), name: String(r.name).slice(0, 14), mood: String(r.mood || "").slice(0, 24),
+    pat: [clampPat(r.pat[0], BR_MIN.in, BR_MAX), clampPat(r.pat[1], BR_MIN.hold, BR_MAX), clampPat(r.pat[2], BR_MIN.ex, BR_MAX)],
+    owner: r.owner || null, ownerName: String(r.owner_name || "").slice(0, 12) };
+}
+async function fetchSrvRooms() {
+  const sb = sbc(); if (!sb) return null;
+  try {
+    const { data, error } = await sb.from("rooms").select("id,name,mood,pat,owner,owner_name,created_at")
+      .order("created_at", { ascending: false }).limit(30);
+    if (error) throw error;
+    _srvRooms = (data || []).map(sanitizeRoomRow).filter(Boolean);
+    return _srvRooms;
+  } catch (e) { return null; } // 실패 시 이전 캐시 유지 — 목록이 갑자기 비지 않게
+}
+async function publishRoom(room) {
+  const sb = sbc(), u = window.Cloud && Cloud.getUser();
+  if (!sb || !u) return false;
+  try {
+    const nick = (u.email || "").split("@")[0].slice(0, 12) || "익명";
+    const { error } = await sb.from("rooms").upsert({ id: room.id, name: room.name, mood: room.mood, pat: room.pat, owner: u.id, owner_name: nick });
+    if (error) throw error;
+    toast("모두의 목록에 방이 올라갔어요."); refreshSocial();
+    return true;
+  } catch (e) { return false; }
+}
+async function unpublishRoom(id) {
+  const sb = sbc(), u = window.Cloud && Cloud.getUser();
+  if (!sb || !u) return;
+  try { await sb.from("rooms").delete().eq("id", id); _srvRooms = _srvRooms.filter((r) => r.id !== id); renderSocial(); } catch (e) {}
+}
+function srvRoomRow(r, myId) {
+  const mine = myId && r.owner === myId;
+  return `<div class="sr-row">` +
+    `<button class="sr-join" data-room="${r.id}" aria-label="${escapeHtml(r.name)} 방에서 함께 호흡 (${r.pat.join("·")}초)">` +
+      `<span class="sr-name">${escapeHtml(r.name)}${mine ? `<i class="sr-mine-badge">내 방</i>` : ""}</span>` +
+      `<span class="sr-mood">${escapeHtml(r.mood)}${r.ownerName ? ` · ${escapeHtml(r.ownerName)}` : ""}</span>` +
+      `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span>` +
+    `</button>` +
+    (mine ? `<button class="btn sm sr-del" data-srdel="${r.id}" aria-label="${escapeHtml(r.name)} 방 내리기">내리기</button>` : "") +
+  `</div>`;
+}
+function renderSocial() {
+  const tab = document.getElementById("tab-social"); if (!tab) return;
+  const sb = sbc(), user = window.Cloud && Cloud.getUser ? Cloud.getUser() : null;
+  const notconf = document.getElementById("socialNotconf"), loginBox = document.getElementById("socialLogin");
+  const wrap = document.getElementById("srvRoomsWrap"), listEl = document.getElementById("srvRoomList");
+  if (notconf) notconf.hidden = !!sb;
+  if (loginBox) loginBox.hidden = !sb || !!user;
+  if (wrap) wrap.hidden = !sb && _srvRooms.length === 0 && loadMyRooms().length === 0;
+  if (!listEl) return;
+  const myId = user ? user.id : null;
+  const srvIds = new Set(_srvRooms.map((r) => r.id));
+  const localOnly = loadMyRooms().filter((r) => !srvIds.has(r.id))
+    .map((r) => ({ ...r, owner: myId, ownerName: "" })); // 서버에 없는 내 방(코드 전용·오프라인)도 함께 표시
+  const rows = _srvRooms.map((r) => srvRoomRow(r, myId)).concat(localOnly.map((r) =>
+    `<div class="sr-row"><button class="sr-join" data-room="${r.id}" aria-label="${escapeHtml(r.name)} 방에서 호흡 (${r.pat.join("·")}초)">` +
+      `<span class="sr-name">${escapeHtml(r.name)}<i class="sr-mine-badge">내 방 · 코드</i></span>` +
+      `<span class="sr-mood">${escapeHtml(r.mood)}</span>` +
+      `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span></button></div>`));
+  listEl.innerHTML = rows.length ? rows.join("") : `<p class="sr-empty">아직 열린 방이 없어요. 첫 방을 만들어볼까요?</p>`;
+}
+// 진입·인증 변화 시: 캐시로 즉시 그리고, 서버 목록을 받아 한 번 더(렌더는 순수, fetch는 여기서만)
+function refreshSocial() { renderSocial(); if (sbc()) fetchSrvRooms().then((ok) => { if (ok) renderSocial(); }); }
+const _socialTab = document.getElementById("tab-social");
+if (_socialTab) _socialTab.addEventListener("click", (e) => {
+  const del = e.target.closest("[data-srdel]");
+  if (del) { Sound.tap(); unpublishRoom(del.dataset.srdel); saveMyRooms(loadMyRooms().filter((x) => x.id !== del.dataset.srdel)); medRoomsRender(); return; }
+  const j = e.target.closest(".sr-join");
+  if (j) { Sound.tap(); Haptic.tap(); openMedGuide(j.dataset.room); return; }
+});
+const _socialCreate = document.getElementById("socialCreate");
+if (_socialCreate) _socialCreate.addEventListener("click", () => { Sound.tap(); openRoomSheet(); });
+const _socialLoginBtn = document.getElementById("socialLoginBtn");
+if (_socialLoginBtn) _socialLoginBtn.addEventListener("click", () => {
+  Sound.tap(); activateTab("settings");
+  const c = document.getElementById("accountCard");
+  if (c) { c.classList.remove("collapsed"); c.scrollIntoView({ behavior: "smooth", block: "start" }); }
+});
+// 로그인 상태가 바뀌면(로그인/로그아웃) 함께 탭 갱신 + 내 방 서버 발행 재시도
+window.addEventListener("cloud:auth", () => {
+  const t = document.getElementById("tab-social");
+  if (t && !t.hidden) refreshSocial();
+});
 
 // 명상 오버레이 하단 사운드 컨트롤(세션 중에도 배경음 on/off + 볼륨)
 const medAmbBtn = document.getElementById("medAmbBtn"), medVol = document.getElementById("medVol");

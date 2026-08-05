@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v215" />
+  <meta name="app-version" content="v216" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -266,6 +266,24 @@
     </section>
 
     <!-- ========== 탭: 챌린지 ========== -->
+    <!-- ========== 탭: 함께 (커뮤니티 — 서버 공개 방) ========== -->
+    <section class="tab" id="tab-social" hidden>
+      <div class="card">
+        <h2>함께 호흡</h2>
+        <p class="hint">방을 만들면 모두의 목록에 올라와요. 마음 맞는 호흡에 조용히 함께해요.</p>
+        <p class="social-note" id="socialNotconf" hidden>커뮤니티 서버가 아직 연결 전이에요. 지금은 <b>초대 코드</b>로 친구와 같은 방을 쓸 수 있고, 서버가 열리면 이 자리에 모두의 방이 떠요.</p>
+        <div id="socialLogin" hidden>
+          <p class="social-note">방을 만들어 올리려면 로그인이 필요해요.</p>
+          <button class="btn primary" id="socialLoginBtn">로그인하러 가기</button>
+        </div>
+        <div id="srvRoomsWrap" hidden>
+          <p class="section-label">지금 열린 방</p>
+          <div class="sr-list" id="srvRoomList" aria-live="polite"></div>
+        </div>
+        <div class="sr-actions"><button class="btn primary" id="socialCreate">＋ 방 만들기</button></div>
+      </div>
+    </section>
+
     <!-- ========== 탭: 기록 ========== -->
     <section class="tab" id="tab-stats" hidden>
       <div class="card center" id="statsEmptyHero" hidden>
@@ -543,6 +561,7 @@
     <button class="tabbtn active" data-tab="today" role="tab" aria-selected="true" aria-controls="tab-today"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 V9.5 L12 3.5 L20 9.5 V20 H14.5 V14 H9.5 V20 Z"/></svg><span>오늘</span></button>
     <button class="tabbtn" data-tab="calendar" role="tab" aria-selected="false" aria-controls="tab-calendar"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10 H20 M8.5 3 V7 M15.5 3 V7"/></svg><span>일상</span></button>
     <button class="tabbtn" data-tab="rest" role="tab" aria-selected="false" aria-controls="tab-rest"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C12 12, 14 8, 20 4 C 20 12, 17 17, 12 20 Z"/><path d="M12 20 C 12 15, 10 12, 5 9 C 5 14, 8 18, 12 20"/></svg><span>쉼</span></button>
+    <button class="tabbtn" data-tab="social" role="tab" aria-selected="false" aria-controls="tab-social"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19.5 C3.5 16, 6 14.2 9 14.2 C12 14.2, 14.5 16, 14.5 19.5"/><circle cx="16.8" cy="9.6" r="2.3"/><path d="M16 13.6 C18.6 13.6, 20.5 15, 20.5 17.8"/></svg><span>함께</span></button>
     <button class="tabbtn" data-tab="stats" role="tab" aria-selected="false" aria-controls="tab-stats"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 V12 M12 20 V6 M19 20 V10"/></svg><span>기록</span></button>
     <button class="tabbtn" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings"><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5 M12 17.5 V20 M4 12 H6.5 M17.5 12 H20 M6.3 6.3 L8 8 M16 16 L17.7 17.7 M17.7 6.3 L16 8 M8 16 L6.3 17.7"/></svg><span>설정</span></button>
   </nav>

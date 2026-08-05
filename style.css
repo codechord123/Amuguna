@@ -2043,3 +2043,29 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .rs-row-n i { margin-left: 6px; font-style: normal; font-size: var(--t-xs); color: var(--soft); font-variant-numeric: tabular-nums; }
 .rs-sheet .btn.sm { padding: 5px 10px; font-size: var(--t-xs); min-height: 0; }
 .rs-sheet .rs-del { color: var(--danger, #c0392b); }
+
+/* ===== 함께 탭 (v216) — 서버 공개 방 목록 ===== */
+.social-note { margin: var(--s2) 0 var(--s3); font-size: var(--t-sm); color: var(--ink-2); line-height: 1.6;
+  background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--s3) var(--s4); }
+#socialLogin { margin: var(--s2) 0 var(--s3); }
+#socialLogin .btn { margin-top: var(--s2); }
+.sr-list { display: flex; flex-direction: column; }
+.sr-row { display: flex; align-items: center; gap: var(--s2); border-bottom: 1px solid var(--line); }
+.sr-row:last-child { border-bottom: none; }
+.sr-join { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  background: transparent; border: none; text-align: left; font-family: inherit; color: var(--ink);
+  padding: var(--s3) var(--s1); cursor: pointer; border-radius: var(--r-xs); }
+.sr-join:active { background: var(--bg-sunken); }
+.sr-name { font-size: var(--t-base); font-weight: var(--w-bold); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-mine-badge { margin-left: 6px; font-style: normal; font-size: 0.62rem; font-weight: var(--w-semi);
+  color: var(--accent-deep); background: var(--accent-2); border-radius: 999px; padding: 1px 6px; vertical-align: 0.12em; }
+.sr-mood { font-size: var(--t-xs); color: var(--ink-2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-meta { display: flex; align-items: center; gap: var(--s2); margin-top: 2px; }
+.sr-empty { margin: var(--s3) 0; font-size: var(--t-sm); color: var(--soft); text-align: center; }
+.sr-actions { margin-top: var(--s4); display: flex; justify-content: center; }
+.sr-del { flex-shrink: 0; padding: 5px 10px; font-size: var(--t-xs); min-height: 0; color: var(--ink-2); }
+/* 탭 6개 — 좁은 폰에서 라벨이 안 눌리게 살짝 압축 */
+@media (max-width: 400px) {
+  .tabbtn { padding-left: 0; padding-right: 0; }
+  .tabbtn span { font-size: 0.64rem; letter-spacing: -0.01em; }
+}
