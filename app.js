@@ -3638,18 +3638,33 @@ const MED_ROOMS = [
   { id: "calm", name: "불안 내려놓기", mood: "날숨을 길게, 긴장을 풀어", pat: [4, 2, 8] },
   { id: "noon", name: "점심의 쉼", mood: "잠깐 멈추고 리셋", pat: [4, 4, 4] },
 ];
+// 정기 자동 방 — 매일 정해진 시각에 자동으로 열리고, 누구나 참여(방장 없음). 시간이 곧 방장.
+const AUTO_ROOMS = [
+  { id: "auto2200", name: "밤 10시 · 모두의 호흡", mood: "매일 자동으로 열려요", pat: [4, 7, 8], hour: 22, min: 0, durMin: 30 },
+];
+// 자동 방 상태 (순수 함수 — 테스트 가능): open 여부·남은 시간·다음 시작까지
+function autoRoomStatus(room, now) {
+  now = now || new Date();
+  const start = new Date(now); start.setHours(room.hour, room.min, 0, 0);
+  const end = new Date(start.getTime() + room.durMin * 60000);
+  if (now >= start && now < end) return { open: true, leftMin: Math.max(1, Math.ceil((end - now) / 60000)) };
+  const next = now < start ? start : new Date(start.getTime() + 86400000); // 오늘 아직 전이면 오늘, 지났으면 내일
+  const diffMin = Math.round((next - now) / 60000);
+  const h = Math.floor(diffMin / 60), m = diffMin % 60;
+  return { open: false, untilTxt: h > 0 ? `${h}시간 ${m}분 뒤` : `${m}분 뒤`, at: `${String(room.hour).padStart(2, "0")}:${String(room.min).padStart(2, "0")}` };
+}
 let medRoom = null; // 지금 들어간 방(null = 혼자 조용히)
 // 내가 만든 방 — 이름·무드·호흡 패턴을 직접 정한 방. 기기에 저장되고 클라우드 설정 동기화에 함께 실림.
 // id가 곧 초대 코드의 방 식별자라, 같은 코드를 받은 사람은 같은 방(=같은 presence 채널)에 들어온다.
 function loadMyRooms() { return Array.isArray(settings.myRooms) ? settings.myRooms : []; }
 function saveMyRooms(list) { settings.myRooms = list; saveSettingsObj(settings); if (window.Cloud) Cloud.markDirty(); }
 let _srvRooms = []; // 서버(모두의) 방 캐시 — 함께 탭에서 갱신
-function allRooms() { return MED_ROOMS.concat(loadMyRooms(), _srvRooms); }
+function allRooms() { return MED_ROOMS.concat(AUTO_ROOMS, loadMyRooms(), _srvRooms); }
 function newRoomId() { return "u" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
 const clampPat = (v, lo, hi) => Math.min(hi, Math.max(lo, v | 0));
 // 초대 코드 — 방 정의(이름·무드·패턴·id)를 그대로 담아 서버 없이도 친구가 같은 방을 만들 수 있게.
 function roomToCode(r) {
-  try { return "SHIM1-" + btoa(unescape(encodeURIComponent(JSON.stringify({ i: r.id, n: r.name, m: r.mood, p: r.pat })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  try { return "SHIM1-" + btoa(unescape(encodeURIComponent(JSON.stringify({ i: r.id, n: r.name, m: r.mood, p: r.pat, c: r.code || "" })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
   catch (e) { return ""; }
 }
 function codeToRoom(code) {
@@ -3658,9 +3673,13 @@ function codeToRoom(code) {
     const o = JSON.parse(decodeURIComponent(escape(atob(raw))));
     if (!o || !o.i || !o.n || !Array.isArray(o.p) || o.p.length !== 3) return null;
     return { id: String(o.i).slice(0, 24), name: String(o.n).slice(0, 14), mood: String(o.m || "").slice(0, 24),
-      pat: [clampPat(o.p[0], BR_MIN.in, BR_MAX), clampPat(o.p[1], BR_MIN.hold, BR_MAX), clampPat(o.p[2], BR_MIN.ex, BR_MAX)] };
+      pat: [clampPat(o.p[0], BR_MIN.in, BR_MAX), clampPat(o.p[1], BR_MIN.hold, BR_MAX), clampPat(o.p[2], BR_MIN.ex, BR_MAX)],
+      code: String(o.c || "").slice(0, 12) };
   } catch (e) { return null; }
 }
+// 방장이 직접 정하는 짧은 초대 코드 — 공백 제거·2~12자
+function cleanShortCode(v) { return String(v || "").replace(/\s+/g, "").slice(0, 12); }
+function suggestShortCode() { return "쉼" + Math.floor(1000 + Math.random() * 9000); }
 // 함께 호흡 존재감 — 같은 방의 실시간 인원만 정직하게 표시(백엔드 없으면 조용히), 동행 별은 인원-1 만큼.
 function medRenderTogether(state) {
   if (!medTogetherEl) return;
@@ -3684,7 +3703,8 @@ let medMinutes = Math.min(60, Math.max(1, settings.medMinutes || 5));
 let medActive = false; // 호흡 세션이 실제로 시작됐는지(누적 기록 중복 방지)
 const medViz = medCircle ? medCircle.querySelector(".cb-viz") : null;
 const medGlow = () => (document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,224,140,0.92)" : "rgba(120,142,205,0.95)");
-function medCycleTarget() { return Math.max(2, Math.round(medMinutes * 60 / breathCycleSec())); }
+let _medForcedCycles = null; // 자동 방: 세션 길이를 창(예: 30분)의 남은 시간으로 고정 — 모두 같은 시각에 끝나게
+function medCycleTarget() { if (_medForcedCycles) return _medForcedCycles; return Math.max(2, Math.round(medMinutes * 60 / breathCycleSec())); }
 function renderMedStat() {
   const el = document.getElementById("medStat"); if (!el) return;
   const mins = Math.round((settings.medSeconds || 0) / 60), sess = settings.medSessions || 0;
@@ -3768,16 +3788,30 @@ applyBreathPattern();
 
 /* ===== 함께 호흡하는 방 (테마 방 목록 + 실시간 인원) ===== */
 const medRoomsEl = document.getElementById("medRooms");
+let _lastPresence = null; // 캐러셀 재렌더 후에도 인원 표시 유지용
 function medRoomsRender() {
   if (!medRoomsEl) return;
-  // 함께 탭의 테마 방 캐러셀 — 앱 제공 방만. (내 방·서버 방은 아래 '지금 열린 방' 목록이 담당: 한 탭 안 중복 방지)
-  medRoomsEl.innerHTML = MED_ROOMS.map((r) =>
+  // 첫 카드 = 정기 자동 방(매일 정시 오픈·누구나), 이어서 테마 방.
+  // (내 방·서버 방은 아래 '지금 열린 방' 목록이 담당: 한 탭 안 중복 방지)
+  const auto = AUTO_ROOMS.map((r) => {
+    const st = autoRoomStatus(r);
+    const status = st.open ? `지금 진행 중 · ${st.leftMin}분 남음` : `${st.at}에 열려요 (${st.untilTxt})`;
+    return `<button class="med-room mr-auto${st.open ? " on-air" : ""}" data-room="${r.id}" role="listitem" aria-label="${escapeHtml(r.name)} — ${status}, 호흡 ${r.pat.join("·")}초">` +
+      `<span class="mr-top"><b class="mr-name">${escapeHtml(r.name)}</b><span class="mr-pat">${r.pat.join("·")}</span></span>` +
+      `<small class="mr-mood">${status}</small>` +
+      `<span class="mr-live" data-live="${r.id}"></span>` +
+    `</button>`;
+  }).join("");
+  medRoomsEl.innerHTML = auto + MED_ROOMS.map((r) =>
     `<button class="med-room" data-room="${r.id}" role="listitem" aria-label="${escapeHtml(r.name)} — ${escapeHtml(r.mood)}, 호흡 ${r.pat.join("·")}초">` +
       `<span class="mr-top"><b class="mr-name">${escapeHtml(r.name)}</b><span class="mr-pat">${r.pat.join("·")}</span></span>` +
       `<small class="mr-mood">${escapeHtml(r.mood)}</small>` +
       `<span class="mr-live" data-live="${r.id}"></span>` +
     `</button>`).join("");
+  if (_lastPresence) medRoomsSyncCounts(_lastPresence); // 재렌더로 지워진 인원 뱃지 복원
 }
+// 자동 방 카운트다운·진행 상태를 살아있게 — 함께 탭이 보일 때만 30초마다
+setInterval(() => { const t = document.getElementById("tab-social"); if (t && !t.hidden) medRoomsRender(); }, 30000);
 function medRoomsSyncCounts(state) {
   const live = !!(state && state.live), rooms = (state && state.rooms) || {};
   // 명상 캐러셀 + 함께 탭 서버 목록 — .mr-live를 문서 전체에서 갱신
@@ -3787,7 +3821,7 @@ function medRoomsSyncCounts(state) {
     el.classList.toggle("on", n > 0);
   });
 }
-function medOnPresence(state) { medRoomsSyncCounts(state); medRenderTogether(state); medRosterRender(state); } // 하나의 sync로 목록·세션 문구·명단 동시 갱신
+function medOnPresence(state) { _lastPresence = state; medRoomsSyncCounts(state); medRenderTogether(state); medRosterRender(state); } // 하나의 sync로 목록·세션 문구·명단 동시 갱신
 // 명단 — 로비·호흡 중 같은 방 사람들의 닉네임 (실제 접속자만 · 이름은 escapeHtml)
 const medRosterEl = document.getElementById("medRoster");
 function medRosterRender(state) {
@@ -3812,24 +3846,27 @@ medRoomsRender();
 
 /* ===== 방 시트 — '만들기'와 '코드로 참여'는 다른 사람의 다른 순간(분리된 진입점) ===== */
 let _roomDraft = { pat: [4, 7, 8] };
-function shareRoomCode(r) { // 방 초대 — 행·시트 어디서든 같은 동작
-  const code = roomToCode(r);
+function shareRoomCode(r) { // 방 초대 — 행·시트 어디서든 같은 동작. 방장이 정한 짧은 코드 우선(없으면 전체 코드)
+  const code = r.code || roomToCode(r);
   const done = () => toast("초대 코드를 복사했어요. 친구에게 보내보세요.");
-  if (navigator.share) { navigator.share({ title: `오늘의 쉼 · ${r.name}`, text: `함께 호흡해요 — 코드: ${code}` }).catch(() => {}); }
+  if (navigator.share) { navigator.share({ title: `오늘의 쉼 · ${r.name}`, text: `'${r.name}' 방에서 함께 호흡해요 — 함께 탭 '코드로 참여'에 입력: ${code}` }).catch(() => {}); }
   else if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => toast(code));
   else toast(code);
 }
 let _codeRoom = null; // 방금 만든/공유하려는 방 — 코드 표시 시트용
 function roomSheetHtml(mode) {
   if (mode === "code" && _codeRoom) {
-    const code = roomToCode(_codeRoom);
+    const short = _codeRoom.code || "";
+    const full = roomToCode(_codeRoom);
     return `<div class="ip-backdrop" data-rsclose></div>
     <div class="ip-sheet rs-sheet">
       <p class="ip-title">'${escapeHtml(_codeRoom.name)}' 초대 코드</p>
-      <p class="ip-hint">친구가 함께 탭의 <b>'코드로 참여'</b>에 이 코드를 붙여넣으면 같은 방에 들어와요.</p>
-      <label class="rs-field"><span>초대 코드</span><input type="text" id="rsShowCode" readonly value="${escapeHtml(code)}" /></label>
+      <p class="ip-hint">친구가 함께 탭의 <b>'코드로 참여'</b>에 이 코드를 입력하면 같은 방에 들어와요.</p>
+      ${short ? `<p class="rs-bigcode" id="rsShowCode" data-code="${escapeHtml(short)}">${escapeHtml(short)}</p>` :
+        `<label class="rs-field"><span>초대 코드</span><input type="text" id="rsShowCode" readonly value="${escapeHtml(full)}" /></label>`}
       <button class="btn primary block" data-rsact="copycode">복사하기</button>
       <button class="btn block" data-rsact="sharecode">공유로 보내기</button>
+      ${short ? `<details class="rs-fullwrap"><summary>서버 연결 없이 쓰는 전체 코드</summary><textarea class="rs-fullcode" readonly>${escapeHtml(full)}</textarea></details>` : ""}
       <button class="btn ip-close" data-rsclose>닫기</button>
     </div>`;
   }
@@ -3838,7 +3875,7 @@ function roomSheetHtml(mode) {
     <div class="ip-sheet rs-sheet">
       <p class="ip-title">코드로 참여</p>
       <p class="ip-hint">친구에게 받은 초대 코드를 붙여넣으면 같은 방에 들어가요.</p>
-      <label class="rs-field"><span>초대 코드</span><input type="text" id="rsCode" placeholder="SHIM1-…" /></label>
+      <label class="rs-field"><span>초대 코드</span><input type="text" id="rsCode" placeholder="예: 쉼1234 (또는 SHIM1-…)" /></label>
       <button class="btn primary block" data-rsact="join">참여하기</button>
       <button class="btn ip-close" data-rsclose>닫기</button>
     </div>`;
@@ -3851,9 +3888,10 @@ function roomSheetHtml(mode) {
   return `<div class="ip-backdrop" data-rsclose></div>
     <div class="ip-sheet rs-sheet">
       <p class="ip-title">방 만들기</p>
-      <p class="ip-hint">나만의 호흡으로 방을 만들어요. 만든 뒤 '공유'로 친구를 초대할 수 있어요.</p>
+      <p class="ip-hint">나만의 호흡으로 방을 만들어요. 초대 코드는 직접 정할 수 있어요.</p>
       <label class="rs-field"><span>방 이름</span><input type="text" id="rsName" maxlength="14" placeholder="예: 우리 반 호흡" /></label>
       <label class="rs-field"><span>한 줄 소개</span><input type="text" id="rsMood" maxlength="24" placeholder="예: 수업 시작 전 30초" /></label>
+      <label class="rs-field"><span>초대 코드 — 친구가 입력할 코드 (직접 정하기)</span><input type="text" id="rsCustomCode" maxlength="12" value="${suggestShortCode()}" /></label>
       <div class="rs-pat">${step("in", "들숨", p[0])}${step("hold", "멈춤", p[1])}${step("ex", "날숨", p[2])}</div>
       <button class="btn primary block" data-rsact="create">이 방 만들기</button>
       <button class="btn ip-close" data-rsclose>닫기</button>
@@ -3884,25 +3922,48 @@ function openRoomSheet(mode) {
     if (act === "create") {
       const name = (document.getElementById("rsName").value || "").trim();
       const mood = (document.getElementById("rsMood").value || "").trim();
+      const code = cleanShortCode(document.getElementById("rsCustomCode") ? document.getElementById("rsCustomCode").value : "");
       if (!name) { toast("방 이름을 적어주세요."); return; }
+      if (code.length < 2) { toast("초대 코드는 2자 이상으로 정해주세요."); return; }
       const list = loadMyRooms();
       if (list.length >= 8) { toast("방은 8개까지 만들 수 있어요."); return; }
-      const room = { id: newRoomId(), name: name.slice(0, 14), mood: (mood || "나만의 호흡").slice(0, 24), pat: _roomDraft.pat.slice() };
-      list.push(room);
-      saveMyRooms(list); medRoomsRender(); Haptic.success();
-      toast(`'${name}' 방을 만들었어요.`);
-      publishRoom(room); // 로그인·서버 연결 시 모두의 목록에 공개(아니면 조용히 로컬만)
-      renderSocial(); // 함께 탭 목록 즉시 반영
-      _codeRoom = room; openRoomSheet("code"); // 만들자마자 초대 코드를 바로 보여줌 — 다음 행동(초대)이 손에 잡히게
+      const finish = () => {
+        const room = { id: newRoomId(), name: name.slice(0, 14), mood: (mood || "나만의 호흡").slice(0, 24), pat: _roomDraft.pat.slice(), code };
+        list.push(room);
+        saveMyRooms(list); medRoomsRender(); Haptic.success();
+        toast(`'${name}' 방을 만들었어요.`);
+        publishRoom(room); // 로그인·서버 연결 시 모두의 목록에 공개(아니면 조용히 로컬만)
+        renderSocial(); // 함께 탭 목록 즉시 반영
+        _codeRoom = room; openRoomSheet("code"); // 만들자마자 초대 코드를 바로 보여줌 — 다음 행동(초대)이 손에 잡히게
+      };
+      // 서버가 살아있으면 코드 중복 확인 후 생성 (다른 방장과 코드가 겹치면 친구가 엉뚱한 방에 들어가므로)
+      if (hasB() && window.Cloud && Cloud.getUser()) {
+        Cloud.rooms.findByCode(code).then((taken) => { if (taken) toast("이미 쓰이는 초대 코드예요. 다른 코드로 정해주세요."); else finish(); })
+          .catch(() => finish());
+      } else finish();
     } else if (act === "join") {
-      const r = codeToRoom(document.getElementById("rsCode").value);
-      if (!r) { toast("코드를 다시 확인해주세요."); return; }
-      const list = loadMyRooms();
-      if (list.some((x) => x.id === r.id)) { toast("이미 있는 방이에요."); return; }
-      if (list.length >= 8) { toast("방은 8개까지 담을 수 있어요."); return; }
-      list.push(r); saveMyRooms(list); medRoomsRender(); renderSocial(); closeRoomSheet(); toast(`'${r.name}' 방에 들어왔어요.`); Haptic.success();
+      const input = String(document.getElementById("rsCode").value || "").trim();
+      const addRoom = (r) => {
+        const list = loadMyRooms();
+        if (list.some((x) => x.id === r.id)) { toast("이미 있는 방이에요."); return; }
+        if (list.length >= 8) { toast("방은 8개까지 담을 수 있어요."); return; }
+        list.push(r); saveMyRooms(list); medRoomsRender(); renderSocial(); closeRoomSheet(); toast(`'${r.name}' 방에 들어왔어요.`); Haptic.success();
+      };
+      if (/^SHIM1-/i.test(input)) { // 전체 코드(서버 없이도 동작)
+        const r = codeToRoom(input);
+        if (!r) { toast("코드를 다시 확인해주세요."); return; }
+        addRoom(r);
+      } else if (input.length >= 2 && hasB()) { // 방장이 정한 짧은 코드 → 서버에서 방 찾기
+        Cloud.rooms.findByCode(cleanShortCode(input)).then((row) => {
+          const r = row && sanitizeRoomRow(row);
+          if (!r) { toast("그 코드의 방을 찾지 못했어요. 코드를 다시 확인해주세요."); return; }
+          addRoom(r);
+        }).catch(() => toast("방을 찾는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."));
+      } else if (input.length >= 2) {
+        toast("짧은 코드는 서버 연결 후 쓸 수 있어요. 지금은 친구에게 전체 코드(SHIM1-…)를 받아 붙여넣어 주세요.");
+      } else { toast("코드를 입력해주세요."); }
     } else if (act === "copycode") {
-      const code = _codeRoom ? roomToCode(_codeRoom) : "";
+      const code = _codeRoom ? (_codeRoom.code || roomToCode(_codeRoom)) : "";
       if (navigator.clipboard && code) navigator.clipboard.writeText(code).then(() => toast("초대 코드를 복사했어요."), () => toast(code));
       else if (code) toast(code);
     } else if (act === "sharecode") {
@@ -3923,7 +3984,7 @@ function sanitizeRoomRow(r) {
   if (!r || !r.id || !r.name || !Array.isArray(r.pat) || r.pat.length !== 3) return null;
   return { id: String(r.id).slice(0, 24), name: String(r.name).slice(0, 14), mood: String(r.mood || "").slice(0, 24),
     pat: [clampPat(r.pat[0], BR_MIN.in, BR_MAX), clampPat(r.pat[1], BR_MIN.hold, BR_MAX), clampPat(r.pat[2], BR_MIN.ex, BR_MAX)],
-    owner: r.owner || null, ownerName: String(r.owner_name || "").slice(0, 12) };
+    owner: r.owner || null, ownerName: String(r.owner_name || "").slice(0, 12), code: String(r.code || "").slice(0, 12) };
 }
 async function fetchSrvRooms() {
   if (!hasB()) return null;
@@ -3951,7 +4012,7 @@ function srvRoomRow(r, myId) {
   return `<div class="sr-row">` +
     `<button class="sr-join" data-room="${r.id}" aria-label="${escapeHtml(r.name)} 방에서 함께 호흡 (${r.pat.join("·")}초)">` +
       `<span class="sr-name">${escapeHtml(r.name)}${mine ? `<i class="sr-mine-badge">내 방</i>` : ""}</span>` +
-      `<span class="sr-mood">${escapeHtml(r.mood)}${r.ownerName ? ` · ${escapeHtml(r.ownerName)}` : ""}</span>` +
+      `<span class="sr-mood">${escapeHtml(r.mood)}${r.ownerName ? ` · ${escapeHtml(r.ownerName)}` : ""}${mine && r.code ? ` · 코드 ${escapeHtml(r.code)}` : ""}</span>` +
       `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span>` +
     `</button>` +
     (mine ? `<button class="btn sm sr-share" data-srshare="${r.id}" aria-label="${escapeHtml(r.name)} 초대 코드 공유">공유</button>` +
@@ -4108,6 +4169,12 @@ function openMedGuide(roomId) {
   if (!medOverlay) return;
   medRoom = roomId || null;
   const room = medRoom ? allRooms().find((r) => r.id === medRoom) : null;
+  // 정기 자동 방 시간 게이트 — 닫혀 있으면 오버레이를 열지 않고 다음 시각만 안내
+  const autoGate = room && AUTO_ROOMS.find((t) => t.id === room.id);
+  if (autoGate) {
+    const st = autoRoomStatus(autoGate);
+    if (!st.open) { toast(`이 방은 매일 ${st.at}에 열려요 · ${st.untilTxt} 뒤에 함께해요.`); medRoom = null; return; }
+  }
   if (room) applyRoomPattern(room.pat); else restoreUserPattern(); // 방이면 방 패턴, 혼자면 내 패턴
   medOverlay.hidden = false; Sound.unlock();
   medOverlay.classList.toggle("sleep", medNight); // 야간 모드 → 어두운 우주 팔레트
@@ -4122,11 +4189,20 @@ function openMedGuide(roomId) {
   if (medSwipeHint) medSwipeHint.hidden = false;
   if (medDots) medDots.hidden = false;
   // 방 입장 분기:
+  // · 정기 자동 방 → 열려 있을 때만, 남은 시간만큼(모두 정시에 함께 끝) — 방장 없음
   // · 사용자 방 + 백엔드 살아있음 → 로비(명단·방장 시작 대기)
   // · 테마 방 or 백엔드 없음 → 바로 호흡(3·2·1 예비 카운트가 마음의 준비)
   // · 혼자('따라하며 명상하기') → 5단계 교육(배우는 경험)
   const isTheme = room && MED_ROOMS.some((t) => t.id === room.id);
-  if (room && hasB() && !isTheme) medEnterLobby(room);
+  const autoDef = autoGate;
+  _medForcedCycles = null;
+  if (autoDef) {
+    const st = autoRoomStatus(autoDef);
+    _medForcedCycles = Math.max(2, Math.floor(Math.max(1, st.leftMin) * 60 / breathCycleSec()));
+    if (window.MedNet) { MedNet.subscribe(medOnPresence); MedNet.join(autoDef.id).then(medOnPresence); } // 명단·인원(백엔드 있을 때)
+    medStartBreathing();
+  }
+  else if (room && hasB() && !isTheme) medEnterLobby(room);
   else if (room) medStartBreathing();
   else { medShow(0); medResetTimer(); }
   syncAppInert(); const mc = document.getElementById("medClose"); if (mc) mc.focus();
@@ -4138,6 +4214,7 @@ function closeMedGuide() {
   if (window.MedNet) MedNet.leave(); // 함께 호흡 연결 해제
   try { medBreather && medBreather.stop(); } catch (e) {}
   medPhase = "teach"; medRoom = null; medIsHost = false; medInLiveRoom = false;
+  _medForcedCycles = null; // 자동 방 세션 길이 고정 해제
   medNextBtn.disabled = false;
   medRenderTogether(null); medRosterRender(null); if (medCompanionsEl) medCompanionsEl.classList.remove("inhale");
   restoreUserPattern(); // 방 패턴 → 내 패턴 복원

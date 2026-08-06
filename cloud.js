@@ -170,10 +170,16 @@
       const snap = await store.collection("rooms").orderBy("createdAt", "desc").limit(30).get();
       return snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
     },
+    // 방장이 직접 정한 초대 코드로 방 찾기 (친구가 '코드로 참여'에 입력)
+    async findByCode(code) {
+      if (!store || !code) return null;
+      const snap = await store.collection("rooms").where("code", "==", String(code)).limit(1).get();
+      return snap.empty ? null : Object.assign({ id: snap.docs[0].id }, snap.docs[0].data());
+    },
     async publish(room) {
       if (!store || !currentUser) return false;
       await store.collection("rooms").doc(room.id).set({
-        name: room.name, mood: room.mood, pat: room.pat,
+        name: room.name, mood: room.mood, pat: room.pat, code: room.code || "",
         owner: currentUser.uid, owner_name: nick(),
         createdAt: new Date().toISOString(),
       });

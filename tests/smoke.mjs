@@ -647,10 +647,21 @@ try {
   q("#socialCreate").click();
   check("함께 탭에서 방 만들기 시트 열림", !!d.querySelector("#roomSheet.show"));
   // 방 생성 → 함께 탭 목록에 '내 방 · 코드'로 표시
-  q("#rsName").value = "테스트방"; q('#roomSheet [data-rsact="create"]').click();
-  check("방 생성 직후 초대 코드 표시(코드가 어디 있는지 바로 보임)", !!d.querySelector("#roomSheet.show #rsShowCode") && (d.querySelector("#rsShowCode").value || "").startsWith("SHIM1-"));
+  check("초대 코드 직접 정하기 필드(제안값 채워짐)", !!q("#rsCustomCode") && (q("#rsCustomCode").value || "").length >= 2);
+  q("#rsName").value = "테스트방"; q("#rsCustomCode").value = "우리반호흡";
+  q('#roomSheet [data-rsact="create"]').click();
+  check("방 생성 직후 방장이 정한 코드 크게 표시", !!d.querySelector("#roomSheet.show #rsShowCode") && d.querySelector("#rsShowCode").textContent === "우리반호흡");
+  check("전체 코드(SHIM1)도 접이식으로 제공", (d.querySelector("#roomSheet .rs-fullcode") || {}).value?.startsWith("SHIM1-") === true);
+  check("코드가 방 데이터에 저장됨", (ls("settings_v2").myRooms || [])[0]?.code === "우리반호흡");
   d.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   check("코드 시트 닫힘", !d.querySelector("#roomSheet.show"));
+  // 정기 자동 방 — 상태 계산(순수 함수) + 캐러셀 첫 카드
+  { const AR = { id: "t", name: "t", pat: [4, 7, 8], hour: 22, min: 0, durMin: 30 };
+    const at = (h, m) => { const dd = new Date(2026, 7, 6, h, m, 0); return window.autoRoomStatus(AR, dd); };
+    check("자동 방: 열리기 전 카운트다운", at(20, 0).open === false && at(20, 0).untilTxt === "2시간 0분 뒤");
+    check("자동 방: 진행 중 남은 시간", at(22, 10).open === true && at(22, 10).leftMin === 20);
+    check("자동 방: 끝난 뒤 내일로", at(23, 0).open === false && at(23, 0).untilTxt.includes("시간"));
+    check("자동 방 카드가 캐러셀 첫 자리", (q("#medRooms .med-room") || {}).classList?.contains("mr-auto") === true); }
   window.renderSocial && window.renderSocial();
   check("함께 탭 목록에 내 방 표시", q("#srvRoomList") && q("#srvRoomList").innerHTML.includes("테스트방"));
   check("내 방 행에 공유·삭제 버튼(초대가 손에 닿게)", !!q("#srvRoomList .sr-share") && !!q("#srvRoomList [data-srdel]"));

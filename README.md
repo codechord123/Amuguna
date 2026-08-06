@@ -179,7 +179,8 @@ service cloud.firestore {
       allow create, update: if request.auth != null
         && request.resource.data.owner == request.auth.uid
         && request.resource.data.name is string && request.resource.data.name.size() <= 14
-        && request.resource.data.mood is string && request.resource.data.mood.size() <= 24;
+        && request.resource.data.mood is string && request.resource.data.mood.size() <= 24
+        && request.resource.data.code is string && request.resource.data.code.size() <= 12;
       allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
     }
   }

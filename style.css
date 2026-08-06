@@ -2075,3 +2075,14 @@ html[data-textsize="xl"] { font-size: 20.5px; }
 .med-roster { margin: 0; font-size: var(--t-sm); color: var(--med-text2); text-align: center; max-width: 320px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .med-overlay .btn.primary:disabled { opacity: 0.55; cursor: default; }
+
+/* v220 — 방장 지정 초대 코드 + 정기 자동 방 */
+.rs-bigcode { margin: var(--s3) 0; text-align: center; font-size: 1.7rem; font-weight: var(--w-bold); letter-spacing: 0.12em;
+  color: var(--accent-deep); background: var(--accent-2); border-radius: var(--r-md); padding: var(--s4); user-select: all; }
+.rs-fullwrap { margin-top: var(--s3); }
+.rs-fullwrap summary { font-size: var(--t-xs); color: var(--soft); cursor: pointer; }
+.rs-fullcode { width: 100%; box-sizing: border-box; margin-top: var(--s2); font-family: monospace; font-size: 0.72rem;
+  color: var(--ink-2); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--r-xs); padding: var(--s2); min-height: 64px; resize: none; }
+.med-room.mr-auto { border-style: solid; border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.med-room.mr-auto.on-air { box-shadow: 0 0 0 1px var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent); }
+.med-room.mr-auto.on-air .mr-mood { color: var(--accent-deep); font-weight: var(--w-semi); }
