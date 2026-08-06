@@ -651,6 +651,12 @@ try {
   check("방 생성 후 시트 닫힘", !d.querySelector("#roomSheet.show"));
   window.renderSocial && window.renderSocial();
   check("함께 탭 목록에 내 방 표시", q("#srvRoomList") && q("#srvRoomList").innerHTML.includes("테스트방"));
+  check("내 방 행에 공유·삭제 버튼(초대가 손에 닿게)", !!q("#srvRoomList .sr-share") && !!q("#srvRoomList [data-srdel]"));
+  // 코드로 참여는 별도 진입점 — 참여자가 '만들기'를 누르는 모순 제거
+  q("#socialJoinCode").click();
+  check("코드로 참여 시트(코드 입력만)", !!d.querySelector("#roomSheet.show #rsCode") && !d.querySelector("#roomSheet.show #rsName"));
+  d.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  check("참여 시트 Esc 닫힘", !d.querySelector("#roomSheet.show"));
   q('.tabbtn[data-tab="today"]').click();
 } catch (e) {
   errors.push("INTERACT THROW: " + e.message + "\n" + (e.stack || ""));

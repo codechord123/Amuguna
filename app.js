@@ -3798,10 +3798,26 @@ if (medRoomsEl) medRoomsEl.addEventListener("click", (e) => {
 });
 medRoomsRender();
 
-/* ===== 방 만들기 — 내 호흡으로 방을 만들고, 초대 코드로 친구와 같은 방 ===== */
+/* ===== 방 시트 — '만들기'와 '코드로 참여'는 다른 사람의 다른 순간(분리된 진입점) ===== */
 let _roomDraft = { pat: [4, 7, 8] };
-function roomSheetHtml() {
-  const mine = loadMyRooms();
+function shareRoomCode(r) { // 방 초대 — 행·시트 어디서든 같은 동작
+  const code = roomToCode(r);
+  const done = () => toast("초대 코드를 복사했어요. 친구에게 보내보세요.");
+  if (navigator.share) { navigator.share({ title: `오늘의 쉼 · ${r.name}`, text: `함께 호흡해요 — 코드: ${code}` }).catch(() => {}); }
+  else if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => toast(code));
+  else toast(code);
+}
+function roomSheetHtml(mode) {
+  if (mode === "join") {
+    return `<div class="ip-backdrop" data-rsclose></div>
+    <div class="ip-sheet rs-sheet">
+      <p class="ip-title">코드로 참여</p>
+      <p class="ip-hint">친구에게 받은 초대 코드를 붙여넣으면 같은 방에 들어가요.</p>
+      <label class="rs-field"><span>초대 코드</span><input type="text" id="rsCode" placeholder="SHIM1-…" /></label>
+      <button class="btn primary block" data-rsact="join">참여하기</button>
+      <button class="btn ip-close" data-rsclose>닫기</button>
+    </div>`;
+  }
   const p = _roomDraft.pat;
   const step = (k, label, v) => `<div class="rs-pat-row"><span class="rs-pat-label">${label}</span>` +
     `<button type="button" class="med-step-btn sm" data-rp="${k}" data-d="-1" aria-label="${label} 줄이기">−</button>` +
@@ -3810,28 +3826,22 @@ function roomSheetHtml() {
   return `<div class="ip-backdrop" data-rsclose></div>
     <div class="ip-sheet rs-sheet">
       <p class="ip-title">방 만들기</p>
-      <p class="ip-hint">나만의 호흡으로 방을 만들어요. 초대 코드를 나누면 친구도 같은 방에 들어와요.</p>
+      <p class="ip-hint">나만의 호흡으로 방을 만들어요. 만든 뒤 '공유'로 친구를 초대할 수 있어요.</p>
       <label class="rs-field"><span>방 이름</span><input type="text" id="rsName" maxlength="14" placeholder="예: 우리 반 호흡" /></label>
       <label class="rs-field"><span>한 줄 소개</span><input type="text" id="rsMood" maxlength="24" placeholder="예: 수업 시작 전 30초" /></label>
       <div class="rs-pat">${step("in", "들숨", p[0])}${step("hold", "멈춤", p[1])}${step("ex", "날숨", p[2])}</div>
       <button class="btn primary block" data-rsact="create">이 방 만들기</button>
-      <div class="rs-sep"><span>또는</span></div>
-      <label class="rs-field"><span>초대 코드로 참여</span><input type="text" id="rsCode" placeholder="SHIM1-…" /></label>
-      <button class="btn block" data-rsact="join">코드로 방 추가</button>
-      ${mine.length ? `<div class="rs-mine"><p class="rs-mine-t">내가 만든 방</p>${mine.map((r) =>
-        `<div class="rs-row"><span class="rs-row-n">${escapeHtml(r.name)}<i>${r.pat.join("·")}</i></span>` +
-        `<button class="btn sm" data-rsact="share" data-id="${r.id}">코드 복사</button>` +
-        `<button class="btn sm rs-del" data-rsact="del" data-id="${r.id}" aria-label="${escapeHtml(r.name)} 삭제">삭제</button></div>`).join("")}</div>` : ""}
       <button class="btn ip-close" data-rsclose>닫기</button>
     </div>`;
 }
-function openRoomSheet() {
+function openRoomSheet(mode) {
   let ov = document.getElementById("roomSheet");
-  if (!ov) { ov = document.createElement("div"); ov.id = "roomSheet"; ov.className = "img-preview"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "방 만들기"); document.body.appendChild(ov); }
+  if (!ov) { ov = document.createElement("div"); ov.id = "roomSheet"; ov.className = "img-preview"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); document.body.appendChild(ov); }
+  ov.setAttribute("aria-label", mode === "join" ? "코드로 참여" : "방 만들기");
   _roomDraft = { pat: [brIn, brHold, brEx] }; // 내 호흡 패턴에서 출발
-  ov.innerHTML = roomSheetHtml(); ov.classList.add("show");
+  ov.innerHTML = roomSheetHtml(mode); ov.classList.add("show");
   syncAppInert();
-  const n = document.getElementById("rsName"); if (n) n.focus();
+  const n = document.getElementById(mode === "join" ? "rsCode" : "rsName"); if (n) n.focus();
   ov.onclick = (e) => {
     if (e.target.closest("[data-rsclose]")) { closeRoomSheet(); return; }
     const sb = e.target.closest("button[data-rp]");
@@ -3854,7 +3864,8 @@ function openRoomSheet() {
       if (list.length >= 8) { toast("방은 8개까지 만들 수 있어요."); return; }
       const room = { id: newRoomId(), name: name.slice(0, 14), mood: (mood || "나만의 호흡").slice(0, 24), pat: _roomDraft.pat.slice() };
       list.push(room);
-      saveMyRooms(list); medRoomsRender(); closeRoomSheet(); toast(`'${name}' 방을 만들었어요.`); Haptic.success();
+      saveMyRooms(list); medRoomsRender(); closeRoomSheet(); Haptic.success();
+      toast(`'${name}' 방을 만들었어요 · 목록의 '공유'로 친구를 초대해보세요.`);
       publishRoom(room); // 로그인·서버 연결 시 모두의 목록에 공개(아니면 조용히 로컬만)
       renderSocial(); // 함께 탭 목록 즉시 반영
     } else if (act === "join") {
@@ -3864,19 +3875,6 @@ function openRoomSheet() {
       if (list.some((x) => x.id === r.id)) { toast("이미 있는 방이에요."); return; }
       if (list.length >= 8) { toast("방은 8개까지 담을 수 있어요."); return; }
       list.push(r); saveMyRooms(list); medRoomsRender(); renderSocial(); closeRoomSheet(); toast(`'${r.name}' 방에 들어왔어요.`); Haptic.success();
-    } else if (act === "share") {
-      const r = loadMyRooms().find((x) => x.id === a.dataset.id); if (!r) return;
-      const code = roomToCode(r);
-      const done = () => toast("초대 코드를 복사했어요. 친구에게 보내보세요.");
-      if (navigator.share) { navigator.share({ title: `오늘의 쉼 · ${r.name}`, text: `함께 호흡해요 — 코드: ${code}` }).catch(() => {}); }
-      else if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => toast(code));
-      else toast(code);
-    } else if (act === "del") {
-      const id = a.dataset.id;
-      saveMyRooms(loadMyRooms().filter((x) => x.id !== id));
-      if (medRoom === id) medRoom = null;
-      unpublishRoom(id); // 서버에 올라가 있던 방이면 목록에서도 내림
-      medRoomsRender(); renderSocial(); ov.innerHTML = roomSheetHtml(); toast("방을 지웠어요.");
     }
   };
 }
@@ -3929,7 +3927,8 @@ function srvRoomRow(r, myId) {
       `<span class="sr-mood">${escapeHtml(r.mood)}${r.ownerName ? ` · ${escapeHtml(r.ownerName)}` : ""}</span>` +
       `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span>` +
     `</button>` +
-    (mine ? `<button class="btn sm sr-del" data-srdel="${r.id}" aria-label="${escapeHtml(r.name)} 방 내리기">내리기</button>` : "") +
+    (mine ? `<button class="btn sm sr-share" data-srshare="${r.id}" aria-label="${escapeHtml(r.name)} 초대 코드 공유">공유</button>` +
+            `<button class="btn sm sr-del" data-srdel="${r.id}" aria-label="${escapeHtml(r.name)} 방 내리기">내리기</button>` : "") +
   `</div>`;
 }
 function renderSocial() {
@@ -3949,20 +3948,26 @@ function renderSocial() {
     `<div class="sr-row"><button class="sr-join" data-room="${r.id}" aria-label="${escapeHtml(r.name)} 방에서 호흡 (${r.pat.join("·")}초)">` +
       `<span class="sr-name">${escapeHtml(r.name)}<i class="sr-mine-badge">내 방 · 코드</i></span>` +
       `<span class="sr-mood">${escapeHtml(r.mood)}</span>` +
-      `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span></button></div>`));
+      `<span class="sr-meta"><span class="mr-pat">${r.pat.join("·")}</span><span class="mr-live" data-live="${r.id}"></span></span></button>` +
+      `<button class="btn sm sr-share" data-srshare="${r.id}" aria-label="${escapeHtml(r.name)} 초대 코드 공유">공유</button>` +
+      `<button class="btn sm sr-del" data-srdel="${r.id}" aria-label="${escapeHtml(r.name)} 방 삭제">삭제</button></div>`));
   listEl.innerHTML = rows.length ? rows.join("") : `<p class="sr-empty">아직 열린 방이 없어요. 첫 방을 만들어볼까요?</p>`;
 }
 // 진입·인증 변화 시: 캐시로 즉시 그리고, 서버 목록을 받아 한 번 더(렌더는 순수, fetch는 여기서만)
 function refreshSocial() { renderSocial(); if (sbc()) fetchSrvRooms().then((ok) => { if (ok) renderSocial(); }); }
 const _socialTab = document.getElementById("tab-social");
 if (_socialTab) _socialTab.addEventListener("click", (e) => {
+  const sh = e.target.closest("[data-srshare]");
+  if (sh) { Sound.tap(); const r = loadMyRooms().concat(_srvRooms).find((x) => x.id === sh.dataset.srshare); if (r) shareRoomCode(r); return; }
   const del = e.target.closest("[data-srdel]");
-  if (del) { Sound.tap(); unpublishRoom(del.dataset.srdel); saveMyRooms(loadMyRooms().filter((x) => x.id !== del.dataset.srdel)); medRoomsRender(); return; }
+  if (del) { Sound.tap(); const id = del.dataset.srdel; unpublishRoom(id); saveMyRooms(loadMyRooms().filter((x) => x.id !== id)); if (medRoom === id) medRoom = null; renderSocial(); toast("방을 지웠어요."); return; }
   const j = e.target.closest(".sr-join");
   if (j) { Sound.tap(); Haptic.tap(); openMedGuide(j.dataset.room); return; }
 });
 const _socialCreate = document.getElementById("socialCreate");
 if (_socialCreate) _socialCreate.addEventListener("click", () => { Sound.tap(); openRoomSheet(); });
+const _socialJoinCode = document.getElementById("socialJoinCode");
+if (_socialJoinCode) _socialJoinCode.addEventListener("click", () => { Sound.tap(); openRoomSheet("join"); });
 const _socialLoginBtn = document.getElementById("socialLoginBtn");
 if (_socialLoginBtn) _socialLoginBtn.addEventListener("click", () => {
   Sound.tap(); activateTab("settings");
@@ -4017,7 +4022,10 @@ function medStartBreathing() {
   if (medSwipeHint) medSwipeHint.hidden = true;
   medNextBtn.textContent = "그만하기";
   medCaption.classList.remove("show"); void medCaption.offsetWidth;
-  medStepTitle.textContent = "함께 숨을 골라요"; medStepBody.textContent = `${brIn}초 들이쉬고·${brHold}초 멈추고·${brEx}초 내쉬어요`;
+  // 방에 들어왔다면 방의 정체성을 세션 안까지 — 어느 방에서 숨 쉬는지 보이게
+  const _rm = medRoom ? allRooms().find((r) => r.id === medRoom) : null;
+  medStepTitle.textContent = _rm ? _rm.name : "함께 숨을 골라요";
+  medStepBody.textContent = _rm ? `${_rm.mood} · ${brIn}·${brHold}·${brEx} 호흡` : `${brIn}초 들이쉬고·${brHold}초 멈추고·${brEx}초 내쉬어요`;
   medCaption.classList.add("show");
   medCircle.classList.remove("med-idle");
   if (medOverlay) medOverlay.classList.add("breathing"); // 간격 축소 → 함께 호흡 줄 자리
@@ -4051,7 +4059,10 @@ function openMedGuide(roomId) {
   medSyncAmbIcon();
   if (medSwipeHint) medSwipeHint.hidden = false;
   if (medDots) medDots.hidden = false;
-  medShow(0); medResetTimer();
+  // 방 입장 = 이미 '함께 호흡하겠다'는 선택 — 5단계 교육을 건너뛰고 바로 호흡(3·2·1 예비 카운트가 마음의 준비).
+  // 혼자('따라하며 명상하기')는 배우는 경험이므로 교육 유지.
+  if (room) medStartBreathing();
+  else { medShow(0); medResetTimer(); }
   syncAppInert(); const mc = document.getElementById("medClose"); if (mc) mc.focus();
 }
 function closeMedGuide() {

@@ -2066,3 +2066,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .tabbtn { padding-left: 0; padding-right: 0; }
   .tabbtn span { font-size: 0.64rem; letter-spacing: -0.01em; }
 }
+
+/* v218 재편 — 방 행 공유 버튼 + 만들기/참여 나란히 */
+.sr-actions { gap: var(--s2); }
+.sr-share { flex-shrink: 0; padding: 5px 10px; font-size: var(--t-xs); min-height: 0; color: var(--accent-deep); }
