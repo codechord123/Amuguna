@@ -1,12 +1,18 @@
-// config.js — 클라우드 동기화 설정
-// 1) https://supabase.com 에서 무료 프로젝트 생성
-// 2) Project Settings → API 에서 "Project URL" 과 "anon public" 키를 복사해 아래에 붙여넣기
-// 3) README의 SQL을 SQL Editor에 한 번 실행 (테이블 + 보안정책)
-// 키를 비워두면 앱은 기존처럼 '이 기기에만 저장(오프라인)'으로 동작합니다.
-// (anon 키는 공개되어도 안전한 '공개 키'입니다. Row Level Security로 본인 데이터만 접근돼요.)
+// config.js — 클라우드(Firebase) 설정
+// 1) https://console.firebase.google.com 에서 무료 프로젝트 생성
+// 2) 프로젝트 설정 → 일반 → "웹 앱 추가" → 아래 firebaseConfig 값을 그대로 붙여넣기
+// 3) Authentication → 로그인 방법에서 '이메일/비밀번호'(+원하면 Google) 활성화
+// 4) Firestore·Realtime Database 생성 + README의 보안 규칙 붙여넣기
+// 값을 비워두면 앱은 기존처럼 '이 기기에만 저장(오프라인)'으로 동작합니다.
+// (apiKey는 공개되어도 안전한 식별자예요. 접근 제어는 보안 규칙이 담당합니다.)
 window.ONEUL_CONFIG = {
-  SUPABASE_URL: "",       // 예: "https://abcdxyz.supabase.co"
-  SUPABASE_ANON_KEY: "",  // 예: "eyJhbGciOi..."
+  FIREBASE: {
+    apiKey: "",            // 예: "AIzaSy..."
+    authDomain: "",        // 예: "oneul-shim.firebaseapp.com"
+    projectId: "",         // 예: "oneul-shim"
+    databaseURL: "",       // 예: "https://oneul-shim-default-rtdb.asia-southeast1.firebasedatabase.app" (Realtime Database 주소 — 명단·실시간 인원용)
+    appId: "",             // 예: "1:1234567890:web:abcdef"
+  },
 
   // (선택) 외부 앰비언트 오디오 파일. 지정하면 합성음 대신 실제 녹음을 재생해요.
   // 무료(CC0) 소스: Pixabay(pixabay.com/sound-effects), Freesound(CC0 필터), mixkit 등.

@@ -97,17 +97,18 @@ npx @capacitor/assets generate --iconBackgroundColor '#f7f1ea' --splashBackgroun
 
 ---
 
-## '함께 호흡' 실시간 커뮤니티를 켜려면 (선택 · Supabase 아님)
+## '함께 호흡' 실시간 커뮤니티를 켜려면 (선택 · Firebase — 코드 완성됨)
 
-방 기능은 백엔드 없이도 출시돼요(프리셋으로 동작). 나중에 **실시간 인원**을 켜고 싶을 때,
-`mednet.js`의 `connect()`만 아래 중 하나로 교체하면 됩니다(앱 나머지는 그대로):
+방 기능은 백엔드 없이도 출시돼요(호흡 프리셋 + 초대 코드로 동작). **Firebase 연동 코드는 이미 전부
+들어 있어서**, README "클라우드" 절대로 Firebase 프로젝트를 만들고 `config.js`에 설정만 붙여넣으면:
 
-- **Firebase Realtime Database** — 구글 생태계라 Android와 궁합 좋고 무료 한도 넉넉, presence 패턴 표준.
-- **Ably / Pusher** — 관리형 실시간(서버 운영 불필요), 무료 티어. presence 채널 그대로 매핑.
-- **PartyKit / Cloudflare** — 저비용 실시간.
+- 함께 탭 **공개 방 목록**(로그인 사용자가 방을 만들면 모두에게 표시 · Firestore)
+- 로비·세션 **명단**(같은 방 사람들의 닉네임 · Realtime Database presence, 연결 끊기면 자동 삭제)
+- **방장 시작/종료**(방장이 시작하면 모두 동시에 호흡, 마치면 모두 부드럽게 종료 · rooms_live)
+- 계정 로그인(이메일/Google) + 기기 간 기록 동기화
 
-`mednet.js`는 백엔드를 추상화해 뒀고, 연결이 없으면 조용히 '혼자' 모드로 돌아가 **가짜 인원을 만들지 않습니다.**
-따라서 백엔드는 언제 붙여도 되고, 붙이는 순간 방 목록·세션에 실시간 인원이 그대로 나타납니다.
+가 앱 업데이트 없이 살아납니다. 백엔드가 없으면 조용히 '혼자' 모드 — **가짜 인원을 만들지 않아요.**
+Firebase는 iOS·Android·웹 공통이라 Capacitor 앱에서도 같은 코드가 그대로 동작합니다.
 
 ---
 

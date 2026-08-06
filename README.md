@@ -135,65 +135,83 @@ python3 -m http.server 8787 &          # 앱 정적 서빙
 node tools/fitcheck.mjs [chromium경로]  # 모든 탭·서브탭·오버레이가 한 화면(844/667px)에 들어가는지 실측
 ```
 
-## ☁️ 클라우드 동기화 & 로그인 (선택)
+## ☁️ 클라우드 동기화 & 로그인 & 커뮤니티 (선택)
 
-설정하면 **여러 기기에서 같은 계정으로 로그인**해 기록이 자동 동기화돼요. 설정 전에는 기존처럼 이 기기에만 저장됩니다(완전 동작).
+설정하면 **여러 기기에서 같은 계정으로 로그인**해 기록이 자동 동기화되고, **함께 탭 커뮤니티**(공개 방·명단·방장 시작/종료)가 살아나요. 설정 전에는 기존처럼 이 기기에만 저장됩니다(완전 동작).
 
-백엔드는 무료로 시작 가능한 **Supabase**를 사용합니다.
+백엔드는 무료로 시작 가능한 **Firebase**를 사용합니다 (iOS·Android·웹 공통).
 
 **1) 프로젝트 만들기**
-[supabase.com](https://supabase.com) 가입 → New project 생성.
+[console.firebase.google.com](https://console.firebase.google.com) → 프로젝트 추가 → 프로젝트 설정(⚙) → 일반 → "웹 앱 추가(</>)".
 
-**2) 키 넣기**
-Project Settings → **API** 에서 `Project URL` 과 `anon public` 키를 복사해 `config.js`에 붙여넣기:
+**2) `config.js`에 설정 붙여넣기**
+웹 앱 등록 화면의 `firebaseConfig` 값을 그대로:
 ```js
 window.ONEUL_CONFIG = {
-  SUPABASE_URL: "https://xxxx.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGci...",
+  FIREBASE: {
+    apiKey: "AIzaSy...",
+    authDomain: "oneul-shim.firebaseapp.com",
+    projectId: "oneul-shim",
+    databaseURL: "https://oneul-shim-default-rtdb.asia-southeast1.firebasedatabase.app",
+    appId: "1:1234567890:web:abcdef",
+  },
 };
 ```
-> `anon` 키는 공개돼도 안전한 공개 키예요. 아래 RLS 정책으로 **본인 데이터만** 접근됩니다.
+> `apiKey`는 공개되어도 안전한 식별자예요. 접근 제어는 아래 보안 규칙이 담당합니다.
+> `databaseURL`은 **Realtime Database**(명단·실시간 인원·방장 제어용)를 만들면 생겨요.
 
-**3) 테이블 + 보안정책 (SQL Editor에 한 번 실행)**
-```sql
-create table if not exists public.app_state (
-  user_id uuid references auth.users on delete cascade primary key,
-  data jsonb not null default '{}',
-  updated_at timestamptz default now()
-);
-alter table public.app_state enable row level security;
-create policy "own state" on public.app_state
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+**3) 로그인 방법 켜기**
+Authentication → Sign-in method → **이메일/비밀번호** 사용 설정 (+원하면 **Google**).
 
--- 함께 탭: 공개 방 목록 — 만들면 모두에게 보임. 읽기는 누구나, 만들기·수정·삭제는 로그인한 본인 방만.
-create table if not exists public.rooms (
-  id text primary key,
-  name text not null check (char_length(name) between 1 and 14),
-  mood text default '' check (char_length(mood) <= 24),
-  pat jsonb not null,
-  owner uuid not null references auth.users(id) on delete cascade,
-  owner_name text default '' check (char_length(owner_name) <= 12),
-  created_at timestamptz default now()
-);
-alter table public.rooms enable row level security;
-create policy "rooms readable by everyone" on public.rooms for select using (true);
-create policy "insert own rooms" on public.rooms for insert with check (auth.uid() = owner);
-create policy "update own rooms" on public.rooms for update using (auth.uid() = owner) with check (auth.uid() = owner);
-create policy "delete own rooms" on public.rooms for delete using (auth.uid() = owner);
+**4) Firestore 만들기 + 보안 규칙** (기록 동기화 + 공개 방 목록)
+Firestore Database → 데이터베이스 만들기 → 규칙 탭에 붙여넣기:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 내 기록: 본인만 읽고 쓸 수 있음
+    match /app_state/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // 함께 탭 공개 방: 읽기는 누구나, 만들기·수정·삭제는 로그인한 본인 방만
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 14
+        && request.resource.data.mood is string && request.resource.data.mood.size() <= 24;
+      allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
+    }
+  }
+}
 ```
 
-**4) 로그인 방식**
-- **이메일/비밀번호**: 기본 활성화(Authentication → Providers → Email). 바로 회원가입/로그인 가능.
-- **Google 로그인(선택)**: Authentication → Providers → Google 활성화 + Google Cloud OAuth 클라이언트 설정. 설정 전엔 "Google로 계속" 버튼이 동작하지 않아요.
+**5) Realtime Database 만들기 + 보안 규칙** (명단·실시간 인원·방장 시작/종료)
+Realtime Database → 데이터베이스 만들기 → 규칙 탭에 붙여넣기:
+```json
+{
+  "rules": {
+    "presence": { "breathe": {
+      ".read": true,
+      "$key": { ".write": true,
+        ".validate": "newData.hasChild('at') && (!newData.child('name').exists() || newData.child('name').val().length <= 12)" }
+    }},
+    "rooms_live": {
+      "$roomId": { ".read": true, ".write": "auth != null" }
+    }
+  }
+}
+```
+> presence는 익명·일시적 존재 표시(방·닉네임·시각)만 담고, 연결이 끊기면 자동 삭제(onDisconnect)돼요. 방 시작/종료는 로그인해야 쓸 수 있어요.
 
-**5) 사용**
-설정 탭 → ☁️ 계정 & 동기화 에서 로그인. 이후 기록 변경 시 자동 저장되고, 다른 기기에서 로그인하면 **병합**돼요(일기는 수정 시각 기준 최신 우선, 습관 완료는 **날짜별 토글 시각 기준 최신** — 한쪽의 '완료 해제'가 다른 기기의 옛 완료에 덮이지 않아요).
+**6) 사용**
+설정 탭 → ☁️ 계정 & 동기화 에서 로그인. 이후 기록 변경 시 자동 저장되고, 다른 기기에서 로그인하면 **병합**돼요(일기는 수정 시각 기준 최신 우선, 습관 완료는 **날짜별 토글 시각 기준 최신** — 한쪽의 '완료 해제'가 다른 기기의 옛 완료에 덮이지 않아요). 함께 탭에서는 로그인한 사용자가 방을 만들면 모두의 목록에 뜨고, 로비에 **명단**이 보이며 **방장이 시작·종료**를 제어해요.
 
 > 동작 방식: 변경 시 원격을 먼저 받아 **병합 후 업로드**(blind overwrite 방지)해서 다른 기기의 편집이 사라지지 않아요. **삭제는 묘비(tombstone)로 전파**돼 지운 기록이 다른 기기에서 되살아나지 않습니다. 실시간 양방향 푸시는 아니므로, 다른 기기 변경은 그 기기에서 "지금 동기화"나 재로그인 시 반영돼요.
 
 ## 개인정보
 
-기본적으로 모든 기록은 **사용자 기기(localStorage)에만** 저장돼요. 클라우드 동기화를 **직접 설정해 로그인한 경우에만**, 본인 계정의 Supabase에 암호화 전송되어 저장됩니다(RLS로 본인만 접근). 동기화를 켜지 않으면 외부 전송이 전혀 없어요.
+기본적으로 모든 기록은 **사용자 기기(localStorage)에만** 저장돼요. 클라우드 동기화를 **직접 설정해 로그인한 경우에만**, 본인 계정의 Firebase에 전송되어 저장됩니다(보안 규칙으로 본인만 접근). 동기화를 켜지 않으면 외부 전송이 전혀 없어요.
 
 ## 마음이 너무 힘든 날엔
 

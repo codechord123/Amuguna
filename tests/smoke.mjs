@@ -648,7 +648,9 @@ try {
   check("함께 탭에서 방 만들기 시트 열림", !!d.querySelector("#roomSheet.show"));
   // 방 생성 → 함께 탭 목록에 '내 방 · 코드'로 표시
   q("#rsName").value = "테스트방"; q('#roomSheet [data-rsact="create"]').click();
-  check("방 생성 후 시트 닫힘", !d.querySelector("#roomSheet.show"));
+  check("방 생성 직후 초대 코드 표시(코드가 어디 있는지 바로 보임)", !!d.querySelector("#roomSheet.show #rsShowCode") && (d.querySelector("#rsShowCode").value || "").startsWith("SHIM1-"));
+  d.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  check("코드 시트 닫힘", !d.querySelector("#roomSheet.show"));
   window.renderSocial && window.renderSocial();
   check("함께 탭 목록에 내 방 표시", q("#srvRoomList") && q("#srvRoomList").innerHTML.includes("테스트방"));
   check("내 방 행에 공유·삭제 버튼(초대가 손에 닿게)", !!q("#srvRoomList .sr-share") && !!q("#srvRoomList [data-srdel]"));
