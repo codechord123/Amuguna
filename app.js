@@ -271,7 +271,7 @@ function activateTab(name, { scroll = true } = {}) {
   if (name === "calendar") { const cur = document.querySelector("#calSeg button.active"); showCalSeg(calSegTo || (cur ? cur.dataset.cseg : "calendar")); }
   if (name === "today") { updateJourneyHero(); updateTodayStats(); renderTodayHabitGlance(); }
   if (name === "social") { refreshSocial(); if (typeof medObserveStart === "function") medObserveStart(); } // 함께 탭 — 방 목록(캐시→서버) + 실시간 인원 관찰
-  if (name !== "rest" && name !== "social" && typeof medObserveStop === "function") medObserveStop(); // 명상·함께 탭 벗어나면 방 관찰 종료
+  if (name !== "social" && typeof medObserveStop === "function") medObserveStop(); // 함께 탭 벗어나면 방 인원 관찰 종료
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 tabbar.addEventListener("click", (e) => {
@@ -1405,8 +1405,7 @@ document.getElementById("restSeg").addEventListener("click", (e) => {
   Sound.tap();
   document.querySelectorAll("#restSeg button").forEach((x) => x.classList.toggle("active", x === b));
   document.querySelectorAll(".rest-panel").forEach((p) => { p.hidden = p.dataset.rpanel !== b.dataset.rseg; });
-  if (b.dataset.rseg === "meditate") { autoAmbient(); if (typeof medObserveStart === "function") medObserveStart(); } // 명상 들어오면 배경음 + 방 인원 관찰
-  else if (typeof medObserveStop === "function") medObserveStop();
+  if (b.dataset.rseg === "meditate") autoAmbient(); // 명상 들어오면 선택한 배경음 자동 재생 (방·인원은 함께 탭 소관)
 });
 
 /* 주간 리포트 (베타 피드백 #1) */
@@ -3771,19 +3770,13 @@ applyBreathPattern();
 const medRoomsEl = document.getElementById("medRooms");
 function medRoomsRender() {
   if (!medRoomsEl) return;
-  // 첫 카드 = 혼자(고요히), 이어서 테마 방들. 혼자 카드는 #medStartBtn(스모크·기존 진입점 유지)
-  const solo = `<button class="med-room mr-solo" id="medStartBtn" data-room="solo" role="listitem" aria-label="혼자 조용히 호흡하기">` +
-      `<span class="mr-top"><b class="mr-name">혼자</b></span><small class="mr-mood">고요히 나에게</small></button>`;
-  const card = (r, mine) =>
-    `<button class="med-room${mine ? " mr-mine" : ""}" data-room="${r.id}" role="listitem" aria-label="${escapeHtml(r.name)}${mine ? " (내 방)" : ""} — ${escapeHtml(r.mood)}, 호흡 ${r.pat.join("·")}초">` +
+  // 함께 탭의 테마 방 캐러셀 — 앱 제공 방만. (내 방·서버 방은 아래 '지금 열린 방' 목록이 담당: 한 탭 안 중복 방지)
+  medRoomsEl.innerHTML = MED_ROOMS.map((r) =>
+    `<button class="med-room" data-room="${r.id}" role="listitem" aria-label="${escapeHtml(r.name)} — ${escapeHtml(r.mood)}, 호흡 ${r.pat.join("·")}초">` +
       `<span class="mr-top"><b class="mr-name">${escapeHtml(r.name)}</b><span class="mr-pat">${r.pat.join("·")}</span></span>` +
       `<small class="mr-mood">${escapeHtml(r.mood)}</small>` +
       `<span class="mr-live" data-live="${r.id}"></span>` +
-    `</button>`;
-  const add = `<button class="med-room mr-add" data-room="new" role="listitem" aria-label="방 만들기">` +
-      `<span class="mr-top"><b class="mr-name">＋ 방 만들기</b></span><small class="mr-mood">나만의 호흡으로</small></button>`;
-  medRoomsEl.innerHTML = solo + MED_ROOMS.map((r) => card(r, false)).join("")
-    + loadMyRooms().map((r) => card(r, true)).join("") + add;
+    `</button>`).join("");
 }
 function medRoomsSyncCounts(state) {
   const live = !!(state && state.live), rooms = (state && state.rooms) || {};
@@ -3801,9 +3794,7 @@ function medObserveStart() { if (window.MedNet && medPhase !== "breathe") MedNet
 function medObserveStop() { if (window.MedNet && medPhase !== "breathe") MedNet.leave(); }
 if (medRoomsEl) medRoomsEl.addEventListener("click", (e) => {
   const b = e.target.closest(".med-room"); if (!b) return;
-  Sound.tap(); Haptic.tap();
-  if (b.dataset.room === "new") { openRoomSheet(); return; }
-  openMedGuide(b.dataset.room === "solo" ? null : b.dataset.room);
+  Sound.tap(); Haptic.tap(); openMedGuide(b.dataset.room);
 });
 medRoomsRender();
 
@@ -4076,7 +4067,10 @@ function closeMedGuide() {
 if (medNextBtn) medNextBtn.addEventListener("click", () => { Sound.tap(); if (medPhase === "teach") medGoto(medIdx + 1); else closeMedGuide(); }); // 단계별 진행 → 마지막에 호흡 시작
 const _medClose = document.getElementById("medClose");
 if (_medClose) _medClose.addEventListener("click", () => { Sound.tap(); closeMedGuide(); });
-// (혼자 시작 버튼은 방 목록 첫 카드 #medStartBtn로 통합 — medRooms 위임 핸들러가 처리)
+const _medStartBtn = document.getElementById("medStartBtn");
+if (_medStartBtn) _medStartBtn.addEventListener("click", () => { Sound.tap(); openMedGuide(); }); // 혼자 명상(내 패턴)
+const _medGoSocial = document.getElementById("medGoSocial");
+if (_medGoSocial) _medGoSocial.addEventListener("click", () => { Sound.tap(); activateTab("social"); }); // 여럿이 → 함께 탭
 // 드래그(스와이프)·탭으로 단계 넘기기 — 교육 단계에서만
 let _medDownX = null;
 if (medOverlay) {

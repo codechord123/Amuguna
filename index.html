@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 쉼" />
-  <meta name="app-version" content="v216" />
+  <meta name="app-version" content="v217" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>오늘의 쉼 · 나를 위한 에너지 충전소</title>
@@ -201,7 +201,7 @@
       </div>
 
       <div class="rest-panel" data-rpanel="meditate">
-      <div class="card med-how med-rooms-card">
+      <div class="card med-how">
         <h2>명상</h2>
         <details class="med-howto">
           <summary>명상하는 법 · 5단계 보기</summary>
@@ -214,10 +214,6 @@
           </ol>
           <p class="med-bigscreen"><a href="meditate.html" target="_blank" rel="noopener">큰 화면(전자칠판·TV)용 명상 열기</a> — 여럿이 함께할 때 초대형 글씨로</p>
         </details>
-        <p class="med-rooms-label">함께 호흡하는 방</p>
-        <div class="med-rooms" id="medRooms" role="list" aria-label="함께 호흡하는 방 · 옆으로 넘겨 고르세요"></div>
-      </div>
-      <div class="card med-how med-set-card">
         <div class="med-setup">
           <div class="med-step" id="medStep" role="group" aria-label="명상 시간 조절">
             <button type="button" class="med-step-btn" data-d="-1" aria-label="1분 줄이기">−</button>
@@ -234,7 +230,9 @@
             <div class="med-pat-row"><span class="med-pat-label">날숨</span><button type="button" class="med-step-btn sm" data-p="ex" data-d="-1" aria-label="날숨 줄이기">−</button><b id="patEx">8</b><button type="button" class="med-step-btn sm" data-p="ex" data-d="1" aria-label="날숨 늘리기">+</button><span class="med-pat-unit">초</span></div>
           </div>
         </details>
+        <button class="btn primary block" id="medStartBtn" style="margin-top:var(--s3)">따라하며 명상하기</button>
         <p class="med-stat" id="medStat"></p>
+        <p class="med-together-link"><button class="linklike" id="medGoSocial">여럿이 함께하고 싶다면 → 함께 탭</button></p>
       </div>
       <div class="card">
         <h2>잔잔한 배경음</h2>
@@ -276,6 +274,8 @@
           <p class="social-note">방을 만들어 올리려면 로그인이 필요해요.</p>
           <button class="btn primary" id="socialLoginBtn">로그인하러 가기</button>
         </div>
+        <p class="section-label">테마 방 — 골라서 바로 함께</p>
+        <div class="med-rooms" id="medRooms" role="list" aria-label="테마 방 · 옆으로 넘겨 고르세요"></div>
         <div id="srvRoomsWrap" hidden>
           <p class="section-label">지금 열린 방</p>
           <div class="sr-list" id="srvRoomList" aria-live="polite"></div>

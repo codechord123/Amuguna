@@ -1550,10 +1550,13 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .sound-btn span { font-size: 0.58rem; }
   .med-stat, .med-howto summary, .med-adv summary { padding-top: 2px; padding-bottom: 2px; }
   .med-step-btn { width: 38px; height: 38px; }
-  /* 쉼: 함께 호흡하는 방 축약 — 이름+패턴만(무드는 접음) */
+  /* 방 캐러셀 축약(함께 탭) — 이름+패턴만(무드는 접음) */
   .med-rooms-label { margin: var(--s1) 0 4px; font-size: var(--t-xs); }
   .med-room { padding: 7px var(--s3); }
   .med-room .mr-mood { display: none; }
+  /* 쉼/명상: 함께 탭 안내 링크는 접고(탭바에 함께가 있음) 버튼 여백 축소 */
+  .med-together-link { display: none; }
+  #tab-rest #medStartBtn { margin-top: var(--s2) !important; padding: 10px 20px; }
   /* 위로: 카드 내부 축약 */
   .comfort-tools { margin-top: var(--s2); }
   .comfort-add summary { padding: 2px 0; font-size: var(--t-xs); }
@@ -1998,7 +2001,7 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .stats-panel > *, .rest-panel > * { min-width: 0; }
   /* 가로로 넓어야 제 기능을 하는 블록은 단 전체를 차지 —
      방 목록(가로 캐러셀)이 반쪽 칸에 갇히면 방이 잘려 보임 */
-  .report-tiles, .med-rooms-card { grid-column: 1 / -1; }
+  .report-tiles { grid-column: 1 / -1; }
   /* 목록·달력은 늘리거나 쪼개면 오히려 읽기 나빠져 — 편한 폭으로 가운데
      (설정은 한 줄 목록이 정석: 라벨과 화살표가 멀어지면 스캔이 어려움) */
   .cal-panel > .card, #tab-settings > .card, #tab-settings > .settings-grid { max-width: 700px; margin-inline: auto; width: 100%; }
@@ -2006,16 +2009,10 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .tabbar { width: min(600px, calc(100% - 2 * var(--s7))); }
 }
 
-/* 명상 카드 분리(방 목록 / 설정)는 가로 태블릿 배치를 위한 것 —
-   폰·세로에선 원래처럼 한 덩어리로 보이게 경계 여백·구분선을 완전히 없앤다.
-   (#tab-rest .card가 ID 특이도라 같은 수준으로 맞춰야 이김) */
-#tab-rest .med-rooms-card { padding-bottom: 0; }
-#tab-rest .med-set-card { padding-top: 0; }
-.med-rooms-card::after { display: none; }
-/* 가로 태블릿에선 두 카드가 서로 다른 칸에 놓이므로 사이 여백을 되살림 */
-@media (min-width: 900px) and (min-height: 700px) {
-  #tab-rest .med-set-card { padding-top: var(--s5); }
-}
+/* 쉼/명상 하단 — 여럿이 하고 싶은 사람을 함께 탭으로 안내하는 조용한 링크 */
+.med-together-link { margin: var(--s2) 0 0; text-align: center; }
+.linklike { background: none; border: none; padding: var(--s1) var(--s2); font-family: inherit; font-size: var(--t-xs);
+  color: var(--accent-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* ===== 방 만들기 시트 + 내 방/추가 카드 (v215) ===== */
 .med-room.mr-add { border-style: dashed; color: var(--accent-deep); }
