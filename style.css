@@ -2022,8 +2022,11 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   /* contents로 풀린 자식은 비네트(::after, z1) 위에 그려지도록 직접 z-index */
   .med-overlay .cb-viz, .med-overlay .cb-phase, .med-overlay .cb-count, .med-overlay .cb-bar { position: relative; z-index: 2; }
   .med-overlay .cb-viz { order: 1; width: 480px; height: 432px; margin-bottom: -250px; }
-  .med-overlay .tb-dot { width: 20px; height: 20px; offset-path: path("M52.56 368.64 L225.84 63.36 Q240 38.4 254.16 63.36 L427.44 368.64 Q441.6 393.6 412.8 393.6 L67.2 393.6 Q38.4 393.6 52.56 368.64 Z"); }
-  .med-overlay .tb-line { stroke-width: 1.5; }
+  .med-overlay .tb-dot { width: 30px; height: 30px; box-shadow: var(--med-dot-glow), 0 0 40px 14px var(--med-glow); offset-path: path("M52.56 368.64 L225.84 63.36 Q240 38.4 254.16 63.36 L427.44 368.64 Q441.6 393.6 412.8 393.6 L67.2 393.6 Q38.4 393.6 52.56 368.64 Z"); }
+  /* 모니터·TV로 뒤에서 볼 때도 또렷하게 — 선은 진하고 굵게, 지나간 자취·점도 크게 */
+  .med-overlay .tb-line { stroke: var(--med-fg); stroke-opacity: 0.6; stroke-width: 2.6; }
+  .med-overlay .cb-stage.med-idle .tb-line { opacity: 0.85; }
+  .med-overlay .tb-trail { stroke-width: 5; filter: drop-shadow(0 0 10px var(--med-glow)); }
   .med-overlay .cb-phase { order: 2; min-height: 0; }
   .med-overlay .cb-count { order: 3; }
   .med-overlay .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
