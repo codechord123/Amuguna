@@ -1977,8 +1977,11 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   /* 하늘 장면도 큰 화면에 맞춰 — 별·종이비행기가 미아처럼 작지 않게 */
   .mystar { transform: translateX(-50%) scale(1.35); }
   .skyline { height: 120px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
-  /* 명상 — 멀리서 보는 화면이라 호흡 삼각형·카운트를 크게 */
+  /* 명상 — 멀리서 보는 화면이라 호흡 삼각형·카운트를 크게.
+     .tb-dot의 offset-path는 상대단위가 아니라 실제 px 좌표라서, 삼각형을 키울 때
+     점의 경로도 같은 비율(1.5배)로 같이 키워야 삼각형 변 위에서 벗어나지 않는다. */
   .tb-viz { width: 300px; height: 270px; }
+  .tb-dot { offset-path: path("M32.85 230.4 L141.15 39.6 Q150 24 158.85 39.6 L267.15 230.4 Q276 246 258 246 L42 246 Q24 246 32.85 230.4 Z"); }
   .cb-stage:not(.med-idle) .cb-count b { font-size: 4.6rem; }
   .med-overlay .med-caption { max-width: 420px; }
 }
