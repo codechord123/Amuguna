@@ -214,11 +214,29 @@
     // ---- 소리(웹오디오): 단계 종소리 + 은은한 배경 화음 ----
     let AC = null, ambGain = null, ambOsc = [];
     function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } return AC; }
+    // 무음 1프레임 WAV — <audio>로 재생해 iOS의 무음(벨소리) 스위치를 우회한다.
+    // (Web Audio 단독으로는 iOS가 무음 스위치를 따라가 소리가 전혀 안 날 수 있음)
+    const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+    let silentEl = null;
+    function tryPlay(el) { try { const p = el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+    function primeSilentSwitch() {
+      if (silentEl) { tryPlay(silentEl); return; }
+      try {
+        silentEl = document.createElement("audio");
+        silentEl.setAttribute("playsinline", "");
+        silentEl.loop = true; silentEl.volume = 0.0001;
+        silentEl.src = SILENT_WAV;
+        silentEl.style.display = "none";
+        document.body.appendChild(silentEl);
+        tryPlay(silentEl);
+      } catch (e) {}
+    }
     // 자동재생 정책 잠금 해제 — 첫 조작(클릭·터치·키)에서 컨텍스트를 깨우고 무음 버퍼 재생(iOS 대응)
     function unlockAudio() {
       const c = ac(); if (!c) return;
       if (c.state !== "running" && c.resume) { try { c.resume(); } catch (e) {} }
       try { const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) {}
+      primeSilentSwitch();
     }
     ["pointerdown", "touchend", "mousedown", "keydown"].forEach((ev) => window.addEventListener(ev, unlockAudio, { passive: true }));
 
