@@ -2010,6 +2010,64 @@ html[data-textsize="xl"] { font-size: 20.5px; }
   .cal-panel > .card, #tab-settings > .card, #tab-settings > .settings-grid { max-width: 700px; margin-inline: auto; width: 100%; }
   /* 탭바도 넓어진 콘텐츠에 맞춰 살짝 넓게 */
   .tabbar { width: min(600px, calc(100% - 2 * var(--s7))); }
+
+  /* 명상/호흡 화면(넓은 화면) — 삼각형을 크게, 위상·숫자·설명은 삼각형 안에.
+     HTML은 그대로 두고 .cb-stage를 display:contents로 풀어 자식들을 오버레이의
+     flex 항목으로 만든 뒤, order로 순서를 잡고 삼각형에 음수 margin-bottom을 줘서
+     뒤따르는 글이 삼각형 안쪽(아래 넓은 부분)으로 올라오게 한다.
+     음량은 오른쪽 아래 구석에 작게. */
+  .breath-overlay.med-overlay, .breath-overlay.med-overlay.breathing { gap: 6px; }
+  .med-overlay > *, .med-overlay .cb-stage > * { flex-shrink: 0; } /* 줄어들면 SVG만 작아지고 점 경로는 그대로라 어긋남 */
+  .med-overlay .cb-stage { display: contents; }
+  /* contents로 풀린 자식은 비네트(::after, z1) 위에 그려지도록 직접 z-index */
+  .med-overlay .cb-viz, .med-overlay .cb-phase, .med-overlay .cb-count, .med-overlay .cb-bar { position: relative; z-index: 2; }
+  .med-overlay .cb-viz { order: 1; width: 480px; height: 432px; margin-bottom: -250px; }
+  .med-overlay .tb-dot { width: 20px; height: 20px; offset-path: path("M52.56 368.64 L225.84 63.36 Q240 38.4 254.16 63.36 L427.44 368.64 Q441.6 393.6 412.8 393.6 L67.2 393.6 Q38.4 393.6 52.56 368.64 Z"); }
+  .med-overlay .tb-line { stroke-width: 1.5; }
+  .med-overlay .cb-phase { order: 2; min-height: 0; }
+  .med-overlay .cb-count { order: 3; }
+  .med-overlay .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
+  .med-overlay .med-clock { order: 4; }
+  .med-overlay .med-roster { order: 5; }
+  .med-overlay .med-presence { order: 6; }
+  .med-overlay .med-caption, .med-overlay .qb-hint { order: 7; }
+  .med-overlay .cb-bar { order: 10; margin-top: var(--s6); }
+  .med-overlay .med-dots { order: 11; margin-top: var(--s6); }
+  .med-overlay .med-swipe-hint { margin-top: var(--s2); }
+  .med-overlay .med-swipe-hint { order: 12; }
+  .med-overlay .sleep-toggle { order: 13; margin-top: var(--s7); }
+  .med-overlay #medNext, .med-overlay #qbClose { order: 14; margin-top: var(--s4); }
+  /* 교육 단계(설명 카드) — 글은 삼각형 아래쪽 가운데, 점·버튼은 삼각형 밑으로 */
+  #medOverlay:not(.breathing) .cb-viz { margin-bottom: -160px; }
+  #medOverlay:not(.breathing) .med-caption { min-height: 120px; }
+  /* 빠른 호흡 — 위상·숫자·안내·단계칩까지 삼각형 안, 수면모드·그만하기는 밑으로 */
+  #breathOverlay .cb-viz { margin-bottom: -230px; }
+  #medOverlay.breathing .cb-viz { margin-bottom: -268px; }
+  #medOverlay.breathing .cb-stage:not(.med-idle) .cb-count b { font-size: 2.8rem; }
+  .med-overlay .cb-phase { font-size: var(--t-sm); }
+  /* 안 쓰는 칸은 자리를 차지하지 않게 (교육 단계엔 위상·숫자가 비어 있음) */
+  .med-overlay .cb-stage.med-idle .cb-phase, .med-overlay .cb-count:empty { display: none; }
+  /* 삼각형 안 글 — 위는 좁고 아래로 갈수록 넓은 공간에 맞춰 폭 제한 */
+  .med-overlay .med-caption { min-height: 0; max-width: 300px; }
+  .breath-overlay.med-overlay.breathing .med-caption { min-height: 0; }
+  .med-overlay .med-caption b { font-size: var(--t-md); }
+  .med-overlay .med-caption span { font-size: var(--t-sm); }
+  /* 음량 — 오른쪽 아래 구석에 작게 */
+  .breath-overlay.med-overlay .med-sound { position: absolute; right: var(--s6); bottom: calc(var(--s6) + env(safe-area-inset-bottom, 0px)); width: 200px; opacity: 0.7; }
+  .med-overlay .med-snd-btn { width: 36px; height: 36px; }
+}
+
+/* 높이 여유가 큰 컴퓨터 화면 — 삼각형을 한 단계 더 크게 */
+@media (min-width: 900px) and (min-height: 900px) {
+  .med-overlay .cb-viz { width: 600px; height: 540px; margin-bottom: -310px; }
+  .med-overlay .tb-dot { offset-path: path("M65.7 460.8 L282.3 79.2 Q300 48 317.7 79.2 L534.3 460.8 Q552 492 516 492 L84 492 Q48 492 65.7 460.8 Z"); }
+  .med-overlay .med-caption { max-width: 340px; }
+  #medOverlay:not(.breathing) .cb-viz { margin-bottom: -200px; }
+  #medOverlay:not(.breathing) .med-caption { min-height: 150px; }
+  #breathOverlay .cb-viz { margin-bottom: -280px; }
+  #medOverlay.breathing .cb-viz { margin-bottom: -310px; }
+  #medOverlay.breathing .cb-stage:not(.med-idle) .cb-count b { font-size: 3.4rem; }
+  .med-overlay .cb-phase { font-size: var(--t-md); }
 }
 
 /* 쉼/명상 하단 — 여럿이 하고 싶은 사람을 함께 탭으로 안내하는 조용한 링크 */
